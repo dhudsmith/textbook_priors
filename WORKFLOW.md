@@ -5,10 +5,12 @@ coding agent, and the running example for *Reproducible scientific computing wit
 agents* (Clemson HPC Day).
 
 **The question.** A multimodal language model carries textbook knowledge about what pathology
-looks like. Can that knowledge stand in for labelled data? On the twelve MedMNIST 2D benchmarks,
-a vision-language model (VLM) hosted on Clemson's RCD LLM Service scores each image against a
-curated bank of diagnostic visual features. Classifiers built on those scores are compared with
-convolutional networks trained on pixels, across training-set size, image resolution and VLM size.
+looks like. Can that knowledge stand in for labelled data, and in what form does it have to be
+delivered before it helps? On the twelve MedMNIST 2D benchmarks, a vision-language model (VLM)
+hosted on Clemson's RCD LLM Service both scores each image against a curated bank of diagnostic
+visual features and is asked to name the class outright, with and without that same bank rendered
+into its prompt. Classifiers built on the scores are compared with convolutional networks trained
+on pixels, across training-set size, image resolution and VLM size.
 
 The concept bank is prepared outside the workflow and committed as an input; see
 `CONCEPT_BANK.md`. Conventions for every rule below are the `research-workflow` skill
@@ -161,26 +163,46 @@ All arms predict on the same seeded test sample per dataset, so comparisons are 
 
 | arm | labels | what it is |
 |---|---|---|
-| A zero-shot | no | the VLM's class distribution from the image and class names |
-| B textbook-only | no | concept scores matched to the bank's class fingerprints; no training |
+| A1 zero-shot, plain | no | the VLM's class distribution from the image, the class names and a one-sentence statement of the task |
+| A2 zero-shot, textbook | no | A1's prompt with the bank's concept questions and class fingerprints rendered into it; the model does the aggregation |
+| B textbook-only | no | concept scores matched to the bank's class fingerprints by a deterministic rule; no training |
 | C concept regression | yes | logistic regression on the concept-score vector, n labelled images |
 | D description embedding | yes | logistic regression on the embedding of the VLM's free-text description |
 | E pixel network | yes | ResNet-18 per resolution and seed on the full training split |
 | F pixel network + prior | yes | E with concept scores fused late, and with zero-shot probabilities as a soft label; the learning-curve arm |
 
+**A1, A2 and B are a ladder, not three unrelated baselines.** They deliver the same prior in three
+forms: absent, as prose, as structure. A1 and A2 differ in exactly one respect, a block of rendered
+bank text, so whatever separates them is attributable to the bank rather than to the prompt, the
+sample or the parser. A2 and B differ in exactly one respect, whether the model or a deterministic
+rule turns visual features into a class. Together they answer not only whether the textbook helps
+but in what form it has to be delivered before it does, which is the more useful finding and the
+one no single arm can produce.
+
+Two qualifications, stated here and repeated in the report. A1 is not prior-free: a class list
+containing `melanocytic_nevus` already carries most of a dermatology textbook, so the contrast is a
+structured description on top of class names, not knowledge against ignorance. And A2's prompt is
+several times longer than A1's, so a gain could come from the tokens rather than from their
+content. The `scrambled` variant of section 8 controls for the second: the same bank text with the
+fingerprints permuted across classes, which preserves length, vocabulary and structure while
+destroying the mapping. If it scores like A2, the shape of the prompt is doing the work; if it
+falls back to A1, the bank's content is.
+
 Four figures: the learning curve of E against F (how many labelled images is the textbook
-worth); A and B against VLM size; E against resolution and GPU minutes; the per-modality gap
-between concept-based and pixel-based accuracy. If time is short, D is dropped first.
+worth); A1, A2 and B against VLM size; E against resolution and GPU minutes; the per-modality gap
+between concept-based and pixel-based accuracy. If time is short, D is dropped first, then the
+`scrambled` control.
 
 ## 7. Stages
 
 ```
-0  SMOKE      concept-bank schema, prompt rendering, metric conventions, client retry      seconds
+0  SMOKE      concept-bank schema, prompt rendering against goldens, metric conventions,
+              client retry                                                                 seconds
 1  FETCH      MedMNIST from the pinned release, checksummed; data/raw on scratch           1 job
 2  CACHE      per dataset x size: uint8 arrays, labels, the seeded samples                 48 CPU
 3  TRAIN      per dataset x size x seed, and the learning-curve grid at one size           GPU
-4  SCORE      per dataset x VLM x chunk of ~100 images: concept scores, zero-shot          CPU,
-              distribution, description; raw responses archived                            throttled
+4  SCORE      per dataset x VLM x chunk of ~100 images: concept scores, one class          CPU,
+              distribution per zero-shot variant, description; responses archived          throttled
 5  EMBED      per dataset: embeddings of the descriptions                                  CPU
 6  CLASSIFY   per dataset x arm x n x seed: arms B, C, D; arm F training                   CPU / GPU
 7  EVALUATE   every arm on the test sample; medmnist evaluator; paired bootstrap           CPU
@@ -190,20 +212,26 @@ between concept-based and pixel-based accuracy. If time is short, D is dropped f
 
 Targets: `all` (the technical report), `smoke`, `cache`, `train`, `score`, `classify`, `evaluate`,
 `report`. Opt-in diagnostics outside `all`: `reasoning_sweep` (does a reasoning level help a
-model look at a picture, at what cost per image), `prompt_ablation` (how much of arm B is the
-bank and how much the model), `vlm_utilisation` (calls per minute per model against the caps).
+model look at a picture, at what cost per image), `blind_labels` (A2 with the class names replaced
+by neutral letters, separating what the bank's descriptions carry from what the names carry),
+`vlm_utilisation` (calls per minute per model against the caps).
 
 ## 8. The scoring stage
 
 The one stage type not seen in earlier projects, and the one that tests principle 9.
 
 - **Unit**: one dataset, one VLM, one chunk. Output `results/score/<dataset>__<model>__<split>__chunk<k>.json`:
-  per image the concept scores as integers on the bank's scales, the zero-shot distribution, the
-  description, and the raw response. The manifest adds the served model name from the response,
-  the prompt-template hash, the concept-bank file hash, temperature, reasoning level, timestamp.
-- **Prompt**: rendered from the bank by a pure function, tested in `smoke`; the image at 224
-  pixels; structured JSON requested and validated against the scales; one retry on a malformed
-  answer, then recorded as missing, never guessed.
+  per image the concept scores as integers on the bank's scales, one class distribution per enabled
+  zero-shot variant, the description, and the raw response behind each call. The manifest adds the
+  served model name from the response, the concept-bank file hash, the template hash of every
+  prompt rendered, temperature, reasoning level, timestamp.
+- **Calls per image**: one for the concept scores, one for the description, and one for each
+  variant in `vlm.zero_shot.variants`. They are separate calls, never one response carrying several
+  fields, so that no arm's answer can condition on another's and each is archived raw on its own.
+- **Prompt**: every prompt in this stage is rendered from the concept-bank file by a pure function
+  in `priors/prompts.py`, described below; nothing is written by hand per dataset. The image at 224
+  pixels; structured JSON requested and validated against the scales and the medmnist label map;
+  one retry on a malformed answer, then recorded as missing, never guessed.
 - **Throttling**: `resources: llm_<model>=1` on the rule, caps below each model's published
   concurrency in the profile, so the workflow is never the noisy neighbour while GPU training runs
   unconstrained beside it.
@@ -212,6 +240,42 @@ The one stage type not seen in earlier projects, and the one that tests principl
   in config; it is never in config, the repository, a command line or a log.
 - **Environment**: its own file, so the client never invalidates the numpy or torch tiers.
 - **Reasoning level**: a per-model config knob, `none` by default; swept only in the diagnostic.
+
+### The prompt generator
+
+`priors/prompts.py` is the only place a prompt string is built, and the mapping from a bank file to
+its text is fixed: the templates are constants in the module, the dataset's file supplies every
+varying word, and no branch of the renderer depends on which dataset it was handed. Three entry
+points, one template each.
+
+| function | used by | what varies between datasets |
+|---|---|---|
+| `render_scoring_prompt(bank)` | B, C, D, F | the concept questions and their scales |
+| `render_zero_shot_prompt(bank, variant)` | A1, A2 | the class names, and for `textbook` the rendered bank block |
+| `render_description_prompt(bank)` | D | the modality line only |
+
+`render_zero_shot_prompt` assembles one string from three parts, and the variant selects only
+whether the middle part is present:
+
+1. a task preamble naming the modality and stating that the answer is a probability over the
+   classes listed below;
+2. **the textbook block**, present for `textbook` and `scrambled`, absent for `plain`: each concept
+   as its question and ordered scale, then each class as the levels its fingerprint expects, with
+   `any` rendered as an explicit statement that the literature does not commit;
+3. the class list in medmnist label-map order, and the output schema.
+
+Everything outside part 2 is byte-identical across variants, which is what makes A1 against A2 a
+single-variable contrast rather than two prompts that happen to differ. `scrambled` renders part 2
+from the same bank with the fingerprints permuted across classes by a seeded permutation recorded
+in the manifest, so it matches `textbook` in length, vocabulary and structure and differs only in
+whether the mapping is the real one. Class order is the label map's and is fixed rather than
+shuffled, so whatever position bias a model has is at least the same bias in every variant.
+
+The renderer takes an already-parsed bank and returns a string: it opens no files, reads no config
+and consults no clock, so its output can be pinned. `smoke` renders every variant for all twelve
+datasets and diffs against committed goldens under `tests/goldens/`. A template edit is therefore a
+visible change to those goldens, and it moves the template hash, which reruns exactly the scoring
+jobs whose numbers could have changed.
 
 ## 9. Config, environments, resources
 
@@ -231,6 +295,9 @@ vlm:
   chunk: 100
   temperature: 0.0
   reasoning: none
+  zero_shot:
+    variants: [plain, textbook]   # add `scrambled` to run the prompt-length control
+    scramble_seed: 0              # permutation of fingerprints across classes, in the manifest
   base_url: https://llm.rcd.clemson.edu/v1
   key_file: ~/.config/rcd_llm/key
   embedding_model: qwen3-embedding-4b
@@ -256,9 +323,11 @@ per-model caps.
 3. Arm E on one dataset at 28; benchmark; set resources; the full resolution sweep; reconcile 28
    and 224 against the published table before anything else is trusted.
 4. The client and one scoring chunk of ten images on one dataset and model: confirm a compute node
-   reaches the service, the archive and manifest are right, a malformed response is handled. Then
-   the full fan-out under the caps.
-5. Arms A to D; evaluate; the size and modality figures.
+   reaches the service, the archive and manifest are right, a malformed response is handled, and
+   each zero-shot variant left its own archived call. Then the full fan-out under the caps.
+5. Arms A1, A2, B, C and D; evaluate; the size and modality figures. Read one rendered `textbook`
+   prompt end to end before the fan-out: that text is the arm, and a wrong one is not visible in
+   the numbers it produces.
 6. The learning curve, E then F; the crossing figure.
 7. Tables, figures, the technical report; a CHANGELOG entry per milestone; the README stage
    table with job counts.
@@ -285,7 +354,12 @@ Record each beforehand as a fallback for a slow queue or a sleeping model.
 - Learning-curve resolution: 224 matches what the VLM saw (default); 64 buys more points and seeds.
 - How the prior enters arm F: late fusion, soft label, or both (default both).
 - ChestMNIST in all arms, or A and E only (default all).
-- Total call volume, roughly 120,000 at the default samples, against the allocation.
+- Total call volume against the allocation. One call per image per model per dataset is 24,000 at
+  the default sample (500 test images x 12 datasets x 4 models), so A2 adds 24,000 to the roughly
+  120,000 of the original plan and `scrambled` another 24,000 if enabled.
+- Whether `scrambled` runs on all twelve datasets or a subset. Its job is to rule out a length
+  effect, which three datasets across three modalities may settle as well as twelve (default:
+  three, chosen before the numbers are seen).
 - Acceptable-use confirmation for de-identified public medical images; one sentence on a slide.
 
 ## 13. Layout
@@ -299,6 +373,7 @@ profiles/local/           dry runs, smoke, touch
 envs/                     priors.yml  priors_torch.yml  priors_llm.yml
 priors/                   data cache models train prompts llm score classify evaluate report stages manifest
 data/concepts/            the twelve concept-bank files, committed
+tests/goldens/            every rendered prompt, one per dataset x variant; smoke diffs against these
 data/raw -> scratch       MedMNIST files; data/cache the arrays; gitignored
 results/                  one JSON per unit of work; results/score/ is the response archive
 benchmarks/  logs/        per job
