@@ -144,8 +144,14 @@ not inspect it for you.
 ## 5. Inputs given at the outset
 
 - **The concept bank**, `data/concepts/<dataset>.yaml`, one file per dataset, committed with
-  provenance (sources, method, reviewer). Produced by the procedure in `CONCEPT_BANK.md`. A smoke
-  test validates the schema and the class names against the MedMNIST label maps.
+  provenance (sources, method, reviewer). Produced by the procedure in `CONCEPT_BANK.md`. Each
+  concept carries a `question`, an ordered `scale` of two to five levels, and an `anchors` block
+  giving every level a described visual referent with its own source keys — so the model is told
+  what `mild` looks like rather than left to invent the threshold. Each class carries a
+  `fingerprint` naming every concept with a level or `any`. A smoke test validates the schema, the
+  completeness of every `anchors` block, and the class names against the MedMNIST label maps.
+  `data/concepts/README.md` records the method, the simulated-review statement and the bank's
+  known limits, including the concepts whose anchors cannot be applied at 224 pixels.
 - **MedMNIST v2**, through the `medmnist` package at a pinned version, including the 224-pixel
   files. Twelve datasets, official train/validation/test splits, sizes 28/64/128/224. Task types:
   multi-class (pathmnist, dermamnist, octmnist, bloodmnist, tissuemnist, organa/c/smnist), binary
@@ -175,7 +181,7 @@ between concept-based and pixel-based accuracy. If time is short, D is dropped f
 ## 7. Stages
 
 ```
-0  SMOKE      concept-bank schema, prompt rendering, metric conventions, client retry      seconds
+0  SMOKE      bank schema and anchors, prompt rendering, metric conventions, client retry  seconds
 1  FETCH      MedMNIST from the pinned release, checksummed; data/raw on scratch           1 job
 2  CACHE      per dataset x size: uint8 arrays, labels, the seeded samples                 48 CPU
 3  TRAIN      per dataset x size x seed, and the learning-curve grid at one size           GPU
@@ -191,7 +197,8 @@ between concept-based and pixel-based accuracy. If time is short, D is dropped f
 Targets: `all` (the technical report), `smoke`, `cache`, `train`, `score`, `classify`, `evaluate`,
 `report`. Opt-in diagnostics outside `all`: `reasoning_sweep` (does a reasoning level help a
 model look at a picture, at what cost per image), `prompt_ablation` (how much of arm B is the
-bank and how much the model), `vlm_utilisation` (calls per minute per model against the caps).
+bank and how much the model, including anchored scale levels against bare ones),
+`vlm_utilisation` (calls per minute per model against the caps).
 
 ## 8. The scoring stage
 
@@ -203,7 +210,13 @@ The one stage type not seen in earlier projects, and the one that tests principl
   the prompt-template hash, the concept-bank file hash, temperature, reasoning level, timestamp.
 - **Prompt**: rendered from the bank by a pure function, tested in `smoke`; the image at 224
   pixels; structured JSON requested and validated against the scales; one retry on a malformed
-  answer, then recorded as missing, never guessed.
+  answer, then recorded as missing, never guessed. The renderer emits each concept's question, its
+  ordered levels, and — when `vlm.prompt.anchors` is true, the default — the anchor text for every
+  level, which is what makes an ordinal answer mean the same thing to the model as it did to the
+  source. The model still answers with the bare level token, so the parser and the archive format
+  do not change. Rendering bare from an anchored file leaves the concept-bank file hash identical
+  and moves only the prompt-template hash, so the manifest already distinguishes the two
+  renderings without a second copy of the bank.
 - **Throttling**: `resources: llm_<model>=1` on the rule, caps below each model's published
   concurrency in the profile, so the workflow is never the noisy neighbour while GPU training runs
   unconstrained beside it.
@@ -231,6 +244,7 @@ vlm:
   chunk: 100
   temperature: 0.0
   reasoning: none
+  prompt: {anchors: true}   # render each scale level with its anchor text; false = bare tokens
   base_url: https://llm.rcd.clemson.edu/v1
   key_file: ~/.config/rcd_llm/key
   embedding_model: qwen3-embedding-4b
@@ -285,6 +299,11 @@ Record each beforehand as a fallback for a slow queue or a sleeping model.
 - Learning-curve resolution: 224 matches what the VLM saw (default); 64 buys more points and seeds.
 - How the prior enters arm F: late fusion, soft label, or both (default both).
 - ChestMNIST in all arms, or A and E only (default all).
+- Whether to re-score with bare scale levels to measure what the anchors buy. Anchors change the
+  concept scores themselves, so this is a second archive for the arms that read them, not a
+  reporting choice — principle 9 says that is a deliberate act. Default: run it as a
+  `prompt_ablation` subset on two or three datasets before considering a full re-score. The bare
+  bank is committed history, so the contrast is available without re-authoring anything.
 - Total call volume, roughly 120,000 at the default samples, against the allocation.
 - Acceptable-use confirmation for de-identified public medical images; one sentence on a slide.
 
