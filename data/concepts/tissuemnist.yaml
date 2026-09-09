@@ -46,9 +46,13 @@
 # A CONCEPT WAS REMOVED UNDER BOTH RULES. An earlier draft carried
 # `nuclei_spacing_regularity` ("are the visible nuclei at even or uneven intervals"), which
 # was the only thing separating "Collecting Duct, Connecting Tubule" from the other three
-# tubular classes. It failed rule 1: judging even spacing needs at least three nuclei fully
-# in frame, and a 17.3 um crop does not hold them - this file's own `neighbouring_nuclei`
-# fingerprints expect only one or two partial neighbours. It also failed rule 2: its values
+# tubular classes. It failed rule 1: to call the intervals even or uneven you need at least
+# three nuclei whose whole extent sits inside the frame, so that the gaps between them can
+# be compared, and a 17.3 um crop two nucleus-widths across does not hold them. That is not
+# in tension with the `several` levels this file's `neighbouring_nuclei` fingerprints carry:
+# that concept asks only how many neighbours intrude at the frame edges, which partial
+# fragments answer perfectly well, while spacing regularity needs fully framed nuclei whose
+# separations can be measured against one another. It also failed rule 2: its values
 # came from reading King's H&E observation that collecting duct cell BORDERS are distinct
 # while proximal and distal tubule nuclei sit "at irregular intervals" as implying evenly
 # spaced nuclei in a DAPI projection. That translation was the assistant's, not the
@@ -223,6 +227,13 @@ provenance:
       doi: 10.3389/fimmu.2018.02867
       used_for: [outline_regularity, chromatin_texture, staining_intensity]
 concepts:
+  # ANCHORS IN THIS FILE ARE FRAME-RELATIVE ON PURPOSE. There is no scale bar, no cytoplasm
+  # and no tissue context in the image, so the only stable references available to a rater
+  # are the frame itself (17.3 um, about two nucleus-widths across) and the partial
+  # neighbouring nuclei at the edges. Every size and distance anchor below is written
+  # against one of those two. Where a boundary between adjacent levels came from reasoning
+  # rather than from a source that states it, the anchor carries a comment saying so; no
+  # numeric threshold is asserted unless a source supplies it.
   - id: nucleus_size
     question: >-
       How large is the single bright object at the centre of the image compared with the
@@ -230,6 +241,25 @@ concepts:
     scale: [small, medium, large]
     sources: [yang2023, ljosa2012, woloshuk2021, murray2023, brelje2026, pavenstadt2003,
               walavalkar2019, kirkwood2017, tigner2026, kaissling2008]
+    anchors:
+      # The one-third cut is reasoned from the crop geometry, not stated by any source.
+      small:
+        text: >-
+          occupies less than about a third of the frame width, with wide dark margins on
+          every side
+        sources: [woloshuk2021, ljosa2012, tigner2026]
+      # Frame width is a source fact (17.3 um crop); "two nucleus-widths" follows from it.
+      medium:
+        text: >-
+          spans roughly half the frame width, the crop being about two nucleus-widths
+          across
+        sources: [woloshuk2021, ljosa2012]
+      # The two-thirds cut is reasoned from the same geometry, not read from a source.
+      large:
+        text: >-
+          spans more than about two thirds of the frame width and nearly reaches opposite
+          edges
+        sources: [woloshuk2021, ljosa2012, pavenstadt2003]
   - id: nucleus_elongation
     question: >-
       Is the central bright object about as wide as it is tall, moderately longer in one
@@ -237,6 +267,22 @@ concepts:
     scale: [round, oval, elongated]
     sources: [king2022, madrazoibarra2023, brelje2026, walavalkar2019, kawasaki2021,
               flaherty1972, tigner2026, woloshuk2021]
+    anchors:
+      round:
+        text: >-
+          about as wide as it is tall; no direction is clearly the longer one
+        sources: [king2022, brelje2026, walavalkar2019]
+      # No source found gives an axis-ratio cut, so the oval/elongated boundary is
+      # described by end shape rather than by a manufactured ratio.
+      oval:
+        text: >-
+          clearly longer one way than the other, but still blunt and rounded at both ends
+        sources: [brelje2026, murray2023]
+      elongated:
+        text: >-
+          a narrow strip whose long axis runs far across the frame while staying thin
+          along its whole length
+        sources: [kawasaki2021, flaherty1972]
   - id: outline_regularity
     question: >-
       Is the outline of the central bright object smooth and unbroken, or is it notched,
@@ -244,17 +290,74 @@ concepts:
     scale: [smooth, indented, lobed]
     sources: [king2022, madrazoibarra2023, brelje2026, murray2023, kawasaki2021,
               flaherty1972, tigner2026, manley2018]
+    anchors:
+      smooth:
+        text: >-
+          the bright edge runs unbroken all the way round, with no notch cutting into it
+        sources: [brelje2026, king2022, kawasaki2021]
+      indented:
+        text: >-
+          one or two dark notches bite into the edge without dividing the object in two
+        sources: [tigner2026]
+      # The three-to-five count is Manley et al.'s. AT OR PAST THE RESOLUTION LIMIT: a
+      # nucleus spans ~14 native pixels, so the joining bridges are about one pixel wide
+      # and the projection through 3.9 um can fuse lobes that are separate in 3D. Written
+      # for a coarse "several blobs or one" judgement only.
+      lobed:
+        text: >-
+          two or more bright blobs joined by thin bridges; a neutrophil nucleus carries
+          three to five such lobes
+        sources: [manley2018, tigner2026]
   - id: chromatin_texture
     question: >-
       Inside the central bright object, is the signal even across it, or is it broken up
       into brighter and darker patches?
     scale: [uniform, mottled, coarsely_clumped]
     sources: [murray2023, tigner2026, manley2018, woloshuk2021, arman2026]
+    anchors:
+      # ALL THREE ANCHORS HERE ARE AT OR PAST THE RESOLUTION LIMIT, as the header warns:
+      # ~14 native pixels across a nucleus, maximum-intensity-projected through a 3.9 um
+      # slab that smears axial chromatin detail. They are written so that a coarse
+      # even-versus-patchy judgement can still be made, and the mottled / coarsely_clumped
+      # boundary rests on edge sharpness rather than on any measured clump size.
+      uniform:
+        text: >-
+          brightness is even across the object; no patch stands out against its
+          surroundings
+        sources: [murray2023, woloshuk2021]
+      mottled:
+        text: >-
+          faint lighter and darker patches show, but they blend into each other without
+          sharp edges
+        sources: [woloshuk2021, arman2026]
+      coarsely_clumped:
+        text: >-
+          a few distinctly bright blocks sit against clearly darker gaps, with abrupt
+          borders between them
+        sources: [tigner2026, manley2018]
   - id: staining_intensity
     question: >-
       How bright is the central object compared with the darkest background in the image?
     scale: [dim, moderate, bright]
     sources: [yang2023, murray2023, tigner2026, manley2018, woloshuk2021, arman2026]
+    anchors:
+      # No source gives DAPI intensity cut-offs for these classes; the three levels are
+      # separated by how far the object travels from background towards saturation, which
+      # is reasoned rather than read from a source.
+      dim:
+        text: >-
+          grey rather than white, only modestly above the dark background even at its
+          centre
+        sources: [yang2023, woloshuk2021]
+      moderate:
+        text: >-
+          solidly bright over most of its area, with only the middle approaching white
+        sources: [yang2023, woloshuk2021]
+      bright:
+        text: >-
+          close to white and near-saturated over most of its area, the strongest signal in
+          the frame
+        sources: [tigner2026, manley2018]
   - id: neighbouring_nuclei
     question: >-
       Apart from the central object, how many other bright objects or parts of them are
@@ -262,12 +365,42 @@ concepts:
     scale: [none, one_or_two, several]
     sources: [yang2023, ljosa2012, woloshuk2021, king2022, king2025, kirkwood2017,
               walavalkar2019, kaissling2008, murray2023]
+    anchors:
+      none:
+        text: >-
+          the central object is the only bright thing; all four frame edges stay dark
+        sources: [woloshuk2021, ljosa2012]
+      one_or_two:
+        text: >-
+          one or two further bright areas appear, typically cut off by the frame edge
+        sources: [woloshuk2021, ljosa2012, kaissling2008]
+      several:
+        text: >-
+          three or more separate bright areas, so several frame edges carry a partial
+          nucleus
+        sources: [king2025, kirkwood2017, woloshuk2021]
   - id: neighbour_variety
     question: >-
       Do the other bright objects in the image look like near-copies of one another in
       size and shape, or a mixture of clearly different sizes and shapes?
     scale: [uniform, somewhat_mixed, markedly_mixed]
     sources: [murray2023, brelje2026, madrazoibarra2023, kaissling2008, woloshuk2021]
+    anchors:
+      uniform:
+        text: >-
+          the other bright areas match one another closely in both size and shape
+        sources: [brelje2026, madrazoibarra2023]
+      # Splitting the two mixed levels on one axis of difference versus both is reasoned;
+      # no source states where "somewhat" ends and "markedly" begins.
+      somewhat_mixed:
+        text: >-
+          the other bright areas differ noticeably in size or in shape, but not in both
+        sources: [kaissling2008, murray2023]
+      markedly_mixed:
+        text: >-
+          the other bright areas differ in size and in shape at once: round, narrow and
+          broad ones together
+        sources: [murray2023, brelje2026]
   - id: size_versus_neighbours
     question: >-
       Compared with the other bright objects visible in the image, is the central one
@@ -275,6 +408,19 @@ concepts:
     scale: [smaller, similar, larger]
     sources: [murray2023, brelje2026, pavenstadt2003, madrazoibarra2023, kaissling2008,
               tigner2026]
+    anchors:
+      smaller:
+        text: >-
+          visibly narrower than the partial bright areas showing at the frame edge
+        sources: [tigner2026, kaissling2008]
+      similar:
+        text: >-
+          the same width as the partial nuclei at the frame edge, as far as one can tell
+        sources: [brelje2026, madrazoibarra2023]
+      larger:
+        text: >-
+          clearly wider than any partial nucleus visible at the frame edge
+        sources: [pavenstadt2003, murray2023]
 classes:
   # Inseparable from Distal Convoluted Tubule, Thick Ascending Limb and Proximal Tubule
   # Segments. In the cortex this epithelium is simple cuboidal like theirs, and no source

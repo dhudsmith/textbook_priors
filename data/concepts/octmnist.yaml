@@ -84,44 +84,215 @@ provenance:
       doi: 10.1016/j.ophtha.2008.12.039
       used_for: [hyperreflective_foci, shadowing_beneath_lesion]
 
+# Anchor conventions for this file. The vertical ruler is the retina's own thickness in the
+# same B-scan; the horizontal ruler is the full width of the frame (about 6 mm in the source
+# images). Both are present in every frame, and comparing heights only to heights and widths
+# only to widths keeps the anchors valid under the anisotropic vertical stretch conventionally
+# used to display OCT. Layer and band names follow the IN-OCT consensus lexicon (staurenghi2014).
 concepts:
   - id: retinal_layer_integrity
     question: "Are the banded retinal layers continuous and regularly stacked across the scan?"
     scale: [intact, mildly_disrupted, markedly_disrupted]
     sources: [staurenghi2014, keane2012, kermany2018, yang2023]
+    anchors:
+      # No source grades band loss by extent; the quarter-of-the-frame cut is reasoned, chosen
+      # so the three levels partition the scan width rather than read from the literature.
+      intact:
+        text: >-
+          every band, down to the thin bright ellipsoid-zone line, runs unbroken from one edge
+          of the frame to the other
+        sources: [staurenghi2014]
+      mildly_disrupted:
+        text: >-
+          one or two bands blur or break over less than about a quarter of the frame width,
+          and the stacking order stays readable throughout
+        sources: [staurenghi2014, keane2012]
+      markedly_disrupted:
+        text: >-
+          banding is lost over more than about a quarter of the frame width, or layers are so
+          displaced that their order cannot be traced
+        sources: [keane2012, kermany2018]
   - id: foveal_contour
     question: "Does the retinal surface at the centre form a smooth shallow depression?"
     scale: [normal_depression, flattened, elevated]
     sources: [staurenghi2014, otani1999, yang2023]
+    anchors:
+      normal_depression:
+        text: >-
+          the inner surface dips into a smooth shallow concave pit whose floor lies below the
+          inner surface on either side
+        sources: [staurenghi2014]
+      flattened:
+        text: >-
+          the central dip is shallow or gone, so the inner surface runs almost level across the
+          middle of the frame
+        sources: [otani1999, staurenghi2014]
+      elevated:
+        text: >-
+          the centre of the inner surface bulges upward and stands higher than the inner surface
+          to either side of it
+        sources: [otani1999, keane2012]
   - id: retinal_thickness
     question: "How thick is the retina between its inner surface and the bright outer band?"
     scale: [normal, mildly_increased, markedly_increased]
     sources: [staurenghi2014, otani1999, keane2012]
+    anchors:
+      # Ruler is the same scan's own edges, since a healthy macula is thinnest at its centre;
+      # the one-and-a-half-fold cut is reasoned, as neither source states a thickness boundary.
+      normal:
+        text: >-
+          the retina is at its thinnest in the centre of the frame and grows thicker towards
+          both edges
+        sources: [staurenghi2014]
+      mildly_increased:
+        text: >-
+          the central retina is as thick as, or a little thicker than, the retina at the edges
+          of the same frame
+        sources: [otani1999, staurenghi2014]
+      markedly_increased:
+        text: >-
+          the central retina is more than about half again as thick as the retina at the edges
+          of the same frame
+        sources: [otani1999, keane2012]
   - id: intraretinal_cystoid_spaces
     question: "Are there rounded dark low-reflectivity pockets inside the retinal layers?"
     scale: [absent, few_small, many_or_large]
     sources: [otani1999, spaide2020, kermany2018]
+    anchors:
+      # Counts and the third/half fractions are reasoned; otani1999 describes these spaces but
+      # sets no size or number boundary. Each level states that retinal tissue lies BELOW the
+      # pocket, which is what separates this concept from subretinal_fluid.
+      absent:
+        text: >-
+          the layers between the inner surface and the bright outer band are evenly banded,
+          with no dark rounded pocket among them
+        sources: [otani1999]
+      few_small:
+        text: >-
+          one to three dark rounded pockets, each under about a third of the retinal thickness
+          tall, with retinal tissue both above and below it
+        sources: [otani1999, spaide2020]
+      many_or_large:
+        text: >-
+          four or more such pockets, or one taller than half the retinal thickness, each still
+          roofed and floored by retinal tissue
+        sources: [otani1999, kermany2018]
   - id: subretinal_fluid
     question: "Is there a dark empty space lifting the retina off the bright band beneath it?"
     scale: [absent, small, large]
     sources: [otani1999, spaide2020, keane2012]
+    anchors:
+      # spaide2020 places this space between the photoreceptors and the bright outer band but
+      # gives no height cut; the quarter-thickness boundary is reasoned. Each level states that
+      # nothing retinal lies below the space, the counterpart to intraretinal_cystoid_spaces.
+      absent:
+        text: >-
+          the outermost retinal bands sit directly on the bright outer band, with no dark gap
+          between the two
+        sources: [spaide2020]
+      small:
+        text: >-
+          a shallow dark gap floored only by the bright outer band lifts the outermost retinal
+          bands by under about a quarter of the retinal thickness
+        sources: [spaide2020, otani1999]
+      large:
+        text: >-
+          a dome of dark space raises the whole outer retina more than a quarter of the retinal
+          thickness above the bright outer band
+        sources: [keane2012, otani1999]
   - id: rpe_line_contour
     question: "Is the bright outer band smooth, gently domed in small bumps, or focally lifted?"
     scale: [smooth, small_domed_undulations, large_irregular_elevation]
     sources: [khanifar2008, ferris2013, spaide2020, keane2012, staurenghi2014, kermany2018]
+    anchors:
+      # ferris2013 gives deposit diameters of 63 um (below which a fundus shows no more than
+      # ageing change) and 125 um; against a 6 mm-wide B-scan those are about a hundredth and a
+      # fiftieth of the frame width, the conversion assumed here. The upper cut on the middle
+      # level, a twentieth of the frame (~300 um), is REASONED: no source states an OCT width at
+      # which a domed elevation stops being a deposit, so the contour clause on the top level
+      # carries the rest of that boundary.
+      smooth:
+        text: >-
+          the bright outer band follows one even curve, and no bump on it is wider than about a
+          hundredth of the frame width (63 um)
+        sources: [ferris2013, staurenghi2014]
+      small_domed_undulations:
+        text: >-
+          one or more smooth rounded domes lift the band, each under about a twentieth of the
+          frame width, the band thin and unbroken over each
+        sources: [ferris2013, khanifar2008]
+      large_irregular_elevation:
+        text: >-
+          a single lift wider than about a twentieth of the frame width, or one whose top is
+          ragged, angular or multi-peaked rather than a smooth dome
+        sources: [spaide2020, keane2012, khanifar2008]
   - id: subretinal_hyperreflective_material
     question: "Is there bright solid-looking material between the retina and the bright outer band?"
     scale: [absent, small, extensive]
     sources: [spaide2020, keane2012, ferris2013, kermany2018]
+    anchors:
+      # spaide2020 names the material and its location but grades no extent; the third-of-
+      # thickness and twentieth-of-frame cuts are reasoned and reuse this file's two rulers.
+      absent:
+        text: >-
+          the outermost retinal bands meet the bright outer band directly, with nothing bright
+          and solid-looking interposed
+        sources: [spaide2020]
+      small:
+        text: >-
+          one bright patch lies between them, under about a third of the retinal thickness tall
+          and narrower than a twentieth of the frame width
+        sources: [spaide2020, keane2012]
+      extensive:
+        text: >-
+          bright material between them fills more than about a third of the retinal thickness,
+          or runs wider than a twentieth of the frame width
+        sources: [spaide2020, keane2012, ferris2013]
   - id: hyperreflective_foci
     question: "Are there small bright dots or specks scattered within the darker retinal layers?"
     scale: [absent, few, many]
     sources: [bolz2009, spaide2020, khanifar2008]
+    anchors:
+      # bolz2009 puts the dot diameter at 30 um or less, about the thickness of the bright outer
+      # band itself, which is the in-frame comparison used here. The count boundary of ten is
+      # REASONED; no source gives one.
+      absent:
+        text: >-
+          no discrete bright dot stands out from the darker layers lying above the bright outer
+          band
+        sources: [bolz2009]
+      few:
+        text: >-
+          up to about ten separate bright dots, each no larger than the bright outer band is
+          thick (30 um), scattered through the darker layers
+        sources: [bolz2009, khanifar2008]
+      many:
+        text: >-
+          more than about ten such dots, often gathered into clusters or strung along one layer
+        sources: [bolz2009, spaide2020]
   - id: shadowing_beneath_lesion
     question: "Do bright structures cast vertical dark columns into the tissue beneath them?"
     scale: [absent, mild, marked]
     sources: [bolz2009, khanifar2008, keane2012]
-
+    anchors:
+      # No source grades attenuation. The wording is reasoned from bolz2009, which reports that
+      # the small dots cast no shadow, and khanifar2008, which reports columns under dense
+      # elevations; the one-versus-several split is mine.
+      absent:
+        text: >-
+          tissue directly beneath every bright structure is as bright as the tissue beside it
+          at the same depth
+        sources: [bolz2009, khanifar2008]
+      mild:
+        text: >-
+          one faint dim column sits under a bright structure, no wider than that structure, and
+          the layers it crosses can still be made out
+        sources: [khanifar2008]
+      marked:
+        text: >-
+          dark columns under several bright structures blank out the layers beneath them all
+          the way to the bottom of the frame
+        sources: [khanifar2008, keane2012]
 classes:
   "choroidal neovascularization":
     fingerprint:

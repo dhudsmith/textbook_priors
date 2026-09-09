@@ -198,6 +198,25 @@ concepts:
       about one or both of its axes?
     scale: [absent, mild, marked]
     sources: [nachbar1994, abbasi2004, argenziano2003]
+    # The three levels are Nachbar 1994's asymmetry score read straight off: 0, 1 or 2 axes
+    # of asymmetry, with the two perpendicular axes placed so as to give the lowest score
+    # the lesion allows.
+    anchors:
+      absent:
+        text: >-
+          Folded across either of two perpendicular axes, the halves match in outline, in
+          colour and in internal structure.
+        sources: [nachbar1994]
+      mild:
+        text: >-
+          The halves disagree in outline, colour or structure across one of the two axes
+          but match across the other.
+        sources: [nachbar1994]
+      marked:
+        text: >-
+          The halves disagree across both perpendicular axes, in outline, in colour or in
+          how the pigment is spread.
+        sources: [nachbar1994]
 
   - id: border_irregularity
     question: >-
@@ -205,6 +224,26 @@ concepts:
       evenly fading into the surrounding skin?
     scale: [absent, mild, marked]
     sources: [nachbar1994, abbasi2004]
+    # Nachbar 1994 scores the border by dividing the lesion into eighths and counting the
+    # segments in which the pigment pattern ends in an abrupt cut-off, giving 0-8. The
+    # segment counts below are the source's; cutting that 0-8 range into three levels is
+    # ours, since the source scores it continuously and names no cut-point.
+    anchors:
+      absent:
+        text: >-
+          Pigment fades gradually into the surrounding skin the whole way round; no segment
+          of the rim ends abruptly.
+        sources: [nachbar1994]
+      mild:
+        text: >-
+          The pigment pattern is cut off abruptly, or the edge is notched, in up to about
+          three of the eight perimeter segments.
+        sources: [nachbar1994]
+      marked:
+        text: >-
+          An abrupt cut-off or a notched edge over four or more of the eight segments, that
+          is half the rim or more.
+        sources: [nachbar1994]
 
   - id: colour_count
     question: >-
@@ -212,6 +251,22 @@ concepts:
       dark brown, black, red, white and blue-grey?
     scale: [one, two, three_or_more]
     sources: [nachbar1994, abbasi2004, kittler2016, zaballos2008]
+    anchors:
+      one:
+        text: >-
+          A single one of the six hues covers the lesion; lighter and darker shading of that
+          same hue is not a second colour.
+        sources: [nachbar1994]
+      two:
+        text: >-
+          Two of the six each hold their own area, told apart where they meet rather than
+          blending as one gradient.
+        sources: [nachbar1994, kittler2016]
+      three_or_more:
+        text: >-
+          Three or more of the six each hold an area; white counts only where it is paler
+          than the skin around the lesion.
+        sources: [nachbar1994]
 
   - id: pigment_network
     question: >-
@@ -220,6 +275,31 @@ concepts:
     scale: [absent, regular, irregular]
     sources: [argenziano1998, argenziano2003, kittler2016, menzies2000, braun2002,
               zaballos2008, zalaudek2012, elgart2001, sahin2004, altamura2010]
+    # These anchors deliberately do NOT try to separate a true network from a pseudonetwork
+    # or a network-like structure. Braun 2002 found network and network-like structures in
+    # 94/203 (46%) of pigmented seborrhoeic keratoses and concluded that telling the two
+    # apart is essential and difficult at full dermoscopic resolution; at 224 px, with
+    # follicular openings and keratin plugs at or below the limit of what resolves, it is
+    # not decidable here, and an anchor claiming otherwise would manufacture precision. Any
+    # visible grid therefore reads as present and the regular/irregular split carries the
+    # signal. This is the same reading the `bkl` class comment below records, and the reason
+    # that class stays `any` on this concept.
+    anchors:
+      absent:
+        text: >-
+          No grid of lines over a lighter background anywhere; pigment is structureless,
+          blotchy, or made of separate globules.
+        sources: [kittler2016, argenziano2003]
+      regular:
+        text: >-
+          Lines of even thickness and colour enclosing holes of near-uniform size and
+          spacing, thinning gradually towards the rim.
+        sources: [argenziano1998, argenziano2003]
+      irregular:
+        text: >-
+          Lines thickened, darkened and broken, holes varying widely in size and shape, the
+          grid ending abruptly at the edge.
+        sources: [argenziano1998, argenziano2003]
 
   - id: blue_white_structures
     question: >-
@@ -228,6 +308,17 @@ concepts:
     scale: [absent, present]
     sources: [argenziano1998, argenziano2003, kittler2016, menzies2000, bugatti2007,
               zaballos2007b, altamura2010]
+    anchors:
+      absent:
+        text: >-
+          No blue, blue-grey or blue-white tone anywhere; the colours present are browns,
+          tan, red or white only.
+        sources: [argenziano2003, kittler2016]
+      present:
+        text: >-
+          A confluent blue-grey veil, rounded blue-grey nests larger than globules, or a
+          cluster of fine grey dots.
+        sources: [argenziano1998, menzies2000, kittler2016]
 
   - id: arborizing_vessels
     question: >-
@@ -235,6 +326,17 @@ concepts:
       thinner branches visible over the lesion?
     scale: [absent, present]
     sources: [menzies2000, kittler2016, braun2002, altamura2010]
+    anchors:
+      absent:
+        text: >-
+          No branching red vessel stands out in sharp focus; any redness is diffuse or too
+          fine to follow as a line.
+        sources: [menzies2000, kittler2016]
+      present:
+        text: >-
+          At least one thick, sharply focused red vessel dividing two or more times into
+          progressively finer branches.
+        sources: [menzies2000, altamura2010]
 
   - id: leaf_like_or_spoke_wheel_areas
     question: >-
@@ -242,6 +344,17 @@ concepts:
       darker hub, present towards the edge of the lesion?
     scale: [absent, present]
     sources: [menzies2000, kittler2016, altamura2010]
+    anchors:
+      absent:
+        text: >-
+          The periphery carries no discrete bulbous brown-grey lobules and no radial spokes
+          converging on a darker hub.
+        sources: [menzies2000, kittler2016]
+      present:
+        text: >-
+          Discrete bulbous brown-grey extensions at the rim, or radial projections meeting
+          at a darker central hub.
+        sources: [menzies2000, altamura2010]
 
   - id: milia_like_cysts_and_comedo_openings
     question: >-
@@ -249,6 +362,26 @@ concepts:
       openings, scattered over the lesion surface?
     scale: [absent, few, many]
     sources: [braun2002, argenziano2003, kittler2016, elgart2001, sahin2004, zaballos2007b]
+    # Braun 2002 gives frequencies (milia-like cysts 135/203, comedo-like openings 144/203
+    # of pigmented seborrhoeic keratoses) but no count separating a few from many. The
+    # boundary at about three is ours, set so that `many` matches the multiple-cyst
+    # "starry sky" appearance the source describes and `few` covers the isolated finding.
+    anchors:
+      absent:
+        text: >-
+          The surface carries no round whitish-yellow spots and no dark round plugged
+          openings.
+        sources: [braun2002, kittler2016]
+      few:
+        text: >-
+          One to about three such spots or plugs, isolated against an otherwise plain
+          lesion surface.
+        sources: [braun2002]
+      many:
+        text: >-
+          More than about three scattered over the lesion, the whitish spots giving a
+          starry-sky look.
+        sources: [braun2002, elgart2001]
 
   - id: surface_keratin_or_scale
     question: >-
@@ -257,6 +390,26 @@ concepts:
     scale: [absent, mild, marked]
     sources: [braun2002, zalaudek2012, kittler2016, argenziano2003, zaballos2007a,
               elgart2001, sahin2004, zaballos2007b]
+    # The structures named are the sources' (Braun 2002's fissures, ridges and cerebriform
+    # surface; Zalaudek 2012's white-to-yellow and opaque yellow scale), but no source gives
+    # an extent threshold, so the part-of-the-surface versus most-of-the-surface boundary
+    # separating `mild` from `marked` is ours.
+    anchors:
+      absent:
+        text: >-
+          The surface looks smooth and glossy: no white-yellow scale, no fissures, no ridged
+          brain-like texture.
+        sources: [braun2002, kittler2016]
+      mild:
+        text: >-
+          Fine white scale in patches, or a few shallow fissures between ridges, over part
+          of the surface only.
+        sources: [braun2002, elgart2001]
+      marked:
+        text: >-
+          Opaque yellow-white scale, or deep fissures and ridges, over most of the surface,
+          hiding the colour beneath.
+        sources: [zalaudek2012, braun2002]
 
   - id: red_lacunae
     question: >-
@@ -264,6 +417,17 @@ concepts:
       colour present within the lesion?
     scale: [absent, present]
     sources: [zaballos2007a, kittler2016]
+    anchors:
+      absent:
+        text: >-
+          No sharply outlined round or oval lagoons; any red present is diffuse and has no
+          defined edge.
+        sources: [zaballos2007a, kittler2016]
+      present:
+        text: >-
+          One or more round-to-oval areas with a sharp border, red or purple, or blue to
+          near-black where thrombosed.
+        sources: [zaballos2007a]
 
   - id: central_white_patch
     question: >-
@@ -271,6 +435,17 @@ concepts:
       pigmentation confined to a ring around it?
     scale: [absent, present]
     sources: [zaballos2008, kittler2016, bugatti2007]
+    anchors:
+      absent:
+        text: >-
+          No structureless pale zone at the middle; colour or pigment runs across the centre
+          of the lesion.
+        sources: [zaballos2008]
+      present:
+        text: >-
+          A structureless white scar-like zone at the centre, with the pigment confined to a
+          ring outside it.
+        sources: [zaballos2008, kittler2016]
 
   - id: background_erythema
     question: >-
@@ -278,6 +453,25 @@ concepts:
       the colour of surrounding skin?
     scale: [absent, mild, marked]
     sources: [zalaudek2012, zaballos2007a, bugatti2007]
+    # Zalaudek 2012, Zaballos 2007a (erythema in 69% of angiokeratomas) and Bugatti 2007
+    # record erythema as present or absent without an extent threshold, so the part-versus-
+    # most boundary separating `mild` from `marked` is ours.
+    anchors:
+      absent:
+        text: >-
+          The ground is brown, tan or the same colour as the skin around it, with no pink
+          cast.
+        sources: [zalaudek2012]
+      mild:
+        text: >-
+          A pink cast over part of the ground, the remainder still brown, tan or the colour
+          of the skin around it.
+        sources: [zalaudek2012, bugatti2007]
+      marked:
+        text: >-
+          A red-to-pink ground over most of the lesion, clearly redder than the skin around
+          it.
+        sources: [zalaudek2012, zaballos2007a]
 
 classes:
   # akiec. Tschandl 2018 defines this class as actinic keratosis plus intraepidermal

@@ -43,6 +43,16 @@ concepts:
     question: "Are the borders irregular, notched or blurred rather than smooth and sharp?"
     scale: [absent, mild, marked]
     sources: [abbasi2004]
+    anchors:                               # optional; if present, one entry per scale level
+      absent:
+        text: "the edge is smooth and sharp the whole way round"
+        sources: [abbasi2004]
+      mild:
+        text: "an abrupt cut-off in up to about three of the eight perimeter segments"
+        sources: [abbasi2004]
+      marked:
+        text: "an abrupt cut-off in four or more of the eight segments, half the rim or more"
+        sources: [abbasi2004]
 classes:
   melanoma:
     fingerprint: {asymmetry: marked, border_irregularity: marked, colour_variegation: marked}
@@ -57,6 +67,10 @@ Rules the smoke test enforces:
 - `dataset`, `task` and every class name match the `medmnist` package's label map exactly.
 - Every concept has an `id` (lowercase, underscores), a `question` answerable from the image
   alone, an ordered `scale` of two to five levels, and at least one source key.
+- If a concept carries an `anchors` block it is complete: exactly one entry per scale level, no
+  level missing and none named that is not in the scale. Each anchor has a `text` describing what
+  that level looks like and at least one source key. No two anchors in a concept share the same
+  text, and none merely restates its own level token.
 - Every class has a fingerprint that names every concept with a level from that concept's scale,
   or `any` where the literature does not commit.
 - Every source key referenced exists in `provenance.sources` with a citation and a DOI or URL.
@@ -66,6 +80,13 @@ Rules the review enforces (not machine-checkable):
 
 - Concepts describe **what is visible**, not the diagnosis. "Central bright region with dark
   border" is a concept; "looks malignant" is not.
+- Anchors say what each level *looks like*, so the model is not left to invent the threshold.
+  Adjacent anchors must be separable: if `mild` and `marked` could describe the same image, they
+  are not doing their work. Prefer a comparison to something else in the frame over an absolute
+  measure, since the image carries no scale bar, and put the source's own numeric threshold in
+  the anchor wherever one exists. Where the literature sets no boundary, describe the appearance
+  in the source's qualitative terms and record that the boundary was reasoned rather than read —
+  do not manufacture precision.
 - Concepts are chosen for what the VLM will actually see: 224-pixel images, sometimes greyscale,
   without clinical context. A feature that needs magnification or a second view does not belong.
 - Six to twelve concepts per dataset. Fewer than six cannot separate the classes; more than

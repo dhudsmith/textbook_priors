@@ -39,14 +39,15 @@ provenance:
         peripheral blood cell images for development of automatic recognition systems.
         Data in Brief 2020;30:105474.
       doi: 10.1016/j.dib.2020.105474
-      used_for: [nucleus_present, cell_size, granule_abundance, granule_colour]
+      used_for: [nucleus_present, granule_colour]
     - key: acevedo2019
       citation: >-
         Acevedo A, Alferez S, Merino A, Puigvi L, Rodellar J. Recognition of peripheral blood cell
         images using convolutional neural networks. Computer Methods and Programs in Biomedicine
         2019;180:105020.
       doi: 10.1016/j.cmpb.2019.105020
-      used_for: [granule_abundance, chromatin_density]
+      # cited at class level only (the immature-granulocyte class); no concept lists it
+      used_for: []
     - key: yang2023
       citation: >-
         Yang J, Shi R, Wei D, Liu Z, Zhao L, Ke B, Pfister H, Ni B. MedMNIST v2 - A large-scale
@@ -61,8 +62,7 @@ provenance:
         blood cell morphological features. International Journal of Laboratory Hematology
         2015;37:287-303.
       doi: 10.1111/ijlh.12327
-      used_for:
-        [cell_size, nuclear_lobation, granule_abundance, granule_colour, chromatin_density]
+      used_for: [cell_size, nuclear_lobation, granule_abundance, granule_colour]
     - key: rodellar2018
       citation: >-
         Rodellar J, Alferez S, Acevedo A, Molina A, Merino A. Image processing and machine learning
@@ -111,13 +111,24 @@ provenance:
       citation: >-
         Migliaccio AR. Erythroblast enucleation. Haematologica 2010;95(12):1985-1988.
       doi: 10.3324/haematol.2010.033225
-      used_for: [chromatin_density, cell_size, cytoplasm_basophilia]
+      used_for: [chromatin_density, cell_size]
 concepts:
   - id: nucleus_present
     question: "Does the cell in the centre of the image contain a nucleus, that is a distinct
       darker internal body, or is the whole cell body uniform with no nucleus at all?"
     scale: [absent, present]
     sources: [tigner2026, williams2022, constantino2000, acevedo2020, yang2023]
+    anchors:
+      absent:
+        text: >-
+          the cell body is one even mass throughout, with no darker internal patch standing
+          out from the rest
+        sources: [williams2022, tigner2026]
+      present:
+        text: >-
+          a distinctly darker, sharply bounded internal body sits inside the cell and
+          contrasts with the paler cytoplasm
+        sources: [tigner2026, constantino2000]
   - id: cell_size
     question: "How large is the central cell compared with the surrounding red blood cells:
       clearly smaller than one red cell, about the same size, or clearly larger?"
@@ -125,12 +136,56 @@ concepts:
     sources:
       [tigner2026, espinoza2023, williams2022, chapman2023, migliaccio2010, palmer2015,
        rodellar2018, yang2023]
+    anchors:
+      # REASONED BOUNDARY: the sources give diameters in um, not ratios to a red cell. The
+      # quarter-of-a-red-cell and one-fifth figures below convert williams2022's 2 um and
+      # palmer2015's 10-14 um against a normal red cell diameter, because the image carries no
+      # scale bar and red cells are the only reliable ruler in the frame.
+      much_smaller:
+        text: >-
+          the cell spans about a quarter of a neighbouring red cell, near 2 um across
+        sources: [williams2022, palmer2015]
+      similar:
+        text: >-
+          the cell matches a nearby red cell in width to within about a fifth of that width
+        sources: [tigner2026, palmer2015]
+      larger:
+        text: >-
+          the cell is plainly wider than every red cell around it, up to about twice a red
+          cell across
+        sources: [espinoza2023, tigner2026, palmer2015]
   - id: nuclear_lobation
     question: "What is the shape of the nucleus: no nucleus at all, a single round or oval mass,
       a single indented, kidney-shaped or band-like mass, two lobes joined by a strand, or three
       or more lobes joined by thin strands?"
     scale: [none, round, indented, bilobed, multilobed]
     sources: [tigner2026, espinoza2023, palmer2015, rodellar2018]
+    anchors:
+      none:
+        text: >-
+          the cell carries no internal outline at all, so neither a lobe nor an indentation
+          can be sought
+        sources: [williams2022]
+      round:
+        text: >-
+          a single unbroken circular or oval mass with a smooth convex edge and no notch in it
+        sources: [tigner2026, rodellar2018]
+      # REASONED BOUNDARY: the sources name the kidney shape but set no depth for the notch;
+      # half way across separates this level from a true two-lobed nucleus.
+      indented:
+        text: >-
+          one mass whose edge is notched, kidney- or band-shaped, the notch cutting less than
+          half way across
+        sources: [espinoza2023, palmer2015]
+      bilobed:
+        text: >-
+          two rounded segments of similar size joined by a single narrow thread of chromatin
+        sources: [palmer2015, tigner2026]
+      multilobed:
+        text: >-
+          three to five rounded segments strung in a chain, each joined to the next by a thin
+          thread
+        sources: [palmer2015]
   - id: chromatin_density
     question: "How dense is the nuclear material: open and finely textured with pale areas,
       moderately clumped, densely clumped but with a visible coarse pattern of light and dark,
@@ -138,32 +193,143 @@ concepts:
     scale: [open_fine, moderately_clumped, dense_clumped, pyknotic_structureless]
     sources:
       [tigner2026, espinoza2023, chapman2023, migliaccio2010, constantino2000, rodellar2018]
+    anchors:
+      open_fine:
+        text: >-
+          the nuclear interior is mostly pale with an even fine stipple and no dark clump
+          larger than a dot
+        sources: [chapman2023, rodellar2018]
+      # REASONED BOUNDARY: no source fixes a proportion here; the share of nuclear area that is
+      # dark is the only thing that separates this level from the one below it at 224 pixels.
+      moderately_clumped:
+        text: >-
+          dark clumps cover under about half the nuclear area and the pale gaps between them
+          stay plainly visible
+        sources: [espinoza2023, rodellar2018]
+      dense_clumped:
+        text: >-
+          coarse violet clumps cover most of the nucleus, leaving only thin pale seams between
+          them
+        sources: [palmer2015, tigner2026]
+      pyknotic_structureless:
+        text: >-
+          the nucleus reads as one uniformly dark blot in which no lighter area or pattern can
+          be made out
+        sources: [migliaccio2010, chapman2023]
   - id: nucleus_to_cytoplasm_ratio
     question: "About what fraction of the cell area is nucleus: less than a third (low), between
       a third and two thirds (moderate), or more than two thirds (high)?"
     scale: [low, moderate, high]
     sources: [tigner2026, espinoza2023, constantino2000, rodellar2018]
+    anchors:
+      low:
+        text: >-
+          cytoplasm forms a broad rim and the nucleus covers less than a third of the cell area
+        sources: [espinoza2023, rodellar2018]
+      moderate:
+        text: >-
+          the nucleus covers between a third and two thirds of the cell, with a clear rim of
+          cytoplasm all round
+        sources: [tigner2026, rodellar2018]
+      high:
+        text: >-
+          the nucleus fills more than two thirds of the cell and cytoplasm survives only as a
+          thin crescent
+        sources: [tigner2026, constantino2000]
   - id: cytoplasm_basophilia
     question: "What colour is the cytoplasm around the nucleus: pink or almost colourless, pale
       grey-blue, plainly blue, or deep intense blue?"
     scale: [pink_or_colourless, pale_grey_blue, blue, deep_blue]
     sources: [tigner2026, espinoza2023, chapman2023, williams2022, rodellar2018]
+    anchors:
+      pink_or_colourless:
+        text: >-
+          the cytoplasm is pink or almost clear, no bluer than the red cells lying around
+          the cell
+        sources: [palmer2015, tigner2026]
+      pale_grey_blue:
+        text: >-
+          a faint grey-blue wash, bluer than the red cells but much paler than the nucleus
+        sources: [espinoza2023, tigner2026]
+      blue:
+        text: >-
+          an even mid-blue read at a glance, clearly stronger than a grey wash but lighter
+          than the nucleus
+        sources: [williams2022, rodellar2018]
+      deep_blue:
+        text: >-
+          an intense navy blue nearly as dark as the nucleus, the strongest blue anywhere in
+          the frame
+        sources: [chapman2023, rodellar2018]
   - id: granule_abundance
     question: "How prominent are granules, that is small discrete dots, in the cytoplasm: none
       visible, fine and sparse or dust-like, or coarse and abundant so that they fill the
       cytoplasm?"
     scale: [absent, fine_sparse, coarse_abundant]
     sources: [tigner2026, espinoza2023, williams2022, palmer2015, rodellar2018]
+    anchors:
+      absent:
+        text: >-
+          the cytoplasm is smooth and even, showing no discrete dots against its own colour
+        sources: [tigner2026, rodellar2018]
+      # The fine/coarse boundary is resolvability, not an absolute size: tigner2026 states that
+      # the small specific granules of the mature granulocyte cannot be distinguished under
+      # light microscopy, while palmer2015 calls the orange granules larger and countable.
+      fine_sparse:
+        text: >-
+          dots are dust-like and not separately countable, so the cytoplasm looks faintly
+          textured rather than dotted
+        sources: [tigner2026, palmer2015]
+      coarse_abundant:
+        text: >-
+          dots are separately countable at the cell edge and pack the cytoplasm so that little
+          clear ground shows
+        sources: [palmer2015, tigner2026]
   - id: granule_colour
     question: "If granules are visible, what colour are they, from palest to darkest: none
       visible, pale lilac or neutral, orange-red, or dark purple to black?"
     scale: [none_visible, pale_neutral, orange_red, dark_purple]
     sources: [tigner2026, palmer2015, rodellar2018, acevedo2020]
+    anchors:
+      none_visible:
+        text: >-
+          no dots of any colour stand out from the even tint of the cytoplasm
+        sources: [tigner2026, rodellar2018]
+      pale_neutral:
+        text: >-
+          dots are pale lilac or grey, barely different in hue from the cytoplasm carrying them
+        sources: [palmer2015, tigner2026]
+      orange_red:
+        text: >-
+          dots are plainly orange to red, warmer than the cytoplasm and than the violet of
+          the nucleus
+        sources: [palmer2015, tigner2026]
+      dark_purple:
+        text: >-
+          dots are dark purple to nearly black, darker than the nucleus they frequently lie
+          across
+        sources: [palmer2015, tigner2026]
   - id: granules_obscure_nucleus
     question: "Do the cytoplasmic granules lie over the nucleus and hide it: not at all, partly,
       or so completely that the nuclear outline cannot be traced?"
     scale: [absent, partial, marked]
     sources: [tigner2026]
+    anchors:
+      absent:
+        text: >-
+          every part of the nuclear outline can be followed; the dots lie beside the nucleus,
+          not across it
+        sources: [tigner2026]
+      partial:
+        text: >-
+          dots cross the nucleus and blur one stretch of its edge, while the remainder stays
+          traceable
+        sources: [tigner2026, palmer2015]
+      marked:
+        text: >-
+          dots cover the nucleus so densely that no stretch of its outline can be followed
+          at all
+        sources: [palmer2015, tigner2026]
 classes:
   # Segmented neutrophil: 12-15 um, 3-5 nuclear lobes joined by thin strands, condensed
   # chromatin, pale pink cytoplasm whose specific granules are barely resolvable.

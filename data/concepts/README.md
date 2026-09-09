@@ -127,14 +127,14 @@ own file too.
   that concept alone. `chestmnist`'s 1 cm nodule is about 6 pixels. Both are kept, because they
   are what the scales are built on, but neither should be believed without this caveat.
 
-- **One open verification item.** MedMNIST crops organ bounding boxes and resizes them to a
-  square with no stated aspect-ratio handling. If that resize is anisotropic it stretches
-  elongated organs toward filling the frame, and `elongation` and `relative_size` in the three
-  `organ*mnist` files become unreliable. This is not answerable from the literature and was not
-  guessed at: each file carries a DO NOT TRUST YET block naming the affected values, to be
-  checked against the fetched arrays at stage 2 (CACHE). A second consequence rides on it — with
-  the spleen attenuation corrected for portal-venous phase, liver and spleen separate in
-  sagittal on `relative_size` alone, so if that concept is dropped they become inseparable too.
+- **The organ resize is a standing caveat, not a gate.** MedMNIST crops organ bounding boxes and
+  resizes them to a square with no stated aspect-ratio handling. If that resize is anisotropic it
+  stretches elongated organs toward filling the frame. Each of the three `organ*mnist` files
+  carries a KNOWN LIMITATION block naming the affected concepts and classes. `relative_size`
+  survives it, because its anchors count crop-edge landmarks rather than measure axes;
+  `elongation` does not, and is the weakest concept of the twelve. Related: with the spleen
+  attenuation corrected for portal-venous phase, liver and spleen separate in sagittal on
+  `relative_size` alone.
 
 - **Lumped classes** force honest `any` where the sources disagree across the entities a single
   label pools: `dermamnist`'s `benign keratosis-like lesions` (seborrhoeic keratosis, solar
@@ -151,6 +151,72 @@ own file too.
   `bloodmnist` immature-granulocyte values; it has no resolvable DOI and the publisher returns
   403, so those values rest on an explicitly-labelled ordinal floor instead. Anyone with library
   access can close this.
+
+## Anchored scale levels
+
+Every concept carries an `anchors` block: one entry per scale level, saying what that level looks
+like, with its own source keys.
+
+```yaml
+  - id: asymmetry
+    scale: [absent, mild, marked]
+    anchors:
+      mild:
+        text: "the two halves differ in outline or pigment across one axis only"
+        sources: [nachbar1994]
+```
+
+Without them the renderer sends the model a question and three bare tokens, and the model invents
+the threshold `mild` means — which is not the threshold the source intended. This is the
+unanchored-rubric problem: raters agree poorly on bare ordinal labels and much better once each
+level carries a described referent. The bank was inconsistent about it before this pass: 40 of
+123 questions already embedded an anchor informally, and which ones did depended on who wrote the
+file, so a cross-modality comparison partly measured prompt-authoring style.
+
+The change is **additive**. `scale` remains an ordered list of strings — the ordinal index
+mapping, the `retinamnist` monotonicity check and every existing reader are untouched — and
+`anchors` sits beside it. No scale, question or fingerprint changed when anchors were added; that
+was verified by parsing the before and after of every file, not by reading the diff.
+
+Anchors are the level's provenance, not decoration. `marked` on its own is unsourced in any
+useful sense; an anchor is a paraphrase of a diagnostic criterion with a citation attached, which
+is what the bank claims to be. Where a source states a threshold it is used literally — the ABCD
+rule's axes of asymmetry and eighths of the perimeter, Fleischner's 3 cm nodule and its
+vessel-visibility test for consolidation against ground glass, the ICDR 4-2-1 quadrant counts,
+Fleming's 50% gland-formation split, Beckman's drusen sizes. Where the literature sets no
+boundary, the anchor describes the appearance in the source's own qualitative terms and carries a
+comment recording that the boundary was reasoned rather than read. Roughly a third of the 381
+anchors rest on a real threshold; the rest are qualitative, and the files say which are which.
+
+Two conventions worth knowing, because they prevent systematic error. Anchors compare to
+something else in the frame rather than to an absolute size, since the images carry no scale bar
+— red cells in `bloodmnist`, the optic disc in `retinamnist`, muscle at the crop edge in the
+organ files, the hemithorax in `chestmnist`. And in `octmnist`, heights are compared to heights
+and widths to widths, because OCT B-scans are displayed with roughly threefold vertical stretch
+and a height-to-width comparison would be wrong by that factor.
+
+A class description, if one is ever wanted in prose, should be composed from the anchors at
+render time rather than authored separately. A hand-written paragraph per class is where the
+diagnosis smuggles itself back in, and it would create a second representation of the same
+knowledge that can drift from the fingerprints.
+
+### Anchors that cannot be applied at this resolution
+
+Written anyway, because the scales are built on them, but recorded here because a score against
+them is closer to noise than to a reading:
+
+- `retinamnist`: the `microaneurysms_dot_haemorrhages` few-versus-moderate boundary, and
+  `irma: mild` at all — mild IRMA is *defined* as indistinguishable from a normal small branch,
+  which no anchor wording can recover at roughly 50 um per pixel.
+- `tissuemnist`: all three `chromatin_texture` levels and `outline_regularity: lobed`. A nucleus
+  spans about 14 native pixels and the projection through a 3.9 um slab can fuse lobes that are
+  separate in 3D.
+- `octmnist`: the `rpe_line_contour` boundary between a drusenoid elevation and a fibrovascular
+  one rests on reasoning about when a dome becomes a detachment, not a published threshold.
+- `organ*mnist`: `elongation` cannot be made robust to an anisotropic resize, because such a
+  resize drives the axis ratio toward 1 by construction and that ratio is what the concept
+  measures. `relative_size` *is* robust, because its anchors count landmarks caught at the crop
+  edge and a count survives any resize.
 
 ## Schema
 

@@ -70,7 +70,7 @@ provenance:
         X-ray database and benchmarks on weakly-supervised classification and localization of
         common thorax diseases. Proc IEEE Conf Comput Vis Pattern Recognit (CVPR) 2017:3462-71.
       doi: 10.1109/CVPR.2017.369
-      used_for: [hazy_opacity, airspace_opacity, interstitial_markings]
+      used_for: [hazy_opacity, airspace_opacity]
     - key: hansell2008
       citation: >-
         Hansell DM, Bankier AA, MacMahon H, McLoud TC, Muller NL, Remy J. Fleischner Society:
@@ -124,7 +124,7 @@ provenance:
         Vock P, Wicky S. Clinical and radiologic features of pulmonary edema. RadioGraphics
         1999;19(6):1507-31.
       doi: 10.1148/radiographics.19.6.g99no211507
-      used_for: [interstitial_markings, hazy_opacity, airspace_opacity, cardiac_silhouette_width]
+      used_for: [interstitial_markings, cardiac_silhouette_width]
     - key: woodring1996
       citation: >-
         Woodring JH, Reed JC. Radiographic manifestations of lobar atelectasis. J Thorac Imaging
@@ -133,8 +133,6 @@ provenance:
       used_for:
         - lung_inflation
         - mediastinal_shift_direction
-        - airspace_opacity
-        - costophrenic_angle_blunting
     - key: thurlbeck1978
       citation: >-
         Thurlbeck WM, Simon G. Radiographic appearance of the chest in emphysema. AJR Am J
@@ -155,6 +153,23 @@ concepts:
       vessels running through that region can no longer be traced?
     scale: [absent, patchy, confluent]
     sources: [hansell2008, bankier2024, wang2017]
+    anchors:
+      absent:
+        text: >-
+          vessels can be followed from the hilum out to the periphery against dark lung, with
+          no region of uniform added whiteness
+        sources: [hansell2008, bankier2024]
+      # boundary reasoned: the glossary defines the sign, not how much lung it must cover
+      patchy:
+        text: >-
+          one or more ill-defined white areas, each under about a quarter of a lung, obscuring
+          the margins of the vessels inside them
+        sources: [hansell2008, wang2017]
+      confluent:
+        text: >-
+          one uniform white region obscuring vessel and airway margins across most of a lobe or
+          a whole half of the chest
+        sources: [hansell2008, bankier2024]
 
   - id: hazy_opacity
     question: >-
@@ -162,6 +177,23 @@ concepts:
       and airway margins can still be seen?
     scale: [absent, mild, marked]
     sources: [hansell2008, bankier2024, wang2017]
+    anchors:
+      absent:
+        text: >-
+          the lung is uniformly dark between the vessels, with no veil of added grey over any
+          zone
+        sources: [hansell2008, bankier2024]
+      # boundary reasoned: the glossary grades this sign by density, not by how far it spreads
+      mild:
+        text: >-
+          a faint veil of grey over part of one lung through which vessel margins stay
+          traceable, only less sharp
+        sources: [hansell2008, bankier2024]
+      marked:
+        text: >-
+          a dense veil over most of both lungs, vessels only just discernible through it but
+          still not wholly obscured
+        sources: [hansell2008, wang2017]
 
   - id: interstitial_markings
     question: >-
@@ -169,6 +201,22 @@ concepts:
       normal smoothly branching vessels?
     scale: [normal, increased, coarse_reticular]
     sources: [hansell2008, bankier2024, gluecker1999]
+    anchors:
+      normal:
+        text: >-
+          only smoothly branching vessels that taper outwards and fade before reaching the
+          chest wall
+        sources: [hansell2008, bankier2024]
+      increased:
+        text: >-
+          thin lines persist out to the chest wall, including short horizontal lines at the
+          bases meeting the ribs at right angles
+        sources: [gluecker1999, hansell2008]
+      coarse_reticular:
+        text: >-
+          innumerable small linear opacities cross one another into a visible net, coarser and
+          more angular than any vessel
+        sources: [hansell2008, bankier2024]
 
   - id: opacity_basal_predominance
     question: >-
@@ -176,6 +224,23 @@ concepts:
       zones near the diaphragm rather than spread evenly or set in the upper zones?
     scale: [absent, mild, marked]
     sources: [hansell2008, bankier2024, hassan2024]
+    anchors:
+      absent:
+        text: >-
+          any added whiteness is spread evenly between upper and lower zones, or sits mainly
+          above the hila
+        sources: [hansell2008, hassan2024]
+      # boundary reasoned: the sources describe a basal gradient qualitatively, with no cutoff
+      mild:
+        text: >-
+          the lower zones are visibly whiter than the upper zones, but the same change still
+          reaches above the hila
+        sources: [hassan2024, bankier2024]
+      marked:
+        text: >-
+          the whiteness is confined below the hila and the upper zones are as dark as normal
+          lung
+        sources: [hassan2024, hansell2008]
 
   - id: costophrenic_angle_blunting
     question: >-
@@ -183,6 +248,22 @@ concepts:
       an upward-curving upper edge against the chest wall?
     scale: [absent, mild, marked]
     sources: [hassan2024, hansell2008]
+    anchors:
+      absent:
+        text: >-
+          on both sides the diaphragm meets the chest wall in a sharp acute point
+        sources: [hansell2008, hassan2024]
+      # boundary reasoned: the sources describe blunting qualitatively, with no volume cutoff
+      mild:
+        text: >-
+          the angle is rounded off and filled in, but the whole curve of the diaphragm dome is
+          still visible
+        sources: [hassan2024]
+      marked:
+        text: >-
+          whiteness fills the angle and climbs the chest wall with a concave upper edge, hiding
+          part of the dome
+        sources: [hassan2024, hansell2008]
 
   - id: peripheral_pleural_density
     question: >-
@@ -190,6 +271,23 @@ concepts:
       capping a lung apex, following the surface of the lung rather than a vessel?
     scale: [absent, mild, marked]
     sources: [hassan2024, hansell2008, bankier2024]
+    anchors:
+      absent:
+        text: >-
+          lung markings reach the ribs, with only rib shadows along the inner chest wall and no
+          band of soft-tissue grey
+        sources: [hansell2008, hassan2024]
+      # boundary reasoned: rib width is used as the in-frame yardstick; the sources give none
+      mild:
+        text: >-
+          a thin grey band, or a cap over one lung apex, follows the chest wall and is narrower
+          than one rib
+        sources: [hassan2024, bankier2024]
+      marked:
+        text: >-
+          a rind of soft-tissue whiteness wider than a rib follows the chest wall over several
+          rib spaces
+        sources: [hassan2024, hansell2008]
 
   - id: cardiac_silhouette_width
     question: >-
@@ -197,6 +295,22 @@ concepts:
       ratio of about one half being the usual upper limit?
     scale: [narrow, normal, wide]
     sources: [truszkiewicz2021, thurlbeck1978, gluecker1999]
+    anchors:
+      # boundary reasoned: the sources give the 0.5 upper limit but no lower cutoff
+      narrow:
+        text: >-
+          the heart shadow spans under about a third of the widest inner chest diameter and
+          looks tall and vertical
+        sources: [thurlbeck1978]
+      normal:
+        text: >-
+          the heart shadow spans between about a third and one half of the widest inner chest
+          diameter
+        sources: [truszkiewicz2021]
+      wide:
+        text: >-
+          the heart shadow spans more than half of the widest inner chest diameter
+        sources: [truszkiewicz2021, gluecker1999]
 
   - id: discrete_rounded_opacity
     question: >-
@@ -204,6 +318,22 @@ concepts:
       if so is it small (under about one fifth the width of one lung, roughly 3 cm) or larger?
     scale: [absent, small, large]
     sources: [hansell2008, bankier2024]
+    anchors:
+      absent:
+        text: >-
+          no rounded, sharply outlined white spot stands out from the branching pattern of the
+          vessels
+        sources: [hansell2008, bankier2024]
+      small:
+        text: >-
+          a rounded opacity up to about a fifth of one hemithorax wide (3 cm); at 1 cm it is
+          near 6 pixels here and unreliable
+        sources: [hansell2008, bankier2024]
+      large:
+        text: >-
+          a rounded opacity wider than about a fifth of one hemithorax, that is, over 3 cm
+          across
+        sources: [hansell2008, bankier2024]
 
   - id: pleural_line_with_avascular_zone
     question: >-
@@ -211,6 +341,17 @@ concepts:
       lung beyond it and no vessel markings reaching out to the ribs?
     scale: [absent, present]
     sources: [hassan2024, hansell2008]
+    anchors:
+      absent:
+        text: >-
+          vessel markings run out to the ribs all round, with no thin white line running
+          parallel to the chest wall
+        sources: [hassan2024, hansell2008]
+      present:
+        text: >-
+          a thin white line parallels the chest wall with blank, vessel-free lung between it
+          and the ribs
+        sources: [hassan2024, hansell2008]
 
   - id: lung_inflation
     question: >-
@@ -218,6 +359,24 @@ concepts:
       dark with low flattened diaphragms and widely spaced ribs?
     scale: [reduced, normal, increased]
     sources: [thurlbeck1978, woodring1996, hansell2008, nason2012]
+    anchors:
+      reduced:
+        text: >-
+          the diaphragm domes sit high and steeply curved, the rib spaces are narrowed and the
+          lungs look short
+        sources: [woodring1996, hansell2008]
+      # boundary reasoned: the tenth posterior rib is the conventional in-frame landmark, not
+      # a figure quoted from these sources
+      normal:
+        text: >-
+          gently domed diaphragms near the tenth posterior rib, with evenly and moderately
+          spread rib spaces
+        sources: [nason2012, thurlbeck1978]
+      increased:
+        text: >-
+          diaphragm outlines flat or concave upward, rib spaces widened, dark lung reaching
+          below the tenth posterior rib
+        sources: [thurlbeck1978, nason2012]
 
   - id: mediastinal_shift_direction
     question: >-
@@ -225,6 +384,22 @@ concepts:
       whiter (more opaque) half of the chest or pushed away from it?
     scale: [towards_whiter_side, none, away_from_whiter_side]
     sources: [woodring1996, hassan2024]
+    anchors:
+      towards_whiter_side:
+        text: >-
+          the tracheal air column and heart shadow are displaced into the whiter half of the
+          chest, the darker half looking larger
+        sources: [woodring1996]
+      none:
+        text: >-
+          the tracheal air column runs down the middle of the frame and the heart shadow sits
+          centred between the lungs
+        sources: [woodring1996, hassan2024]
+      away_from_whiter_side:
+        text: >-
+          the tracheal air column and heart shadow are pushed into the darker half, away from
+          the whiter one
+        sources: [hassan2024]
 
   - id: supradiaphragmatic_gas_structure
     question: >-
@@ -232,6 +407,17 @@ concepts:
       diaphragm that contains gas or a gas-fluid level and distorts the diaphragm outline?
     scale: [absent, present]
     sources: [nason2012, hansell2008]
+    anchors:
+      absent:
+        text: >-
+          the diaphragm outline is a smooth unbroken curve with no gas pocket above it behind
+          the heart
+        sources: [nason2012, hansell2008]
+      present:
+        text: >-
+          a rounded gas-containing pocket, sometimes with a flat fluid level, projects above
+          the diaphragm behind the heart
+        sources: [nason2012, hansell2008]
 
 classes:
   # Volume loss is the signature: the mediastinum is pulled TOWARDS the collapsed, whiter

@@ -136,6 +136,23 @@ concepts:
     scale: [absent, subtle, definite]
     sources: [yang2023, kermany2018, who2001, cherian2005, fancourt2017, hansell2008,
               bradley2011, andronikou2017]
+    anchors:
+      absent:
+        text: >-
+          both lung fields read uniformly dark from apex to base apart from ribs, vessels
+          and the heart shadow
+        sources: [who2001, cherian2005]
+      # No source grades opacity as faint versus plain; this boundary was reasoned from the
+      # PERCH readers' "uncertain" category, which exists for films read this way.
+      subtle:
+        text: >-
+          a faintly paler zone hard to separate from overlying rib or vessel shadow
+        sources: [fancourt2017, hansell2008]
+      definite:
+        text: >-
+          an area plainly whiter than the matching region of the opposite lung, with a
+          discernible edge
+        sources: [hansell2008, who2001]
   # WHO consolidation occupies "a portion or whole of a lobe or of the entire lung"; WHO
   # "other infiltrate" instead involves both lungs, but also admits "minor patchy
   # infiltrates that are not of sufficient magnitude to constitute primary endpoint
@@ -145,6 +162,26 @@ concepts:
     question: "How much of the combined lung area is taken up by whiter, less dark regions?"
     scale: [none, small_patch, lobe_sized, most_of_both_lungs]
     sources: [who2001, cherian2005, fancourt2017, bradley2011]
+    anchors:
+      none:
+        text: >-
+          no zone is whiter than the surrounding lung; whiteness is confined to ribs, heart
+          and hilar vessels
+        sources: [who2001, cherian2005]
+      small_patch:
+        text: >-
+          patchy whiteness too small to fill a lobe, below the magnitude WHO requires for
+          primary-endpoint consolidation
+        sources: [who2001, cherian2005, fancourt2017]
+      lobe_sized:
+        text: >-
+          a dense or fluffy opacity occupying a portion or the whole of one lobe
+        sources: [who2001, cherian2005, fancourt2017]
+      most_of_both_lungs:
+        text: >-
+          whiteness covering an entire lung, or spread through the greater part of both lung
+          fields
+        sources: [who2001, fancourt2017, bradley2011]
   # Fleischner: consolidation is a homogeneous increase in attenuation that OBSCURES the
   # margins of vessels and airway walls; ground-glass opacity is a smaller increase in which
   # those margins are still visible. WHO wording for consolidation is "dense or fluffy",
@@ -156,6 +193,21 @@ concepts:
       or completely hidden by solid whiteness?"
     scale: [none, hazy_lines_visible, solid_lines_hidden]
     sources: [who2001, cherian2005, fancourt2017, hansell2008, andronikou2017]
+    anchors:
+      none:
+        text: >-
+          vessel and airway margins stay as crisp as those in the opposite lung throughout
+        sources: [hansell2008, andronikou2017]
+      hazy_lines_visible:
+        text: >-
+          a veil of added whiteness through which vessel and airway margins can still be
+          traced
+        sources: [hansell2008, who2001]
+      solid_lines_hidden:
+        text: >-
+          homogeneous whiteness that hides vessel margins and airway walls, dense or fluffy
+          rather than lacy
+        sources: [hansell2008, who2001, cherian2005]
   # WHO "other infiltrate": linear and patchy densities in a lacy pattern involving both
   # lungs. Fleischner: a reticular pattern is innumerable small linear opacities that by
   # summation resemble a net.
@@ -163,6 +215,22 @@ concepts:
     question: "Are fine linear, streaky or net-like white lines spread through both lung fields?"
     scale: [absent, mild, marked]
     sources: [who2001, cherian2005, fancourt2017, hansell2008, andronikou2017]
+    anchors:
+      absent:
+        text: >-
+          only smoothly tapering vessel branches; no extra streaky or net-like white lines
+        sources: [who2001, cherian2005]
+      # WHO grades "other infiltrate" present or absent, not by degree; this boundary was
+      # reasoned as one-sided or zonal versus the bilateral lacy pattern the definition names.
+      mild:
+        text: >-
+          a few extra streaky lines beyond the tapering vessels, limited to one lung or to a
+          couple of zones
+        sources: [fancourt2017, andronikou2017]
+      marked:
+        text: >-
+          linear and patchy densities in a lacy net-like pattern involving both lungs
+        sources: [who2001, cherian2005, fancourt2017, hansell2008]
   # Fleischner: air-filled (dark) bronchi on a background of opaque airless lung. WHO says
   # consolidation "may or may not contain air bronchograms", so the positive class does not
   # commit; but the sign does not occur in a well-aerated film, so the negative class does.
@@ -171,6 +239,15 @@ concepts:
       white?"
     scale: [absent, present]
     sources: [who2001, cherian2005, fancourt2017, hansell2008]
+    anchors:
+      absent:
+        text: >-
+          no dark branching tubes stand out within any whiter region of lung
+        sources: [hansell2008, who2001]
+      present:
+        text: >-
+          one or more dark air-filled bronchi traced against surrounding white airless lung
+        sources: [hansell2008, cherian2005]
   # WHO "other infiltrate" explicitly features peribronchial thickening; on a frontal film
   # this reads as coarse, cuffed or ring-shaped markings radiating from the hila.
   - id: peribronchial_thickening
@@ -178,6 +255,23 @@ concepts:
       cuffed or ring-shaped rather than fine and tapering?"
     scale: [absent, mild, marked]
     sources: [who2001, cherian2005, fancourt2017]
+    anchors:
+      absent:
+        text: >-
+          bronchial walls beside the hilar vessels are hairline thin and end-on bronchi show
+          no ring
+        sources: [who2001, fancourt2017]
+      # WHO lists peribronchial thickening as present or absent; the mild/marked split was
+      # reasoned as a count of affected hilar branches, since no source gives a threshold.
+      mild:
+        text: >-
+          a few hilar branches carry a visible cuff or ring wall, the rest still fine and
+          tapering
+        sources: [cherian2005, fancourt2017]
+      marked:
+        text: >-
+          coarse cuffed walls and ring shadows on most branches radiating from both hila
+        sources: [who2001, cherian2005, fancourt2017]
   # Fleischner silhouette sign: absence of depiction of an anatomic soft-tissue border,
   # caused by consolidation or atelectasis of the adjacent lung. Restricted here to the
   # LOWER cardiac edge and the hemidiaphragms; the upper mediastinum is excluded because a
@@ -187,6 +281,23 @@ concepts:
       blurred or lost where lung meets it?"
     scale: [absent, partial, complete]
     sources: [hansell2008, fancourt2017]
+    anchors:
+      absent:
+        text: >-
+          the lower heart edge and both diaphragm domes are traced as sharp unbroken lines
+        sources: [hansell2008, fancourt2017]
+      # Fleischner defines the silhouette sign as loss of a border, not degrees of loss; the
+      # partial/complete split was reasoned from how much of the border remains traceable.
+      partial:
+        text: >-
+          part of the lower cardiac edge or of one diaphragm dome is blurred while the rest
+          stays traceable
+        sources: [hansell2008]
+      complete:
+        text: >-
+          the lower cardiac edge or a whole diaphragm dome is not depicted where opaque lung
+          abuts it
+        sources: [hansell2008, fancourt2017]
   # WHO pleural effusion: fluid in the lateral pleural space, in most cases seen at the
   # costophrenic angle. Effusion is one of the two components of the WHO primary endpoint,
   # so the positive class admits it, but it complicates only a minority of cases.
@@ -195,6 +306,21 @@ concepts:
       or rounded rather than a sharp point?"
     scale: [absent, mild, marked]
     sources: [who2001, cherian2005, fancourt2017, bradley2011, andronikou2017]
+    anchors:
+      absent:
+        text: >-
+          both outer angles between diaphragm and chest wall taper to a sharp point
+        sources: [who2001, cherian2005]
+      # WHO records pleural fluid as present or absent; the mild/marked split was reasoned
+      # from blunting confined to the angle versus fluid tracking up the chest wall.
+      mild:
+        text: >-
+          one angle is rounded or shallowly filled so that its apex is no longer a point
+        sources: [cherian2005, fancourt2017]
+      marked:
+        text: >-
+          fluid fills the angle and tracks up the lateral chest wall well above the diaphragm
+        sources: [who2001, fancourt2017, andronikou2017]
 classes:
   # WHO reference reading: a film is read as unremarkable when there is no consolidation,
   # no other infiltrate and no pleural fluid. Every concept above is worded so that such a

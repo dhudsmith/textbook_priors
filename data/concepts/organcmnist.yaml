@@ -41,19 +41,19 @@
 # lesions. `interior_homogeneity: homogeneous` for liver is the textbook expectation of normal
 # parenchyma, not a prediction about this cohort.
 #
-# OPEN VERIFICATION ITEM - shape and size versus the MedMNIST resize. DO NOT TRUST YET:
+# KNOWN LIMITATION - shape and size versus the MedMNIST resize:
 # MedMNIST v2 crops 2D images from the centre slices of the 3D organ bounding boxes and resizes
 # them to a square (28x28, and 224x224 in the larger releases); no aspect-ratio handling is
 # stated. If that resize is anisotropic, a tight bounding box around an elongated organ is
-# stretched toward filling the square and apparent shape and scale are destroyed. Exactly two
+# stretched toward filling the square and apparent shape and scale are distorted. Exactly two
 # concepts are affected:
 #   elongation     - pancreas `elongated` (axial and coronal), femur `elongated` (coronal and
 #                    sagittal), bladder `round`, and every `oval` value.
 #   relative_size  - all eleven classes.
-# This is NOT answerable from the literature and has deliberately NOT been guessed at here. It
-# must be checked against the actual fetched 224-pixel arrays at workflow stage 2 (CACHE) before
-# `elongation` and `relative_size` are trusted. If anisotropic resize is confirmed, set both
-# concepts to `any` for all eleven classes, or drop them from the bank.
+# This is not answerable from the literature and has deliberately not been guessed at here; it
+# stands as a documented limitation of those two concepts. The `relative_size` anchors are
+# written as counts of landmarks along the crop edge, a cue that survives an anisotropic resize;
+# the `elongation` anchors are axis ratios, which do not, and carry a second ratio-free cue.
 
 dataset: organcmnist
 modality: >-
@@ -144,72 +144,301 @@ concepts:
       the right of the picture.
     scale: [patient_right, midline, patient_left]
     sources: [moeller2013, spratt2016]
+    # The anchors name screen sides, which the question has already tied to patient sides
+    # (patient-left appears on image-right). A sagittal crop carries no left-right landmark at
+    # all, which is why `body_side` is `any` for every class in organsmnist.yaml.
+    anchors:
+      patient_right:
+        text: >-
+          the spine or the aorta sits toward the image-right of the crop, with the structure
+          lying to the left of it on screen
+        sources: [moeller2013, spratt2016]
+      midline:
+        text: >-
+          body wall or paired muscles lie about equally far from the structure on both sides of
+          the image, with no side landmark nearer than the other
+        sources: [moeller2013, spratt2016]
+      patient_left:
+        text: >-
+          the spine or the aorta sits toward the image-left of the crop, with the structure
+          lying to the right of it on screen
+        sources: [moeller2013, spratt2016]
   - id: craniocaudal_level
     question: >-
       From the surroundings visible in the crop, at what level of the trunk was this section
       taken: the pelvis, the lower abdomen, the upper abdomen, or the chest?
     scale: [pelvic, lower_abdominal, upper_abdominal, thoracic]
     sources: [moeller2013, spratt2016]
+    # Anchored by which landmark is caught at the crop edge, so the four levels are separated by
+    # presence and absence rather than by a measurement; readable in all three planes.
+    anchors:
+      pelvic:
+        text: >-
+          an iliac wing, pubic bone or rounded femoral head borders the crop, and no rib is
+          present
+        sources: [moeller2013, spratt2016]
+      lower_abdominal:
+        text: >-
+          gas- or contrast-filled bowel loops and psoas muscle border the crop, with neither rib
+          nor pelvic bone in view
+        sources: [moeller2013, spratt2016]
+      upper_abdominal:
+        text: >-
+          the lowest ribs border the crop alongside solid parenchymal organs, with no pelvic
+          bone in view
+        sources: [moeller2013, spratt2016]
+      thoracic:
+        text: >-
+          ribs surround the crop and nearly black air-filled lung borders the structure
+        sources: [moeller2013, spratt2016]
   - id: anteroposterior_position
     question: >-
       Do the surroundings place the main structure toward the back of the body (against the
       spine and the back muscles), in the middle, or toward the front body wall?
     scale: [posterior, central, anterior]
     sources: [moeller2013, spratt2016]
+    # Anchored to which structure the crop edge touches, not to a screen direction: anterior is
+    # image-top in an axial crop but image-left or image-right in a sagittal one. A coronal crop
+    # shows no anteroposterior landmark, hence `any` throughout organcmnist.yaml.
+    anchors:
+      posterior:
+        text: >-
+          a vertebral body and the thick paraspinal back muscles lie immediately against the
+          structure
+        sources: [moeller2013, spratt2016]
+      central:
+        text: >-
+          neither the spine nor the front body wall touches the structure; both lie beyond it at
+          the crop edge
+        sources: [moeller2013, spratt2016]
+      anterior:
+        text: >-
+          the front body wall, with its strap-like rectus muscle or the sternum, lies
+          immediately against the structure
+        sources: [moeller2013, spratt2016]
   - id: relative_size
     question: >-
       Compared with the landmarks caught at the edge of the crop (a vertebral body, a rib, the
       thickness of the body wall), is the main structure small, medium or large?
     scale: [small, medium, large]
     sources: [moeller2013, xu2019, yang2023]
+    # No source states a landmark-count boundary; these three were reasoned from the fact that a
+    # tight bounding box around a small organ catches one magnified landmark while a box around
+    # a large one catches many. Counting landmarks was chosen over measuring an axis ratio
+    # because a count survives the anisotropic resize noted in the header caveat.
+    anchors:
+      small:
+        text: >-
+          a single landmark at the crop edge - one vertebra or one rib - appears magnified and
+          fills much of that edge
+        sources: [moeller2013, xu2019]
+      medium:
+        text: >-
+          two or three separate landmarks fit along the crop edge, each still plainly resolved
+        sources: [moeller2013, xu2019]
+      large:
+        text: >-
+          many small landmarks crowd the crop edge at once - several ribs, vertebrae or bowel
+          loops together
+        sources: [moeller2013, xu2019]
   - id: elongation
     question: >-
       Is the outline of the main structure roughly circular, moderately oval, or markedly
       elongated and strip-like?
     scale: [round, oval, elongated]
     sources: [moeller2013, spratt2016, borghei2013]
+    # The 1.25 and 3 axis-ratio boundaries are reasoned, not quoted: the atlases describe these
+    # shapes qualitatively and give no cut-off. Each anchor carries a second, ratio-free cue -
+    # how much of the frame the structure leaves empty - because the header caveat notes an
+    # anisotropic resize would flatten the axis ratio itself toward one.
+    anchors:
+      round:
+        text: >-
+          the two widths of the outline differ by less than about a quarter, and the shape fills
+          most of the frame
+        sources: [moeller2013, spratt2016]
+      oval:
+        text: >-
+          the long width is roughly one and a half to three times the short one, leaving the
+          frame corners empty
+        sources: [moeller2013, spratt2016]
+      elongated:
+        text: >-
+          the long axis runs more than about three times the short one, a strip that leaves most
+          of the frame as background
+        sources: [borghei2013, spratt2016]
   - id: contour_lobulation
     question: >-
       Is the outline smooth and even, mildly lobulated or wavy, or markedly irregular and
       feathery?
     scale: [smooth, mildly_lobulated, markedly_irregular]
     sources: [spratt2016, borghei2013]
+    # The boundary is a count of interruptions (none, one or two, many); the sources describe
+    # smooth and feathery contours but state no count, so the count was reasoned.
+    anchors:
+      smooth:
+        text: >-
+          the border runs as an unbroken curve, with no bump deeper than the thickness of the
+          border line itself
+        sources: [spratt2016]
+      mildly_lobulated:
+        text: >-
+          one or two shallow bulges or gentle waves interrupt an otherwise continuous curve
+        sources: [spratt2016, borghei2013]
+      markedly_irregular:
+        text: >-
+          many bumps and clefts break the border, or it dissolves into a feathery fringe against
+          the surrounding fat
+        sources: [borghei2013]
   - id: hilar_notch
     question: >-
       Is there a single distinct indentation, notch or wedge cut into one side of the outline
       where vessels appear to enter?
     scale: [absent, subtle, prominent]
     sources: [moeller2013, spratt2016, sheth2004]
+    # The one-tenth-of-width boundary between `subtle` and `prominent` is reasoned; the sources
+    # describe a hilum qualitatively and give no depth threshold.
+    anchors:
+      absent:
+        text: >-
+          the border runs continuously round the structure with no indentation on any side
+        sources: [moeller2013, spratt2016]
+      subtle:
+        text: >-
+          one side is flattened or dimpled, but the dent is shallower than about a tenth of the
+          structure's width
+        sources: [moeller2013, spratt2016]
+      prominent:
+        text: >-
+          a wedge deeper than about a tenth of the width is cut into one side, with vessels or
+          fat running into it
+        sources: [sheth2004, spratt2016]
   - id: relative_attenuation
     question: >-
       Overall, how bright is the main structure compared with the ordinary soft tissue and
       muscle visible around it?
     scale: [much_darker, slightly_darker, similar, brighter, much_brighter]
     sources: [bilic2023, bae2010, sheth2004, denotter2023, hansell2008]
+    # All five anchors are contrast-relative at the fixed abdominal window and describe the
+    # portal-venous appearance of this cohort (bae2010, sheth2004); no Hounsfield number is
+    # asserted, per the sourcing rule in the header. Muscle at the frame edge is the reference
+    # because it is present in essentially every crop.
+    anchors:
+      much_darker:
+        text: >-
+          nearly black at this window, clearly the darkest tissue in the crop and far below the
+          muscle at the frame edge
+        sources: [hansell2008, denotter2023]
+      slightly_darker:
+        text: >-
+          a shade below the muscle at the frame edge, but plainly mid-grey rather than black
+        sources: [denotter2023, bae2010]
+      similar:
+        text: >-
+          no step in grey level against the muscle at the frame edge; only the outline separates
+          the two
+        sources: [denotter2023, bae2010]
+      brighter:
+        text: >-
+          a clear step above the muscle at the frame edge, yet still well short of the white of
+          bone
+        sources: [bae2010, bilic2023]
+      much_brighter:
+        text: >-
+          among the brightest things in the crop, approaching the white of cortical bone or of
+          dense contrast
+        sources: [bae2010, sheth2004]
   - id: interior_homogeneity
     question: >-
       Is the inside of the structure uniform in brightness, or does it contain clearly different
       regions, internal branching lines or pockets?
     scale: [homogeneous, mildly_heterogeneous, markedly_heterogeneous]
     sources: [bilic2023, bae2010, sheth2004, denotter2023, hansell2008, borghei2013]
+    anchors:
+      homogeneous:
+        text: >-
+          one even grey fills the interior, broken by nothing more than a few thin vessel lines
+        sources: [hansell2008, bilic2023]
+      mildly_heterogeneous:
+        text: >-
+          faint mottling or a few branching lines cross the interior, but no region differs
+          sharply from the rest
+        sources: [hansell2008, denotter2023, borghei2013]
+      markedly_heterogeneous:
+        text: >-
+          two or more distinct zones, one clearly brighter than the other, meet at sharp
+          internal borders
+        sources: [sheth2004, bae2010]
   - id: bright_cortical_rim
     question: >-
       Is the structure outlined by a thin rim of the very brightest, calcium-density material,
       brighter than any soft tissue in the crop?
     scale: [absent, partial, complete]
     sources: [spratt2016, denotter2023]
+    # Cortical bone is the brightest material at an abdominal window, so "brighter than anything
+    # else in the crop" is a reliable, phase-independent referent. The boundary here is extent
+    # round the border, not brightness.
+    anchors:
+      absent:
+        text: >-
+          no calcium-white line follows the border anywhere; the edge is grey meeting grey
+        sources: [spratt2016, denotter2023]
+      partial:
+        text: >-
+          a calcium-white line brighter than any soft tissue follows part of the border and then
+          breaks off
+        sources: [spratt2016, denotter2023]
+      complete:
+        text: >-
+          an unbroken calcium-white line rings the whole border, the brightest thing in the crop
+        sources: [spratt2016, denotter2023]
   - id: boundary_definition
     question: >-
       How clearly is the edge of the main structure separated from what surrounds it: barely
       distinguishable, moderately defined, or crisp along most of its circumference?
     scale: [indistinct, moderate, sharp]
     sources: [hansell2008, borghei2013]
+    # Graded by the fraction of the circumference you could trace with confidence; the sources
+    # describe ill-defined and well-defined margins but name no fraction, so it was reasoned.
+    anchors:
+      indistinct:
+        text: >-
+          the edge merges into the surrounding tissue over most of its length; you could not
+          trace it confidently
+        sources: [hansell2008, borghei2013]
+      moderate:
+        text: >-
+          the edge is traceable over roughly half the circumference and blurred or interrupted
+          over the rest
+        sources: [hansell2008]
+      sharp:
+        text: >-
+          a crisp step in brightness follows almost the whole circumference, often with a dark
+          fat line beside it
+        sources: [hansell2008, borghei2013]
   - id: adjacent_bone
     question: >-
       Are very bright, calcium-density structures such as vertebrae, ribs or pelvic bone visible
       at the edge of the crop, and if so how much of the edge do they occupy?
     scale: [absent, small, prominent]
     sources: [moeller2013, spratt2016, xu2019]
+    # Bone is the brightest material at an abdominal window, so its presence is unambiguous; the
+    # split between `small` and `prominent` is one patch versus a long stretch or several
+    # pieces, a count reasoned here rather than read from a source.
+    anchors:
+      absent:
+        text: >-
+          nothing of calcium-white density appears anywhere along the crop edge
+        sources: [moeller2013, spratt2016]
+      small:
+        text: >-
+          one small patch of calcium-white touches the crop edge and occupies a minor part of it
+        sources: [moeller2013, xu2019]
+      prominent:
+        text: >-
+          calcium-white runs along a long stretch of the crop edge, or several bony pieces
+          border the crop at once
+        sources: [spratt2016, xu2019]
 classes:
   "bladder":
     fingerprint:

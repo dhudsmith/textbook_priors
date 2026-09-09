@@ -7,10 +7,30 @@
 #
 # COMMITMENT RULE APPLIED TO THE FINGERPRINTS BELOW
 # A level is committed only where the cited source makes the feature definitional for that
-# grade, or reports it in a majority of eyes at that grade; everything else is `any`. A
-# disjunction in the source ("one or more of", "any of the following") is never encoded as a
-# conjunction across concepts. This is why grade 4 commits only neovascularisation, and why
-# venous beading, IRMA and quadrant spread are `any` wherever the international scale is silent.
+# grade, or reports it in a majority of eyes at that grade; everything else is `any`. This is
+# why grade 4 commits only neovascularisation, and why venous beading, IRMA and quadrant spread
+# are `any` wherever the international scale is silent.
+#
+# The rule is knowingly broken in exactly two places, and they are not the same kind of break:
+#   GRADE 3 encodes an explicit disjunction of SUFFICIENT criteria as a conjunction. The 4-2-1
+#     rule reads "any of the following", and any one disjunct on its own already makes an eye
+#     severe; all three are committed here. This is the harder break, and it is deliberate:
+#     without it grade 3 has nothing to separate it from grade 2.
+#   GRADE 2 commits an ILLUSTRATIVE list of typical accompanying signs as though each were
+#     required. The ICO row reads "microaneurysms and other signs (e.g., dot and blot
+#     hemorrhages, hard exudates, cotton wool spots)"; an "e.g." describes a picture, it does
+#     not set criteria. This is the softer break: no cited source says all three must be there.
+# Both are marked again in the class comment where they occur. Nowhere else in this file is a
+# source disjunction turned into a conjunction across concepts.
+#
+# STRONGEST SOURCING IN THE FILE
+# The severe-NPDR anchors are the ICO Table 1 row taken literally (wong2018, restating the
+# international scale of wilkinson2003), checked word for word against the source text:
+# intraretinal haemorrhages >=20 in each quadrant, definite venous beading in 2 quadrants,
+# IRMA in 1 quadrant. `blot_haemorrhages.many`, `venous_beading.marked`, `irma.marked` and the
+# `lesion_quadrant_spread` levels carry those counts and quadrant thresholds directly, so they
+# are the levels in this bank least dependent on an author's judgement. Read them against the
+# limit below, which bounds how far any of it can actually be applied to a 224 px image.
 #
 # DOCUMENTED IMAGE LIMIT
 # Microaneurysms are 15-60 um across. A 45-degree DeepDRiD fundus field, centre-cropped and
@@ -86,7 +106,9 @@ provenance:
         recommendations for screening, follow-up, referral, and treatment based on resource
         settings. Ophthalmology 2018;125(10):1608-1622.
       doi: 10.1016/j.ophtha.2018.04.007
-      used_for: [venous_beading, irma, lesion_quadrant_spread]
+      used_for:
+        [microaneurysms_dot_haemorrhages, blot_haemorrhages, hard_exudates,
+         cotton_wool_spots, venous_beading, irma, lesion_quadrant_spread]
     - key: flaxel2020
       citation: >-
         Flaxel CJ, Adelman RA, Bailey ST, Fawzi A, Lim JI, Vemulakonda GA, Ying GS. Diabetic
@@ -97,56 +119,242 @@ provenance:
          fibrous_proliferation]
 
 concepts:
+  # Anchors below give each level a visible referent. Where the ICDR 4-2-1 rule or ETDRS report
+  # 10 states a count or a quadrant threshold it is quoted literally; anchors whose boundary had
+  # to be reasoned rather than read off a source carry a comment saying so.
   - id: microaneurysms_dot_haemorrhages
     question: "How many small, sharply outlined round red dots, each far smaller than the width
       of a main retinal vessel, are scattered over the orange retinal background?"
     scale: [none, few, moderate, many]
-    sources: [wilkinson2003, etdrs1991, wong2016, liu2022, yang2023]
+    sources: [wilkinson2003, etdrs1991, wong2016, wong2018, liu2022, yang2023]
+    # See the DOCUMENTED IMAGE LIMIT header: at roughly 50 um per pixel these dots are at or
+    # below one pixel, so the anchors are deliberately coarse count bands, not an exact tally.
+    anchors:
+      none:
+        text: >-
+          no red dots anywhere on the orange background; the only red structures are the
+          branching vessels themselves
+        sources: [wilkinson2003]
+      # boundary reasoned: the scale says "microaneurysms only" without giving a count, so the
+      # few / moderate split is set at a handful confined to one part of the field
+      few:
+        text: >-
+          a handful of red dots, roughly one to five, all lying within one part of the visible
+          retina
+        sources: [wilkinson2003, wong2016]
+      # boundary reasoned: fills the gap between "a handful" and the 4-2-1 count of twenty
+      moderate:
+        text: >-
+          red dots easily found in more than one quarter of the retina but still countable,
+          roughly six to twenty in all
+        sources: [etdrs1991, wong2016]
+      many:
+        text: >-
+          red dots in every quarter of the retina and too many to count singly, more than about
+          twenty per quarter
+        sources: [wilkinson2003, etdrs1991]
   - id: blot_haemorrhages
     question: "How many larger red patches with blurred or irregular outlines, clearly bigger
       than the small round dots, are visible in the retina?"
     scale: [none, few, moderate, many]
-    sources: [wilkinson2003, etdrs1991, wong2016, liu2022]
+    sources: [wilkinson2003, etdrs1991, wong2016, wong2018, liu2022]
+    anchors:
+      none:
+        text: >-
+          no red patch is larger or blurrier than the fine round dots; the retina shows dots or
+          nothing at all
+        sources: [wilkinson2003]
+      # boundary reasoned: no cited source counts blot haemorrhages below the 4-2-1 threshold,
+      # so few / moderate are set by count and by how far the patches spread
+      few:
+        text: >-
+          one to about five blurred red patches, confined to one quarter of the visible retina
+        sources: [etdrs1991, wong2016]
+      moderate:
+        text: >-
+          blurred red patches in two or three quarters of the retina, fewer than about twenty in
+          any one of them
+        sources: [etdrs1991, wong2016]
+      many:
+        text: >-
+          more than about twenty blurred red patches in each of the four quarters of the retina
+        sources: [wilkinson2003, etdrs1991]
   - id: hard_exudates
     question: "How much sharply outlined bright yellow-white deposit, sometimes in clusters,
       lines or rings, is visible in the retina?"
     scale: [none, few, moderate, many]
-    sources: [etdrs1991, wong2016, flaxel2020, liu2022]
+    sources: [etdrs1991, wong2016, wong2018, flaxel2020, liu2022]
+    # ETDRS grades this by comparing deposit area with a standard photograph; the bank has no
+    # standard photograph, so the anchors below use the optic disc as the in-frame area unit.
+    # The one-disc and two-disc cut points are reasoned from that method, not read off a number.
+    anchors:
+      none:
+        text: >-
+          no yellow-white deposit on the retina; the brightest structure in the frame is the
+          pale optic disc itself
+        sources: [etdrs1991, wong2016]
+      few:
+        text: >-
+          one or two small yellow-white specks or a single short line, together well under one
+          optic-disc area
+        sources: [etdrs1991, flaxel2020]
+      moderate:
+        text: >-
+          several sharp-edged yellow-white clusters or a partial ring, together about one
+          optic-disc area
+        sources: [etdrs1991, flaxel2020]
+      many:
+        text: >-
+          yellow-white deposit in rings or confluent sheets covering more than about two
+          optic-disc areas
+        sources: [etdrs1991, wong2016]
   - id: cotton_wool_spots
     question: "How many pale greyish-white patches with soft, feathery, ill-defined edges are
       visible, distinct from the sharply outlined yellow deposits?"
     scale: [none, few, many]
-    sources: [etdrs1991, wong2016, flaxel2020, liu2022]
+    sources: [etdrs1991, wong2016, wong2018, flaxel2020, liu2022]
+    # Each anchor restates the edge and colour contrast with hard exudates, because that is the
+    # judgement the model has to make and the two concepts are otherwise both "bright lesions".
+    # boundary reasoned: ETDRS grades these against a standard photograph, giving no count, so
+    # the few / many split is set at about five patches, counted however widely they are spread.
+    # This scale has three levels where the other lesion-count concepts have four, so `few` here
+    # covers a wider range than `few` does there; the anchor says so rather than implying they
+    # mean the same thing.
+    anchors:
+      none:
+        text: >-
+          no soft-edged pale patch; any bright lesion present has a crisp yellow border rather
+          than a fuzzy white one
+        sources: [etdrs1991, flaxel2020]
+      few:
+        text: >-
+          anything from one up to about five fluffy white patches with feathery margins, however
+          widely they are scattered
+        sources: [etdrs1991, wong2016]
+      many:
+        text: >-
+          more than about five fluffy white patches with feathery margins, too many to count on
+          one hand
+        sources: [etdrs1991, flaxel2020]
   - id: venous_beading
     question: "Do the larger dark retinal veins vary in calibre along their course, looking like
       a string of sausages rather than a smoothly tapering tube?"
     scale: [absent, mild, marked]
     sources: [wilkinson2003, etdrs1991, wong2018]
+    anchors:
+      absent:
+        text: >-
+          every large vein tapers smoothly from the disc outwards with no local widening or
+          pinching
+        sources: [wilkinson2003, etdrs1991]
+      mild:
+        text: >-
+          one vein shows a short stretch of alternating widening and narrowing, in one quarter of
+          the retina only
+        sources: [etdrs1991, wong2018]
+      marked:
+        text: >-
+          definite sausage-string calibre change in veins in two or more of the four quarters of
+          the retina
+        sources: [wilkinson2003, wong2018]
   - id: irma
     question: "Are there fine, irregular, tortuous vessel segments lying within the retina, often
       near red lesions, that do not follow the orderly branching of the main vessels?"
     scale: [absent, mild, marked]
     sources: [wilkinson2003, etdrs1991, wong2018, yang2023]
+    # These segments are near the pixel limit at 224 px (see the DOCUMENTED IMAGE LIMIT header),
+    # so the anchors turn on whether an irregular tangle is obvious, not on tracing each vessel.
+    anchors:
+      absent:
+        text: >-
+          all visible vessels branch and taper in orderly fashion; no tangled segment sits
+          between them
+        sources: [wilkinson2003, etdrs1991]
+      mild:
+        text: >-
+          a faint or doubtful tangle of fine intraretinal vessels, hard to tell from a normal
+          small branch
+        sources: [etdrs1991, wong2018]
+      marked:
+        text: >-
+          prominent tangles of fine irregular intraretinal vessels in one or more of the four
+          quarters of the retina
+        sources: [wilkinson2003, wong2018]
   - id: lesion_quadrant_spread
     question: "Taking the optic disc as the centre, in how many quadrants of the visible retina
       are red lesions present?"
     scale: [none, one_quadrant, two_or_three_quadrants, four_quadrants]
     sources: [wilkinson2003, etdrs1991, wong2018]
+    # DeepDRiD includes macula-centred fields in which the disc is off-centre or out of frame, so
+    # four true quadrants are not always visible. The anchors say to quarter the visible retina
+    # about its own centre in that case, and to judge only the quarters actually shown.
+    anchors:
+      none:
+        text: >-
+          no red dot or patch in any quarter of the retina that the frame actually shows
+        sources: [wilkinson2003]
+      one_quadrant:
+        text: >-
+          red lesions in one quarter only, quartering about the disc or, if it is off-frame, the
+          image centre
+        sources: [wilkinson2003, etdrs1991]
+      two_or_three_quadrants:
+        text: >-
+          red lesions in two or three of the four quarters, with at least one quarter free of
+          them
+        sources: [wilkinson2003, wong2018]
+      four_quadrants:
+        text: >-
+          red lesions in every one of the four quarters of the visible retina, none spared
+        sources: [wilkinson2003, wong2018]
   - id: neovascularisation
     question: "Is there a fine net, tuft or frond of thin new vessels on or beside the optic disc,
       or elsewhere along the vascular arcades, distinct from the normal branching vessels?"
     scale: [absent, present]
     sources: [wilkinson2003, etdrs1991, wong2016, liu2022]
+    anchors:
+      absent:
+        text: >-
+          every vessel runs out from the disc along the arcades and tapers; no extra net lies on
+          the disc or retinal surface
+        sources: [wilkinson2003, etdrs1991]
+      present:
+        text: >-
+          a fine tangled net, tuft or frond of thin vessels lies on the disc or the retinal
+          surface, finer than the arcade it sits on
+        sources: [wilkinson2003, wong2016]
   - id: preretinal_or_vitreous_haemorrhage
     question: "Is there a dense sheet or pool of blood lying in front of the retina that hides the
       vessels beneath it, or a diffuse red haze obscuring part of the fundus?"
     scale: [absent, present]
     sources: [wilkinson2003, etdrs1991, flaxel2020]
+    anchors:
+      absent:
+        text: >-
+          the retinal vessels can be followed across the whole frame; nothing dense lies in front
+          of them
+        sources: [wilkinson2003, etdrs1991]
+      present:
+        text: >-
+          a dense blood sheet, often with a flat upper level, hides the vessels under it, or a
+          red haze veils part of the view
+        sources: [etdrs1991, flaxel2020]
   - id: fibrous_proliferation
     question: "Is there white or grey fibrous, sheet-like or membranous tissue lying on the retinal
       surface, often over the disc or along the vascular arcades?"
     scale: [absent, present]
     sources: [etdrs1991, wong2016, flaxel2020]
+    anchors:
+      absent:
+        text: >-
+          the retinal surface shows only vessels and orange background, with no opaque sheet
+          lying over it
+        sources: [etdrs1991, wong2016]
+      present:
+        text: >-
+          an opaque white or grey membranous sheet lies on the retinal surface, often bridging
+          the disc and the arcades
+        sources: [etdrs1991, flaxel2020]
 
 classes:
   # 0 = no apparent retinopathy: no abnormalities
@@ -179,8 +387,14 @@ classes:
     sources: [wilkinson2003, etdrs1991, liu2022]
   # 2 = moderate NPDR: more than microaneurysms only, less than severe NPDR. The scale gives no
   # positive lesion list for this grade; the dot/blot haemorrhage, hard exudate and cotton-wool
-  # spot levels follow the ICO screening description (wong2018). Venous beading, IRMA and
-  # quadrant spread are `any` because no cited source commits them below severe NPDR.
+  # spot levels follow the ICO screening description (wong2018), which is now cited by those
+  # four concepts and by this class as well, so the attribution runs in both directions. That
+  # description reads "microaneurysms and other signs (e.g., dot and blot hemorrhages, hard
+  # exudates, cotton wool spots), but less than severe nonproliferative DR": an illustrative
+  # list of accompanying signs, not a requirement that every one be present, so the levels
+  # committed here are the typical picture of a moderate eye rather than a criterion set.
+  # Venous beading, IRMA and quadrant spread are `any` because no cited source commits them
+  # below severe NPDR.
   "2":
     fingerprint:
       microaneurysms_dot_haemorrhages: moderate
@@ -193,7 +407,7 @@ classes:
       neovascularisation: absent
       preretinal_or_vitreous_haemorrhage: absent
       fibrous_proliferation: absent
-    sources: [wilkinson2003, etdrs1991, wong2016]
+    sources: [wilkinson2003, etdrs1991, wong2016, wong2018]
   # 3 = severe NPDR: the 4-2-1 rule, and no sign of proliferative retinopathy. NOTE: the rule is
   # itself a disjunction (>20 intraretinal haemorrhages in each of 4 quadrants OR definite venous
   # beading in 2+ quadrants OR prominent IRMA in 1+ quadrant); committing all three here is the

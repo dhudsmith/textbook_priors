@@ -76,64 +76,290 @@ provenance:
                  cytoplasm_eosinophilia, fat_vacuoles]
 
 concepts:
+  # Anchors are written for the native patch: 224 x 224 px at 0.5 um/px, so the field is about
+  # 112 x 112 um wide. In-frame landmarks (a nucleus width, a gland ring, a fifth of the field)
+  # are preferred over absolute sizes because the model has no scale bar. Where a source states
+  # a threshold it is used verbatim; boundaries reasoned rather than read carry a comment.
   - id: tissue_content
     question: "How much of the field is filled with recognisable stained tissue structure rather
       than plain, featureless white space?"
     scale: [none, sparse, moderate, abundant]
     sources: [kather2016, kather2019, yang2023]
+    # Quarter / two-thirds boundaries reasoned: the tile definitions are qualitative ("regions
+    # of pure texture"), so no source gives a coverage percentage. The 'moderate' clause about
+    # walled empty spaces is what keeps an optically empty but structurally full field of fat
+    # from reading as an empty slide.
+    anchors:
+      none:
+        text: >-
+          no stained material anywhere: flat, even white or very pale grey across the whole field
+        sources: [kather2019, kather2016]
+      sparse:
+        text: >-
+          stained structure covers under about a quarter of the field; the pale rest holds
+          no outlines
+        sources: [kather2016, kather2019]
+      moderate:
+        text: >-
+          a quarter to two thirds is stained, or empty spaces fill the field but each one
+          is walled
+        sources: [kather2016, kather2019]
+      abundant:
+        text: >-
+          stained cells, fibres and nuclei fill the field, leaving no white gap wider than
+          a nucleus
+        sources: [kather2019, kather2016]
   - id: nuclear_density
     question: "How densely packed are the cell nuclei, seen as small dark blue-purple bodies?"
     scale: [none, few, moderate, many, very_many]
     sources: [kather2019, mescher2021]
+    # All four boundaries reasoned: neither source states a nuclei-per-field count, so the
+    # levels are pinned to inter-nuclear spacing measured in nuclear widths, which is readable
+    # inside the patch without a scale bar.
+    anchors:
+      none:
+        text: >-
+          not a single dark blue-purple nuclear body anywhere in the field
+        sources: [kather2019]
+      few:
+        text: >-
+          fewer than about twenty nuclei, most lying more than several nuclear widths from
+          the next
+        sources: [kather2019, mescher2021]
+      moderate:
+        text: >-
+          nuclei roughly one to three nuclear widths apart, together covering well under
+          a quarter of the field
+        sources: [mescher2021, kather2019]
+      many:
+        text: >-
+          nuclei frequently touching, together covering roughly a third to a half of the field
+        sources: [mescher2021, kather2019]
+      very_many:
+        text: >-
+          nuclei almost confluent, covering over half the field with little visible material
+          between them
+        sources: [kather2019]
   - id: nuclear_pleomorphism
     question: "Do the nuclei vary in size, shape and darkness, or are they all much alike?"
     scale: [uniform, mildly_variable, markedly_variable]
     sources: [fleming2012, kather2019]
+    # The descriptive terms (coarse chromatin, prominent nucleoli, loss of nuclear polarity)
+    # are Fleming's cytologic-atypia wording. The twofold and threefold size ratios are
+    # reasoned: Fleming grades by gland formation, not by a stated nuclear size ratio.
+    anchors:
+      uniform:
+        text: >-
+          nuclei alike in size, shape and darkness, lying with their long axes similarly
+          oriented
+        sources: [fleming2012, kather2019]
+      mildly_variable:
+        text: >-
+          largest nuclei about twice the smallest; staining slightly uneven; most still
+          share one orientation
+        sources: [fleming2012]
+      markedly_variable:
+        text: >-
+          largest nuclei three or more times the smallest, with coarse dark chromatin,
+          prominent nucleoli and lost polarity
+        sources: [fleming2012, kather2019]
   - id: gland_formation
     question: "Are there gland-like structures, that is rings or tubes of cells enclosing an open
       lumen?"
     scale: [absent, few, many]
     sources: [fleming2012, mescher2021]
+    anchors:
+      absent:
+        text: >-
+          no ring or tube of cells enclosing an open lumen anywhere in the field
+        sources: [mescher2021, fleming2012]
+      few:
+        text: >-
+          gland-like rings occupy less than half the field; the rest is solid sheets, cords
+          or fibrous tissue
+        sources: [fleming2012]
+      many:
+        text: >-
+          gland-like rings occupy more than half the field
+        sources: [fleming2012, mescher2021]
   - id: gland_regularity
     question: "If gland-like structures are present, are they evenly sized, evenly spaced and
       smoothly outlined, or crowded, angulated and irregular in size and shape?"
     scale: [regular, mildly_irregular, markedly_irregular]
     sources: [fleming2012, kather2019]
+    # Back-to-back and cribriform growth are Fleming's terms; the twofold and several-fold
+    # size spreads are reasoned, as no source states a size-variation cut-off.
+    anchors:
+      regular:
+        text: >-
+          glands alike in size, round or oval, evenly spaced, smoothly outlined, each with
+          an open lumen
+        sources: [mescher2021, fleming2012]
+      mildly_irregular:
+        text: >-
+          glands differ up to about twofold in size, some branched or angulated, lumina still
+          open and separate
+        sources: [fleming2012]
+      markedly_irregular:
+        text: >-
+          glands back-to-back or cribriform, sharply angulated, lumina slit-like or absent,
+          sizes differing several-fold
+        sources: [fleming2012, kather2019]
   - id: goblet_cells
     question: "Within any cell lining, are there clear rounded mucin droplets that push the nucleus
       to one side of the cell?"
     scale: [absent, few, many]
     sources: [mescher2021, fleming2012]
+    # The 'over half the lining cells, nucleus pushed to the periphery' wording follows
+    # Fleming's signet-ring threshold, which describes the same droplet-and-displaced-nucleus
+    # appearance. The one-in-four boundary for 'few' is reasoned.
+    anchors:
+      absent:
+        text: >-
+          no clear rounded vacuole in the lining; every nucleus sits at the same level
+        sources: [mescher2021]
+      few:
+        text: >-
+          clear vacuoles in under about a quarter of the lining cells, scattered singly
+        sources: [mescher2021, fleming2012]
+      many:
+        text: >-
+          clear vacuoles in over half the lining cells, each pushing its nucleus against
+          the cell base
+        sources: [fleming2012, mescher2021]
   - id: fibre_alignment
     question: "Where elongated fibre-like structures are present, do they run in tightly packed
       parallel bundles, or are they wavy, loose and haphazardly oriented?"
     scale: [uniformly_parallel, mixed, loose_and_haphazard]
     sources: [kather2019, mescher2021, ueno2021]
+    # 'a fifth of the field wide' converts Ueno's 20 um minimum bundle width for keloid-like
+    # collagen at 0.5 um/px, where the patch spans about 112 um. The amorphous ground
+    # substance in 'loose_and_haphazard' is Ueno's myxoid stroma.
+    anchors:
+      uniformly_parallel:
+        text: >-
+          almost every fibre runs on one axis, tightly packed, with no gaps or crossing bundles
+        sources: [mescher2021, kather2019]
+      mixed:
+        text: >-
+          two or three fibre directions present, or hyalinised bands over a fifth of the
+          field wide crossing looser fibres
+        sources: [ueno2021]
+      loose_and_haphazard:
+        text: >-
+          wavy fibres share no direction and are separated by pale amorphous ground substance
+        sources: [ueno2021, kather2019]
   - id: cytoplasm_eosinophilia
     question: "Is the material between the nuclei mostly deep pink or red, or mostly pale, grey or
       blue-purple?"
     scale: [pale_or_basophilic, mixed, strongly_eosinophilic]
     sources: [mescher2021, ueno2021]
+    # Basophilic-to-amphophilic and bright hyalinised eosinophilia are Ueno's descriptions of
+    # myxoid and keloid-like stroma; the two-thirds coverage boundary is reasoned and is set
+    # the same way on both sides so 'mixed' and 'strongly_eosinophilic' share one cut.
+    anchors:
+      pale_or_basophilic:
+        text: >-
+          material between nuclei is pale grey, blue or violet, with no saturated pink anywhere
+        sources: [ueno2021, mescher2021]
+      mixed:
+        text: >-
+          pink and pale blue-grey areas both present, neither covering more than about two
+          thirds of the field
+        sources: [ueno2021, mescher2021]
+      strongly_eosinophilic:
+        text: >-
+          deep saturated pink fills over two thirds of the field between nuclei, with no
+          blue-grey zones
+        sources: [mescher2021, ueno2021]
   - id: extracellular_mucin
     question: "Are there pools or wisps of pale blue-grey, structureless mucinous material lying
       outside cells?"
     scale: [absent, focal, extensive]
     sources: [kather2016, fleming2012, ueno2021]
+    # Both boundaries are Fleming's: over half the volume defines a mucinous tumour, and a
+    # tenth to a half defines 'mucinous features'.
+    anchors:
+      absent:
+        text: >-
+          no pale blue-grey structureless material lies outside cells anywhere in the field
+        sources: [kather2016]
+      focal:
+        text: >-
+          pale blue-grey pools cover between about a tenth and half the field
+        sources: [fleming2012]
+      extensive:
+        text: >-
+          pale blue-grey structureless material covers more than half the field
+        sources: [fleming2012, kather2016]
   - id: fat_vacuoles
     question: "Does the field show large empty round or polygonal spaces bounded by thin walls, in
       a honeycomb arrangement?"
     scale: [absent, few, many]
     sources: [mescher2021, kather2016]
+    # Counts reasoned: neither source gives a per-field count, so the levels are pinned to
+    # how many walled spaces fit in the field and to the wall being thinner than a nucleus,
+    # which is what separates a honeycomb of fat cells from an empty slide.
+    anchors:
+      absent:
+        text: >-
+          no large empty rounded space; any white area is unwalled or no wider than a nucleus
+        sources: [mescher2021, kather2016]
+      few:
+        text: >-
+          one to three large empty rounded spaces, each many times wider than a nucleus
+        sources: [mescher2021]
+      many:
+        text: >-
+          empty walled spaces in a honeycomb cover over half the field, their walls thinner
+          than a nucleus
+        sources: [mescher2021, kather2016]
   - id: small_round_cell_infiltrate
     question: "Are there collections of small, round, uniformly dark nuclei with almost no visible
       cytoplasm around them?"
     scale: [absent, scattered, dense]
     sources: [klintrup2005, kather2016]
+    # 'mild, patchy increase' and 'confluent band' are Klintrup's grade-1 and grade-2/3
+    # wording; the third-of-the-field extent for 'dense' is reasoned, since Klintrup scores
+    # the invasive margin of a whole section rather than a patch.
+    anchors:
+      absent:
+        text: >-
+          no small dark round nuclei; nuclei present are elongated, pale or vesicular
+        sources: [klintrup2005]
+      scattered:
+        text: >-
+          a mild, patchy increase of small dark round nuclei, singly or in small groups,
+          not confluent
+        sources: [klintrup2005]
+      dense:
+        text: >-
+          small dark round nuclei form a confluent band or sheet over about a third of the field
+        sources: [klintrup2005, kather2016]
   - id: necrotic_debris
     question: "Is there granular, fragmented material with broken nuclear dust and no intact cell
       outlines?"
     scale: [absent, focal, extensive]
     sources: [pollheimer2010, fleming2012, kather2016]
+    # Pollheimer grades necrosis in four bands (absent, up to a tenth, a tenth to three
+    # tenths, three tenths or more). This three-level scale collapses them, so the single
+    # boundary is set at his 'extensive' cut of about a third of the area. The gland-lumen
+    # location in 'focal' is Fleming's dirty necrosis.
+    anchors:
+      absent:
+        text: >-
+          every cell has an intact outline and a whole nucleus; no granular fragmented material
+        sources: [pollheimer2010]
+      focal:
+        text: >-
+          granular fragmented material in patches under about a third of the field, mostly
+          inside gland lumina
+        sources: [fleming2012, pollheimer2010]
+      extensive:
+        text: >-
+          granular fragmented material with scattered nuclear dust covers over a third of
+          the field
+        sources: [pollheimer2010, kather2016]
 
 classes:
   "adipose":
