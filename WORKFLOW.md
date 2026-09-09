@@ -154,8 +154,8 @@ not inspect it for you.
   (pneumoniamnist, breastmnist), multi-label (chestmnist, 14 findings), ordinal (retinamnist). The
   fetch rule records counts and checksums; the `medmnist` evaluator gives comparable metrics.
 - **The VLMs** on the RCD LLM Service, by concrete name, never alias: `qwen3.5-9b`,
-  `gemma-4-12b`, `qwen3.8-27b-fp8`, `gemma-4-31b`, each with its published concurrency in config.
-  Text embeddings from `qwen3-embedding-4b`.
+  `gemma-4-12b`, `qwen3.8-27b-fp8`, `gemma-4-31b`, each with its published concurrency in
+  config.
 
 ## 6. Arms
 
@@ -167,9 +167,14 @@ All arms predict on the same seeded test sample per dataset, so comparisons are 
 | A2 zero-shot, textbook | no | A1's prompt with the bank's concept questions and class fingerprints rendered into it; the model does the aggregation |
 | B textbook-only | no | concept scores matched to the bank's class fingerprints by a deterministic rule; no training |
 | C concept regression | yes | logistic regression on the concept-score vector, n labelled images |
-| D description embedding | yes | logistic regression on the embedding of the VLM's free-text description |
 | E pixel network | yes | ResNet-18 per resolution and seed on the full training split |
 | F pixel network + prior | yes | E with concept scores fused late, and with zero-shot probabilities as a soft label; the learning-curve arm |
+
+The letters skip D: a description-embedding arm (logistic regression on an embedding of the VLM's
+free-text description of the image) was planned and dropped. It tested whether free text embeds
+usefully, which is a different question from this one, and it was the sole reason for an embedding
+stage and a fifth model. The remaining letters keep their meaning so that notes and figures written
+against them stay readable.
 
 **A1, A2 and B are a ladder, not three unrelated baselines.** They deliver the same prior in three
 forms: absent, as prose, as structure. A1 and A2 differ in exactly one respect, a block of rendered
@@ -190,8 +195,8 @@ falls back to A1, the bank's content is.
 
 Four figures: the learning curve of E against F (how many labelled images is the textbook
 worth); A1, A2 and B against VLM size; E against resolution and GPU minutes; the per-modality gap
-between concept-based and pixel-based accuracy. If time is short, D is dropped first, then the
-`scrambled` control.
+between concept-based and pixel-based accuracy. If time is short, the `scrambled` control is
+dropped first, then a fusion mechanism from F.
 
 ## 7. Stages
 
@@ -202,11 +207,10 @@ between concept-based and pixel-based accuracy. If time is short, D is dropped f
 2  CACHE      per dataset x size: uint8 arrays, labels, the seeded samples                 48 CPU
 3  TRAIN      per dataset x size x seed, and the learning-curve grid at one size           GPU
 4  SCORE      per dataset x VLM x chunk of ~100 images: concept scores, one class          CPU,
-              distribution per zero-shot variant, description; responses archived          throttled
-5  EMBED      per dataset: embeddings of the descriptions                                  CPU
-6  CLASSIFY   per dataset x arm x n x seed: arms B, C, D; arm F training                   CPU / GPU
-7  EVALUATE   every arm on the test sample; medmnist evaluator; paired bootstrap           CPU
-8  REPORT     reconciliation against the published table; tables, macros, figures; the
+              distribution per zero-shot variant; every response archived raw              throttled
+5  CLASSIFY   per dataset x arm x n x seed: arms B and C; arm F training                   CPU / GPU
+6  EVALUATE   every arm on the test sample; medmnist evaluator; paired bootstrap           CPU
+7  REPORT     reconciliation against the published table; tables, macros, figures; the
               technical report                                                            local
 ```
 
@@ -225,9 +229,12 @@ The one stage type not seen in earlier projects, and the one that tests principl
   zero-shot variant, the description, and the raw response behind each call. The manifest adds the
   served model name from the response, the concept-bank file hash, the template hash of every
   prompt rendered, temperature, reasoning level, timestamp.
-- **Calls per image**: one for the concept scores, one for the description, and one for each
-  variant in `vlm.zero_shot.variants`. They are separate calls, never one response carrying several
-  fields, so that no arm's answer can condition on another's and each is archived raw on its own.
+- **Calls per image**: one for the concept scores, and one for each variant in
+  `vlm.zero_shot.variants`. They are separate calls, never one response carrying several fields, so
+  that no arm's answer can condition on another's and each is archived raw on its own. On the
+  datasets named in `vlm.describe.datasets` there is one further call for a free-text description of
+  the image; no arm reads it, and it is archived as qualitative material for the report and as the
+  only record of what the model says outside the bank's vocabulary.
 - **Prompt**: every prompt in this stage is rendered from the concept-bank file by a pure function
   in `priors/prompts.py`, described below; nothing is written by hand per dataset. The image at 224
   pixels; structured JSON requested and validated against the scales and the medmnist label map;
@@ -252,7 +259,7 @@ points, one template each.
 |---|---|---|
 | `render_scoring_prompt(bank)` | B, C, D, F | the concept questions and their scales |
 | `render_zero_shot_prompt(bank, variant)` | A1, A2 | the class names, and for `textbook` the rendered bank block |
-| `render_description_prompt(bank)` | D | the modality line only |
+| `render_description_prompt(bank)` | the archived descriptions | the modality line only |
 
 `render_zero_shot_prompt` assembles one string from three parts, and the variant selects only
 whether the middle part is present:
@@ -298,9 +305,10 @@ vlm:
   zero_shot:
     variants: [plain, textbook]   # add `scrambled` to run the prompt-length control
     scramble_seed: 0              # permutation of fingerprints across classes, in the manifest
+  describe:
+    datasets: [dermamnist, pathmnist, organamnist]   # archive only; no arm reads these
   base_url: https://llm.rcd.clemson.edu/v1
   key_file: ~/.config/rcd_llm/key
-  embedding_model: qwen3-embedding-4b
 train: {arch: resnet18, epochs: 100, gpu: {enabled: true, type: a100, cpus: 8, mem_mb: 32000, runtime: 240}}
 published: config/published.yaml
 resources: {...}      # first guesses, then set from benchmarks/ with the reasoning in comments
@@ -325,7 +333,7 @@ per-model caps.
 4. The client and one scoring chunk of ten images on one dataset and model: confirm a compute node
    reaches the service, the archive and manifest are right, a malformed response is handled, and
    each zero-shot variant left its own archived call. Then the full fan-out under the caps.
-5. Arms A1, A2, B, C and D; evaluate; the size and modality figures. Read one rendered `textbook`
+5. Arms A1, A2, B and C; evaluate; the size and modality figures. Read one rendered `textbook`
    prompt end to end before the fan-out: that text is the arm, and a wrong one is not visible in
    the numbers it produces.
 6. The learning curve, E then F; the crossing figure.
@@ -355,8 +363,13 @@ Record each beforehand as a fallback for a slow queue or a sleeping model.
 - How the prior enters arm F: late fusion, soft label, or both (default both).
 - ChestMNIST in all arms, or A and E only (default all).
 - Total call volume against the allocation. One call per image per model per dataset is 24,000 at
-  the default sample (500 test images x 12 datasets x 4 models), so A2 adds 24,000 to the roughly
-  120,000 of the original plan and `scrambled` another 24,000 if enabled.
+  the default test sample (500 x 12 x 4). The test sample now needs three of them, concept scores
+  and the two zero-shot variants, so 72,000; `scrambled` would add 24,000 and the archived
+  descriptions a few thousand more on three datasets.
+- Whether the train-sample concept scores that C and F need are collected at every model or only
+  one. C and F want a score vector, not a model sweep, and the train sample is 2,000 images per
+  dataset, so four models would cost 96,000 calls against 24,000 for one (default: one, the
+  largest).
 - Whether `scrambled` runs on all twelve datasets or a subset. Its job is to rule out a length
   effect, which three datasets across three modalities may settle as well as twelve (default:
   three, chosen before the numbers are seen).
@@ -365,7 +378,7 @@ Record each beforehand as a fallback for a slow queue or a sleeping model.
 ## 13. Layout
 
 ```
-Snakefile                 one file, nine labelled stages
+Snakefile                 one file, eight labelled stages
 config/config.yaml        every grid and knob; per-rule resources
 config/published.yaml     the MedMNIST v2 benchmark table
 profiles/palmetto/        SLURM executor; job, core and per-model llm_* caps
