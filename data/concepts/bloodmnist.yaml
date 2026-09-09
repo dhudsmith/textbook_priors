@@ -1,0 +1,296 @@
+# Concept bank for bloodmnist (MedMNIST v2), compiled 2026-09-09.
+# Eight normal peripheral-blood cell types imaged one cell per frame. Concepts are purely
+# morphological: is a nucleus present at all, how big the cell is against the surrounding red
+# cells, nuclear lobation and chromatin, nucleus-to-cytoplasm ratio, cytoplasmic basophilia, and
+# the abundance, colour and opacity of the cytoplasmic granules.
+#
+# HOW A FINGERPRINT LEVEL IS CHOSEN (the rule this file follows throughout).
+# A class commits to a level only when the source's frequency for that class is a majority, or
+# when the feature is definitional. Where a class spans a range - and one class here is a lumped
+# maturation series - there are exactly two admissible moves: use `any`, or use an explicit
+# ORDINAL BOUND on the ordered scale and say in the class comment that that is what the level is,
+# naming the end of the range it fixes. A level is never set from the earliest, most striking or
+# most memorable member of a range and then presented as the expectation.
+#
+# Two classes need a note. "platelet" is anucleate and only about a quarter the diameter of a red
+# cell, so nucleus_present and cell_size are what isolate it. The immature-granulocyte class LUMPS
+# promyelocytes, myelocytes and metamyelocytes, a maturation series over which chromatin condenses,
+# nuclear shape runs round -> oval -> indented and the cytoplasm turns from blue through pale to
+# pink; the source dataset kept the three stages together because the distinctions are subjective
+# even for a clinical pathologist. Its fingerprint therefore uses `any` wherever the stages
+# disagree, and two ordinal floors, each labelled as such in the class comment.
+dataset: bloodmnist
+modality: >-
+  three-channel colour microscopy images of individual normal peripheral-blood cells,
+  May-Grunwald-Giemsa stained, captured on a CellaVision DM96 analyser
+task: multi-class
+medmnist_task: "multi-class"
+source_dataset: Peripheral blood cell images, Hospital Clinic of Barcelona (Acevedo et al. 2020)
+provenance:
+  method: literature review with a web-connected assistant
+  assistant: Claude Opus 5 (claude-opus-5), 2026-09-09
+  reviewed_by: >-
+    simulated review by Claude Opus 5 (claude-opus-5), 2026-09-09; no clinician has
+    reviewed this file
+  sources:
+    - key: acevedo2020
+      citation: >-
+        Acevedo A, Merino A, Alferez S, Molina A, Boldu L, Rodellar J. A dataset of microscopic
+        peripheral blood cell images for development of automatic recognition systems.
+        Data in Brief 2020;30:105474.
+      doi: 10.1016/j.dib.2020.105474
+      used_for: [nucleus_present, cell_size, granule_abundance, granule_colour]
+    - key: acevedo2019
+      citation: >-
+        Acevedo A, Alferez S, Merino A, Puigvi L, Rodellar J. Recognition of peripheral blood cell
+        images using convolutional neural networks. Computer Methods and Programs in Biomedicine
+        2019;180:105020.
+      doi: 10.1016/j.cmpb.2019.105020
+      used_for: [granule_abundance, chromatin_density]
+    - key: yang2023
+      citation: >-
+        Yang J, Shi R, Wei D, Liu Z, Zhao L, Ke B, Pfister H, Ni B. MedMNIST v2 - A large-scale
+        lightweight benchmark for 2D and 3D biomedical image classification. Scientific Data
+        2023;10:41.
+      doi: 10.1038/s41597-022-01721-8
+      used_for: [nucleus_present, cell_size]
+    - key: palmer2015
+      citation: >-
+        Palmer L, Briggs C, McFadden S, Zini G, Burthem J, Rozenberg G, Proytcheva M, Machin SJ.
+        ICSH recommendations for the standardization of nomenclature and grading of peripheral
+        blood cell morphological features. International Journal of Laboratory Hematology
+        2015;37:287-303.
+      doi: 10.1111/ijlh.12327
+      used_for:
+        [cell_size, nuclear_lobation, granule_abundance, granule_colour, chromatin_density]
+    - key: rodellar2018
+      citation: >-
+        Rodellar J, Alferez S, Acevedo A, Molina A, Merino A. Image processing and machine learning
+        in the morphological analysis of blood cells. International Journal of Laboratory
+        Hematology 2018;40(S1):46-53.
+      doi: 10.1111/ijlh.12818
+      used_for:
+        [cell_size, nuclear_lobation, chromatin_density, nucleus_to_cytoplasm_ratio,
+         cytoplasm_basophilia, granule_abundance, granule_colour]
+    - key: tigner2026
+      citation: >-
+        Tigner A, Ibrahim SA, Murray IV. Histology, White Blood Cell. In: StatPearls. Treasure
+        Island (FL): StatPearls Publishing; updated 14 February 2026. Bookshelf NBK563148.
+      url: https://www.ncbi.nlm.nih.gov/books/NBK563148/
+      used_for:
+        [nucleus_present, cell_size, nuclear_lobation, chromatin_density,
+         nucleus_to_cytoplasm_ratio, cytoplasm_basophilia, granule_abundance, granule_colour,
+         granules_obscure_nucleus]
+    - key: espinoza2023
+      citation: >-
+        Espinoza VE, Emmady PD. Histology, Monocytes. In: StatPearls. Treasure Island (FL):
+        StatPearls Publishing; updated 24 April 2023. Bookshelf NBK557618.
+      url: https://www.ncbi.nlm.nih.gov/books/NBK557618/
+      used_for:
+        [cell_size, nuclear_lobation, chromatin_density, nucleus_to_cytoplasm_ratio,
+         cytoplasm_basophilia, granule_abundance]
+    - key: williams2022
+      citation: >-
+        Williams O, Sergent SR. Histology, Platelets. In: StatPearls. Treasure Island (FL):
+        StatPearls Publishing; updated 14 November 2022. Bookshelf NBK557800.
+      url: https://www.ncbi.nlm.nih.gov/books/NBK557800/
+      used_for: [nucleus_present, cell_size, cytoplasm_basophilia, granule_abundance]
+    - key: chapman2023
+      citation: >-
+        Chapman J, Zhang Y. Histology, Hematopoiesis. In: StatPearls. Treasure Island (FL):
+        StatPearls Publishing; updated 1 May 2023. Bookshelf NBK534246.
+      url: https://www.ncbi.nlm.nih.gov/books/NBK534246/
+      used_for: [chromatin_density, cytoplasm_basophilia, cell_size]
+    - key: constantino2000
+      citation: >-
+        Constantino BT, Cogionis B. Nucleated RBCs - significance in the peripheral blood film.
+        Laboratory Medicine 2000;31(4):223-229.
+      doi: 10.1309/D70F-HCC1-XX1T-4ETE
+      used_for: [nucleus_present, chromatin_density, nucleus_to_cytoplasm_ratio]
+    - key: migliaccio2010
+      citation: >-
+        Migliaccio AR. Erythroblast enucleation. Haematologica 2010;95(12):1985-1988.
+      doi: 10.3324/haematol.2010.033225
+      used_for: [chromatin_density, cell_size, cytoplasm_basophilia]
+concepts:
+  - id: nucleus_present
+    question: "Does the cell in the centre of the image contain a nucleus, that is a distinct
+      darker internal body, or is the whole cell body uniform with no nucleus at all?"
+    scale: [absent, present]
+    sources: [tigner2026, williams2022, constantino2000, acevedo2020, yang2023]
+  - id: cell_size
+    question: "How large is the central cell compared with the surrounding red blood cells:
+      clearly smaller than one red cell, about the same size, or clearly larger?"
+    scale: [much_smaller, similar, larger]
+    sources:
+      [tigner2026, espinoza2023, williams2022, chapman2023, migliaccio2010, palmer2015,
+       rodellar2018, yang2023]
+  - id: nuclear_lobation
+    question: "What is the shape of the nucleus: no nucleus at all, a single round or oval mass,
+      a single indented, kidney-shaped or band-like mass, two lobes joined by a strand, or three
+      or more lobes joined by thin strands?"
+    scale: [none, round, indented, bilobed, multilobed]
+    sources: [tigner2026, espinoza2023, palmer2015, rodellar2018]
+  - id: chromatin_density
+    question: "How dense is the nuclear material: open and finely textured with pale areas,
+      moderately clumped, densely clumped but with a visible coarse pattern of light and dark,
+      or so uniformly dark and structureless that no internal pattern can be seen at all?"
+    scale: [open_fine, moderately_clumped, dense_clumped, pyknotic_structureless]
+    sources:
+      [tigner2026, espinoza2023, chapman2023, migliaccio2010, constantino2000, rodellar2018]
+  - id: nucleus_to_cytoplasm_ratio
+    question: "About what fraction of the cell area is nucleus: less than a third (low), between
+      a third and two thirds (moderate), or more than two thirds (high)?"
+    scale: [low, moderate, high]
+    sources: [tigner2026, espinoza2023, constantino2000, rodellar2018]
+  - id: cytoplasm_basophilia
+    question: "What colour is the cytoplasm around the nucleus: pink or almost colourless, pale
+      grey-blue, plainly blue, or deep intense blue?"
+    scale: [pink_or_colourless, pale_grey_blue, blue, deep_blue]
+    sources: [tigner2026, espinoza2023, chapman2023, williams2022, rodellar2018]
+  - id: granule_abundance
+    question: "How prominent are granules, that is small discrete dots, in the cytoplasm: none
+      visible, fine and sparse or dust-like, or coarse and abundant so that they fill the
+      cytoplasm?"
+    scale: [absent, fine_sparse, coarse_abundant]
+    sources: [tigner2026, espinoza2023, williams2022, palmer2015, rodellar2018]
+  - id: granule_colour
+    question: "If granules are visible, what colour are they, from palest to darkest: none
+      visible, pale lilac or neutral, orange-red, or dark purple to black?"
+    scale: [none_visible, pale_neutral, orange_red, dark_purple]
+    sources: [tigner2026, palmer2015, rodellar2018, acevedo2020]
+  - id: granules_obscure_nucleus
+    question: "Do the cytoplasmic granules lie over the nucleus and hide it: not at all, partly,
+      or so completely that the nuclear outline cannot be traced?"
+    scale: [absent, partial, marked]
+    sources: [tigner2026]
+classes:
+  # Segmented neutrophil: 12-15 um, 3-5 nuclear lobes joined by thin strands, condensed
+  # chromatin, pale pink cytoplasm whose specific granules are barely resolvable.
+  "neutrophil":
+    fingerprint:
+      nucleus_present: present
+      cell_size: larger
+      nuclear_lobation: multilobed
+      chromatin_density: dense_clumped
+      nucleus_to_cytoplasm_ratio: moderate
+      cytoplasm_basophilia: pink_or_colourless
+      granule_abundance: fine_sparse
+      granule_colour: pale_neutral
+      granules_obscure_nucleus: absent
+    sources: [tigner2026, palmer2015, yang2023]
+  # Eosinophil: bilobed nucleus with large coarse granules staining red to pink. The bilobed
+  # nucleus stays visible, which is the point of the contrast with the basophil, whose granules
+  # normally hide the nucleus; tigner2026 reports obscuring only in SOME eosinophils, a minority
+  # statement rather than the expectation, so this class commits to `absent`.
+  "eosinophil":
+    fingerprint:
+      nucleus_present: present
+      cell_size: larger
+      nuclear_lobation: bilobed
+      chromatin_density: dense_clumped
+      nucleus_to_cytoplasm_ratio: moderate
+      cytoplasm_basophilia: any
+      granule_abundance: coarse_abundant
+      granule_colour: orange_red
+      granules_obscure_nucleus: absent
+    sources: [tigner2026, palmer2015, yang2023]
+  # Basophil: 12-15 um, bilobed or S-shaped nucleus that the coarse blue-purple to near-black
+  # granules normally obscure, so nuclear shape, chromatin and cytoplasm colour are left open.
+  "basophil":
+    fingerprint:
+      nucleus_present: present
+      cell_size: larger
+      nuclear_lobation: any
+      chromatin_density: any
+      nucleus_to_cytoplasm_ratio: any
+      cytoplasm_basophilia: any
+      granule_abundance: coarse_abundant
+      granule_colour: dark_purple
+      granules_obscure_nucleus: marked
+    sources: [tigner2026, palmer2015, yang2023]
+  # Erythroblast: nucleated red-cell precursor. The nucleus is round and becomes dense through
+  # chromosome condensation until it is an opaque, structureless pyknotic mass, which is what
+  # separates it from the merely heterochromatic lymphocyte nucleus. The precursor is larger than
+  # the mature red cell it becomes, since the cell shrinks as it matures. No granules. Cytoplasm
+  # runs from deeply basophilic to pinkish as haemoglobin accumulates, so its colour is left open.
+  "erythroblast":
+    fingerprint:
+      nucleus_present: present
+      cell_size: larger
+      nuclear_lobation: round
+      chromatin_density: pyknotic_structureless
+      nucleus_to_cytoplasm_ratio: high
+      cytoplasm_basophilia: any
+      granule_abundance: absent
+      granule_colour: none_visible
+      granules_obscure_nucleus: absent
+    sources: [migliaccio2010, chapman2023, constantino2000, palmer2015, yang2023]
+  # Immature granulocytes: promyelocytes, myelocytes and metamyelocytes pooled, all larger than a
+  # red cell. Two levels here are ORDINAL FLOORS, not modal expectations, and are marked as such:
+  #   chromatin_density: open_fine is the LEAST-CONDENSED end the series reaches - chapman2023
+  #     describes immature granulocytes as having large vesicular nuclei - and chromatin condenses
+  #     stage by stage from there, the myelocyte, the most numerous stage, being moderately
+  #     clumped. The floor is what holds the class apart from the dense-chromatin mature cells.
+  #   granule_abundance: fine_sparse is the LOWEST level the series reaches, and is definitional
+  #     rather than stage-dependent: every stage of the granulocytic series carries cytoplasmic
+  #     granules, primary azurophilic ones from the promyelocyte and lineage-specific ones from
+  #     the myelocyte on, so granules are never absent even though their size and colour vary.
+  # Everything that genuinely spans the series is left open: nuclear shape runs round -> oval ->
+  # indented, the N:C ratio falls, granule colour follows the lineage, and the cytoplasm runs from
+  # blue through pale to pink as specific granules appear - chapman2023 calls these cells less
+  # basophilic than the blasts they come from, so no single colour level holds a majority.
+  "immature granulocytes(myelocytes, metamyelocytes and promyelocytes)":
+    fingerprint:
+      nucleus_present: present
+      cell_size: larger
+      nuclear_lobation: any
+      chromatin_density: open_fine        # ordinal floor: least-condensed end of the series
+      nucleus_to_cytoplasm_ratio: any
+      cytoplasm_basophilia: any
+      granule_abundance: fine_sparse      # ordinal floor: granules are never absent in this series
+      granule_colour: any
+      granules_obscure_nucleus: absent
+    sources: [chapman2023, acevedo2020, acevedo2019, palmer2015, yang2023]
+  # Small lymphocyte: about the size of a red cell, spherical heterochromatic nucleus, scant pale
+  # blue cytoplasm, no visible granules.
+  "lymphocyte":
+    fingerprint:
+      nucleus_present: present
+      cell_size: similar
+      nuclear_lobation: round
+      chromatin_density: dense_clumped
+      nucleus_to_cytoplasm_ratio: high
+      cytoplasm_basophilia: blue
+      granule_abundance: absent
+      granule_colour: none_visible
+      granules_obscure_nucleus: absent
+    sources: [tigner2026, yang2023]
+  # Monocyte: largest leucocyte, 12-20 um and about twice a red cell, indented, kidney-shaped or
+  # C-shaped nucleus, abundant pale grey to blue cytoplasm with fine granules.
+  "monocyte":
+    fingerprint:
+      nucleus_present: present
+      cell_size: larger
+      nuclear_lobation: indented
+      chromatin_density: moderately_clumped
+      nucleus_to_cytoplasm_ratio: low
+      cytoplasm_basophilia: pale_grey_blue
+      granule_abundance: fine_sparse
+      granule_colour: any
+      granules_obscure_nucleus: absent
+    sources: [espinoza2023, tigner2026, yang2023]
+  # Platelet: the smallest blood cell, about 2 um and far smaller than a red cell, anucleate,
+  # discoid, staining blue with a granular appearance. Nuclear concepts do not apply.
+  "platelet":
+    fingerprint:
+      nucleus_present: absent
+      cell_size: much_smaller
+      nuclear_lobation: none
+      chromatin_density: any
+      nucleus_to_cytoplasm_ratio: any
+      cytoplasm_basophilia: blue
+      granule_abundance: fine_sparse
+      granule_colour: any
+      granules_obscure_nucleus: absent
+    sources: [williams2022, palmer2015, yang2023]

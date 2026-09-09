@@ -1,0 +1,251 @@
+# pneumoniamnist concept bank
+# Binary paediatric chest-radiograph task from the Kermany et al. 2018 collection, as
+# packaged by MedMNIST v2.
+# Compiled 2026-09-09 by literature review; simulated expert review only (see provenance).
+# NOTE: the source collection lumps bacterial and viral disease into the single positive
+# label "pneumonia". The positive fingerprint below is therefore a UNION expectation -
+# a lobar/segmental dense consolidation OR a diffuse bilateral interstitial and
+# peribronchial pattern - and the literature commits to neither arm for the class as a
+# whole. Radiography is explicitly held to be too insensitive to separate bacterial from
+# viral aetiology (bradley2011, andronikou2017), so the fingerprint deliberately does not
+# over-commit to lobar consolidation.
+# HOW THE POSITIVE FINGERPRINT WAS SET. The two WHO categories that make up the label are
+# "consolidation" (a dense or fluffy opacity occupying a portion or whole of a lobe or of
+# the entire lung, which may or may not contain air bronchograms) and "other infiltrate"
+# (linear and patchy densities in a lacy pattern involving both lungs, featuring
+# peribronchial thickening and multiple areas of atelectasis, and also including minor
+# patchy infiltrates too small to constitute primary-endpoint consolidation)
+# (who2001, cherian2005, fancourt2017). For each concept the union of those two
+# definitions was taken and its LOWEST guaranteed level on that concept's ordered scale
+# read off. Where that floor lies strictly above the level the same sources assign to an
+# unremarkable film, the floor is stated as the fingerprint level: it is what the sources
+# actually exclude, and on an ordered scale a film from either arm remains nearer to it
+# than to the negative fingerprint. Where the floor coincides with the unremarkable
+# film's level - because one arm may show nothing at all on that concept - the sources
+# exclude nothing and the value is `any`. Three concepts commit, five do not; the comment
+# on each `any` names the clause that permits the low end.
+# NOTE: the subjects are children aged one to five years. No adult cardiothoracic-ratio
+# criterion is used, and no concept below is tripped by a broad thymic silhouette, which
+# is a normal finding at this age: the border-obscuration concept asks only about the
+# lower cardiac edge and the hemidiaphragms, never the upper mediastinum.
+dataset: pneumoniamnist
+modality: 1-channel greyscale paediatric frontal chest radiographs
+task: binary
+medmnist_task: "binary-class"
+source_dataset: Paediatric chest X-ray collection (Kermany et al. 2018)
+provenance:
+  method: literature review with a web-connected assistant
+  assistant: Claude Opus 5 (claude-opus-5), 2026-09-09
+  reviewed_by: >-
+    simulated review by Claude Opus 5 (claude-opus-5), 2026-09-09; no clinician has
+    reviewed this file
+  sources:
+    - key: yang2023
+      citation: >-
+        Yang J, Shi R, Wei D, Liu Z, Zhao L, Ke B, Pfister H, Ni B. MedMNIST v2 - A large-scale
+        lightweight benchmark for 2D and 3D biomedical image classification. Scientific Data
+        2023;10:41.
+      doi: 10.1038/s41597-022-01721-8
+      used_for: [parenchymal_opacity]
+    - key: kermany2018
+      citation: >-
+        Kermany DS, Goldbaum M, Cai W, et al. Identifying medical diagnoses and treatable diseases
+        by image-based deep learning. Cell 2018;172(5):1122-1131.e9.
+      doi: 10.1016/j.cell.2018.02.010
+      used_for: [parenchymal_opacity]
+    - key: who2001
+      citation: >-
+        World Health Organization Pneumonia Vaccine Trial Investigators' Group. Standardization
+        of interpretation of chest radiographs for the diagnosis of pneumonia in children.
+        Geneva: World Health Organization; 2001. WHO/V&B/01.35.
+      url: https://iris.who.int/handle/10665/66956
+      used_for:
+        - parenchymal_opacity
+        - opacity_extent
+        - opacity_density
+        - linear_streaky_markings
+        - air_bronchogram
+        - peribronchial_thickening
+        - costophrenic_angle_blunting
+    - key: cherian2005
+      citation: >-
+        Cherian T, Mulholland EK, Carlin JB, et al. Standardized interpretation of paediatric
+        chest radiographs for the diagnosis of pneumonia in epidemiological studies.
+        Bulletin of the World Health Organization 2005;83:353-359.
+      url: https://pmc.ncbi.nlm.nih.gov/articles/PMC2626240/
+      used_for:
+        - parenchymal_opacity
+        - opacity_extent
+        - opacity_density
+        - linear_streaky_markings
+        - air_bronchogram
+        - peribronchial_thickening
+        - costophrenic_angle_blunting
+    - key: fancourt2017
+      citation: >-
+        Fancourt N, Deloria Knoll M, Barger-Kamate B, et al. Standardized Interpretation of
+        Chest Radiographs in Cases of Pediatric Pneumonia From the PERCH Study.
+        Clinical Infectious Diseases 2017;64(Suppl 3):S253-S261.
+      doi: 10.1093/cid/cix082
+      used_for:
+        - parenchymal_opacity
+        - opacity_extent
+        - opacity_density
+        - linear_streaky_markings
+        - air_bronchogram
+        - peribronchial_thickening
+        - border_obscuration
+        - costophrenic_angle_blunting
+    - key: hansell2008
+      citation: >-
+        Hansell DM, Bankier AA, MacMahon H, McLoud TC, Muller NL, Remy J. Fleischner Society:
+        glossary of terms for thoracic imaging. Radiology 2008;246(3):697-722.
+      doi: 10.1148/radiol.2462070712
+      used_for:
+        - parenchymal_opacity
+        - opacity_density
+        - linear_streaky_markings
+        - air_bronchogram
+        - border_obscuration
+    - key: bradley2011
+      citation: >-
+        Bradley JS, Byington CL, Shah SS, et al. The management of community-acquired pneumonia
+        in infants and children older than 3 months of age: clinical practice guidelines by the
+        Pediatric Infectious Diseases Society and the Infectious Diseases Society of America.
+        Clinical Infectious Diseases 2011;53:e25-e76.
+      doi: 10.1093/cid/cir531
+      used_for: [parenchymal_opacity, opacity_extent, costophrenic_angle_blunting]
+    - key: andronikou2017
+      citation: >-
+        Andronikou S, Lambert E, Halton J, Hilder L, Crumley I, Lyttle MD, Kosack C. Guidelines
+        for the use of chest radiographs in community-acquired pneumonia in children and
+        adolescents. Pediatric Radiology 2017;47:1405-1411.
+      doi: 10.1007/s00247-017-3944-4
+      used_for:
+        - parenchymal_opacity
+        - opacity_density
+        - linear_streaky_markings
+        - costophrenic_angle_blunting
+concepts:
+  # Gate concept. WHO reference reading calls a film unremarkable only when no consolidation,
+  # no other infiltrate and no pleural fluid is present; Fleischner defines "opacity" as any
+  # area that attenuates the beam more than its surroundings.
+  - id: parenchymal_opacity
+    question: "Is any part of either lung field whiter than the surrounding dark, air-filled
+      lung?"
+    scale: [absent, subtle, definite]
+    sources: [yang2023, kermany2018, who2001, cherian2005, fancourt2017, hansell2008,
+              bradley2011, andronikou2017]
+  # WHO consolidation occupies "a portion or whole of a lobe or of the entire lung"; WHO
+  # "other infiltrate" instead involves both lungs, but also admits "minor patchy
+  # infiltrates that are not of sufficient magnitude to constitute primary endpoint
+  # consolidation". Neither category admits a film with no opacity at all, so `none` is
+  # excluded for the positive class and the union's floor is the minor-patchy level.
+  - id: opacity_extent
+    question: "How much of the combined lung area is taken up by whiter, less dark regions?"
+    scale: [none, small_patch, lobe_sized, most_of_both_lungs]
+    sources: [who2001, cherian2005, fancourt2017, bradley2011]
+  # Fleischner: consolidation is a homogeneous increase in attenuation that OBSCURES the
+  # margins of vessels and airway walls; ground-glass opacity is a smaller increase in which
+  # those margins are still visible. WHO wording for consolidation is "dense or fluffy",
+  # while "other infiltrate" is still described as linear and patchy DENSITIES. Both arms
+  # therefore carry at least the hazy level; only `none` is excluded, and the dense top
+  # level is not.
+  - id: opacity_density
+    question: "Where the lung looks whiter, are the fine vessel lines still visible through it,
+      or completely hidden by solid whiteness?"
+    scale: [none, hazy_lines_visible, solid_lines_hidden]
+    sources: [who2001, cherian2005, fancourt2017, hansell2008, andronikou2017]
+  # WHO "other infiltrate": linear and patchy densities in a lacy pattern involving both
+  # lungs. Fleischner: a reticular pattern is innumerable small linear opacities that by
+  # summation resemble a net.
+  - id: linear_streaky_markings
+    question: "Are fine linear, streaky or net-like white lines spread through both lung fields?"
+    scale: [absent, mild, marked]
+    sources: [who2001, cherian2005, fancourt2017, hansell2008, andronikou2017]
+  # Fleischner: air-filled (dark) bronchi on a background of opaque airless lung. WHO says
+  # consolidation "may or may not contain air bronchograms", so the positive class does not
+  # commit; but the sign does not occur in a well-aerated film, so the negative class does.
+  - id: air_bronchogram
+    question: "Inside a whiter region, are branching dark tube-like lines visible against the
+      white?"
+    scale: [absent, present]
+    sources: [who2001, cherian2005, fancourt2017, hansell2008]
+  # WHO "other infiltrate" explicitly features peribronchial thickening; on a frontal film
+  # this reads as coarse, cuffed or ring-shaped markings radiating from the hila.
+  - id: peribronchial_thickening
+    question: "Around the central root of each lung, do the branching markings look thickened,
+      cuffed or ring-shaped rather than fine and tapering?"
+    scale: [absent, mild, marked]
+    sources: [who2001, cherian2005, fancourt2017]
+  # Fleischner silhouette sign: absence of depiction of an anatomic soft-tissue border,
+  # caused by consolidation or atelectasis of the adjacent lung. Restricted here to the
+  # LOWER cardiac edge and the hemidiaphragms; the upper mediastinum is excluded because a
+  # broad thymic silhouette is expected at one to five years of age.
+  - id: border_obscuration
+    question: "Is the outline of the lower heart edge, or of either dome of the diaphragm,
+      blurred or lost where lung meets it?"
+    scale: [absent, partial, complete]
+    sources: [hansell2008, fancourt2017]
+  # WHO pleural effusion: fluid in the lateral pleural space, in most cases seen at the
+  # costophrenic angle. Effusion is one of the two components of the WHO primary endpoint,
+  # so the positive class admits it, but it complicates only a minority of cases.
+  - id: costophrenic_angle_blunting
+    question: "Is either lower outer angle between the diaphragm and the chest wall filled in
+      or rounded rather than a sharp point?"
+    scale: [absent, mild, marked]
+    sources: [who2001, cherian2005, fancourt2017, bradley2011, andronikou2017]
+classes:
+  # WHO reference reading: a film is read as unremarkable when there is no consolidation,
+  # no other infiltrate and no pleural fluid. Every concept above is worded so that such a
+  # film sits at the bottom of its scale.
+  normal:
+    fingerprint:
+      parenchymal_opacity: absent
+      opacity_extent: none
+      opacity_density: none
+      linear_streaky_markings: absent
+      air_bronchogram: absent
+      peribronchial_thickening: absent
+      border_obscuration: absent
+      costophrenic_angle_blunting: absent
+    sources: [who2001, cherian2005, fancourt2017, hansell2008, kermany2018]
+  # Union of the two WHO positive categories, set by the floor rule described in the header.
+  # Committed (the sources exclude the unremarkable film's level on these three):
+  #   parenchymal_opacity   - both categories require an opacity to be present at all.
+  #   opacity_extent        - `none` is excluded by both categories; the floor is the
+  #                           "minor patchy infiltrate" clause of "other infiltrate", so
+  #                           `small_patch` is a lower bound, not a claim that the class is
+  #                           never lobar or never bilateral.
+  #   opacity_density       - `none` is excluded; consolidation is "dense or fluffy" and
+  #                           "other infiltrate" is still linear and patchy densities, so
+  #                           `hazy_lines_visible` is the floor and the solid level is not
+  #                           excluded.
+  # Not committed (a source clause explicitly permits the low end for one arm, so the level
+  # cannot be distinguished from an unremarkable film):
+  #   linear_streaky_markings   - lacy bilateral lines define "other infiltrate" only; a
+  #                               lobar consolidation need show none (fancourt2017).
+  #   air_bronchogram           - WHO consolidation "may or may not contain air
+  #                               bronchograms" (cherian2005, fancourt2017).
+  #   peribronchial_thickening  - listed as a feature of "other infiltrate" only; it is not
+  #                               part of the consolidation definition, and no verified
+  #                               source claims it across both arms. Radiography cannot say
+  #                               which arm a given film belongs to (bradley2011,
+  #                               andronikou2017), so this stays open.
+  #   border_obscuration        - the silhouette sign follows consolidation or atelectasis
+  #                               of adjacent lung (hansell2008); a lacy bilateral pattern
+  #                               need not blur any border.
+  #   costophrenic_angle_blunting - pleural fluid is a separate WHO finding and a
+  #                               complication of a minority of cases (andronikou2017).
+  pneumonia:
+    fingerprint:
+      parenchymal_opacity: definite
+      opacity_extent: small_patch
+      opacity_density: hazy_lines_visible
+      linear_streaky_markings: any
+      air_bronchogram: any
+      peribronchial_thickening: any
+      border_obscuration: any
+      costophrenic_angle_blunting: any
+    sources: [who2001, cherian2005, fancourt2017, hansell2008, bradley2011, andronikou2017,
+              kermany2018]

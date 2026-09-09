@@ -1,0 +1,173 @@
+# breastmnist concept bank
+# Binary breast-ultrasound task from the BUSI dataset, as packaged by MedMNIST v2.
+# Compiled 2026-09-09 by literature review; simulated expert review only (see provenance).
+#
+# NOTE ON THE CLASS KEYS: MedMNIST collapses BUSI's three original categories into two by
+# merging the "normal" (no lesion at all) and "benign" (benign lesion) images into the single
+# negative class "normal, benign", and testing them against "malignant". The negative class is
+# therefore a MIXTURE of lesion-free images and images containing a benign mass. Every
+# lesion-descriptor scale below carries an explicit bottom level (`no_focal_area` or `absent`)
+# so that a lesion-free image has an honest answer that sits below the benign level rather
+# than being undefined; that is what lets the negative class commit instead of using `any`.
+#
+# COMMITMENT RULE used for every fingerprint level in this file:
+#   commit a class to a level only where the cited source reports that level for a MAJORITY of
+#   that class (roughly, sensitivity >= 50% for the class that shows the feature, or
+#   specificity >= 90% for the class that lacks it), or where the level is definitional.
+#   A feature that is high-specificity but low-sensitivity ("characteristic when present, often
+#   absent") is NOT the textbook expectation for the class that sometimes shows it: that class
+#   gets `any`, while the class that reliably lacks it commits to the bottom level. Such a
+#   concept then discriminates in the rule-in direction only, which is what the lexicon claims.
+#   Sensitivities and specificities are Stavros 1995 Table 2 (read from the full text);
+#   negative-class commitments additionally rest on the NPVs in Hong 2005.
+dataset: breastmnist
+modality: 1-channel greyscale breast ultrasound images
+task: binary
+medmnist_task: "binary-class"
+source_dataset: BUSI, Breast Ultrasound Images (Al-Dhabyani et al. 2020)
+provenance:
+  method: literature review with a web-connected assistant
+  assistant: Claude Opus 5 (claude-opus-5), 2026-09-09
+  reviewed_by: >-
+    simulated review by Claude Opus 5 (claude-opus-5), 2026-09-09; no clinician has
+    reviewed this file
+  sources:
+    - key: yang2023
+      citation: >-
+        Yang J, Shi R, Wei D, Liu Z, Zhao L, Ke B, Pfister H, Ni B. MedMNIST v2 - A large-scale
+        lightweight benchmark for 2D and 3D biomedical image classification. Scientific Data
+        2023;10:41.
+      doi: 10.1038/s41597-022-01721-8
+      used_for: [focal_lesion_present]
+    - key: aldhabyani2020
+      citation: >-
+        Al-Dhabyani W, Gomaa M, Khaled H, Fahmy A. Dataset of breast ultrasound images.
+        Data in Brief 2020;28:104863.
+      doi: 10.1016/j.dib.2019.104863
+      used_for: [focal_lesion_present]
+    - key: dorsi2013
+      citation: >-
+        D'Orsi CJ, Sickles EA, Mendelson EB, Morris EA. ACR BI-RADS Atlas, Breast Imaging
+        Reporting and Data System. 5th ed. Reston, VA: American College of Radiology; 2013.
+      url: https://www.acr.org/Clinical-Resources/Clinical-Tools-and-Reference/Reporting-and-Data-Systems/Bi-Rads
+      used_for: [focal_lesion_present]
+    - key: mendelson2013
+      citation: >-
+        Mendelson EB, Bohm-Velez M, Berg WA, et al. ACR BI-RADS Ultrasound. In: ACR BI-RADS
+        Atlas, Breast Imaging Reporting and Data System. 5th ed. Reston, VA: American College
+        of Radiology; 2013.
+      url: https://www.acr.org/Clinical-Resources/Clinical-Tools-and-Reference/Reporting-and-Data-Systems/Bi-Rads
+      used_for:
+        - focal_lesion_present
+        - shape_irregularity
+        - margin_circumscription
+        - taller_than_wide
+        - posterior_shadowing
+        - tissue_plane_distortion
+    - key: stavros1995
+      citation: >-
+        Stavros AT, Thickman D, Rapp CL, Dennis MA, Parker SH, Sisney GA. Solid breast nodules:
+        use of sonography to distinguish between benign and malignant lesions.
+        Radiology 1995;196:123-34.
+      doi: 10.1148/radiology.196.1.7784555
+      used_for:
+        - shape_irregularity
+        - margin_circumscription
+        - taller_than_wide
+        - posterior_shadowing
+        - thick_echogenic_halo
+        - tissue_plane_distortion
+    - key: hong2005
+      citation: >-
+        Hong AS, Rosen EL, Soo MS, Baker JA. BI-RADS for sonography: positive and negative
+        predictive values of sonographic features. AJR Am J Roentgenol 2005;184:1260-5.
+      doi: 10.2214/ajr.184.4.01841260
+      used_for: [shape_irregularity, margin_circumscription, taller_than_wide]
+    - key: lee2017
+      citation: >-
+        Lee J. Practical and illustrated summary of updated BI-RADS for ultrasonography.
+        Ultrasonography 2017;36:71-81.
+      doi: 10.14366/usg.16034
+      used_for: [focal_lesion_present, posterior_shadowing]
+    - key: rao2016
+      citation: >-
+        Rao AA, Feneis J, Lalonde C, Ojeda-Fournier H. A pictorial review of changes in the
+        BI-RADS fifth edition. RadioGraphics 2016;36:623-39.
+      doi: 10.1148/rg.2016150178
+      used_for: [margin_circumscription, tissue_plane_distortion]
+concepts:
+  # Gate concept. Definitional for the malignant class. The negative class stays `any`: the
+  # literature makes no claim about whether a "normal or benign" breast image contains a mass,
+  # and MedMNIST's merge puts both answers in the same class.
+  - id: focal_lesion_present
+    question: "Is a discrete focal area standing out from the surrounding layered tissue visible?"
+    scale: [absent, equivocal, present]
+    sources: [yang2023, aldhabyani2020, dorsi2013, mendelson2013, lee2017]
+  # BI-RADS shape. Microlobulation is a majority malignant finding (Stavros sensitivity 75.2%),
+  # and oval shape is a majority benign finding (Hong NPV 84%), so BOTH classes commit here.
+  # `no_focal_area` is the honest bottom level for a lesion-free image; it sits one step below
+  # the benign level, keeping normal images nearer the negative fingerprint.
+  - id: shape_irregularity
+    question: "If a focal area stands out, is its outline oval, gently lobulated, or jagged?"
+    scale: [no_focal_area, oval_or_round, gently_lobulated, irregular]
+    sources: [stavros1995, mendelson2013, hong2005]
+  # BI-RADS margin. The single most sensitive malignant descriptor (angular margins, Stavros
+  # sensitivity 83.2%) and the most reliable benign one (circumscribed margin, Hong NPV 90%),
+  # so BOTH classes commit. Same `no_focal_area` floor as above.
+  - id: margin_circumscription
+    question: "If a focal area stands out, is its boundary sharp, blurred, or angular and spiky?"
+    scale: [no_focal_area, circumscribed, indistinct, angular_or_spiculated]
+    sources: [stavros1995, mendelson2013, hong2005, rao2016]
+  # BI-RADS orientation, framed as presence so a lesion-free image answers `absent`. Stavros
+  # sensitivity 41.6% but specificity 98.1%: rule-in only, so malignant takes `any`.
+  - id: taller_than_wide
+    question: "Does any focal area reach deeper below the skin than it measures across?"
+    scale: [absent, borderline, present]
+    sources: [stavros1995, mendelson2013, hong2005]
+  # Posterior acoustic shadowing. Stavros sensitivity 48.8%, specificity 94.7%: rule-in only.
+  - id: posterior_shadowing
+    question: "Is tissue directly beneath a focal area darker than tissue beside it at that depth?"
+    scale: [absent, mild, marked]
+    sources: [stavros1995, mendelson2013, lee2017]
+  # Stavros' thick echogenic halo, the sonographic form of spiculation: sensitivity 36.0% but
+  # specificity 99.4%: rule-in only. A thin bright pseudocapsule counts as `absent` by wording,
+  # so lesion-free and benign-lesion images both sit at the bottom.
+  - id: thick_echogenic_halo
+    question: "Is a broad bright rim, thicker than a fine line, present around a focal area?"
+    scale: [absent, mild, marked]
+    sources: [stavros1995]
+  # BI-RADS associated feature: architectural distortion. Stavros' duct extension (24.8%) and
+  # branch pattern (29.6%) are both minority findings with specificity above 95%: rule-in only.
+  - id: tissue_plane_distortion
+    question: "Are the horizontal tissue layers around a focal area pulled in or interrupted?"
+    scale: [absent, mild, marked]
+    sources: [stavros1995, mendelson2013, rao2016]
+classes:
+  # Commits on the two majority-sensitivity descriptors (shape, margin) and on the definitional
+  # gate. `any` on the four high-specificity, low-sensitivity findings: the lexicon calls them
+  # characteristic when present, not expected in every cancer.
+  malignant:
+    fingerprint:
+      focal_lesion_present: present
+      shape_irregularity: irregular
+      margin_circumscription: angular_or_spiculated
+      taller_than_wide: any
+      posterior_shadowing: any
+      thick_echogenic_halo: any
+      tissue_plane_distortion: any
+    sources: [stavros1995, mendelson2013, hong2005, rao2016]
+  # MedMNIST merges BUSI's lesion-free "normal" images and its benign-lesion images into this
+  # one negative class. It commits at the benign end of every descriptor scale, which is one
+  # step above the `no_focal_area` / `absent` floor that a lesion-free image answers, so both
+  # halves of the merged class stay nearer this fingerprint than the malignant one. Only the
+  # gate stays `any`, because that is the one question the two halves genuinely answer opposite.
+  "normal, benign":
+    fingerprint:
+      focal_lesion_present: any
+      shape_irregularity: oval_or_round
+      margin_circumscription: circumscribed
+      taller_than_wide: absent
+      posterior_shadowing: absent
+      thick_echogenic_halo: absent
+      tissue_plane_distortion: absent
+    sources: [stavros1995, mendelson2013, hong2005, aldhabyani2020]

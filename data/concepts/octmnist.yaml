@@ -1,0 +1,173 @@
+# Concept bank for octmnist (MedMNIST v2)
+# Retinal OCT B-scans; four labels: CNV, DME, drusen and normal.
+# Built 2026-09-09 by literature review with a web-connected assistant.
+# Expert review is SIMULATED; no clinician has signed off on this file.
+
+dataset: octmnist
+modality: 1-channel greyscale retinal optical coherence tomography (OCT) B-scans
+task: multi-class
+medmnist_task: "multi-class"
+source_dataset: Kermany OCT dataset (Kermany et al. 2018)
+provenance:
+  method: literature review with a web-connected assistant
+  assistant: Claude Opus 5 (claude-opus-5), 2026-09-09
+  reviewed_by: >-
+    simulated review by Claude Opus 5 (claude-opus-5), 2026-09-09; no clinician has
+    reviewed this file
+  sources:
+    - key: yang2023
+      citation: >-
+        Yang J, Shi R, Wei D, Liu Z, Zhao L, Ke B, Pfister H, Ni B. MedMNIST v2 - A large-scale
+        lightweight benchmark for 2D and 3D biomedical image classification. Scientific Data
+        2023;10:41.
+      doi: 10.1038/s41597-022-01721-8
+      used_for: [retinal_layer_integrity, foveal_contour]
+    - key: kermany2018
+      citation: >-
+        Kermany DS, Goldbaum M, Cai W, et al. Identifying medical diagnoses and treatable diseases
+        by image-based deep learning. Cell 2018;172(5):1122-1131.e9.
+      doi: 10.1016/j.cell.2018.02.010
+      used_for:
+        [retinal_layer_integrity, rpe_line_contour, subretinal_hyperreflective_material,
+         intraretinal_cystoid_spaces]
+    - key: staurenghi2014
+      citation: >-
+        Staurenghi G, Sadda S, Chakravarthy U, Spaide RF; International Nomenclature for Optical
+        Coherence Tomography (IN-OCT) Panel. Proposed lexicon for anatomic landmarks in normal
+        posterior segment spectral-domain optical coherence tomography: the IN-OCT consensus.
+        Ophthalmology 2014;121(8):1572-1578.
+      doi: 10.1016/j.ophtha.2014.02.023
+      used_for: [retinal_layer_integrity, foveal_contour, retinal_thickness, rpe_line_contour]
+    - key: ferris2013
+      citation: >-
+        Ferris FL 3rd, Wilkinson CP, Bird A, et al. Clinical classification of age-related
+        macular degeneration. Ophthalmology 2013;120(4):844-851.
+      doi: 10.1016/j.ophtha.2012.10.036
+      used_for: [rpe_line_contour, subretinal_hyperreflective_material]
+    - key: khanifar2008
+      citation: >-
+        Khanifar AA, Koreishi AF, Izatt JA, Toth CA. Drusen ultrastructure imaging with spectral
+        domain optical coherence tomography in age-related macular degeneration.
+        Ophthalmology 2008;115(11):1883-1890.e1.
+      doi: 10.1016/j.ophtha.2008.04.041
+      used_for: [rpe_line_contour, shadowing_beneath_lesion, hyperreflective_foci]
+    - key: spaide2020
+      citation: >-
+        Spaide RF, Jaffe GJ, Sarraf D, et al. Consensus nomenclature for reporting neovascular
+        age-related macular degeneration data: Consensus on Neovascular Age-Related Macular
+        Degeneration Nomenclature Study Group. Ophthalmology 2020;127(5):616-636.
+      doi: 10.1016/j.ophtha.2019.11.004
+      used_for:
+        [rpe_line_contour, subretinal_hyperreflective_material, subretinal_fluid,
+         intraretinal_cystoid_spaces, hyperreflective_foci]
+    - key: keane2012
+      citation: >-
+        Keane PA, Patel PJ, Liakopoulos S, Heussen FM, Sadda SR, Tufail A. Evaluation of
+        age-related macular degeneration with optical coherence tomography.
+        Survey of Ophthalmology 2012;57(5):389-414.
+      doi: 10.1016/j.survophthal.2012.01.006
+      used_for:
+        [retinal_layer_integrity, retinal_thickness, rpe_line_contour,
+         subretinal_hyperreflective_material, subretinal_fluid, shadowing_beneath_lesion]
+    - key: otani1999
+      citation: >-
+        Otani T, Kishi S, Maruyama Y. Patterns of diabetic macular edema with optical coherence
+        tomography. American Journal of Ophthalmology 1999;127(6):688-693.
+      doi: 10.1016/S0002-9394(99)00033-1
+      used_for:
+        [foveal_contour, retinal_thickness, intraretinal_cystoid_spaces, subretinal_fluid]
+    - key: bolz2009
+      citation: >-
+        Bolz M, Schmidt-Erfurth U, Deak G, Mylonas G, Kriechbaum K, Scholda C. Optical coherence
+        tomographic hyperreflective foci: a morphologic sign of lipid extravasation in diabetic
+        macular edema. Ophthalmology 2009;116(5):914-920.
+      doi: 10.1016/j.ophtha.2008.12.039
+      used_for: [hyperreflective_foci, shadowing_beneath_lesion]
+
+concepts:
+  - id: retinal_layer_integrity
+    question: "Are the banded retinal layers continuous and regularly stacked across the scan?"
+    scale: [intact, mildly_disrupted, markedly_disrupted]
+    sources: [staurenghi2014, keane2012, kermany2018, yang2023]
+  - id: foveal_contour
+    question: "Does the retinal surface at the centre form a smooth shallow depression?"
+    scale: [normal_depression, flattened, elevated]
+    sources: [staurenghi2014, otani1999, yang2023]
+  - id: retinal_thickness
+    question: "How thick is the retina between its inner surface and the bright outer band?"
+    scale: [normal, mildly_increased, markedly_increased]
+    sources: [staurenghi2014, otani1999, keane2012]
+  - id: intraretinal_cystoid_spaces
+    question: "Are there rounded dark low-reflectivity pockets inside the retinal layers?"
+    scale: [absent, few_small, many_or_large]
+    sources: [otani1999, spaide2020, kermany2018]
+  - id: subretinal_fluid
+    question: "Is there a dark empty space lifting the retina off the bright band beneath it?"
+    scale: [absent, small, large]
+    sources: [otani1999, spaide2020, keane2012]
+  - id: rpe_line_contour
+    question: "Is the bright outer band smooth, gently domed in small bumps, or focally lifted?"
+    scale: [smooth, small_domed_undulations, large_irregular_elevation]
+    sources: [khanifar2008, ferris2013, spaide2020, keane2012, staurenghi2014, kermany2018]
+  - id: subretinal_hyperreflective_material
+    question: "Is there bright solid-looking material between the retina and the bright outer band?"
+    scale: [absent, small, extensive]
+    sources: [spaide2020, keane2012, ferris2013, kermany2018]
+  - id: hyperreflective_foci
+    question: "Are there small bright dots or specks scattered within the darker retinal layers?"
+    scale: [absent, few, many]
+    sources: [bolz2009, spaide2020, khanifar2008]
+  - id: shadowing_beneath_lesion
+    question: "Do bright structures cast vertical dark columns into the tissue beneath them?"
+    scale: [absent, mild, marked]
+    sources: [bolz2009, khanifar2008, keane2012]
+
+classes:
+  "choroidal neovascularization":
+    fingerprint:
+      retinal_layer_integrity: markedly_disrupted
+      foveal_contour: elevated
+      retinal_thickness: mildly_increased
+      intraretinal_cystoid_spaces: few_small
+      subretinal_fluid: large
+      rpe_line_contour: large_irregular_elevation
+      subretinal_hyperreflective_material: extensive
+      hyperreflective_foci: any
+      shadowing_beneath_lesion: marked
+    sources: [spaide2020, keane2012, kermany2018]
+  "diabetic macular edema":
+    fingerprint:
+      retinal_layer_integrity: mildly_disrupted
+      foveal_contour: elevated
+      retinal_thickness: markedly_increased
+      intraretinal_cystoid_spaces: many_or_large
+      subretinal_fluid: any
+      rpe_line_contour: smooth
+      subretinal_hyperreflective_material: absent
+      hyperreflective_foci: many
+      shadowing_beneath_lesion: mild
+    sources: [otani1999, bolz2009, kermany2018]
+  "drusen":
+    fingerprint:
+      retinal_layer_integrity: intact
+      foveal_contour: normal_depression
+      retinal_thickness: normal
+      intraretinal_cystoid_spaces: absent
+      subretinal_fluid: absent
+      rpe_line_contour: small_domed_undulations
+      subretinal_hyperreflective_material: absent
+      hyperreflective_foci: any
+      shadowing_beneath_lesion: any
+    sources: [ferris2013, khanifar2008, keane2012]
+  "normal":
+    fingerprint:
+      retinal_layer_integrity: intact
+      foveal_contour: normal_depression
+      retinal_thickness: normal
+      intraretinal_cystoid_spaces: absent
+      subretinal_fluid: absent
+      rpe_line_contour: smooth
+      subretinal_hyperreflective_material: absent
+      hyperreflective_foci: absent
+      shadowing_beneath_lesion: absent
+    sources: [staurenghi2014, kermany2018]

@@ -1,0 +1,374 @@
+# tissuemnist concept bank
+# Built 2026-09-09 by literature review with a web-connected assistant.
+#
+# THE TWO RULES APPLIED IN THIS FILE. (1) A concept must be answerable from the image as
+# it actually is, not from the tissue the image was cut out of. (2) A fingerprint level
+# must be what a source states, not an inference drawn from what a source states about
+# something else. Both rules cost this file real separating power; where they did, the
+# loss is recorded below rather than papered over.
+#
+# WHAT THE IMAGE IS. Each image is a 28x28 greyscale maximum-intensity projection of a
+# 32x32x7 voxel DAPI crop centred on one segmented nucleus in human kidney cortex
+# (BBBC051). The crop covers 17.3 x 17.3 x 3.9 um in situ, so the frame is roughly two
+# nucleus-widths across and neighbouring nuclei appear only partly, at the edges. Only DNA
+# is stained: there is no cytoplasm, no membrane, no lumen and no tubule wall in the image.
+# The 224-pixel version a VLM is shown is an upscale of those 28x28 pixels and carries no
+# information the 28x28 does not.
+#
+# THE PRIOR IS WEAK BY CONSTRUCTION, AND THIS IS A FINDING, NOT AN OVERSIGHT. Woloshuk
+# et al. 2021 did not assign the eight labels from nuclear morphology. Each nucleus was
+# labelled by the immunofluorescence of markers in separate channels that MedMNIST does
+# not ship - megalin/LRP2 and aquaporin-1 for proximal tubule, Tamm-Horsfall protein for
+# thick ascending limb, SLC12A3 for distal convoluted tubule, cytokeratin-8 for collecting
+# duct, nestin for podocytes, CD45 for leukocytes, and CD31 for endothelium, which was then
+# split into "glomerular" and "interstitial" purely by where the cell sat in the 3D volume.
+# Not one of those signals survives into the greyscale image a VLM is shown. Consistent
+# with that, hand-crafted nuclear shape and texture features (Haralick, PFTAS, Zernike
+# moments, spherical harmonics) reached only 42.2% balanced accuracy in the source paper,
+# a 3D CNN on the full volume reached 80.3%, its 2D counterpart 66.6%, and ResNets on
+# MedMNIST's 2D projection reach about 68%. A textbook fingerprint over visible nuclear
+# features therefore cannot do better than partial separation here.
+#
+# DOCUMENTED LIMITS. "Collecting Duct, Connecting Tubule", "Distal Convoluted Tubule" and
+# "Thick Ascending Limb" form a THREE-WAY inseparable set: no pair among them differs on
+# any concept where both commit. "Collecting Duct, Connecting Tubule" is additionally
+# inseparable from "Proximal Tubule Segments", so it is separated from no other tubular
+# class at all. In the renal cortex all four are lined by simple cuboidal epithelium, and
+# every published difference between them - brush border, cytoplasmic eosinophilia, cell
+# borders and interdigitation, basolateral infoldings, marker expression - lies outside a
+# nuclear stain. Brelje & Sorenson state outright that the distal convoluted tubule is
+# "similar in morphology to the distal straight tubule" (the thick ascending limb).
+# Woloshuk et al. report the distal convoluted tubule / collecting duct pair as their own
+# model's worst confusion (F1 0.58), and Arman et al. report the same for thick ascending
+# limb / proximal tubule / collecting duct. The inseparability here matches the datasets's
+# own published confusion structure.
+#
+# A CONCEPT WAS REMOVED UNDER BOTH RULES. An earlier draft carried
+# `nuclei_spacing_regularity` ("are the visible nuclei at even or uneven intervals"), which
+# was the only thing separating "Collecting Duct, Connecting Tubule" from the other three
+# tubular classes. It failed rule 1: judging even spacing needs at least three nuclei fully
+# in frame, and a 17.3 um crop does not hold them - this file's own `neighbouring_nuclei`
+# fingerprints expect only one or two partial neighbours. It also failed rule 2: its values
+# came from reading King's H&E observation that collecting duct cell BORDERS are distinct
+# while proximal and distal tubule nuclei sit "at irregular intervals" as implying evenly
+# spaced nuclei in a DAPI projection. That translation was the assistant's, not the
+# source's. The concept is gone and the three-way limit above is the honest consequence.
+#
+# VISIBILITY CAVEATS ON CONCEPTS THAT WERE KEPT. A nucleus occupies roughly 14 of the 28
+# native pixels. `chromatin_texture` and the `lobed` level of `outline_regularity` are at
+# or past what that resolution can support, and the 3.9 um projection slab smears axial
+# chromatin detail further; both are kept because the sources commit on them for podocytes
+# and leukocytes, but a reviewer should treat those two concepts as the least reliable in
+# the file. `neighbouring_nuclei` and `neighbour_variety` ask only for a count and a
+# same-or-different judgement, which partial edge nuclei can support; that is why they
+# survived rule 1 where `nuclei_spacing_regularity` did not.
+#
+# WHICH CLAIMS REST ON TEACHING SITES. king2022, king2025, brelje2026, kirkwood2017 and
+# walavalkar2019 are authored, dated, textbook-equivalent teaching resources, but they
+# describe cell borders and cytoplasm in H&E, not nuclear morphology in a DAPI projection.
+# They alone carry: `nucleus_size` for the three distal/proximal tubular classes,
+# `neighbouring_nuclei` for the tubular classes, `nucleus_elongation: round` for the
+# tubular classes, and part of the podocyte nuclear description. Better sources were sought
+# and did not deliver. Kriz & Kaissling's chapter in Seldin & Giebisch's The Kidney, and
+# Christensen, Wagner & Kaissling (Compr Physiol 2012;2:805-861, doi 10.1002/cphy.c100073),
+# are behind paywalls this assistant could not reach. Woloshuk et al. 2021 report NO
+# per-class nuclear morphometrics and say so: "Our work here does not address which
+# specific features in the nuclei are key determinants of their classification." Winfree
+# et al. (JASN 2017) and Ferkowicz et al. (Lab Invest 2021;101:661-676) were checked and
+# use DAPI only to find and count nuclei, not to characterise them per cell type.
+#
+# CRITERIA DELIBERATELY DROPPED as invisible: brush border, cytoplasmic eosinophilia,
+# basal striations, cell height and cuboidal-versus-columnar shape, nuclear position within
+# the cell, lumen calibre and contents, perinuclear halo, cell borders and interdigitation,
+# principal-versus-intercalated cell staining, and every immunomarker. A nucleolus concept
+# was drafted and dropped: no source commits a nucleolar expectation to any of these eight
+# classes, so every fingerprint would have read `any`.
+dataset: tissuemnist
+modality: >-
+  greyscale 2D projections of segmented single cells from 3D confocal fluorescence
+  microscopy of nuclear-stained human kidney cortex
+task: multi-class
+medmnist_task: "multi-class"
+source_dataset: BBBC051 (Woloshuk et al. 2021)
+provenance:
+  method: literature review with a web-connected assistant
+  assistant: Claude Opus 5 (claude-opus-5), 2026-09-09
+  reviewed_by: >-
+    simulated review by Claude Opus 5 (claude-opus-5), 2026-09-09; no clinician has
+    reviewed this file
+  sources:
+    - key: yang2023
+      citation: >-
+        Yang J, Shi R, Wei D, Liu Z, Lin L, Ke B, Pfister H, Ni B. MedMNIST v2 - a
+        large-scale lightweight benchmark for 2D and 3D biomedical image classification.
+        Scientific Data 2023;10:41.
+      doi: 10.1038/s41597-022-01721-8
+      used_for: [nucleus_size, neighbouring_nuclei, staining_intensity]
+    - key: woloshuk2021
+      citation: >-
+        Woloshuk A, Khochare S, Almulhim AF, McNutt AT, Dean D, Barwinska D, Ferkowicz MJ,
+        Eadon MT, Kelly KJ, Dunn KW, Hasan MA, El-Achkar TM, Winfree S. In situ
+        classification of cell types in human kidney tissue using 3D nuclear staining.
+        Cytometry Part A 2021;99(7):707-721.
+      doi: 10.1002/cyto.a.24274
+      used_for:
+        [nucleus_size, nucleus_elongation, chromatin_texture, staining_intensity,
+         neighbouring_nuclei, neighbour_variety]
+    - key: arman2026
+      citation: >-
+        Arman M, Rahat MMA, Thithi MA, Khan JU, Kabir SM, Islam MI, Hasan M, Shakib MN,
+        Lim HS. A lightweight deep learning model with channel attention for kidney cell
+        classification from microscopy images. Scientific Reports 2026;16:24754.
+      doi: 10.1038/s41598-026-55088-6
+      used_for: [chromatin_texture, staining_intensity]
+    - key: ljosa2012
+      citation: >-
+        Ljosa V, Sokolnicki KL, Carpenter AE. Annotated high-throughput microscopy image
+        sets for validation. Nature Methods 2012;9(7):637.
+      doi: 10.1038/nmeth.2083
+      used_for: [nucleus_size, neighbouring_nuclei]
+    - key: murray2023
+      citation: >-
+        Murray IV, Paolini MA. Histology, kidney and glomerulus. StatPearls [Internet].
+        Treasure Island (FL): StatPearls Publishing; updated 17 April 2023. Bookshelf
+        ID NBK554544.
+      url: https://www.ncbi.nlm.nih.gov/books/NBK554544/
+      used_for:
+        [nucleus_size, outline_regularity, chromatin_texture, staining_intensity,
+         neighbouring_nuclei, neighbour_variety, size_versus_neighbours]
+    - key: brelje2026
+      citation: >-
+        Brelje TC, Sorenson RL. Urinary system: nephrons and renal corpuscle.
+        HistologyGuide, Department of Genetics, Cell Biology and Development, University
+        of Minnesota; copyright 2005-2026.
+      url: https://histologyguide.com/slideview/MH-141a-kidney/16-slide-1.html
+      used_for:
+        [nucleus_size, nucleus_elongation, outline_regularity, neighbour_variety,
+         size_versus_neighbours]
+    - key: pavenstadt2003
+      citation: >-
+        Pavenstadt H, Kriz W, Kretzler M. Cell biology of the glomerular podocyte.
+        Physiological Reviews 2003;83(1):253-307.
+      doi: 10.1152/physrev.00020.2002
+      used_for: [nucleus_size, size_versus_neighbours]
+    - key: madrazoibarra2023
+      citation: >-
+        Madrazo-Ibarra A, Vaitla P. Histology, nephron. StatPearls [Internet]. Treasure
+        Island (FL): StatPearls Publishing; updated 17 February 2023. Bookshelf ID
+        NBK554411.
+      url: https://www.ncbi.nlm.nih.gov/books/NBK554411/
+      used_for: [nucleus_elongation, outline_regularity, neighbour_variety,
+                 size_versus_neighbours]
+    - key: king2022
+      citation: >-
+        King DW. Kidney: epithelium and connective tissue (page RN006c, updated 8 June
+        2022) and Renal cortex: proximal and distal tubules (page RN008b, updated 30 May
+        2022). Histology at SIU, Southern Illinois University School of Medicine.
+      url: https://histology.siu.edu/intro/RN006c.htm
+      used_for: [nucleus_elongation, outline_regularity, neighbouring_nuclei]
+    - key: king2025
+      citation: >-
+        King DW. Renal system: guide to the identification of renal tubules. Histology at
+        SIU, Southern Illinois University School of Medicine; updated 12 November 2025.
+      url: https://histology.siu.edu/crr/rnguide.htm
+      used_for: [neighbouring_nuclei]
+    - key: kirkwood2017
+      citation: >-
+        Kirkwood L. Kidney: normal renal histology. Pathologia, University of Edinburgh;
+        undated, image credits dated 2017.
+      url: https://pathologia.ed.ac.uk/topic/renal-normal-histology/
+      used_for: [nucleus_size, neighbouring_nuclei]
+    - key: walavalkar2019
+      citation: >-
+        Walavalkar V. Kidney biopsy of the month - the tubulointerstitium part 1: the
+        cortex. Renal Fellow Network; 11 February 2019.
+      url: >-
+        https://www.renalfellow.org/2019/02/11/kidney-biopsy-of-the-month-the-tubulointerstitium-part-1-the-cortex/
+      used_for: [nucleus_size, nucleus_elongation, neighbouring_nuclei]
+    - key: kaissling2008
+      citation: >-
+        Kaissling B, Le Hir M. The renal cortical interstitium: morphological and
+        functional aspects. Histochemistry and Cell Biology 2008;130(2):247-262.
+      doi: 10.1007/s00418-008-0452-5
+      used_for:
+        [nucleus_size, neighbouring_nuclei, neighbour_variety, size_versus_neighbours]
+    - key: kawasaki2021
+      citation: >-
+        Kawasaki Y, Hosoyamada Y, Miyaki T, Yamaguchi J, Kakuta S, Sakai T, Ichimura K.
+        Three-dimensional architecture of glomerular endothelial cells revealed by FIB-SEM
+        tomography. Frontiers in Cell and Developmental Biology 2021;9:653472.
+      doi: 10.3389/fcell.2021.653472
+      used_for: [nucleus_elongation, outline_regularity]
+    - key: flaherty1972
+      citation: >-
+        Flaherty JT, Pierce JE, Ferrans VJ, Patel DJ, Tucker WK, Fry DL. Endothelial
+        nuclear patterns in the canine arterial tree with particular reference to
+        hemodynamic events. Circulation Research 1972;30(1):23-33.
+      doi: 10.1161/01.res.30.1.23
+      used_for: [nucleus_elongation, outline_regularity]
+    - key: tigner2026
+      citation: >-
+        Tigner A, Ibrahim SA, Murray IV. Histology, white blood cell. StatPearls
+        [Internet]. Treasure Island (FL): StatPearls Publishing; updated 14 February 2026.
+        Bookshelf ID NBK563148.
+      url: https://www.ncbi.nlm.nih.gov/books/NBK563148/
+      used_for:
+        [nucleus_size, nucleus_elongation, outline_regularity, chromatin_texture,
+         staining_intensity, size_versus_neighbours]
+    - key: manley2018
+      citation: >-
+        Manley HR, Keightley MC, Lieschke GJ. The neutrophil nucleus: an important
+        influence on neutrophil migration and function. Frontiers in Immunology
+        2018;9:2867.
+      doi: 10.3389/fimmu.2018.02867
+      used_for: [outline_regularity, chromatin_texture, staining_intensity]
+concepts:
+  - id: nucleus_size
+    question: >-
+      How large is the single bright object at the centre of the image compared with the
+      width of the whole image?
+    scale: [small, medium, large]
+    sources: [yang2023, ljosa2012, woloshuk2021, murray2023, brelje2026, pavenstadt2003,
+              walavalkar2019, kirkwood2017, tigner2026, kaissling2008]
+  - id: nucleus_elongation
+    question: >-
+      Is the central bright object about as wide as it is tall, moderately longer in one
+      direction, or clearly long and narrow?
+    scale: [round, oval, elongated]
+    sources: [king2022, madrazoibarra2023, brelje2026, walavalkar2019, kawasaki2021,
+              flaherty1972, tigner2026, woloshuk2021]
+  - id: outline_regularity
+    question: >-
+      Is the outline of the central bright object smooth and unbroken, or is it notched,
+      indented, or split into separate lobes?
+    scale: [smooth, indented, lobed]
+    sources: [king2022, madrazoibarra2023, brelje2026, murray2023, kawasaki2021,
+              flaherty1972, tigner2026, manley2018]
+  - id: chromatin_texture
+    question: >-
+      Inside the central bright object, is the signal even across it, or is it broken up
+      into brighter and darker patches?
+    scale: [uniform, mottled, coarsely_clumped]
+    sources: [murray2023, tigner2026, manley2018, woloshuk2021, arman2026]
+  - id: staining_intensity
+    question: >-
+      How bright is the central object compared with the darkest background in the image?
+    scale: [dim, moderate, bright]
+    sources: [yang2023, murray2023, tigner2026, manley2018, woloshuk2021, arman2026]
+  - id: neighbouring_nuclei
+    question: >-
+      Apart from the central object, how many other bright objects or parts of them are
+      visible anywhere in the image, including at the edges?
+    scale: [none, one_or_two, several]
+    sources: [yang2023, ljosa2012, woloshuk2021, king2022, king2025, kirkwood2017,
+              walavalkar2019, kaissling2008, murray2023]
+  - id: neighbour_variety
+    question: >-
+      Do the other bright objects in the image look like near-copies of one another in
+      size and shape, or a mixture of clearly different sizes and shapes?
+    scale: [uniform, somewhat_mixed, markedly_mixed]
+    sources: [murray2023, brelje2026, madrazoibarra2023, kaissling2008, woloshuk2021]
+  - id: size_versus_neighbours
+    question: >-
+      Compared with the other bright objects visible in the image, is the central one
+      smaller, about the same size, or larger?
+    scale: [smaller, similar, larger]
+    sources: [murray2023, brelje2026, pavenstadt2003, madrazoibarra2023, kaissling2008,
+              tigner2026]
+classes:
+  # Inseparable from Distal Convoluted Tubule, Thick Ascending Limb and Proximal Tubule
+  # Segments. In the cortex this epithelium is simple cuboidal like theirs, and no source
+  # found commits to a nuclear size, shape or packing expectation for it. The one claim
+  # that would have separated it - a "central large round nucleus" for connecting tubule
+  # cells - traces only to an aggregator quoting a chapter the assistant could not read,
+  # so it was not used.
+  "Collecting Duct, Connecting Tubule":
+    fingerprint:
+      nucleus_size: any
+      nucleus_elongation: round
+      outline_regularity: smooth
+      chromatin_texture: any
+      staining_intensity: any
+      neighbouring_nuclei: any
+      neighbour_variety: uniform
+      size_versus_neighbours: similar
+    sources: [king2022, brelje2026, madrazoibarra2023]
+  "Distal Convoluted Tubule":
+    fingerprint:
+      nucleus_size: small
+      nucleus_elongation: round
+      outline_regularity: smooth
+      chromatin_texture: any
+      staining_intensity: any
+      neighbouring_nuclei: several
+      neighbour_variety: uniform
+      size_versus_neighbours: similar
+    sources: [walavalkar2019, kirkwood2017, king2022, king2025, brelje2026]
+  "Glomerular endothelial cells":
+    fingerprint:
+      nucleus_size: any
+      nucleus_elongation: elongated
+      outline_regularity: smooth
+      chromatin_texture: any
+      staining_intensity: any
+      neighbouring_nuclei: several
+      neighbour_variety: markedly_mixed
+      size_versus_neighbours: smaller
+    sources: [kawasaki2021, flaherty1972, murray2023, brelje2026]
+  "Interstitial endothelial cells":
+    fingerprint:
+      nucleus_size: any
+      nucleus_elongation: elongated
+      outline_regularity: smooth
+      chromatin_texture: any
+      staining_intensity: any
+      neighbouring_nuclei: one_or_two
+      neighbour_variety: somewhat_mixed
+      size_versus_neighbours: any
+    sources: [flaherty1972, king2022, kaissling2008, walavalkar2019]
+  "Leukocytes":
+    fingerprint:
+      nucleus_size: small
+      nucleus_elongation: round
+      outline_regularity: indented
+      chromatin_texture: coarsely_clumped
+      staining_intensity: bright
+      neighbouring_nuclei: one_or_two
+      neighbour_variety: somewhat_mixed
+      size_versus_neighbours: smaller
+    sources: [tigner2026, manley2018, kaissling2008]
+  "Podocytes":
+    fingerprint:
+      nucleus_size: large
+      nucleus_elongation: oval
+      outline_regularity: smooth
+      chromatin_texture: uniform
+      staining_intensity: dim
+      neighbouring_nuclei: several
+      neighbour_variety: markedly_mixed
+      size_versus_neighbours: larger
+    sources: [murray2023, brelje2026, pavenstadt2003]
+  "Proximal Tubule Segments":
+    fingerprint:
+      nucleus_size: medium
+      nucleus_elongation: round
+      outline_regularity: smooth
+      chromatin_texture: any
+      staining_intensity: any
+      neighbouring_nuclei: one_or_two
+      neighbour_variety: uniform
+      size_versus_neighbours: similar
+    sources: [walavalkar2019, king2022, king2025, kirkwood2017]
+  # Identical to Distal Convoluted Tubule by design: no source found commits to a nuclear
+  # difference between the two, and Brelje & Sorenson call them similar in morphology.
+  "Thick Ascending Limb":
+    fingerprint:
+      nucleus_size: small
+      nucleus_elongation: round
+      outline_regularity: smooth
+      chromatin_texture: any
+      staining_intensity: any
+      neighbouring_nuclei: several
+      neighbour_variety: uniform
+      size_versus_neighbours: similar
+    sources: [walavalkar2019, brelje2026, king2022, king2025]

@@ -1,0 +1,380 @@
+# Concept bank for organsmnist (MedMNIST v2), written 2026-09-09.
+# PLANE: SAGITTAL. The images are 2D bounding-box crops around a single organ taken
+# from abdominal CT volumes in the sagittal plane.
+#
+# THIS CONCEPT SET IS SHARED, VERBATIM, WITH organamnist.yaml, organcmnist.yaml and
+# organsmnist.yaml. The `concepts:` block below (ids, questions, scales, source keys) is
+# byte-identical in all three files; only `modality:` and the `classes:` fingerprints differ,
+# because a plane changes which anatomical axes are visible in a crop:
+#   axial    - left/right and anterior/posterior are readable; cranio-caudal level is inferred
+#              from the surrounding structures caught in the crop.
+#   coronal  - left/right and cranio-caudal are readable; anterior/posterior is NOT, so
+#              `anteroposterior_position` is `any` for every class in organcmnist.yaml.
+#   sagittal - anterior/posterior and cranio-caudal are readable; patient left versus right is
+#              NOT, so `body_side` is `any` for every lateralised class in organsmnist.yaml.
+# The three lateralised pairs (femur, kidney, lung) are consequently NOT
+# separable in this plane; their fingerprints are identical by design, and
+# honestly so - a crop alone cannot say which side of the body it came from.
+#
+# RADIOLOGICAL CONVENTION: in axial and coronal CT the patient's LEFT appears on the RIGHT of
+# the image. `body_side` is therefore asked and answered in PATIENT terms, and the question
+# says so explicitly, so that a viewer who reads the image left-to-right is not silently
+# scored as wrong.
+#
+# CAVEAT on attenuation: the LiTS volumes are largely PORTAL-VENOUS-PHASE contrast-enhanced CT,
+# and MedMNIST maps Hounsfield units through a fixed abdominal window. The attenuation
+# fingerprints are derived for THAT phase: enhanced renal parenchyma and the enhanced cardiac
+# blood pool are among the brightest soft-tissue structures in the frame, spleen is roughly
+# isodense to liver rather than darker than it, and the bladder stays dark because contrast
+# reaches it only in the much later excretory phase. Phase is not perfectly uniform across LiTS,
+# so only coarse, phase-robust contrasts are committed and no absolute HU value is asserted.
+# CAVEAT on size: every image is a tight bounding box around one organ, so the organ fills the
+# frame by construction. `relative_size` is therefore asked against the apparent scale of the
+# landmarks caught at the crop edge, not against the frame.
+#
+# SOURCING RULE APPLIED HERE: a source is cited for a fingerprint only if it supports the claim
+# under THIS dataset's imaging conditions, not in general. Attenuation is therefore taken from
+# contrast-phase references (Bae 2010; Sheth & Fishman 2004) and not from unenhanced-CT norms.
+# An earlier draft used Piekarski 1980 - unenhanced liver-minus-spleen CT numbers - to make the
+# spleen darker than the liver, which is wrong for a portal-venous dataset; that source has been
+# removed from this file rather than re-purposed.
+#
+# CAVEAT on the liver class: LiTS is a liver-tumour cohort, so many liver crops contain focal
+# lesions. `interior_homogeneity: homogeneous` for liver is the textbook expectation of normal
+# parenchyma, not a prediction about this cohort.
+#
+# OPEN VERIFICATION ITEM - shape and size versus the MedMNIST resize. DO NOT TRUST YET:
+# MedMNIST v2 crops 2D images from the centre slices of the 3D organ bounding boxes and resizes
+# them to a square (28x28, and 224x224 in the larger releases); no aspect-ratio handling is
+# stated. If that resize is anisotropic, a tight bounding box around an elongated organ is
+# stretched toward filling the square and apparent shape and scale are destroyed. Exactly two
+# concepts are affected:
+#   elongation     - pancreas `elongated` (axial and coronal), femur `elongated` (coronal and
+#                    sagittal), bladder `round`, and every `oval` value.
+#   relative_size  - all eleven classes.
+# This is NOT answerable from the literature and has deliberately NOT been guessed at here. It
+# must be checked against the actual fetched 224-pixel arrays at workflow stage 2 (CACHE) before
+# `elongation` and `relative_size` are trusted. If anisotropic resize is confirmed, set both
+# concepts to `any` for all eleven classes, or drop them from the bank.
+
+dataset: organsmnist
+modality: >-
+  1-channel greyscale abdominal CT crops at a fixed abdominal window; each image is a 2D
+  bounding-box crop around one organ taken from a CT volume in the sagittal plane
+task: multi-class
+medmnist_task: "multi-class"
+source_dataset: >-
+  Liver Tumor Segmentation Benchmark, LiTS (Bilic et al. 2023), with the eleven-organ
+  bounding-box annotations of Xu et al. 2019
+provenance:
+  method: literature review with a web-connected assistant
+  assistant: Claude Opus 5 (claude-opus-5), 2026-09-09
+  reviewed_by: >-
+    simulated review by Claude Opus 5 (claude-opus-5), 2026-09-09; no clinician has
+    reviewed this file
+  sources:
+    - key: yang2023
+      citation: >-
+        Yang J, Shi R, Wei D, Liu Z, Zhao L, Ke B, Pfister H, Ni B. MedMNIST v2 - A large-scale
+        lightweight benchmark for 2D and 3D biomedical image classification. Scientific Data
+        2023;10:41.
+      doi: 10.1038/s41597-022-01721-8
+      used_for: [relative_size]
+    - key: bilic2023
+      citation: >-
+        Bilic P, Christ P, Li HB, et al. The Liver Tumor Segmentation Benchmark (LiTS). Medical
+        Image Analysis 2023;84:102680.
+      doi: 10.1016/j.media.2022.102680
+      used_for: [relative_attenuation, interior_homogeneity]
+    - key: xu2019
+      citation: >-
+        Xu X, Zhou F, Liu B, Fu D, Bai X. Efficient multiple organ localization in CT image using
+        3D region proposal network. IEEE Transactions on Medical Imaging 2019;38(8):1885-1898.
+      doi: 10.1109/TMI.2019.2894854
+      used_for: [relative_size, adjacent_bone]
+    - key: moeller2013
+      citation: >-
+        Moeller TB, Reif E. Pocket Atlas of Sectional Anatomy: Computed Tomography and Magnetic
+        Resonance Imaging. Volume II: Thorax, Heart, Abdomen and Pelvis. 4th ed. Stuttgart:
+        Thieme; 2013. ISBN 9783131256041.
+      url: https://shop.thieme.com/Pocket-Atlas-of-Sectional-Anatomy-Vol.-II-Thorax-Heart-Abdomen-and-Pelvis/9783131256041
+      used_for: [body_side, craniocaudal_level, anteroposterior_position, relative_size,
+                 elongation, hilar_notch, adjacent_bone]
+    - key: spratt2016
+      citation: >-
+        Spratt JD, Salkowski LR, Loukas M, Turmezei T, Weir J, Abrahams PH. Weir & Abrahams'
+        Imaging Atlas of Human Anatomy. 5th ed. Edinburgh: Elsevier; 2016. ISBN 9780723438267.
+      url: https://shop.elsevier.com/books/weir-and-abrahams-imaging-atlas-of-human-anatomy/spratt/978-0-7234-3826-7
+      used_for: [body_side, craniocaudal_level, anteroposterior_position, elongation,
+                 contour_lobulation, hilar_notch, bright_cortical_rim, adjacent_bone]
+    - key: denotter2023
+      citation: >-
+        DenOtter TD, Schubert J. Hounsfield Unit. In: StatPearls. Treasure Island (FL):
+        StatPearls Publishing; updated 2023 Mar 6.
+      url: https://www.ncbi.nlm.nih.gov/books/NBK547721/
+      used_for: [relative_attenuation, interior_homogeneity, bright_cortical_rim]
+    - key: hansell2008
+      citation: >-
+        Hansell DM, Bankier AA, MacMahon H, McLoud TC, Muller NL, Remy J. Fleischner Society:
+        glossary of terms for thoracic imaging. Radiology 2008;246(3):697-722.
+      doi: 10.1148/radiol.2462070712
+      used_for: [relative_attenuation, interior_homogeneity, boundary_definition]
+    - key: bae2010
+      citation: >-
+        Bae KT. Intravenous contrast medium administration and scan timing at CT: considerations
+        and approaches. Radiology 2010;256(1):32-61.
+      doi: 10.1148/radiol.10090908
+      used_for: [relative_attenuation, interior_homogeneity]
+    - key: sheth2004
+      citation: >-
+        Sheth S, Fishman EK. Multi-detector row CT of the kidneys and urinary tract: techniques
+        and applications in the diagnosis of benign diseases. RadioGraphics 2004;24(2):e20.
+      doi: 10.1148/rg.e20
+      used_for: [relative_attenuation, interior_homogeneity, hilar_notch]
+    - key: borghei2013
+      citation: >-
+        Borghei P, Sokhandon F, Shirkhoda A, Morgan DE. Anomalies, anatomic variants, and sources
+        of diagnostic pitfalls in pancreatic imaging. Radiology 2013;266(1):28-36.
+      doi: 10.1148/radiol.12112469
+      used_for: [elongation, contour_lobulation, interior_homogeneity, boundary_definition]
+concepts:
+  - id: body_side
+    question: >-
+      Judging from the surrounding structures caught in the crop (spine, body wall, midline
+      vessels), does the main structure lie on the patient's right, near the midline, or on the
+      patient's left? Remember that in a cross-sectional image the patient's left is shown on
+      the right of the picture.
+    scale: [patient_right, midline, patient_left]
+    sources: [moeller2013, spratt2016]
+  - id: craniocaudal_level
+    question: >-
+      From the surroundings visible in the crop, at what level of the trunk was this section
+      taken: the pelvis, the lower abdomen, the upper abdomen, or the chest?
+    scale: [pelvic, lower_abdominal, upper_abdominal, thoracic]
+    sources: [moeller2013, spratt2016]
+  - id: anteroposterior_position
+    question: >-
+      Do the surroundings place the main structure toward the back of the body (against the
+      spine and the back muscles), in the middle, or toward the front body wall?
+    scale: [posterior, central, anterior]
+    sources: [moeller2013, spratt2016]
+  - id: relative_size
+    question: >-
+      Compared with the landmarks caught at the edge of the crop (a vertebral body, a rib, the
+      thickness of the body wall), is the main structure small, medium or large?
+    scale: [small, medium, large]
+    sources: [moeller2013, xu2019, yang2023]
+  - id: elongation
+    question: >-
+      Is the outline of the main structure roughly circular, moderately oval, or markedly
+      elongated and strip-like?
+    scale: [round, oval, elongated]
+    sources: [moeller2013, spratt2016, borghei2013]
+  - id: contour_lobulation
+    question: >-
+      Is the outline smooth and even, mildly lobulated or wavy, or markedly irregular and
+      feathery?
+    scale: [smooth, mildly_lobulated, markedly_irregular]
+    sources: [spratt2016, borghei2013]
+  - id: hilar_notch
+    question: >-
+      Is there a single distinct indentation, notch or wedge cut into one side of the outline
+      where vessels appear to enter?
+    scale: [absent, subtle, prominent]
+    sources: [moeller2013, spratt2016, sheth2004]
+  - id: relative_attenuation
+    question: >-
+      Overall, how bright is the main structure compared with the ordinary soft tissue and
+      muscle visible around it?
+    scale: [much_darker, slightly_darker, similar, brighter, much_brighter]
+    sources: [bilic2023, bae2010, sheth2004, denotter2023, hansell2008]
+  - id: interior_homogeneity
+    question: >-
+      Is the inside of the structure uniform in brightness, or does it contain clearly different
+      regions, internal branching lines or pockets?
+    scale: [homogeneous, mildly_heterogeneous, markedly_heterogeneous]
+    sources: [bilic2023, bae2010, sheth2004, denotter2023, hansell2008, borghei2013]
+  - id: bright_cortical_rim
+    question: >-
+      Is the structure outlined by a thin rim of the very brightest, calcium-density material,
+      brighter than any soft tissue in the crop?
+    scale: [absent, partial, complete]
+    sources: [spratt2016, denotter2023]
+  - id: boundary_definition
+    question: >-
+      How clearly is the edge of the main structure separated from what surrounds it: barely
+      distinguishable, moderately defined, or crisp along most of its circumference?
+    scale: [indistinct, moderate, sharp]
+    sources: [hansell2008, borghei2013]
+  - id: adjacent_bone
+    question: >-
+      Are very bright, calcium-density structures such as vertebrae, ribs or pelvic bone visible
+      at the edge of the crop, and if so how much of the edge do they occupy?
+    scale: [absent, small, prominent]
+    sources: [moeller2013, spratt2016, xu2019]
+classes:
+  "bladder":
+    fingerprint:
+      body_side: midline
+      craniocaudal_level: pelvic
+      anteroposterior_position: anterior
+      relative_size: medium
+      elongation: round
+      contour_lobulation: smooth
+      hilar_notch: absent
+      relative_attenuation: slightly_darker
+      interior_homogeneity: homogeneous
+      bright_cortical_rim: absent
+      boundary_definition: sharp
+      adjacent_bone: prominent
+    sources: [moeller2013, spratt2016, denotter2023, bae2010]
+  "femur-left":
+    fingerprint:
+      body_side: any
+      craniocaudal_level: pelvic
+      anteroposterior_position: central
+      relative_size: small
+      elongation: elongated
+      contour_lobulation: smooth
+      hilar_notch: absent
+      relative_attenuation: much_brighter
+      interior_homogeneity: mildly_heterogeneous
+      bright_cortical_rim: complete
+      boundary_definition: sharp
+      adjacent_bone: prominent
+    sources: [moeller2013, spratt2016, denotter2023]
+  "femur-right":
+    fingerprint:
+      body_side: any
+      craniocaudal_level: pelvic
+      anteroposterior_position: central
+      relative_size: small
+      elongation: elongated
+      contour_lobulation: smooth
+      hilar_notch: absent
+      relative_attenuation: much_brighter
+      interior_homogeneity: mildly_heterogeneous
+      bright_cortical_rim: complete
+      boundary_definition: sharp
+      adjacent_bone: prominent
+    sources: [moeller2013, spratt2016, denotter2023]
+  "heart":
+    fingerprint:
+      body_side: midline
+      craniocaudal_level: thoracic
+      anteroposterior_position: anterior
+      relative_size: large
+      elongation: oval
+      contour_lobulation: smooth
+      hilar_notch: absent
+      relative_attenuation: brighter
+      interior_homogeneity: mildly_heterogeneous
+      bright_cortical_rim: absent
+      boundary_definition: sharp
+      adjacent_bone: small
+    sources: [moeller2013, spratt2016, hansell2008, bae2010]
+  "kidney-left":
+    fingerprint:
+      body_side: any
+      craniocaudal_level: upper_abdominal
+      anteroposterior_position: posterior
+      relative_size: medium
+      elongation: oval
+      contour_lobulation: smooth
+      hilar_notch: prominent
+      relative_attenuation: much_brighter
+      interior_homogeneity: markedly_heterogeneous
+      bright_cortical_rim: absent
+      boundary_definition: sharp
+      adjacent_bone: small
+    sources: [moeller2013, spratt2016, sheth2004, bae2010]
+  "kidney-right":
+    fingerprint:
+      body_side: any
+      craniocaudal_level: upper_abdominal
+      anteroposterior_position: posterior
+      relative_size: medium
+      elongation: oval
+      contour_lobulation: smooth
+      hilar_notch: prominent
+      relative_attenuation: much_brighter
+      interior_homogeneity: markedly_heterogeneous
+      bright_cortical_rim: absent
+      boundary_definition: sharp
+      adjacent_bone: small
+    sources: [moeller2013, spratt2016, sheth2004, bae2010]
+  "liver":
+    fingerprint:
+      body_side: any
+      craniocaudal_level: upper_abdominal
+      anteroposterior_position: any
+      relative_size: large
+      elongation: oval
+      contour_lobulation: smooth
+      hilar_notch: subtle
+      relative_attenuation: brighter
+      interior_homogeneity: homogeneous
+      bright_cortical_rim: absent
+      boundary_definition: moderate
+      adjacent_bone: small
+    sources: [moeller2013, spratt2016, bilic2023, bae2010]
+  "lung-left":
+    fingerprint:
+      body_side: any
+      craniocaudal_level: thoracic
+      anteroposterior_position: any
+      relative_size: large
+      elongation: oval
+      contour_lobulation: smooth
+      hilar_notch: subtle
+      relative_attenuation: much_darker
+      interior_homogeneity: mildly_heterogeneous
+      bright_cortical_rim: absent
+      boundary_definition: sharp
+      adjacent_bone: prominent
+    sources: [moeller2013, hansell2008, denotter2023]
+  "lung-right":
+    fingerprint:
+      body_side: any
+      craniocaudal_level: thoracic
+      anteroposterior_position: any
+      relative_size: large
+      elongation: oval
+      contour_lobulation: smooth
+      hilar_notch: subtle
+      relative_attenuation: much_darker
+      interior_homogeneity: mildly_heterogeneous
+      bright_cortical_rim: absent
+      boundary_definition: sharp
+      adjacent_bone: prominent
+    sources: [moeller2013, hansell2008, denotter2023]
+  "pancreas":
+    fingerprint:
+      body_side: midline
+      craniocaudal_level: upper_abdominal
+      anteroposterior_position: central
+      relative_size: medium
+      elongation: oval
+      contour_lobulation: markedly_irregular
+      hilar_notch: absent
+      relative_attenuation: brighter
+      interior_homogeneity: mildly_heterogeneous
+      bright_cortical_rim: absent
+      boundary_definition: indistinct
+      adjacent_bone: small
+    sources: [moeller2013, spratt2016, borghei2013, bae2010]
+  "spleen":
+    fingerprint:
+      body_side: any
+      craniocaudal_level: upper_abdominal
+      anteroposterior_position: posterior
+      relative_size: medium
+      elongation: oval
+      contour_lobulation: smooth
+      hilar_notch: subtle
+      relative_attenuation: brighter
+      interior_homogeneity: homogeneous
+      bright_cortical_rim: absent
+      boundary_definition: moderate
+      adjacent_bone: small
+    sources: [moeller2013, spratt2016, bae2010]

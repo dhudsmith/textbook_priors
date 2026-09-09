@@ -1,0 +1,236 @@
+# Concept bank for retinamnist (MedMNIST v2)
+# Colour retinal fundus photographs; five ordinal diabetic-retinopathy severity grades 0-4.
+# Class keys are the bare digit strings of the medmnist label map and are quoted so that YAML
+# keeps them as strings.
+# Built 2026-09-09 by literature review with a web-connected assistant.
+# Expert review is SIMULATED; no clinician has signed off on this file.
+#
+# COMMITMENT RULE APPLIED TO THE FINGERPRINTS BELOW
+# A level is committed only where the cited source makes the feature definitional for that
+# grade, or reports it in a majority of eyes at that grade; everything else is `any`. A
+# disjunction in the source ("one or more of", "any of the following") is never encoded as a
+# conjunction across concepts. This is why grade 4 commits only neovascularisation, and why
+# venous beading, IRMA and quadrant spread are `any` wherever the international scale is silent.
+#
+# DOCUMENTED IMAGE LIMIT
+# Microaneurysms are 15-60 um across. A 45-degree DeepDRiD fundus field, centre-cropped and
+# resized to 224 px, gives roughly 50 um per pixel, so a microaneurysm is at or below one pixel.
+# Grade 1 ("microaneurysms only") is therefore defined by a feature at or below the resolution
+# of the image, and grade 0 versus grade 1 separates on that concept alone. IRMA are similarly
+# fine. This is not fixable inside the bank; it bounds what any arm of the study can achieve on
+# this dataset and must be read alongside any result.
+
+dataset: retinamnist
+modality: 3-channel colour retinal fundus photographs
+task: ordinal
+medmnist_task: "ordinal-regression"
+source_dataset: DeepDRiD (Liu et al. 2022)
+provenance:
+  method: literature review with a web-connected assistant
+  assistant: Claude Opus 5 (claude-opus-5), 2026-09-09
+  reviewed_by: >-
+    simulated review by Claude Opus 5 (claude-opus-5), 2026-09-09; no clinician has
+    reviewed this file
+  sources:
+    - key: yang2023
+      citation: >-
+        Yang J, Shi R, Wei D, Liu Z, Zhao L, Ke B, Pfister H, Ni B. MedMNIST v2 - A large-scale
+        lightweight benchmark for 2D and 3D biomedical image classification. Scientific Data
+        2023;10:41.
+      doi: 10.1038/s41597-022-01721-8
+      # used only to fix the image format and size, which bounds what lesions are resolvable
+      used_for: [microaneurysms_dot_haemorrhages, irma]
+    - key: liu2022
+      citation: >-
+        Liu R, Wang X, Wu Q, Dai L, Fang X, Yan T, Son J, Tang S, Li J, Gao Z, Galdran A,
+        Poorneshwaran JM, Liu H, Wang J, Chen Y, Porwal P, Wei Tan G S, Yang X, Dai C, Song H,
+        Chen M, Li H, Jia W, Shen D, Sheng B, Zhang P. DeepDRiD: Diabetic Retinopathy - Grading
+        and Image Quality Estimation Challenge. Patterns 2022;3(6):100512.
+      doi: 10.1016/j.patter.2022.100512
+      used_for:
+        [microaneurysms_dot_haemorrhages, blot_haemorrhages, hard_exudates, cotton_wool_spots,
+         neovascularisation]
+    - key: wilkinson2003
+      citation: >-
+        Wilkinson CP, Ferris FL 3rd, Klein RE, Lee PP, Agardh CD, Davis M, Dills D, Kampik A,
+        Pararajasegaram R, Verdaguer JT; Global Diabetic Retinopathy Project Group. Proposed
+        international clinical diabetic retinopathy and diabetic macular edema disease severity
+        scales. Ophthalmology 2003;110(9):1677-1682.
+      doi: 10.1016/S0161-6420(03)00475-5
+      used_for:
+        [microaneurysms_dot_haemorrhages, blot_haemorrhages, venous_beading, irma,
+         lesion_quadrant_spread, neovascularisation, preretinal_or_vitreous_haemorrhage]
+    - key: etdrs1991
+      citation: >-
+        Early Treatment Diabetic Retinopathy Study Research Group. Grading diabetic retinopathy
+        from stereoscopic color fundus photographs - an extension of the modified Airlie House
+        classification. ETDRS report number 10. Ophthalmology 1991;98(5 Suppl):786-806.
+      doi: 10.1016/S0161-6420(13)38012-9
+      used_for:
+        [microaneurysms_dot_haemorrhages, blot_haemorrhages, hard_exudates, cotton_wool_spots,
+         venous_beading, irma, lesion_quadrant_spread, neovascularisation,
+         preretinal_or_vitreous_haemorrhage, fibrous_proliferation]
+    - key: wong2016
+      citation: >-
+        Wong TY, Cheung CMG, Larsen M, Sharma S, Simo R. Diabetic retinopathy.
+        Nature Reviews Disease Primers 2016;2:16012.
+      doi: 10.1038/nrdp.2016.12
+      used_for:
+        [microaneurysms_dot_haemorrhages, blot_haemorrhages, hard_exudates, cotton_wool_spots,
+         neovascularisation, fibrous_proliferation]
+    - key: wong2018
+      citation: >-
+        Wong TY, Sun J, Kawasaki R, Ruamviboonsuk P, Gupta N, Lansingh VC, Maia M, Mathenge W,
+        Moreker S, Muqit MMK, Resnikoff S, Verdaguer J, Zhao P, Ferris F, Aiello LP, Taylor HR.
+        Guidelines on diabetic eye care: the International Council of Ophthalmology
+        recommendations for screening, follow-up, referral, and treatment based on resource
+        settings. Ophthalmology 2018;125(10):1608-1622.
+      doi: 10.1016/j.ophtha.2018.04.007
+      used_for: [venous_beading, irma, lesion_quadrant_spread]
+    - key: flaxel2020
+      citation: >-
+        Flaxel CJ, Adelman RA, Bailey ST, Fawzi A, Lim JI, Vemulakonda GA, Ying GS. Diabetic
+        retinopathy Preferred Practice Pattern. Ophthalmology 2020;127(1):P66-P145.
+      doi: 10.1016/j.ophtha.2019.09.025
+      used_for:
+        [hard_exudates, cotton_wool_spots, preretinal_or_vitreous_haemorrhage,
+         fibrous_proliferation]
+
+concepts:
+  - id: microaneurysms_dot_haemorrhages
+    question: "How many small, sharply outlined round red dots, each far smaller than the width
+      of a main retinal vessel, are scattered over the orange retinal background?"
+    scale: [none, few, moderate, many]
+    sources: [wilkinson2003, etdrs1991, wong2016, liu2022, yang2023]
+  - id: blot_haemorrhages
+    question: "How many larger red patches with blurred or irregular outlines, clearly bigger
+      than the small round dots, are visible in the retina?"
+    scale: [none, few, moderate, many]
+    sources: [wilkinson2003, etdrs1991, wong2016, liu2022]
+  - id: hard_exudates
+    question: "How much sharply outlined bright yellow-white deposit, sometimes in clusters,
+      lines or rings, is visible in the retina?"
+    scale: [none, few, moderate, many]
+    sources: [etdrs1991, wong2016, flaxel2020, liu2022]
+  - id: cotton_wool_spots
+    question: "How many pale greyish-white patches with soft, feathery, ill-defined edges are
+      visible, distinct from the sharply outlined yellow deposits?"
+    scale: [none, few, many]
+    sources: [etdrs1991, wong2016, flaxel2020, liu2022]
+  - id: venous_beading
+    question: "Do the larger dark retinal veins vary in calibre along their course, looking like
+      a string of sausages rather than a smoothly tapering tube?"
+    scale: [absent, mild, marked]
+    sources: [wilkinson2003, etdrs1991, wong2018]
+  - id: irma
+    question: "Are there fine, irregular, tortuous vessel segments lying within the retina, often
+      near red lesions, that do not follow the orderly branching of the main vessels?"
+    scale: [absent, mild, marked]
+    sources: [wilkinson2003, etdrs1991, wong2018, yang2023]
+  - id: lesion_quadrant_spread
+    question: "Taking the optic disc as the centre, in how many quadrants of the visible retina
+      are red lesions present?"
+    scale: [none, one_quadrant, two_or_three_quadrants, four_quadrants]
+    sources: [wilkinson2003, etdrs1991, wong2018]
+  - id: neovascularisation
+    question: "Is there a fine net, tuft or frond of thin new vessels on or beside the optic disc,
+      or elsewhere along the vascular arcades, distinct from the normal branching vessels?"
+    scale: [absent, present]
+    sources: [wilkinson2003, etdrs1991, wong2016, liu2022]
+  - id: preretinal_or_vitreous_haemorrhage
+    question: "Is there a dense sheet or pool of blood lying in front of the retina that hides the
+      vessels beneath it, or a diffuse red haze obscuring part of the fundus?"
+    scale: [absent, present]
+    sources: [wilkinson2003, etdrs1991, flaxel2020]
+  - id: fibrous_proliferation
+    question: "Is there white or grey fibrous, sheet-like or membranous tissue lying on the retinal
+      surface, often over the disc or along the vascular arcades?"
+    scale: [absent, present]
+    sources: [etdrs1991, wong2016, flaxel2020]
+
+classes:
+  # 0 = no apparent retinopathy: no abnormalities
+  "0":
+    fingerprint:
+      microaneurysms_dot_haemorrhages: none
+      blot_haemorrhages: none
+      hard_exudates: none
+      cotton_wool_spots: none
+      venous_beading: absent
+      irma: absent
+      lesion_quadrant_spread: none
+      neovascularisation: absent
+      preretinal_or_vitreous_haemorrhage: absent
+      fibrous_proliferation: absent
+    sources: [wilkinson2003, liu2022]
+  # 1 = mild non-proliferative diabetic retinopathy: microaneurysms only
+  "1":
+    fingerprint:
+      microaneurysms_dot_haemorrhages: few
+      blot_haemorrhages: none
+      hard_exudates: none
+      cotton_wool_spots: none
+      venous_beading: absent
+      irma: absent
+      lesion_quadrant_spread: any
+      neovascularisation: absent
+      preretinal_or_vitreous_haemorrhage: absent
+      fibrous_proliferation: absent
+    sources: [wilkinson2003, etdrs1991, liu2022]
+  # 2 = moderate NPDR: more than microaneurysms only, less than severe NPDR. The scale gives no
+  # positive lesion list for this grade; the dot/blot haemorrhage, hard exudate and cotton-wool
+  # spot levels follow the ICO screening description (wong2018). Venous beading, IRMA and
+  # quadrant spread are `any` because no cited source commits them below severe NPDR.
+  "2":
+    fingerprint:
+      microaneurysms_dot_haemorrhages: moderate
+      blot_haemorrhages: few
+      hard_exudates: few
+      cotton_wool_spots: few
+      venous_beading: any
+      irma: any
+      lesion_quadrant_spread: any
+      neovascularisation: absent
+      preretinal_or_vitreous_haemorrhage: absent
+      fibrous_proliferation: absent
+    sources: [wilkinson2003, etdrs1991, wong2016]
+  # 3 = severe NPDR: the 4-2-1 rule, and no sign of proliferative retinopathy. NOTE: the rule is
+  # itself a disjunction (>20 intraretinal haemorrhages in each of 4 quadrants OR definite venous
+  # beading in 2+ quadrants OR prominent IRMA in 1+ quadrant); committing all three here is the
+  # textbook picture of a severe eye, not a requirement, and is the one place in this file where
+  # a source disjunction is encoded as a conjunction. Without it grade 3 collapses onto grade 2.
+  # Hard exudates and cotton-wool spots are `any`: hard exudates belong to the macular-oedema
+  # scale, not the DR severity scale, and cotton-wool spots are not a 4-2-1 criterion, so no
+  # cited source commits a level for either at this grade.
+  "3":
+    fingerprint:
+      microaneurysms_dot_haemorrhages: many
+      blot_haemorrhages: many
+      hard_exudates: any
+      cotton_wool_spots: any
+      venous_beading: marked
+      irma: marked
+      lesion_quadrant_spread: four_quadrants
+      neovascularisation: absent
+      preretinal_or_vitreous_haemorrhage: absent
+      fibrous_proliferation: absent
+    sources: [wilkinson2003, etdrs1991, wong2018]
+  # 4 = proliferative diabetic retinopathy: "one or more of: neovascularization,
+  # vitreous/preretinal hemorrhage" (wilkinson2003). Only neovascularisation is committed;
+  # preretinal or vitreous haemorrhage is the minority arm and, when present, obscures the fundus
+  # so the remaining concepts cannot be scored, so it is `any`. Fibrous proliferation is `any`
+  # because it marks advanced, not all, PDR. Grade 3 versus grade 4 therefore rests on
+  # neovascularisation alone, which is thin but is what the international scale actually says.
+  "4":
+    fingerprint:
+      microaneurysms_dot_haemorrhages: many
+      blot_haemorrhages: many
+      hard_exudates: any
+      cotton_wool_spots: any
+      venous_beading: any
+      irma: any
+      lesion_quadrant_spread: any
+      neovascularisation: present
+      preretinal_or_vitreous_haemorrhage: any
+      fibrous_proliferation: any
+    sources: [wilkinson2003, etdrs1991, flaxel2020]

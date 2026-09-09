@@ -1,0 +1,502 @@
+# Concept bank: dermamnist (MedMNIST v2), 2026-09-09
+#
+# Seven-class dermatoscopic dataset derived from HAM10000. Concepts are dermoscopic
+# structures drawn from the ABCD rule, the seven-point checklist, and the Consensus Net
+# Meeting / International Society of Dermoscopy standardised terminology, restricted to
+# structures that survive a 224-pixel crop with no scale bar, no second view and no history.
+#
+# Deliberate omissions:
+#   - Diameter (the "D" of the clinical ABCDE) is NOT a concept: a dermatoscopic crop
+#     carries no reliable scale, so absolute size cannot be judged from the image.
+#   - Fine vessel morphology beyond coarse arborizing vessels (dotted, glomerular, hairpin,
+#     linear-irregular) is NOT a concept: at 224 pixels these are at or below the limit of
+#     what is resolvable.
+#   - Ulceration is NOT a concept: at this resolution an eroded basal cell carcinoma and the
+#     haemorrhagic crust of a vascular lesion are not reliably distinguishable, so the
+#     feature would not discriminate.
+#
+# The rule used for committing a fingerprint level:
+#   A class commits a level on a concept only where the source reports that feature in a
+#   MAJORITY of that class's lesions, or where the feature is DEFINITIONAL - part of the
+#   scored criteria of a named algorithm (the ABCD rule, the seven-point checklist, the
+#   two-step algorithm) or of the entity's definition. A feature that is highly specific but
+#   seen in a minority ("characteristic when present", such as spoke-wheel areas in basal
+#   cell carcinoma) is set to `any` for that class. Such a feature is not wasted: it stays
+#   `absent` on every class that genuinely lacks it, so it remains a one-sided cue and a
+#   usable regressor, without the file asserting something untrue about the class that owns
+#   it. Where a class lumps sub-entities that disagree, `any` is likewise the honest value
+#   and the reason is stated in that class's comment.
+
+dataset: dermamnist
+modality: 3-channel colour dermatoscopic images of pigmented skin lesions
+task: multi-class
+medmnist_task: "multi-class"
+source_dataset: HAM10000 (Tschandl et al. 2018)
+
+provenance:
+  method: literature review with a web-connected assistant
+  assistant: Claude Opus 5 (claude-opus-5), 2026-09-09
+  reviewed_by: >-
+    simulated review by Claude Opus 5 (claude-opus-5), 2026-09-09; no clinician has
+    reviewed this file
+  sources:
+    # Dataset provenance. These fix the modality, the 224-pixel release, the label map and
+    # the class definitions (in particular what the lumped "benign keratosis-like lesions"
+    # class contains). They support no individual visual concept, hence the empty used_for;
+    # they are cited by every class, whose keys and definitions come from them.
+    - key: yang2023
+      citation: >-
+        Yang J, Shi R, Wei D, Liu Z, Zhao L, Ke B, Pfister H, Ni B. MedMNIST v2 - A large-scale
+        lightweight benchmark for 2D and 3D biomedical image classification. Scientific Data
+        2023;10:41.
+      doi: 10.1038/s41597-022-01721-8
+      used_for: []
+    - key: tschandl2018
+      citation: >-
+        Tschandl P, Rosendahl C, Kittler H. The HAM10000 dataset, a large collection of
+        multi-source dermatoscopic images of common pigmented skin lesions. Scientific Data
+        2018;5:180161.
+      doi: 10.1038/sdata.2018.161
+      used_for: []
+    # Melanocytic algorithms.
+    - key: nachbar1994
+      citation: >-
+        Nachbar F, Stolz W, Merkle T, Cognetta AB, Vogt T, Landthaler M, Bilek P,
+        Braun-Falco O, Plewig G. The ABCD rule of dermatoscopy. High prospective value in the
+        diagnosis of doubtful melanocytic skin lesions. Journal of the American Academy of
+        Dermatology 1994;30(4):551-559.
+      doi: 10.1016/S0190-9622(94)70061-3
+      used_for: [asymmetry, border_irregularity, colour_count]
+    - key: abbasi2004
+      citation: >-
+        Abbasi NR, Shaw HM, Rigel DS, Friedman RJ, McCarthy WH, Osman I, Kopf AW, Polsky D.
+        Early diagnosis of cutaneous melanoma: revisiting the ABCD criteria. JAMA
+        2004;292(22):2771-2776.
+      doi: 10.1001/jama.292.22.2771
+      used_for: [asymmetry, border_irregularity, colour_count]
+    - key: argenziano1998
+      citation: >-
+        Argenziano G, Fabbrocini G, Carli P, De Giorgi V, Sammarco E, Delfino M.
+        Epiluminescence microscopy for the diagnosis of doubtful melanocytic skin lesions.
+        Comparison of the ABCD rule of dermatoscopy and a new 7-point checklist based on
+        pattern analysis. Archives of Dermatology 1998;134(12):1563-1570.
+      doi: 10.1001/archderm.134.12.1563
+      used_for: [pigment_network, blue_white_structures]
+    - key: argenziano2003
+      citation: >-
+        Argenziano G, Soyer HP, Chimenti S, Talamini R, Corona R, Sera F, et al. Dermoscopy of
+        pigmented skin lesions: results of a consensus meeting via the Internet. Journal of
+        the American Academy of Dermatology 2003;48(5):679-693.
+      doi: 10.1067/mjd.2003.281
+      used_for:
+        [asymmetry, pigment_network, blue_white_structures,
+         milia_like_cysts_and_comedo_openings, surface_keratin_or_scale]
+    - key: kittler2016
+      citation: >-
+        Kittler H, Marghoob AA, Argenziano G, Carrera C, Curiel-Lewandrowski C,
+        Hofmann-Wellenhof R, et al. Standardization of terminology in dermoscopy/dermatoscopy:
+        results of the third consensus conference of the International Society of Dermoscopy.
+        Journal of the American Academy of Dermatology 2016;74(6):1093-1106.
+      doi: 10.1016/j.jaad.2015.12.038
+      used_for:
+        [colour_count, pigment_network, blue_white_structures, arborizing_vessels,
+         leaf_like_or_spoke_wheel_areas, milia_like_cysts_and_comedo_openings,
+         surface_keratin_or_scale, red_lacunae, central_white_patch]
+    # Entity-specific dermoscopic criteria.
+    - key: menzies2000
+      citation: >-
+        Menzies SW, Westerhoff K, Rabinovitz H, Kopf AW, McCarthy WH, Katz B. Surface
+        microscopy of pigmented basal cell carcinoma. Archives of Dermatology
+        2000;136(8):1012-1016.
+      doi: 10.1001/archderm.136.8.1012
+      used_for:
+        [pigment_network, blue_white_structures, arborizing_vessels,
+         leaf_like_or_spoke_wheel_areas]
+    - key: braun2002
+      citation: >-
+        Braun RP, Rabinovitz HS, Krischer J, Kreusch J, Oliviero M, Naldi L, Kopf AW,
+        Saurat JH. Dermoscopy of pigmented seborrheic keratosis: a morphological study.
+        Archives of Dermatology 2002;138(12):1556-1560.
+      doi: 10.1001/archderm.138.12.1556
+      used_for:
+        [milia_like_cysts_and_comedo_openings, surface_keratin_or_scale, pigment_network,
+         arborizing_vessels]
+    - key: zaballos2008
+      citation: >-
+        Zaballos P, Puig S, Llambrich A, Malvehy J. Dermoscopy of dermatofibromas: a
+        prospective morphological study of 412 cases. Archives of Dermatology
+        2008;144(1):75-83.
+      doi: 10.1001/archdermatol.2007.8
+      used_for: [central_white_patch, pigment_network, colour_count]
+    - key: zaballos2007a
+      citation: >-
+        Zaballos P, Daufi C, Puig S, Argenziano G, Moreno-Ramirez D, Cabo H, Marghoob AA,
+        Llambrich A, Zalaudek I, Malvehy J. Dermoscopy of solitary angiokeratomas: a
+        morphological study. Archives of Dermatology 2007;143(3):318-325.
+      doi: 10.1001/archderm.143.3.318
+      used_for: [red_lacunae, background_erythema, surface_keratin_or_scale]
+    - key: zalaudek2012
+      citation: >-
+        Zalaudek I, Giacomel J, Schmid K, Bondino S, Rosendahl C, Cavicchini S, et al.
+        Dermatoscopy of facial actinic keratosis, intraepidermal carcinoma, and invasive
+        squamous cell carcinoma: a progression model. Journal of the American Academy of
+        Dermatology 2012;66(4):589-597.
+      doi: 10.1016/j.jaad.2011.02.011
+      used_for: [background_erythema, surface_keratin_or_scale, pigment_network]
+    - key: altamura2010
+      citation: >-
+        Altamura D, Menzies SW, Argenziano G, Zalaudek I, Soyer HP, Sera F, Avramidis M,
+        DeAmbrosis K, Fargnoli MC, Peris K. Dermatoscopy of basal cell carcinoma: morphologic
+        variability of global and local features and accuracy of diagnosis. Journal of the
+        American Academy of Dermatology 2010;62(1):67-75.
+      doi: 10.1016/j.jaad.2009.05.035
+      used_for:
+        [arborizing_vessels, blue_white_structures, leaf_like_or_spoke_wheel_areas,
+         pigment_network]
+    # The three sub-entities lumped into HAM10000's `bkl`: seborrhoeic keratosis, solar
+    # lentigo and lichen-planus-like (lichenoid) keratosis. These four sources are what the
+    # `bkl` fingerprint is argued from, and they are the reason two of its slots commit and
+    # the rest do not.
+    - key: elgart2001
+      citation: >-
+        Elgart GW. Seborrheic keratoses, solar lentigines, and lichenoid keratoses.
+        Dermatoscopic features and correlation to histology and clinical signs. Dermatologic
+        Clinics 2001;19(2):347-357.
+      doi: 10.1016/S0733-8635(05)70272-2
+      used_for:
+        [milia_like_cysts_and_comedo_openings, surface_keratin_or_scale, pigment_network]
+    - key: sahin2004
+      citation: >-
+        Sahin MT, Ozturkcan S, Ermertcan AT, Gunes AT. A comparison of dermoscopic features
+        among lentigo senilis/initial seborrheic keratosis, seborrheic keratosis, lentigo
+        maligna and lentigo maligna melanoma on the face. The Journal of Dermatology
+        2004;31(11):884-889.
+      doi: 10.1111/j.1346-8138.2004.tb00621.x
+      used_for:
+        [milia_like_cysts_and_comedo_openings, surface_keratin_or_scale, pigment_network]
+    - key: zaballos2007b
+      citation: >-
+        Zaballos P, Blazquez S, Puig S, Salsench E, Rodero J, Vives JM, Malvehy J. Dermoscopic
+        pattern of intermediate stage in seborrhoeic keratosis regressing to lichenoid
+        keratosis: report of 24 cases. British Journal of Dermatology 2007;157(2):266-272.
+      doi: 10.1111/j.1365-2133.2007.07963.x
+      used_for:
+        [milia_like_cysts_and_comedo_openings, blue_white_structures,
+         surface_keratin_or_scale]
+    - key: bugatti2007
+      citation: >-
+        Bugatti L, Filosa G. Dermoscopy of lichen planus-like keratosis: a model of
+        inflammatory regression. Journal of the European Academy of Dermatology and
+        Venereology 2007;21(10):1392-1397.
+      doi: 10.1111/j.1468-3083.2007.02296.x
+      used_for: [blue_white_structures, background_erythema, central_white_patch]
+
+concepts:
+  - id: asymmetry
+    question: >-
+      Considering outline, colour and internal structure together, is the lesion asymmetric
+      about one or both of its axes?
+    scale: [absent, mild, marked]
+    sources: [nachbar1994, abbasi2004, argenziano2003]
+
+  - id: border_irregularity
+    question: >-
+      Are the lesion's edges irregular, notched or abruptly cut off, rather than smooth and
+      evenly fading into the surrounding skin?
+    scale: [absent, mild, marked]
+    sources: [nachbar1994, abbasi2004]
+
+  - id: colour_count
+    question: >-
+      How many clearly different colours are present in the lesion, counting light brown,
+      dark brown, black, red, white and blue-grey?
+    scale: [one, two, three_or_more]
+    sources: [nachbar1994, abbasi2004, kittler2016, zaballos2008]
+
+  - id: pigment_network
+    question: >-
+      Is a net-like grid of pigmented lines over a lighter background visible, and if so are
+      the lines and holes uniform and evenly spaced, or uneven, thickened and broken?
+    scale: [absent, regular, irregular]
+    sources: [argenziano1998, argenziano2003, kittler2016, menzies2000, braun2002,
+              zaballos2008, zalaudek2012, elgart2001, sahin2004, altamura2010]
+
+  - id: blue_white_structures
+    question: >-
+      Are blue-grey or blue-white areas present in the lesion, as a hazy structureless veil,
+      rounded grey-blue nests or globules, or fine grey dots?
+    scale: [absent, present]
+    sources: [argenziano1998, argenziano2003, kittler2016, menzies2000, bugatti2007,
+              zaballos2007b, altamura2010]
+
+  - id: arborizing_vessels
+    question: >-
+      Are large, sharply focused red vessels that branch repeatedly into progressively
+      thinner branches visible over the lesion?
+    scale: [absent, present]
+    sources: [menzies2000, kittler2016, braun2002, altamura2010]
+
+  - id: leaf_like_or_spoke_wheel_areas
+    question: >-
+      Are brown-grey leaf-shaped lobules, or wheel-shaped areas with spokes radiating from a
+      darker hub, present towards the edge of the lesion?
+    scale: [absent, present]
+    sources: [menzies2000, kittler2016, altamura2010]
+
+  - id: milia_like_cysts_and_comedo_openings
+    question: >-
+      Are small round whitish-yellow spots resembling tiny cysts, or dark round plugged
+      openings, scattered over the lesion surface?
+    scale: [absent, few, many]
+    sources: [braun2002, argenziano2003, kittler2016, elgart2001, sahin2004, zaballos2007b]
+
+  - id: surface_keratin_or_scale
+    question: >-
+      Does the surface look keratotic - dry white-to-yellow scale, a rough brain-like
+      (cerebriform) surface, or deep fissures separating raised ridges?
+    scale: [absent, mild, marked]
+    sources: [braun2002, zalaudek2012, kittler2016, argenziano2003, zaballos2007a,
+              elgart2001, sahin2004, zaballos2007b]
+
+  - id: red_lacunae
+    question: >-
+      Are sharply outlined round or oval lagoon-like areas of red, purple, blue or black
+      colour present within the lesion?
+    scale: [absent, present]
+    sources: [zaballos2007a, kittler2016]
+
+  - id: central_white_patch
+    question: >-
+      Is there a structureless white or scar-like patch in the centre of the lesion, with the
+      pigmentation confined to a ring around it?
+    scale: [absent, present]
+    sources: [zaballos2008, kittler2016, bugatti2007]
+
+  - id: background_erythema
+    question: >-
+      Is the background of the lesion predominantly red or pink, rather than brown, tan or
+      the colour of surrounding skin?
+    scale: [absent, mild, marked]
+    sources: [zalaudek2012, zaballos2007a, bugatti2007]
+
+classes:
+  # akiec. Tschandl 2018 defines this class as actinic keratosis plus intraepidermal
+  # (Bowen's) carcinoma. Zalaudek 2012 gives the facial progression model: erythema and a
+  # red pseudonetwork ("strawberry" appearance) with surface scale, on a non-melanocytic
+  # lesion that therefore has no true pigment network. The dotted/glomerular vessels and
+  # rosettes that complete the picture are below the resolution used here and are not scored.
+  # This class is itself a lump of two entities, and the two committed levels lean on
+  # different halves of it: Zalaudek 2012 associates the red pseudonetwork with actinic
+  # keratosis and diffuse yellow opaque scale with intraepidermal carcinoma. Both commit as
+  # definitional - an erythematous scaly lesion is what each of the two entities is - rather
+  # than on a reported majority, which the source does not give.
+  "actinic keratoses and intraepithelial carcinoma":
+    fingerprint:
+      asymmetry: any
+      border_irregularity: any
+      colour_count: any
+      pigment_network: absent
+      blue_white_structures: absent
+      arborizing_vessels: absent
+      leaf_like_or_spoke_wheel_areas: absent
+      milia_like_cysts_and_comedo_openings: absent
+      surface_keratin_or_scale: marked
+      red_lacunae: absent
+      central_white_patch: absent
+      background_erythema: marked
+    sources: [zalaudek2012, argenziano2003, tschandl2018, yang2023]
+
+  # bcc. Menzies 2000 requires no pigment network AND one or more of six positive features -
+  # a disjunction, and one established on PIGMENTED basal cell carcinoma only. HAM10000's
+  # class is broader: Altamura 2010 (n=609, pigmented and non-pigmented) found 15.1%
+  # non-pigmented and 33.2% lightly pigmented lesions, where blue-grey structures are absent
+  # and arborizing vessels carry the diagnosis. Applying the majority-or-definitional rule to
+  # Altamura's frequencies:
+  #   pigment_network = absent. Definitional: its absence is the mandatory half of Menzies'
+  #     rule, and it is what places the lesion on the non-melanocytic branch of the two-step
+  #     algorithm.
+  #   arborizing_vessels = present. The commonest single feature at 57.1%, a majority, and
+  #     the dominant cue in exactly the non-pigmented subset the class also contains.
+  #   blue_white_structures = present. Borderline and stated as the PIGMENTED prototype:
+  #     blue-grey ovoid nests 47.5% and multiple blue-grey globules 26.1% (this concept's
+  #     question covers both, plus the blue-white veil-like structures Altamura recorded in
+  #     40.6% of lesions), so the union is roughly 50-60% - a bare majority for the class as
+  #     a whole, and near zero for its non-pigmented sixth.
+  #   leaf_like_or_spoke_wheel_areas = any. RELAXED from `present`. Leaf-like areas 15.9% and
+  #     spoke-wheel areas 9.0%: the classic basal-cell-only cue, but a clear minority, so
+  #     committing it asserted something false about the class. It stays `absent` on all six
+  #     other classes and so remains a one-sided cue.
+  #   asymmetry, border_irregularity, colour_count, background_erythema = any. Not part of
+  #     either source's criteria.
+  "basal cell carcinoma":
+    fingerprint:
+      asymmetry: any
+      border_irregularity: any
+      colour_count: any
+      pigment_network: absent
+      blue_white_structures: present
+      arborizing_vessels: present
+      leaf_like_or_spoke_wheel_areas: any
+      milia_like_cysts_and_comedo_openings: absent
+      surface_keratin_or_scale: absent
+      red_lacunae: absent
+      central_white_patch: absent
+      background_erythema: any
+    sources: [menzies2000, altamura2010, kittler2016, argenziano2003, tschandl2018, yang2023]
+
+  # bkl. HAM10000's `bkl` lumps three entities - seborrhoeic keratosis (SK), solar lentigo
+  # (SL) and lichen-planus-like keratosis (LPLK) - which Tschandl 2018 groups because they
+  # are biologically similar and often histopathologically reported together. Elgart 2001
+  # reviews all three side by side. The two commitments below, and each `any`, are argued
+  # from the sources rather than chosen as a safe default:
+  #
+  #   milia_like_cysts_and_comedo_openings = few. These are the classic SK criteria and are
+  #     among the coarsest structures in dermoscopy, so they survive 224 px. Braun 2002:
+  #     milia-like cysts in 135/203 (66%) and comedo-like openings in 144/203 (71%) of
+  #     pigmented SK. Sahin 2004 found milia-like cysts and pseudofollicular openings
+  #     statistically significant for the benign group, which was lentigo senilis / *initial*
+  #     SK (n=26) together with SK (n=18) - i.e. they are not confined to mature SK.
+  #     Zaballos 2007b found retained SK areas inside 24 lichenoid keratoses, so LPLK
+  #     commonly keeps them too. `few` rather than `many` is the union level: SK alone would
+  #     be `many`, a pure flat SL would be `absent`.
+  #   surface_keratin_or_scale = mild. SK and LPLK are keratotic by definition; Braun 2002
+  #     and Elgart 2001 report fissures and ridges, and Sahin 2004 found cerebriform
+  #     structures significant for the lentigo-senilis/initial-SK plus SK group. A purely
+  #     flat SL would score `absent`, so the union sits at the low-but-nonzero level, not at
+  #     `marked` (which is where Zalaudek 2012 puts actinic keratosis).
+  #   pigment_network = any, and this is a sourced conclusion, not caution: Braun 2002 found
+  #     network and network-like structures in 94/203 (46%) of pigmented SK and concluded
+  #     that telling a true network from a network-like one is essential and difficult, and
+  #     Sahin 2004 found light-brown pseudonetworks significant for the benign group. The
+  #     two-step algorithm calls a true network melanocytic, but under this file's question
+  #     wording a pseudonetwork reads as present, so the class cannot commit.
+  #   blue_white_structures = any. Bugatti 2007: blue areas in 94% of 16 LPLK, granular grey
+  #     pattern in all but one; Zaballos 2007b describes the same grey granules. SK and SL
+  #     do not show them. Genuine disagreement between the sub-entities.
+  #   background_erythema = any. Bugatti 2007 classifies 37% of LPLK as the flat
+  #     erythematous type, so the earlier `absent` was wrong and has been relaxed.
+  #   asymmetry, border_irregularity, colour_count = any. No source addresses these for any
+  #     of the three sub-entities; SK's sharp demarcation and SL's moth-eaten border pull in
+  #     opposite directions on the border question.
+  #   central_white_patch = absent. Bugatti 2007 reports white scar-like depigmentation in
+  #     only 4/16 LPLK, and never as the concentric central-patch-with-peripheral-ring
+  #     pattern this concept asks about (which is Zaballos 2008's dermatofibroma pattern).
+  "benign keratosis-like lesions":
+    fingerprint:
+      asymmetry: any
+      border_irregularity: any
+      colour_count: any
+      pigment_network: any
+      blue_white_structures: any
+      arborizing_vessels: absent
+      leaf_like_or_spoke_wheel_areas: absent
+      milia_like_cysts_and_comedo_openings: few
+      surface_keratin_or_scale: mild
+      red_lacunae: absent
+      central_white_patch: absent
+      background_erythema: any
+    sources: [braun2002, elgart2001, sahin2004, zaballos2007b, bugatti2007, tschandl2018,
+              yang2023]
+
+  # df. Zaballos 2008, n=412. The two committed structures are each a majority in their own
+  # right: pigment network 71.8% (and only 3% of it atypical, which is what licenses
+  # `regular` rather than `irregular`), white scar-like patch 57.0%. It is their
+  # CONJUNCTION - the classic central-patch-with-peripheral-network pattern - that falls to
+  # 34.7%, with the other 65.3% distributed over nine further patterns, some simulating
+  # melanoma. So each level is majority-supported individually even though the prototype as a
+  # whole is not modal.
+  #   colour_count = any. RELAXED from `two`. No source reports a colour count for this
+  #     entity; `two` was inferred from the brown-plus-white classic pattern, and unlike the
+  #     ABCD colour criterion used for naevi and melanoma it is not part of any scored
+  #     algorithm, so under the majority-or-definitional rule it does not commit.
+  #   asymmetry, border_irregularity = absent. Definitional rather than frequency-based: the
+  #     classic pattern is concentric, hence symmetric and evenly bordered.
+  # This class separates from `melanocytic nevi` on central_white_patch alone. That is not a
+  # gap in the bank: a dermatofibroma with a peripheral network and no white patch is a
+  # recognised dermoscopic mimic of a naevus, and the central white patch is precisely the
+  # feature the literature offers to tell them apart.
+  "dermatofibroma":
+    fingerprint:
+      asymmetry: absent
+      border_irregularity: absent
+      colour_count: any
+      pigment_network: regular
+      blue_white_structures: absent
+      arborizing_vessels: absent
+      leaf_like_or_spoke_wheel_areas: absent
+      milia_like_cysts_and_comedo_openings: absent
+      surface_keratin_or_scale: any
+      red_lacunae: absent
+      central_white_patch: present
+      background_erythema: absent
+    sources: [zaballos2008, kittler2016, tschandl2018, yang2023]
+
+  # mel. ABCD rule (asymmetry, border cut-off, three or more colours) plus the seven-point
+  # checklist major criteria that survive this resolution: atypical pigment network and
+  # blue-whitish veil. These commit as DEFINITIONAL, not by reported frequency: they are the
+  # scored criteria of the two algorithms, and the blue-whitish veil in particular is a
+  # high-specificity major criterion whose sensitivity in melanoma is around a half. So the
+  # fingerprint is the textbook pigmented melanoma; amelanotic and nodular melanomas lack a
+  # network entirely and would score `absent` on it.
+  "melanoma":
+    fingerprint:
+      asymmetry: marked
+      border_irregularity: marked
+      colour_count: three_or_more
+      pigment_network: irregular
+      blue_white_structures: present
+      arborizing_vessels: absent
+      leaf_like_or_spoke_wheel_areas: absent
+      milia_like_cysts_and_comedo_openings: absent
+      surface_keratin_or_scale: absent
+      red_lacunae: absent
+      central_white_patch: absent
+      background_erythema: any
+    sources: [nachbar1994, abbasi2004, argenziano1998, argenziano2003, menzies2000,
+              tschandl2018, yang2023]
+
+  # nv. The benign counterpart of the ABCD rule: symmetric, sharply and evenly bordered, one
+  # or two shades of brown, with a regular pigment network. Two caveats a reviewer should
+  # weigh. Globular and homogeneous naevi exist and would score `absent` on pigment_network;
+  # `regular` is the textbook reticular naevus, not a claim about every naevus in the
+  # dataset. And Elgart 2001 notes that milia-like-cyst-like structures are commonly seen in
+  # melanocytic neoplasms, notably congenital naevi; `absent` here is the expectation for the
+  # common acquired naevus that dominates this class.
+  "melanocytic nevi":
+    fingerprint:
+      asymmetry: absent
+      border_irregularity: absent
+      colour_count: two
+      pigment_network: regular
+      blue_white_structures: absent
+      arborizing_vessels: absent
+      leaf_like_or_spoke_wheel_areas: absent
+      milia_like_cysts_and_comedo_openings: absent
+      surface_keratin_or_scale: absent
+      red_lacunae: absent
+      central_white_patch: absent
+      background_erythema: absent
+    sources: [nachbar1994, abbasi2004, argenziano2003, elgart2001, tschandl2018, yang2023]
+
+  # vasc. Zaballos 2007a on solitary angiokeratomas: dark lacunae 94%, whitish veil 91%,
+  # erythema 69%, red lacunae 53%. This file's lacunae question asks about red, purple, blue
+  # OR black lagoons, so the majority that supports `present` is the 94% dark-lacunae figure,
+  # not the 53% for red ones alone; background_erythema rests on the 69%. The class also
+  # contains haemangiomas and pyogenic granulomas, which are smooth and non-keratotic where
+  # angiokeratoma is hyperkeratotic, so surface_keratin_or_scale is `any`. Being
+  # non-melanocytic, no pigment network.
+  "vascular lesions":
+    fingerprint:
+      asymmetry: any
+      border_irregularity: any
+      colour_count: any
+      pigment_network: absent
+      blue_white_structures: any
+      arborizing_vessels: absent
+      leaf_like_or_spoke_wheel_areas: absent
+      milia_like_cysts_and_comedo_openings: absent
+      surface_keratin_or_scale: any
+      red_lacunae: present
+      central_white_patch: absent
+      background_erythema: marked
+    sources: [zaballos2007a, kittler2016, argenziano2003, tschandl2018, yang2023]

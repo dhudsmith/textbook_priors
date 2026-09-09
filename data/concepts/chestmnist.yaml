@@ -1,0 +1,501 @@
+# Concept bank for chestmnist (MedMNIST v2), built 2026-09-09.
+# Frontal chest radiographs, 1-channel greyscale, fourteen findings, multi-label.
+#
+# IMPORTANT on the labels: the fourteen ChestX-ray14 labels were mined from free-text
+# radiology reports by NLP, not assigned by a radiologist looking at each image; Wang et al.
+# report precision 0.90 / recall 0.91 / F1 0.90 for that text mining on a validation set.
+# The fingerprints below are therefore the textbook's expectation for the *named finding*,
+# not a description of the label noise, and not a claim about how often the label is right.
+#
+# Because the task is multi-label, one image may carry several findings at once and many
+# images carry none. Concepts are written at the level of radiographic *signs* so that
+# fingerprints share them; `any` marks a sign the finding does not constrain.
+#
+# KNOWN CEILING: "consolidation" and "pneumonia" carry IDENTICAL fingerprints on purpose.
+# Pneumonia is an aetiology, not a radiographic sign; its radiographic manifestation *is*
+# consolidation, and the Fleischner glossary gives no plain-film feature that separates the
+# two. In ChestX-ray14 both labels were mined from report wording that often describes the
+# same film, so no fingerprint over visible signs can distinguish them. Any method that
+# matches images to these fingerprints alone will score them alike; that is a property of
+# the labels, not a defect of the bank.
+#
+# Note on `mediastinal_shift_direction`: its scale is a signed axis (pull toward the
+# opaque side, no shift, push away from it) rather than a magnitude, because direction is
+# what distinguishes volume loss from a space-occupying pleural collection.
+#
+# THE RULE FOR `any`. A fingerprint commits a class to a level only where a cited source
+# supports that level or the level is definitional for the term. It does NOT commit a class
+# to the bottom level of a sign the finding simply does not constrain. Zero-filling would be
+# wrong in kind here: the task is multi-label, findings co-occur by mechanism (cardiomegaly
+# with oedema and effusion, most of all), and an image labelled with two findings is
+# correctly labelled with both. A fingerprint that asserted the other finding's signs are
+# absent would be asserting the label is wrong. Some fingerprints are therefore thin --
+# `cardiomegaly` constrains one sign, `nodule` and `mass` one each -- and that thinness is
+# the honest description of what the term means, not a gap to be filled.
+#
+# DO NOT "FIX" THIS FILE BY MAKING THE FINGERPRINTS SEPARATE BETTER. Pairwise separability
+# is not a meaningful quality measure for chestmnist. Under a multi-label task the classes
+# are not alternatives to choose between: an image showing cardiomegaly and effusion carries
+# both labels and is correctly labelled with both, so no method ever has to tell that pair
+# apart. The question that matters per class is whether the finding's own signs are
+# distinguishable from that finding's absence. An audit that counts concepts on which two
+# classes commit to different levels will score this file poorly, and the way to raise that
+# score is to assert findings are absent when the sources say nothing of the kind. That
+# trade was tried during drafting and reverted; it is a worse file. If a later audit flags
+# these pairs, the flag is the thing to discard.
+
+dataset: chestmnist
+modality: frontal chest radiographs, single-channel greyscale
+task: multi-label
+medmnist_task: "multi-label, binary-class"
+source_dataset: NIH ChestX-ray14 (Wang et al. 2017)
+
+provenance:
+  method: literature review with a web-connected assistant
+  assistant: Claude Opus 5 (claude-opus-5), 2026-09-09
+  reviewed_by: >-
+    simulated review by Claude Opus 5 (claude-opus-5), 2026-09-09; no clinician has
+    reviewed this file
+  sources:
+    - key: yang2023
+      citation: >-
+        Yang J, Shi R, Wei D, Liu Z, Zhao L, Ke B, Pfister H, Ni B. MedMNIST v2 - A large-scale
+        lightweight benchmark for 2D and 3D biomedical image classification. Scientific Data
+        2023;10:41.
+      doi: 10.1038/s41597-022-01721-8
+      used_for: []
+    - key: wang2017
+      citation: >-
+        Wang X, Peng Y, Lu L, Lu Z, Bagheri M, Summers RM. ChestX-ray8: hospital-scale chest
+        X-ray database and benchmarks on weakly-supervised classification and localization of
+        common thorax diseases. Proc IEEE Conf Comput Vis Pattern Recognit (CVPR) 2017:3462-71.
+      doi: 10.1109/CVPR.2017.369
+      used_for: [hazy_opacity, airspace_opacity, interstitial_markings]
+    - key: hansell2008
+      citation: >-
+        Hansell DM, Bankier AA, MacMahon H, McLoud TC, Muller NL, Remy J. Fleischner Society:
+        glossary of terms for thoracic imaging. Radiology 2008;246(3):697-722.
+      doi: 10.1148/radiol.2462070712
+      used_for:
+        - airspace_opacity
+        - hazy_opacity
+        - interstitial_markings
+        - opacity_basal_predominance
+        - costophrenic_angle_blunting
+        - peripheral_pleural_density
+        - discrete_rounded_opacity
+        - pleural_line_with_avascular_zone
+        - lung_inflation
+        - supradiaphragmatic_gas_structure
+    - key: bankier2024
+      citation: >-
+        Bankier AA, MacMahon H, Colby T, Gevenois PA, Goo JM, Leung ANC, Lynch DA,
+        Schaefer-Prokop CM, Tomiyama N, Travis WD, Verschakelen JA, White CS, Naidich DP.
+        Fleischner Society: glossary of terms for thoracic imaging. Radiology
+        2024;310(2):e232558.
+      doi: 10.1148/radiol.232558
+      used_for:
+        - airspace_opacity
+        - hazy_opacity
+        - interstitial_markings
+        - opacity_basal_predominance
+        - peripheral_pleural_density
+        - discrete_rounded_opacity
+    - key: hassan2024
+      citation: >-
+        Hassan M, Touman AA, Grabczak EM, Skaarup SH, Faber K, Blyth KG, Pochepnia S.
+        Imaging of pleural disease. Breathe (Sheff) 2024;20(1):230172.
+      doi: 10.1183/20734735.0172-2023
+      used_for:
+        - opacity_basal_predominance
+        - costophrenic_angle_blunting
+        - peripheral_pleural_density
+        - pleural_line_with_avascular_zone
+        - mediastinal_shift_direction
+    - key: truszkiewicz2021
+      citation: >-
+        Truszkiewicz K, Poreba R, Gac P. Radiological cardiothoracic ratio in evidence-based
+        medicine. J Clin Med 2021;10(9):2016.
+      doi: 10.3390/jcm10092016
+      used_for: [cardiac_silhouette_width]
+    - key: gluecker1999
+      citation: >-
+        Gluecker T, Capasso P, Schnyder P, Gudinchet F, Schaller MD, Revelly JP, Chiolero R,
+        Vock P, Wicky S. Clinical and radiologic features of pulmonary edema. RadioGraphics
+        1999;19(6):1507-31.
+      doi: 10.1148/radiographics.19.6.g99no211507
+      used_for: [interstitial_markings, hazy_opacity, airspace_opacity, cardiac_silhouette_width]
+    - key: woodring1996
+      citation: >-
+        Woodring JH, Reed JC. Radiographic manifestations of lobar atelectasis. J Thorac Imaging
+        1996;11(2):109-44.
+      doi: 10.1097/00005382-199621000-00003
+      used_for:
+        - lung_inflation
+        - mediastinal_shift_direction
+        - airspace_opacity
+        - costophrenic_angle_blunting
+    - key: thurlbeck1978
+      citation: >-
+        Thurlbeck WM, Simon G. Radiographic appearance of the chest in emphysema. AJR Am J
+        Roentgenol 1978;130(3):429-40.
+      doi: 10.2214/ajr.130.3.429
+      used_for: [lung_inflation, cardiac_silhouette_width]
+    - key: nason2012
+      citation: >-
+        Nason LK, Walker CM, McNeeley MF, Burivong W, Fligner CL, Godwin JD. Imaging of the
+        diaphragm: anatomy and function. RadioGraphics 2012;32(2):E51-70.
+      doi: 10.1148/rg.322115127
+      used_for: [supradiaphragmatic_gas_structure, lung_inflation]
+
+concepts:
+  - id: airspace_opacity
+    question: >-
+      Is there a homogeneous white opacity filling part of the lung, dense enough that the
+      vessels running through that region can no longer be traced?
+    scale: [absent, patchy, confluent]
+    sources: [hansell2008, bankier2024, wang2017]
+
+  - id: hazy_opacity
+    question: >-
+      Is there a hazy, veil-like increase in whiteness of the lung through which the vessel
+      and airway margins can still be seen?
+    scale: [absent, mild, marked]
+    sources: [hansell2008, bankier2024, wang2017]
+
+  - id: interstitial_markings
+    question: >-
+      How prominent are the fine linear, net-like markings of the lung, over and above the
+      normal smoothly branching vessels?
+    scale: [normal, increased, coarse_reticular]
+    sources: [hansell2008, bankier2024, gluecker1999]
+
+  - id: opacity_basal_predominance
+    question: >-
+      If any increased whiteness is present, how strongly is it concentrated in the lower
+      zones near the diaphragm rather than spread evenly or set in the upper zones?
+    scale: [absent, mild, marked]
+    sources: [hansell2008, bankier2024, hassan2024]
+
+  - id: costophrenic_angle_blunting
+    question: >-
+      Is the sharp angle where the diaphragm meets the chest wall blunted or filled in, with
+      an upward-curving upper edge against the chest wall?
+    scale: [absent, mild, marked]
+    sources: [hassan2024, hansell2008]
+
+  - id: peripheral_pleural_density
+    question: >-
+      Is there a band or plaque of soft-tissue whiteness lying along the inner chest wall or
+      capping a lung apex, following the surface of the lung rather than a vessel?
+    scale: [absent, mild, marked]
+    sources: [hassan2024, hansell2008, bankier2024]
+
+  - id: cardiac_silhouette_width
+    question: >-
+      How wide is the heart shadow compared with the widest inner diameter of the chest, a
+      ratio of about one half being the usual upper limit?
+    scale: [narrow, normal, wide]
+    sources: [truszkiewicz2021, thurlbeck1978, gluecker1999]
+
+  - id: discrete_rounded_opacity
+    question: >-
+      Is there a discrete, roughly round, sharply outlined white lesion inside the lung, and
+      if so is it small (under about one fifth the width of one lung, roughly 3 cm) or larger?
+    scale: [absent, small, large]
+    sources: [hansell2008, bankier2024]
+
+  - id: pleural_line_with_avascular_zone
+    question: >-
+      Is a thin white line visible running parallel to the chest wall, with completely blank
+      lung beyond it and no vessel markings reaching out to the ribs?
+    scale: [absent, present]
+    sources: [hassan2024, hansell2008]
+
+  - id: lung_inflation
+    question: >-
+      How inflated do the lungs look: short with high domed diaphragms, normal, or tall and
+      dark with low flattened diaphragms and widely spaced ribs?
+    scale: [reduced, normal, increased]
+    sources: [thurlbeck1978, woodring1996, hansell2008, nason2012]
+
+  - id: mediastinal_shift_direction
+    question: >-
+      Is the trachea or the heart shadow off the midline, and if so is it pulled towards the
+      whiter (more opaque) half of the chest or pushed away from it?
+    scale: [towards_whiter_side, none, away_from_whiter_side]
+    sources: [woodring1996, hassan2024]
+
+  - id: supradiaphragmatic_gas_structure
+    question: >-
+      Is there an abnormal rounded structure projected behind the heart or above the
+      diaphragm that contains gas or a gas-fluid level and distorts the diaphragm outline?
+    scale: [absent, present]
+    sources: [nason2012, hansell2008]
+
+classes:
+  # Volume loss is the signature: the mediastinum is pulled TOWARDS the collapsed, whiter
+  # side and the costophrenic angle stays sharp. Woodring & Reed give exactly these features
+  # for telling lobar atelectasis from a pleural effusion, which shifts the other way.
+  # JUDGEMENT CALL: this is the textbook picture of LOBAR collapse, and Woodring & Reed is
+  # titled for lobar atelectasis. Much of what carries the ChestX-ray14 "Atelectasis" label is
+  # linear or plate-like basal atelectasis with no mediastinal shift and little volume loss,
+  # which Fleischner 2008 also admits under the broad definition. The fingerprint follows the
+  # textbook term, so it will understate the mild end of the label.
+  atelectasis:
+    fingerprint:
+      airspace_opacity: confluent
+      hazy_opacity: any
+      interstitial_markings: any
+      opacity_basal_predominance: any
+      costophrenic_angle_blunting: absent
+      peripheral_pleural_density: any
+      cardiac_silhouette_width: any
+      discrete_rounded_opacity: any
+      pleural_line_with_avascular_zone: any
+      lung_inflation: reduced
+      mediastinal_shift_direction: towards_whiter_side
+      supradiaphragmatic_gas_structure: any
+    sources: [woodring1996, hansell2008]
+
+  # Deliberately thin: the term constrains the cardiac silhouette and nothing else. In
+  # ChestX-ray14 cardiomegaly co-occurs constantly with oedema and effusion by mechanism, so
+  # asserting the parenchymal and pleural signs are absent would contradict those co-labels.
+  cardiomegaly:
+    fingerprint:
+      airspace_opacity: any
+      hazy_opacity: any
+      interstitial_markings: any
+      opacity_basal_predominance: any
+      costophrenic_angle_blunting: any
+      peripheral_pleural_density: any
+      cardiac_silhouette_width: wide
+      discrete_rounded_opacity: any
+      pleural_line_with_avascular_zone: any
+      lung_inflation: any
+      mediastinal_shift_direction: any
+      supradiaphragmatic_gas_structure: any
+    sources: [truszkiewicz2021, hansell2008]
+
+  # Fluid layers at the base: basal opacity with a blunted, meniscus-shaped costophrenic
+  # angle, and, when large enough to shift the mediastinum, a push AWAY from the opaque side.
+  effusion:
+    fingerprint:
+      airspace_opacity: confluent
+      hazy_opacity: any
+      interstitial_markings: any
+      opacity_basal_predominance: marked
+      costophrenic_angle_blunting: marked
+      peripheral_pleural_density: any
+      cardiac_silhouette_width: any
+      discrete_rounded_opacity: any
+      pleural_line_with_avascular_zone: any
+      lung_inflation: any
+      mediastinal_shift_direction: away_from_whiter_side
+      supradiaphragmatic_gas_structure: any
+    sources: [hassan2024, hansell2008, woodring1996]
+
+  # "Infiltration" is not a Fleischner term; the glossary discourages it as loose usage for
+  # ill-defined opacity. JUDGEMENT CALL: the three opacity signs are kept because they are
+  # what the word is used to mean in a report; everything else has been relaxed to `any`,
+  # because a term the glossary calls ill-defined cannot support further commitments.
+  infiltration:
+    fingerprint:
+      airspace_opacity: patchy
+      hazy_opacity: marked
+      interstitial_markings: increased
+      opacity_basal_predominance: any
+      costophrenic_angle_blunting: any
+      peripheral_pleural_density: any
+      cardiac_silhouette_width: any
+      discrete_rounded_opacity: any
+      pleural_line_with_avascular_zone: any
+      lung_inflation: any
+      mediastinal_shift_direction: any
+      supradiaphragmatic_gas_structure: any
+    sources: [wang2017, hansell2008]
+
+  # mass vs nodule is a pure size distinction in the Fleischner glossary: >3 cm vs <=3 cm,
+  # and that size is the whole of what either term asserts. Nothing in the glossary says the
+  # rest of the film is normal, so the other signs stay `any`.
+  mass:
+    fingerprint:
+      airspace_opacity: any
+      hazy_opacity: any
+      interstitial_markings: any
+      opacity_basal_predominance: any
+      costophrenic_angle_blunting: any
+      peripheral_pleural_density: any
+      cardiac_silhouette_width: any
+      discrete_rounded_opacity: large
+      pleural_line_with_avascular_zone: any
+      lung_inflation: any
+      mediastinal_shift_direction: any
+      supradiaphragmatic_gas_structure: any
+    sources: [hansell2008, bankier2024]
+
+  nodule:
+    fingerprint:
+      airspace_opacity: any
+      hazy_opacity: any
+      interstitial_markings: any
+      opacity_basal_predominance: any
+      costophrenic_angle_blunting: any
+      peripheral_pleural_density: any
+      cardiac_silhouette_width: any
+      discrete_rounded_opacity: small
+      pleural_line_with_avascular_zone: any
+      lung_inflation: any
+      mediastinal_shift_direction: any
+      supradiaphragmatic_gas_structure: any
+    sources: [hansell2008, bankier2024]
+
+  # IDENTICAL to `consolidation` by design; see the KNOWN CEILING note in the header. The
+  # radiographic manifestation of pneumonia is consolidation and nothing on a frontal film
+  # separates them.
+  pneumonia:
+    fingerprint:
+      airspace_opacity: confluent
+      hazy_opacity: any
+      interstitial_markings: any
+      opacity_basal_predominance: any
+      costophrenic_angle_blunting: any
+      peripheral_pleural_density: any
+      cardiac_silhouette_width: any
+      discrete_rounded_opacity: any
+      pleural_line_with_avascular_zone: any
+      lung_inflation: normal
+      mediastinal_shift_direction: none
+      supradiaphragmatic_gas_structure: any
+    sources: [hansell2008, bankier2024]
+
+  pneumothorax:
+    fingerprint:
+      airspace_opacity: absent
+      hazy_opacity: absent
+      interstitial_markings: normal
+      opacity_basal_predominance: absent
+      costophrenic_angle_blunting: any
+      peripheral_pleural_density: any
+      cardiac_silhouette_width: any
+      discrete_rounded_opacity: any
+      pleural_line_with_avascular_zone: present
+      lung_inflation: any
+      mediastinal_shift_direction: any
+      supradiaphragmatic_gas_structure: any
+    sources: [hassan2024, hansell2008]
+
+  # IDENTICAL to `pneumonia` by design; see the KNOWN CEILING note in the header. What the
+  # glossary commits to is airspace filling WITHOUT volume loss -- that, and the absence of
+  # the mediastinal pull volume loss produces, is the whole contrast with atelectasis.
+  consolidation:
+    fingerprint:
+      airspace_opacity: confluent
+      hazy_opacity: any
+      interstitial_markings: any
+      opacity_basal_predominance: any
+      costophrenic_angle_blunting: any
+      peripheral_pleural_density: any
+      cardiac_silhouette_width: any
+      discrete_rounded_opacity: any
+      pleural_line_with_avascular_zone: any
+      lung_inflation: normal
+      mediastinal_shift_direction: none
+      supradiaphragmatic_gas_structure: any
+    sources: [hansell2008, bankier2024]
+
+  # cardiac_silhouette_width: wide describes cardiogenic (hydrostatic) oedema, the usual
+  # sense of the label; non-cardiogenic oedema has a normal heart size. The pleural and
+  # nodular signs are `any`: oedema co-occurs with effusion at least as often as cardiomegaly
+  # does, so asserting they are absent would contradict the co-label, and Gluecker 1999 is
+  # not the source for such a claim either way.
+  edema:
+    fingerprint:
+      airspace_opacity: patchy
+      hazy_opacity: marked
+      interstitial_markings: coarse_reticular
+      opacity_basal_predominance: mild
+      costophrenic_angle_blunting: any
+      peripheral_pleural_density: any
+      cardiac_silhouette_width: wide
+      discrete_rounded_opacity: any
+      pleural_line_with_avascular_zone: any
+      lung_inflation: any
+      mediastinal_shift_direction: any
+      supradiaphragmatic_gas_structure: any
+    sources: [gluecker1999, hansell2008]
+
+  # Hyperinflation with a narrow, vertical heart and clear lungs: Thurlbeck & Simon found lung
+  # length and diaphragm level the most discriminating radiographic measurements.
+  emphysema:
+    fingerprint:
+      airspace_opacity: absent
+      hazy_opacity: absent
+      interstitial_markings: normal
+      opacity_basal_predominance: absent
+      costophrenic_angle_blunting: any
+      peripheral_pleural_density: any
+      cardiac_silhouette_width: narrow
+      discrete_rounded_opacity: any
+      pleural_line_with_avascular_zone: any
+      lung_inflation: increased
+      mediastinal_shift_direction: any
+      supradiaphragmatic_gas_structure: any
+    sources: [thurlbeck1978, hansell2008]
+
+  # Coarse reticular markings with basal predominance and volume loss; the airspaces
+  # themselves are not filled, so airspace_opacity is expected to be absent. Pleural
+  # thickening frequently accompanies fibrosing lung disease, so the pleural signs stay `any`.
+  fibrosis:
+    fingerprint:
+      airspace_opacity: absent
+      hazy_opacity: any
+      interstitial_markings: coarse_reticular
+      opacity_basal_predominance: marked
+      costophrenic_angle_blunting: any
+      peripheral_pleural_density: any
+      cardiac_silhouette_width: any
+      discrete_rounded_opacity: any
+      pleural_line_with_avascular_zone: any
+      lung_inflation: reduced
+      mediastinal_shift_direction: any
+      supradiaphragmatic_gas_structure: any
+    sources: [hansell2008, bankier2024]
+
+  # "pleural" is the medmnist label map's truncation of ChestX-ray14's "Pleural_Thickening";
+  # the key is kept verbatim. The fingerprint is that of pleural thickening: a rind of density
+  # following the chest wall, blunting the angle it reaches. It says nothing about the lung.
+  pleural:
+    fingerprint:
+      airspace_opacity: any
+      hazy_opacity: any
+      interstitial_markings: any
+      opacity_basal_predominance: any
+      costophrenic_angle_blunting: mild
+      peripheral_pleural_density: marked
+      cardiac_silhouette_width: any
+      discrete_rounded_opacity: any
+      pleural_line_with_avascular_zone: any
+      lung_inflation: any
+      mediastinal_shift_direction: any
+      supradiaphragmatic_gas_structure: any
+    sources: [hassan2024, hansell2008, yang2023]
+
+  # In ChestX-ray14 "Hernia" is overwhelmingly hiatal hernia, seen as a retrocardiac
+  # structure containing gas or a gas-fluid level above the diaphragm. That structure is the
+  # whole of the finding; the lungs and pleura are not constrained by it.
+  hernia:
+    fingerprint:
+      airspace_opacity: any
+      hazy_opacity: any
+      interstitial_markings: any
+      opacity_basal_predominance: any
+      costophrenic_angle_blunting: any
+      peripheral_pleural_density: any
+      cardiac_silhouette_width: any
+      discrete_rounded_opacity: any
+      pleural_line_with_avascular_zone: any
+      lung_inflation: any
+      mediastinal_shift_direction: any
+      supradiaphragmatic_gas_structure: present
+    sources: [nason2012, hansell2008]
