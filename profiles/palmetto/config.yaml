@@ -29,13 +29,15 @@ retries: 1
 # Throttles (WORKFLOW.md section 7). Each scoring job holds one llm_<model> unit and keeps one
 # call in flight, so the cap is the number of concurrent calls to that model, set below the
 # service's published concurrency (config/config.yaml vlm.models.<m>.cap; tests/test_config.py
-# holds the two equal). zenodo caps concurrent downloads so the fetch is not throttled server-side.
+# holds the two equal). zenodo caps concurrent downloads: Zenodo served ~105 KB/s per connection
+# from every node on 2026-09-09, so one stream per file is what makes the ~40 GB fetch hours rather
+# than a day; the script's retries absorb any 429/503 the record returns.
 resources:
   - llm_qwen3_5_9b=96
   - llm_gemma_4_12b=24
   - llm_qwen3_8_27b_fp8=48
   - llm_gemma_4_31b=12
-  - zenodo=4
+  - zenodo=24
 
 use-conda: True
 conda-frontend: conda
