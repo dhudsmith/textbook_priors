@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import math
+import zlib
 from pathlib import Path
 
 import numpy as np
@@ -141,6 +142,9 @@ def ladder_anova(Y: np.ndarray, models: list[str], meta: dict, alpha: float = 0.
         se = math.sqrt(mse / (N * (c ** 2).sum()))
         t = est / se
         out = {"estimate": est, "se": se, "t": float(t), "F": float(F), "df": [1, df_err], "p": p_two}
+        if set(np.unique(c)) == {-1.0, 1.0}:
+            # a +-1 coded contrast: the slope is half the gap between the two level means
+            out["level_difference"] = 2 * est
         if one_sided:
             out["p_one_sided_positive"] = float(stats.t.sf(t, df_err))
         return out
@@ -264,7 +268,8 @@ def evaluate_dataset(cfg: dict, ds: str, out, log=print) -> None:
 
     # the paired bootstrap: the predictions are fixed, so every quantity is a function of the resample
     B, ci = int(ecfg["bootstrap"]), float(ecfg["ci"])
-    rng = np.random.default_rng(int(cfg["sample"]["seed"]) * 1000 + 7)
+    boot_seed = [int(cfg["sample"]["seed"]), zlib.crc32(ds.encode())]   # the dataset's own stream
+    rng = np.random.default_rng(boot_seed)
     keys = [f"{a}__n{n}__seed{s}" for a in ("C", "P") for n in grid for s in seeds]
     if in_b:
         keys += ["A"] + [f"B__{m}" for m in models]
@@ -301,7 +306,7 @@ def evaluate_dataset(cfg: dict, ds: str, out, log=print) -> None:
     result["bootstrap"] = bs
 
     with Run("evaluate", dict(dataset=ds, bootstrap=B, ci=ci, primary=primary, grid=grid, seeds=seeds),
-             seeds=[int(cfg["sample"]["seed"]) * 1000 + 7]) as run:
+             seeds=boot_seed) as run:
         run.write(out, result)
     log(f"wrote {out}" + (f": AUC(B)={auc[f'B__{primary}']:.3f} n_B={result['n_b']['label']}" if in_b else ""))
 
@@ -316,8 +321,14 @@ def summary(cfg: dict, out, log=print) -> None:
     per = {ds: json.loads((D._path(cfg["outdir"]) / "evaluate" / f"{ds}.json").read_text()) for ds in cfg["datasets"]}
     n50 = str(cfg["curve"]["n"][0])
     flagged = {ds: sorted(k for k, v in r["completeness"].items() if v.get("flagged")) for ds, r in per.items()}
-    # H1: n_B and C vs P at the first grid point, over every dataset (12) not flagged
-    h1_ds = [ds for ds in cfg["datasets"] if not flagged[ds]]
+
+    def cell_flagged(ds, *keys):
+        """The section 7 gate, scoped to the archive cells a hypothesis actually reads: a flag on a
+        ladder-only model must not cost a dataset its H1 or H2 vote."""
+        return any(per[ds]["completeness"].get(k, {}).get("flagged") for k in keys)
+
+    # H1: n_B and C vs P at the first grid point, over every dataset (12) whose primary cells are clean
+    h1_ds = [ds for ds in cfg["datasets"] if not cell_flagged(ds, f"{primary}__test", f"{primary}__pool")]
     wins1 = [ds for ds in h1_ds if per[ds]["auc"]["C"][n50]["mean"] > per[ds]["auc"]["P"][n50]["mean"]]
     b_ds = [ds for ds in h1_ds if per[ds]["arm_b"]]
     nb_values = {ds: per[ds]["n_b"]["value"] for ds in b_ds}
@@ -328,8 +339,9 @@ def summary(cfg: dict, out, log=print) -> None:
           "median_n_b_label": (">n_max" if math.isinf(med) else f"{med:g}"),
           "rule": f"median n_B >= 100 and AUC(C) > AUC(P) at n = {n50} with one-sided sign test p < 0.05 (10 of 12 at the nominal count)",
           "supported": bool(med >= 100 and p1 < 0.05)}
-    # H2: B vs A over the arm-B datasets (11) not flagged
-    h2_ds = [ds for ds in cfg["datasets"] if per[ds]["arm_b"] and not flagged[ds]]
+    # H2: B vs A over the arm-B datasets (11) whose primary concept and zero-shot cells are clean
+    h2_ds = [ds for ds in cfg["datasets"] if per[ds]["arm_b"]
+             and not cell_flagged(ds, f"{primary}__test", f"{primary}__test__zeroshot")]
     wins2 = [ds for ds in h2_ds if per[ds]["auc"]["B"][primary] > per[ds]["auc"]["A"]]
     p2 = sign_test(len(wins2), len(h2_ds))
     drops_b = {ds: per[ds]["perm_drop"]["B"][primary] for ds in h2_ds}
@@ -340,8 +352,8 @@ def summary(cfg: dict, out, log=print) -> None:
           "controls_lose": bool(all(v > 0 for v in drops_b.values()) and all(v > 0 for v in drops_c.values())),
           "rule": "AUC(B) > AUC(A) with one-sided sign test p < 0.05 (9 of 11 at the nominal count), and both B and C lose AUC under the permutation controls",
           "supported": bool(p2 < 0.05 and all(v > 0 for v in drops_b.values()) and all(v > 0 for v in drops_c.values()))}
-    # H3: the ladder over every arm-B dataset with all four models present
-    h3_ds = [ds for ds in cfg["datasets"] if per[ds]["arm_b"] and not any(k.endswith("__test") and v.get("flagged") for k, v in per[ds]["completeness"].items())]
+    # H3: the ladder over every arm-B dataset whose four test cells are clean
+    h3_ds = [ds for ds in cfg["datasets"] if per[ds]["arm_b"] and not cell_flagged(ds, *(f"{m}__test" for m in models))]
     Y = np.array([[per[ds]["auc"]["B"][m] for m in models] for ds in h3_ds])
     h3 = {"datasets": h3_ds, "table": {ds: dict(zip(models, row.tolist())) for ds, row in zip(h3_ds, Y)},
           "centred": {ds: dict(zip(models, (row - row.mean()).tolist())) for ds, row in zip(h3_ds, Y)}}

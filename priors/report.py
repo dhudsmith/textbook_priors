@@ -135,7 +135,7 @@ def tables(cfg: dict, dest, log=print) -> None:
         for name, key in (("model (4 levels)", "model"), ("dataset (block)", "block")):
             L.append(f"{name} & {a[key]['df']} & {fmt(a[key]['F'], 2)} & {pval(a[key]['p'])} & \\\\")
         for name, key in (("family", "family"), ("size tier", "size_tier"), (r"family $\times$ size", "interaction")):
-            L.append(f"{name} & 1 & {fmt(a[key]['F'], 2)} & {pval(a[key]['p'])} & {fmt(a[key]['estimate'])} \\\\")
+            L.append(f"{name} & 1 & {fmt(a[key]['F'], 2)} & {pval(a[key]['p'])} & {fmt(a[key]['level_difference'])} (level difference) \\\\")
         t = H3["anova"]["trend_log10_params"]
         L.append(rf"linear trend on $\log_{{10}}$ parameters & 1 & {fmt(t['F'], 2)} & {pval(t['p_one_sided_positive'])} (one-sided) & {fmt(t['estimate'])} AUC per decade \\")
         L.append(f"error & {a['error']['df']} & & & MSE {fmt(a['error']['mse'], 5)} \\\\")

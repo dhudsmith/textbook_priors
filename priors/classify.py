@@ -184,7 +184,7 @@ def _cv_pick(Xf, yf, K, l2_grid, folds_cfg, l2_default, seed, task):
                 warnings.simplefilter("ignore")
                 m = _lr(1.0 / float(lam), seed).fit(Xf[tr], yf[tr])
             oof[te] = _proba_full(m, Xf[te], K)
-        auc = E.macro_auc(yf, oof, present_only=True)
+        auc = E.macro_auc(yf, oof, task if K > 2 or task == "binary-class" else "multi-class", present_only=True)
         if auc > best_auc or (auc == best_auc and float(lam) > best):
             best, best_auc = float(lam), auc
     return best, folds, float(best_auc)
