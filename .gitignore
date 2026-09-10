@@ -1,6 +1,6 @@
 # Generated or fetched, never committed. See WORKFLOW.md section 11.
-data/raw
-data/cache
+data/raw/
+data/cache/
 results/
 benchmarks/
 logs/
@@ -9,19 +9,3 @@ report/figs/
 scratch/
 __pycache__/
 *.pyc
-
-# Workflow machinery (the conda envs live under .snakemake/conda/)
-.snakemake/
-.pytest_cache/
-
-# LaTeX build products
-report/report.pdf
-report/*.aux
-report/*.bbl
-report/*.blg
-report/*.log
-report/*.out
-report/*.toc
-report/*.fls
-report/*.fdb_latexmk
-report/*.synctex.gz

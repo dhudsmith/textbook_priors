@@ -3,72 +3,24 @@
 Dated findings, decisions and corrections. Appended, never rewritten. Structure will live in
 README.md once the skeleton exists (WORKFLOW.md §9, step 7); the plan lives in WORKFLOW.md.
 
-## 2026-09-09 — Skeleton built; what the first contact with the data and the service changed
+## 2026-09-09 — Talk branch: the plan cut to six datasets and four arms; the workflow to be rebuilt live
 
-The workflow skeleton now exists (WORKFLOW.md §9, step 1): the Snakefile with nine stages, the
-config, the release pin, the three environments, the `priors` package, the smoke tier and the
-report skeleton. No result exists yet. The decisions below are where building it departed from the
-plan as written, each with the reason; the plan's hypotheses, arms, metric and decision rules are
-unchanged.
+This branch is the version the talk shows. WORKFLOW.md is cut to six datasets (one per modality),
+arms A, B, C and P, and 27,000 model calls; §10 lists what was removed and what each supported. A
+full implementation of the twelve-dataset plan, including the from-scratch CNN ceiling and the
+blocked ladder ANOVA, exists on branch `claude/textbook-priors-workflow-2kdgap`; its skeleton was
+removed here so the workflow can be implemented from scratch, with the agent and the
+`research-workflow` skill, as the talk's running example. The concept bank, its bibliography and
+the plan are kept as the inputs they are.
 
-**The call budget is 47,406, not 49,406.** The plan's count included the three ladder models
-scoring chestmnist's test sample (1,500 calls) and the zero-shot prompt on chestmnist (500). Arm B
-and arm A exclude chestmnist by construction (§2, §3), and the ladder is arm B alone, so no arm
-reads those 2,000 answers. They are not scored. `tests/test_config.py` asserts the budget and the
-477 chunk jobs from the config, so a change to either shows up as a failing test.
-
-**The service was probed before the client was finished, and two things would have broken the
-fan-out.** With thinking left on, `qwen3.8-27b-fp8` spends the whole token budget in
-`reasoning_content` and returns empty `content` on every call; `chat_template_kwargs.enable_thinking:
-false` (the config default) turns it off and the same call returns valid JSON in 0.1 s.
-`qwen3.5-9b` then files its JSON under `reasoning_content` with empty `content`, a quirk of the
-server's reasoning parser, so the client reads `content` and falls back to `reasoning_content`,
-archiving both. `response_format: json_object` is accepted by all four models; without it the gemma
-models wrap the JSON in a code fence, which the parser also handles. Latency with thinking off was
-0.1–0.4 s per call on every model against the plan's 10 s estimate, so the primary fan-out is
-minutes of wall clock under its cap, not hours. All four configured names are served.
-
-**A quantisation confound sits in the gemma pair too.** The service reports `gemma-4-31b` as
-`nvidia/Gemma-4-31B-IT-NVFP4`, so the gemma size step is also a quantisation step, as the qwen step
-is (fp8). The manifest records the served name per chunk; the H3 limits paragraph in the report
-should name both.
-
-**The probe is a rule, not a `--config chunk=10` override.** A truncated chunk written under
-`results/score/` would sit in the archive as a complete file and everything downstream would read
-ninety missing answers as missing. Rule `probe` writes to `results/score_probe/`, checks first that
-every configured model is served, and is outside `all`.
-
-**The archive is `protected()`.** The code bundles put `score.py`, `prompts.py`, `data.py` and
-`stages.py` under the input trigger of the scoring rules, so an edit to any of them, or a comment
-in a bank file, would otherwise re-score 47,406 calls on the next `snakemake all`. With protected
-outputs Snakemake stops with an error instead; re-scoring is then `chmod +w` and a decision, or
-`--touch` when the edit could not have changed an answer.
-
-**FEATURES runs on CPU.** At most 2,500 images per dataset through a frozen ResNet-18 is about
-two minutes on four cores; a GPU allocation would spend longer in the queue than the job takes. The
-switch (`features.gpu.enabled`) is one line; the benchmark decides.
-
-**The cache is streamed and the sample is its own rule.** The npz members are compressed, so
-reading one split decompresses it whole (13.5 GB for pathmnist at 224); the cache job copies each
-member into a memory-mappable `.npy` in 38 MB chunks, so its memory does not scale with the
-dataset. The seeded sample and pool are drawn by index from the cached test and train splits in a
-second rule (12 jobs, seconds each). Training jobs hold every split in RAM as uint8; the Snakefile
-sets their memory from the array size (`train_mem_mb`).
-
-**medmnist is installed without its dependencies.** The package declares torch and torchvision as
-requirements it needs only for its Dataset classes; the light tier needs `medmnist.evaluator` and
-`medmnist.info`. `envs/*.post-deploy.sh` installs 3.0.2 with `--no-deps`, and `import medmnist`
-prints one harmless line about the missing Dataset dependencies. The release pin
-(`config/medmnist.yaml`) is held to the installed package's INFO table by the smoke test.
-
-**Zenodo was unreachable for the whole session** (504 gateway timeouts, then connection
-timeouts, from the development server and from a compute node), so FETCH has not run. The fetch
-rule resumes and retries; it needs only to be submitted when the record answers.
-
-**Still needing a person:** confirmation before the 72 GPU training jobs and before the
-47,406-call fan-out (WORKFLOW.md §9: ask before any GPU jobs or more than 50 CPU jobs; §10: the
-volume against the allocation); the acceptable-use statement for de-identified public medical
-images.
+Two things learned while building the full version carry over as facts, not code. The RCD service
+answers only with thinking off (`chat_template_kwargs.enable_thinking: false`): with it on, the
+primary model spends its whole token budget in `reasoning_content` and returns nothing, and
+`qwen3.5-9b` files its answer under `reasoning_content` even with it off. With thinking off every
+model answered in 0.1–0.4 s. And Zenodo serves ~105 KB/s per connection but scales with
+connections, so the 224-pixel files are fetched as parallel byte ranges; the six the talk needs are
+already on `/project/dane2/wficai/textbook_priors/raw`, MD5-checked against the medmnist package's
+values, and need not be downloaded again.
 
 ## 2026-09-09 — H3 analysed over all four models rather than as two pairwise contrasts
 
