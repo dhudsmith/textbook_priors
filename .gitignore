@@ -1,6 +1,6 @@
 # Generated or fetched, never committed. See WORKFLOW.md section 11.
-data/raw/
-data/cache/
+data/raw
+data/cache
 results/
 benchmarks/
 logs/

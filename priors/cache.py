@@ -3,8 +3,8 @@
 The npz members are DEFLATE-compressed, so `np.load(f)["train_images"]` decompresses the whole
 split into RAM: 13.5 GB for pathmnist at 224. Every downstream reader would pay that, and a
 training job would pay it on a GPU node. This stage pays it once, and streams: the zip member is
-read in row chunks straight into a memmap, so the job's memory does not scale with the dataset.
-The 224 job also writes the seeded test sample and labelled pool (WORKFLOW.md section 4).
+read in row chunks and written straight to a .npy file, so the job's memory does not scale with
+the dataset. A second rule draws the seeded test sample and labelled pool (WORKFLOW.md section 4).
 """
 from __future__ import annotations
 
@@ -36,25 +36,30 @@ def _read_header(f):
 
 
 def stream_member(zf: zipfile.ZipFile, member: str, dest: Path, rows_per_chunk=ROWS_PER_CHUNK):
-    """Copy one .npy member of an npz into a fresh .npy at `dest`, chunk by chunk."""
+    """Copy one .npy member of an npz into a fresh .npy at `dest`, chunk by chunk, with plain
+    sequential writes: the bytes of a C-ordered .npy are the header followed by the array, so no
+    array is ever materialised, and the kernel throttles the writer rather than piling dirty
+    memmap pages against the job's memory limit."""
     with zf.open(member) as f:
         shape, fortran, dtype = _read_header(f)
         if fortran:
             raise ValueError(f"{member}: Fortran order is not expected in MedMNIST files")
         dest.parent.mkdir(parents=True, exist_ok=True)
-        out = npf.open_memmap(dest, mode="w+", dtype=dtype, shape=shape)
-        n = shape[0]
-        row = int(np.prod(shape[1:], dtype=np.int64)) * dtype.itemsize
-        i = 0
-        while i < n:
-            m = min(rows_per_chunk, n - i)
-            buf = f.read(m * row)
-            if len(buf) != m * row:
-                raise IOError(f"{member}: short read at row {i}")
-            out[i:i + m] = np.frombuffer(buf, dtype=dtype).reshape((m,) + tuple(shape[1:]))
-            i += m
-        out.flush()
-        del out
+        n = int(shape[0]) if shape else 1
+        row = int(np.prod(shape[1:], dtype=np.int64)) * dtype.itemsize if shape else dtype.itemsize
+        tmp = dest.with_suffix(dest.suffix + ".tmp")
+        with open(tmp, "wb") as out:
+            npf.write_array_header_2_0(out, {"descr": npf.dtype_to_descr(dtype), "fortran_order": False,
+                                             "shape": tuple(int(s) for s in shape)})
+            i = 0
+            while i < n:
+                m = min(rows_per_chunk, n - i)
+                buf = f.read(m * row)
+                if len(buf) != m * row:
+                    raise IOError(f"{member}: short read at row {i}")
+                out.write(buf)
+                i += m
+        tmp.replace(dest)
     return tuple(int(s) for s in shape), str(dtype)
 
 
