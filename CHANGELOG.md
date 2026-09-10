@@ -3,6 +3,34 @@
 Dated findings, decisions and corrections. Appended, never rewritten. Structure will live in
 README.md once the skeleton exists (WORKFLOW.md §9, step 7); the plan lives in WORKFLOW.md.
 
+## 2026-09-09 — H3 analysed over all four models rather than as two pairwise contrasts
+
+H3 previously rested on one "clean within-family" contrast, gemma-4-12b against gemma-4-31b, with
+the qwen pair demoted to corroboration because it also crosses a model generation and adds fp8.
+That threw away half the ladder to protect one comparison, and left the scale claim resting on a
+single pair of models over 11 datasets.
+
+The ladder is a complete 4 x 11 repeated-measures design — every dataset is scored by every model
+— and is now analysed as one. The four models are a 2 x 2 in disguise: qwen at 9B and 27B, gemma
+at 12B and 31B, so family and size tier are crossed rather than confounded, and fitting both
+together is what lets a size effect be read as size rather than as one family being better.
+Dataset enters as a blocking factor, because AUCs are not commensurable across datasets and
+blocking removes exactly that between-dataset level difference; pooling them raw would contradict
+the reasoning that put a sign test everywhere else in this plan.
+
+The directional claim is a planned 1-df linear contrast on log10 parameters, not the omnibus F,
+which only says that some model differs. A Friedman test with a Nemenyi post-hoc is reported
+alongside as a distribution-free check, since normality over 11 blocks is not something to assume.
+The generation and quantisation confound in the qwen pair does not disappear under this analysis —
+it is carried by the family main effect and the interaction, and is stated as a limit rather than
+dissolved. Four models and 11 datasets is 3 degrees of freedom for model and 30 for error, so a
+null here is weak evidence of no effect rather than evidence of none.
+
+The H3 figure is now the model ladder: two panels sharing an x axis of the four models ordered by
+parameter count, marker shape by family. The left panel shows AUC per dataset as measured, which
+makes the incommensurability visible; the right shows the same values centred within dataset with
+the across-dataset mean and its interval, and is the only panel from which a trend should be read.
+
 ## 2026-09-09 — Concept bank built; audit against the revised plan
 
 The twelve concept-bank files were built, anchored and committed, then audited against the plan

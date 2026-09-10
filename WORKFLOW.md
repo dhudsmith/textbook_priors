@@ -73,17 +73,40 @@ it for the diagnosis, and the bank's structure carries the difference.*
   features beat arbitrary ones — permuting columns destroys any informative feature, cited or not.
   The stronger claim is what `generic_prompt` tests, and it is an extension (§10).
 
-**H3 — Scale.** *The prior gets better with a bigger model, within a model family.*
+**H3 — Scale.** *The prior gets better with a bigger model.*
 
-- Two within-family size contrasts on arm B. `gemma-4-12b` → `gemma-4-31b` is clean: same family,
-  same generation, size is the only difference. `qwen3.5-9b` → `qwen3.8-27b-fp8` is **larger and
-  newer**, and fp8-quantised, so it confounds size with generation in the same way this hypothesis
-  refuses to confound it across families; it is read as corroboration, not as a second clean test,
-  and H3 rests on the gemma pair. Comparing across families would confound size with training data
-  outright, so the ladder is read pairwise, never as one curve. The ladder scores concepts only;
-  arm A is a baseline for H2 and runs on the primary model alone.
-- Supported if the larger model's AUC(B) exceeds the smaller's in ≥ 9 of 11 datasets in the gemma
-  pair, with the qwen pair reported alongside and read as corroboration.
+All four models score arm B on the same 11 datasets, so the ladder is a complete 4 × 11 design
+with every dataset measured under every model. It is analysed as one model, not as two pairwise
+contrasts — pairs throw away the other half of the data and leave the size question resting on a
+single comparison.
+
+- **The design is a 2 × 2 in disguise, and it is used as one.** The four models are qwen at 9B and
+  27B and gemma at 12B and 31B, so family and size tier are *crossed*, not confounded. Fitting
+  both factors together is what lets a size effect be read as size rather than as one family
+  happening to be better.
+- **Analysis**: a repeated-measures (two-way, dataset as blocking factor) ANOVA of AUC(B) on
+  family × size tier. Dataset must be a block: AUCs are not commensurable across datasets, which
+  is why the rest of this plan avoids pooling them, and blocking removes exactly that
+  between-dataset level difference so the model reads only the within-dataset spread across
+  models. The reported effects are the size main effect (H3), the family main effect, and their
+  interaction, which is what says whether the size effect holds in both families.
+- **Trend**: the omnibus F only says *some* model differs. The directional claim is a planned
+  linear contrast on log₁₀ parameters, which is one degree of freedom, is more powerful than the
+  omnibus test, and is the thing H3 actually asserts.
+- **Distribution-free check**: Friedman across the four models over 11 datasets, with a Nemenyi
+  post-hoc (Demšar's procedure for comparing several methods over many datasets). Reported
+  alongside; with 11 blocks the normality the ANOVA assumes is not something to take on trust.
+- Supported if the linear trend on log₁₀ parameters is positive at p < 0.05 **and** the family ×
+  size interaction does not dominate it — that is, the trend is not carried by one family alone.
+  The Friedman result is reported whether or not it agrees, and a disagreement is reported as a
+  disagreement rather than resolved by picking one.
+
+Two limits stated rather than analysed away. The qwen pair spans a model generation (3.5 → 3.8)
+and adds fp8 quantisation, so "larger" and "newer" move together within that family; the
+interaction term is what would expose it, and it is why the family factor stays in the model
+instead of being averaged over. And four models over 11 datasets is a small design — 3 degrees of
+freedom for model, 30 for error — so a null result here is weak evidence of no effect, not
+evidence of no effect.
 
 One thing no arm here can separate: every source dataset — HAM10000, ChestX-ray14, the Kermany
 OCT and paediatric CXR sets, BUSI — is public and labelled, and MedMNIST itself is widely
@@ -234,7 +257,7 @@ Each names the failure it prevents. `TALK.md` argues them; here they are the con
 6  CLASSIFY   per dataset, grouped: arms A, B, C, P at every n and seed, plus the
               permutation controls; predictions on the shared test sample             12 CPU
 7  EVALUATE   every arm through the medmnist evaluator; paired bootstrap per dataset;
-              n_B; the sign tests                                                     12 CPU
+              n_B; the sign tests; the H3 ladder ANOVA, trend contrast and Friedman  12 CPU
 8  REPORT     reconciliation against the published table; three figures, tables,
               number macros, the technical report                                     local
 ```
@@ -245,10 +268,21 @@ pulled in as an input of CACHE; A and B enter through CLASSIFY as
 parameter-free predictors so EVALUATE is uniform over arms.
 
 Three figures, two for H1 and one for H3; H2 and the reconciliation are tables: the learning
-curve with arm B's line
-and arm E's ceiling (H1); the two within-family size contrasts (H3); n_B per dataset ordered by
-modality — where the textbook pays (H1 detail). H2 is a table of paired differences and the
-permutation drops.
+curve with arm B's line and arm E's ceiling (H1); **the model ladder** (H3); n_B per dataset
+ordered by modality — where the textbook pays (H1 detail). H2 is a table of paired differences and
+the permutation drops.
+
+The ladder figure has two panels sharing an x axis of the four models ordered by parameter count
+(9B, 12B, 27B, 31B), with marker shape by family:
+
+- *left*, AUC(B) per dataset, one thin line per dataset — the raw numbers, which show the datasets
+  sitting at very different levels and so show why they are never pooled;
+- *right*, the same values centred within dataset (each dataset's mean over the four models
+  subtracted), with the across-dataset mean and its 95% interval — the commensurable quantity the
+  ANOVA models, and the only panel a trend should be read from.
+
+Both panels come from one rule reading the EVALUATE outputs; the centring belongs to the figure,
+not to a new statistic.
 
 ## 7. The scoring stage
 
@@ -319,6 +353,11 @@ classify:
   missing_max_frac: 0.05        # the §7 completeness gate
   bootstrap: 10000
   permute: {seeds: [0, 1, 2]}   # the H2 controls; seeded per cell, like every other draw
+ladder:                         # H3: the 4-model x 11-dataset repeated-measures design
+  factors: [family, size_tier]  # crossed: qwen {9, 27}, gemma {12, 31}
+  block: dataset                # AUCs are not commensurable across datasets; block, never pool
+  trend: log10_params           # the planned 1-df linear contrast, which is what H3 asserts
+  friedman: true                # distribution-free check with Nemenyi post-hoc
 train: {arch: resnet18, pretrained: false, epochs: 100, select_on: val_auc, seeds: [0, 1, 2],
         gpu: {enabled: true, type: a100, cpus: 8, mem_mb: 32000, runtime: 240}}
 published: config/published.yaml
