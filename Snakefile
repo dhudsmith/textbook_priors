@@ -283,17 +283,32 @@ rule smoke_torch:
 # caps how many run at once.
 # =====================================================================================
 
+def release_file(name):
+    ds, size = RAW_NAMES[name]
+    return RELEASE[ds]["files"][size]
+
+
+def segments(name):
+    """Parallel byte ranges for one file: one per fetch.segment_mb, at most fetch.max_segments. Zenodo
+    serves ~105 KB/s per connection, so pathmnist_224.npz (11.8 GB) takes ~2 hours in 24 ranges
+    where one stream would take ~31."""
+    f = config["fetch"]
+    return max(1, min(int(f["max_segments"]), math.ceil(release_file(name)["bytes"] / (int(f["segment_mb"]) * 2 ** 20))))
+
+
 rule fetch:
-    """One release file from the pinned record, MD5-checked. x{len(RAW_FILES)}."""
+    """One release file from the pinned record, in parallel byte ranges, MD5-checked. x{len(RAW_FILES)}."""
     output: f"{RAW}/{{file}}"
     params:
         url=lambda w: f"{RECORD}/files/{w.file}?download=1",
-        md5=lambda w: RELEASE[RAW_NAMES[w.file][0]]["files"][RAW_NAMES[w.file][1]]["md5"],
+        md5=lambda w: release_file(w.file)["md5"],
+        bytes=lambda w: release_file(w.file)["bytes"],
+        segments=lambda w: segments(w.file),
     log: "logs/fetch/{file}.log"
     benchmark: "benchmarks/fetch/{file}.tsv"
     threads: RES["fetch"]["cpus"]
-    resources: **res("fetch"), zenodo=1
-    shell: "scripts/fetch_medmnist.sh {params.url} {params.md5} {output} {STORAGE} > {log} 2>&1"
+    resources: **res("fetch"), zenodo=lambda w: segments(w.file)
+    shell: "scripts/fetch_medmnist.sh {params.url} {params.md5} {params.bytes} {params.segments} {output} {STORAGE} > {log} 2>&1"
 
 rule fetch_weights:
     """torchvision's ImageNet ResNet-18 weights, pinned by URL and the sha256 prefix in the file

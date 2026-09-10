@@ -29,15 +29,16 @@ retries: 1
 # Throttles (WORKFLOW.md section 7). Each scoring job holds one llm_<model> unit and keeps one
 # call in flight, so the cap is the number of concurrent calls to that model, set below the
 # service's published concurrency (config/config.yaml vlm.models.<m>.cap; tests/test_config.py
-# holds the two equal). zenodo caps concurrent downloads: Zenodo served ~105 KB/s per connection
-# from every node on 2026-09-09, so one stream per file is what makes the ~40 GB fetch hours rather
-# than a day; the script's retries absorb any 429/503 the record returns.
+# holds the two equal). zenodo counts connections open to the Zenodo record: each fetch job holds
+# one unit per byte-range segment (Snakefile: segments()). Zenodo served ~105 KB/s per connection
+# from every node on 2026-09-09 and scaled linearly with connections up to the 8 tested, so ~100
+# connections make the 29 GB fetch about two hours; the script's retries absorb any 429/503.
 resources:
   - llm_qwen3_5_9b=96
   - llm_gemma_4_12b=24
   - llm_qwen3_8_27b_fp8=48
   - llm_gemma_4_31b=12
-  - zenodo=24
+  - zenodo=120
 
 use-conda: True
 conda-frontend: conda

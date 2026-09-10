@@ -19,7 +19,7 @@ resources:
   - llm_gemma_4_12b=1
   - llm_qwen3_8_27b_fp8=1
   - llm_gemma_4_31b=1
-  - zenodo=1
+  - zenodo=8
 rerun-triggers:
   - mtime
   - input

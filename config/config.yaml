@@ -14,7 +14,11 @@ cachedir: data/cache          # -> <storage_root>/cache: uint8 .npy per split, ~
 conceptdir: data/concepts     # the bank: twelve committed, cited files (CONCEPT_BANK.md)
 figdir: report/figs
 tabdir: report/tables
-release: config/medmnist.yaml     # the pinned Zenodo record: file names, MD5s, split sizes, label maps
+release: config/medmnist.yaml     # the pinned Zenodo record: file names, MD5s, sizes, split sizes, label maps
+# Zenodo serves ~105 KB/s per connection (2026-09-09), so a file is fetched as parallel byte ranges:
+# one per segment_mb, at most max_segments. Each job holds `segments` units of the profile's zenodo
+# resource, which caps the connections open to the record at once.
+fetch: {segment_mb: 256, max_segments: 24}
 published: config/published.yaml  # the MedMNIST v2 ResNet-18 rows arm E is reconciled against
 
 datasets: [pathmnist, chestmnist, dermamnist, octmnist, pneumoniamnist, retinamnist,
