@@ -126,6 +126,22 @@ own file too.
   2017 and Ferkowicz 2021 use DAPI only to locate and count nuclei. Its tubular-class values
   therefore rest on histology teaching sites, which each file names explicitly.
 
+- **Sixteen class pairs in arm-B datasets rest on a single committed concept.** Not defects —
+  each is the textbook distinction itself — but each is a single point of failure for arm B, and
+  a scoring error on that one concept collapses the pair. Beyond retinamnist 0/1 and 3/4 named
+  above: bloodmnist immature-granulocyte against neutrophil and against monocyte
+  (`chromatin_density`); dermamnist dermatofibroma/nevus (`central_white_patch`) and actinic
+  keratoses/vascular (`red_lacunae`); octmnist drusen/normal (`rpe_line_contour`, whose
+  middle-to-top boundary this README already records as reasoned rather than published);
+  organamnist and organcmnist femur, kidney and lung left/right (`body_side` alone — a single
+  left-right convention error would collapse all six at once); organsmnist liver/spleen
+  (`relative_size`, which is also the concept under the resize caveat).
+
+- **Two source-level caveats that live only in the YAML.** The organ files assume portal-venous
+  contrast phase and note that LiTS is a liver-tumour cohort, so its abdomens are not a healthy
+  reference. dermamnist's melanoma fingerprint is the *pigmented* melanoma; amelanotic and
+  nodular melanomas score `absent` where it commits, which the file records in a comment.
+
 - **Two features are at or below the resolution.** `retinamnist` microaneurysms are 15-60 um
   against roughly 50 um per pixel for a 45-degree field resized to 224, so grade 1 — defined by
   "microaneurysms only" — turns on a feature of about one pixel, and grade 0 vs 1 separates on
@@ -135,8 +151,8 @@ own file too.
 - **The organ resize is a standing caveat, not a gate.** MedMNIST crops organ bounding boxes and
   resizes them to a square with no stated aspect-ratio handling. If that resize is anisotropic it
   stretches elongated organs toward filling the frame. Each of the three `organ*mnist` files
-  carries a KNOWN LIMITATION block naming the affected concepts and classes. `relative_size`
-  survives it, because its anchors count crop-edge landmarks rather than measure axes;
+  carries a KNOWN LIMITATION block naming the affected concepts and classes. `relative_size` is
+  designed to survive it, because its anchors count crop-edge landmarks rather than measure axes;
   `elongation` does not, and is the weakest concept of the twelve. Related: with the spleen
   attenuation corrected for portal-venous phase, liver and spleen separate in sagittal on
   `relative_size` alone.
@@ -162,26 +178,17 @@ own file too.
 Every concept carries an `anchors` block: one entry per scale level, saying what that level looks
 like, with its own source keys.
 
-```yaml
-  - id: asymmetry
-    scale: [absent, mild, marked]
-    anchors:
-      mild:
-        text: "the two halves differ in outline or pigment across one axis only"
-        sources: [nachbar1994]
-```
 
-Without them the renderer sends the model a question and three bare tokens, and the model invents
-the threshold `mild` means — which is not the threshold the source intended. This is the
-unanchored-rubric problem: raters agree poorly on bare ordinal labels and much better once each
-level carries a described referent. The bank was inconsistent about it before this pass: 40 of
-123 questions already embedded an anchor informally, and which ones did depended on who wrote the
-file, so a cross-modality comparison partly measured prompt-authoring style.
+Why they exist, and how the scoring prompt renders them, is `WORKFLOW.md` §7. What belongs here
+is the record of building them. The bank was inconsistent about anchoring before this pass: 40 of
+123 questions already embedded one informally, and which ones did depended on who wrote the file,
+so a cross-modality comparison partly measured prompt-authoring style.
 
 The change is **additive**. `scale` remains an ordered list of strings — the ordinal index
 mapping, the `retinamnist` monotonicity check and every existing reader are untouched — and
 `anchors` sits beside it. No scale, question or fingerprint changed when anchors were added; that
-was verified by parsing the before and after of every file, not by reading the diff.
+was verified by parsing the before and after of every file, not by reading the diff. Scales did
+change later, in the audit pass below, and those changes were deliberate.
 
 Anchors are the level's provenance, not decoration. `marked` on its own is unsourced in any
 useful sense; an anchor is a paraphrase of a diagnostic criterion with a citation attached, which
@@ -189,9 +196,10 @@ is what the bank claims to be. Where a source states a threshold it is used lite
 rule's axes of asymmetry and eighths of the perimeter, Fleischner's 3 cm nodule and its
 vessel-visibility test for consolidation against ground glass, the ICDR 4-2-1 quadrant counts,
 Fleming's 50% gland-formation split, Beckman's drusen sizes. Where the literature sets no
-boundary, the anchor describes the appearance in the source's own qualitative terms and carries a
-comment recording that the boundary was reasoned rather than read. Roughly a third of the 381
-anchors rest on a real threshold; the rest are qualitative, and the files say which are which.
+boundary, the anchor describes the appearance in the source's own qualitative terms and carries
+a comment recording that the boundary was reasoned rather than read. Many anchors rest on a real
+threshold and the rest are qualitative; the files mark the reasoned boundaries in comments, so
+which is which is recoverable per concept rather than per anchor.
 
 Two conventions worth knowing, because they prevent systematic error. Anchors compare to
 something else in the frame rather than to an absolute size, since the images carry no scale bar
@@ -204,6 +212,21 @@ A class description, if one is ever wanted in prose, should be composed from the
 render time rather than authored separately. A hand-written paragraph per class is where the
 diagnosis smuggles itself back in, and it would create a second representation of the same
 knowledge that can drift from the fingerprints.
+
+### What the audit pass changed
+
+Two reviewers went over the bank and the plan after the anchors landed, and three files changed
+as a result. `pathmnist` gained `no_glands` and `no_fibres`, and `bloodmnist` gained `no_nucleus`
+on its two nucleus-dependent concepts: those questions presuppose something the image may not
+contain, and without a floor the model must either invent a level or return nothing, which the
+archive would record as missing. Committing the affected classes to the new floors also moved
+nine `pathmnist` fingerprint cells and two `bloodmnist` ones off `any`, so the bank gained signal
+rather than merely avoiding a failure. `dermamnist`'s `pigment_network` was split into
+`pigment_network` and `network_atypia`, both binary: presence and atypia are two axes, and the
+estimators map a scale to equally spaced numbers, so the old three-level form placed "regular
+network" exactly halfway between "no network" and "atypical network", which is not what the
+literature means. `asymmetry` and `border_irregularity` were merged to stay within the concept
+cap — they were byte-identical across all seven classes, so the merge cost no separation.
 
 ### Anchors that cannot be applied at this resolution
 
@@ -220,21 +243,17 @@ them is closer to noise than to a reading:
   one rests on reasoning about when a dome becomes a detachment, not a published threshold.
 - `organ*mnist`: `elongation` cannot be made robust to an anisotropic resize, because such a
   resize drives the axis ratio toward 1 by construction and that ratio is what the concept
-  measures. `relative_size` *is* robust, because its anchors count landmarks caught at the crop
-  edge and a count survives any resize.
+  measures. `relative_size` is designed to survive it, because its anchors count landmarks caught
+  at the crop edge and a count survives any resize.
 
 ## Schema
 
-Defined in `../../CONCEPT_BANK.md`. The rules a smoke test must enforce: dataset name, task and
-every class name match the `medmnist` label map exactly; every concept has a lowercase
-underscored `id`, a `question` answerable from the image alone, an ordered `scale` of two to
-five levels and at least one source key; every class fingerprint names every concept with a
-level from that concept's scale or `any`; every referenced source key exists in
-`provenance.sources` with a citation and a DOI or URL; `reviewed_by` is present and, for this
-project, contains the word `simulated`.
+Defined in `../../CONCEPT_BANK.md`, which is the single source of the rules a smoke test must
+enforce — including the two structural checks this bank relies on: the three `organ*mnist` files
+share one concept set, and `retinamnist`'s fingerprints are monotone across grades 0 to 4.
 
 The workflow's `smoke` target does not exist yet — it arrives with the Snakefile skeleton
-(`WORKFLOW.md` section 10, step 1). Until then these files have been checked by a standalone
+(`WORKFLOW.md` §9, step 1). Until then these files have been checked by a standalone
 validator that encodes the same rules, plus two structural checks the prose requires: the three
 `organ*mnist` files must share one concept set, and `retinamnist`'s fingerprints must be
 monotone across grades 0 to 4. The smoke test should encode all of it.

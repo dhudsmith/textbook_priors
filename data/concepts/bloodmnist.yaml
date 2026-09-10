@@ -12,13 +12,21 @@
 # naming the end of the range it fixes. A level is never set from the earliest, most striking or
 # most memorable member of a range and then presented as the expectation.
 #
+# A concept that presupposes a nucleus carries an explicit bottom level, `none` or `no_nucleus`,
+# so that the anucleate class has an honest answer instead of being asked to invent one: the level
+# is definitional, not a point on the concept's own continuum, and it is reachable by that class
+# alone. nuclear_lobation, chromatin_density and nucleus_to_cytoplasm_ratio all carry one, and each
+# anchor is worded to differ from nucleus_present: absent so the four do not collide.
+#
 # Two classes need a note. "platelet" is anucleate and only about a quarter the diameter of a red
-# cell, so nucleus_present and cell_size are what isolate it. The immature-granulocyte class LUMPS
-# promyelocytes, myelocytes and metamyelocytes, a maturation series over which chromatin condenses,
-# nuclear shape runs round -> oval -> indented and the cytoplasm turns from blue through pale to
-# pink; the source dataset kept the three stages together because the distinctions are subjective
-# even for a clinical pathologist. Its fingerprint therefore uses `any` wherever the stages
-# disagree, and two ordinal floors, each labelled as such in the class comment.
+# cell, so nucleus_present and cell_size are what isolate it, and the three nucleus-dependent
+# concepts above answer at their no-nucleus level rather than being left open. The
+# immature-granulocyte class LUMPS promyelocytes, myelocytes and metamyelocytes, a maturation
+# series over which chromatin condenses, nuclear shape runs round -> oval -> indented and the
+# cytoplasm turns from blue through pale to pink; the source dataset kept the three stages
+# together because the distinctions are subjective even for a clinical pathologist. Its
+# fingerprint therefore uses `any` wherever the stages disagree, and two ordinal floors, each
+# labelled as such in the class comment.
 dataset: bloodmnist
 modality: >-
   three-channel colour microscopy images of individual normal peripheral-blood cells,
@@ -187,13 +195,19 @@ concepts:
           thread
         sources: [palmer2015]
   - id: chromatin_density
-    question: "How dense is the nuclear material: open and finely textured with pale areas,
-      moderately clumped, densely clumped but with a visible coarse pattern of light and dark,
-      or so uniformly dark and structureless that no internal pattern can be seen at all?"
-    scale: [open_fine, moderately_clumped, dense_clumped, pyknotic_structureless]
+    question: "How dense is the nuclear material: there is no nuclear material at all, open and
+      finely textured with pale areas, moderately clumped, densely clumped but with a visible
+      coarse pattern of light and dark, or so uniformly dark and structureless that no internal
+      pattern can be seen at all?"
+    scale: [no_nucleus, open_fine, moderately_clumped, dense_clumped, pyknotic_structureless]
     sources:
       [tigner2026, espinoza2023, chapman2023, migliaccio2010, constantino2000, rodellar2018]
     anchors:
+      no_nucleus:
+        text: >-
+          the cell holds no nuclear material anywhere, so there is no interior texture to
+          judge for density
+        sources: [williams2022, tigner2026]
       open_fine:
         text: >-
           the nuclear interior is mostly pale with an even fine stipple and no dark clump
@@ -217,11 +231,17 @@ concepts:
           be made out
         sources: [migliaccio2010, chapman2023]
   - id: nucleus_to_cytoplasm_ratio
-    question: "About what fraction of the cell area is nucleus: less than a third (low), between
-      a third and two thirds (moderate), or more than two thirds (high)?"
-    scale: [low, moderate, high]
+    question: "About what fraction of the cell area is nucleus: none of it, because there is no
+      nucleus, less than a third (low), between a third and two thirds (moderate), or more than
+      two thirds (high)?"
+    scale: [no_nucleus, low, moderate, high]
     sources: [tigner2026, espinoza2023, constantino2000, rodellar2018]
     anchors:
+      no_nucleus:
+        text: >-
+          no nuclear area is present to measure, so the cell body reads as cytoplasm from
+          edge to edge
+        sources: [williams2022, tigner2026]
       low:
         text: >-
           cytoplasm forms a broad rim and the nucleus covers less than a third of the cell area
@@ -447,14 +467,16 @@ classes:
       granules_obscure_nucleus: absent
     sources: [espinoza2023, tigner2026, yang2023]
   # Platelet: the smallest blood cell, about 2 um and far smaller than a red cell, anucleate,
-  # discoid, staining blue with a granular appearance. Nuclear concepts do not apply.
+  # discoid, staining blue with a granular appearance. The three nucleus-dependent concepts are
+  # definitional here rather than open: an anucleate cell has no lobation, no chromatin and no
+  # nuclear area, so each answers at its no-nucleus level, which no other class can reach.
   "platelet":
     fingerprint:
       nucleus_present: absent
       cell_size: much_smaller
       nuclear_lobation: none
-      chromatin_density: any
-      nucleus_to_cytoplasm_ratio: any
+      chromatin_density: no_nucleus          # definitional: anucleate, nothing to grade
+      nucleus_to_cytoplasm_ratio: no_nucleus # definitional: no nuclear area to measure
       cytoplasm_basophilia: blue
       granule_abundance: fine_sparse
       granule_colour: any

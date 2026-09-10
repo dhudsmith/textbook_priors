@@ -24,7 +24,8 @@ about, and each class's textbook fingerprint over those concepts.
 dataset: dermamnist
 modality: dermatoscopic images of pigmented skin lesions
 task: multi-class                        # multi-class | binary | multi-label | ordinal
-source_dataset: HAM10000 (Tschandl, Rosendahl & Kittler 2018)
+medmnist_task: multi-class               # the medmnist package's raw task string, verbatim
+source_dataset: HAM10000 (Tschandl et al. 2018)
 provenance:
   method: literature review with a web-connected assistant
   assistant: <model name>, <date>
@@ -44,7 +45,7 @@ concepts:                                # abridged: the real file lists all 6-1
     question: "Are the borders irregular, notched or blurred rather than smooth and sharp?"
     scale: [absent, mild, marked]
     sources: [abbasi2004]
-    anchors:                               # optional; if present, one entry per scale level
+    anchors:                               # required; exactly one entry per scale level
       absent:
         text: "the edge is smooth and sharp the whole way round"
         sources: [abbasi2004]
@@ -65,13 +66,18 @@ classes:
 
 Rules the smoke test enforces:
 
-- `dataset`, `task` and every class name match the `medmnist` package's label map exactly.
+- `dataset` and every class name match the `medmnist` package's label map exactly.
+- `medmnist_task` is the package's raw task string verbatim; `task` is its mapping into this
+  document's vocabulary (`multi-class`, `binary`, `multi-label`, `ordinal`). The two must agree.
 - Every concept has an `id` (lowercase, underscores), a `question` answerable from the image
   alone, an ordered `scale` of two to five levels, and at least one source key.
-- If a concept carries an `anchors` block it is complete: exactly one entry per scale level, no
-  level missing and none named that is not in the scale. Each anchor has a `text` describing what
-  that level looks like and at least one source key. No two anchors in a concept share the same
-  text, and none merely restates its own level token.
+- Every concept carries an `anchors` block: exactly one entry per scale level, no level missing
+  and none named that is not in the scale. Each anchor has a `text` describing what that level
+  looks like and at least one source key. No two anchors in a concept share the same text, and
+  none merely restates its own level token. The scoring prompt renders these, so a concept
+  without them renders nothing (`WORKFLOW.md` §7).
+- The three `organ*mnist` files share one byte-identical `concepts` block.
+- `retinamnist` fingerprints are monotone in the lesion concepts across grades 0 to 4.
 - Every class has a fingerprint that names every concept with a level from that concept's scale,
   or `any` where the literature does not commit.
 - Every source key referenced exists in `provenance.sources` with a citation and a DOI or URL.
@@ -118,7 +124,8 @@ Rules the review enforces (not machine-checkable):
    fingerprint sourced, is anything a diagnosis in disguise? Fix, then fill `reviewed_by` with the
    simulated-review statement and the date.
 7. **Validate.** Run `snakemake --profile profiles/local smoke` in the workflow repository once
-   the file is in `data/concepts/`.
+   the file is in `data/concepts/`. Until the Snakefile exists, a standalone validator encoding
+   the same rules stands in; see `data/concepts/README.md`.
 
 ## Starting points
 
@@ -135,17 +142,16 @@ Verify each against the MedMNIST v2 paper before relying on it.
 | breastmnist | Al-Dhabyani et al. 2020 | BI-RADS ultrasound lexicon (shape, margin, echo pattern, posterior features) |
 | bloodmnist | Acevedo et al. 2020 | haematology morphology of the eight peripheral-blood cell types |
 | tissuemnist | BBBC051 (Woloshuk et al. 2021) | kidney cortex cell-type morphology under fluorescence microscopy |
-| organa/c/smnist | LiTS (Bilic et al.) with organ labels (Xu et al. 2019) | cross-sectional anatomy of the eleven organs in axial, coronal and sagittal CT |
+| organa/c/smnist | LiTS (Bilic et al. 2023) with organ labels (Xu et al. 2019) | cross-sectional anatomy of the eleven organs in axial, coronal and sagittal CT |
 
 ## Notes on the hard cases
 
 - **chestmnist** is multi-label with fourteen findings. Write concepts at the level of
   radiographic signs (opacity location and pattern, cardiac silhouette size, pleural line,
   mediastinal contour) rather than one concept per finding, and let fingerprints share concepts.
-  Cap at twelve concepts. Nearest-fingerprint matching is not defined over fourteen co-occurring
-  findings, so chestmnist is excluded from arm B (`WORKFLOW.md` §3); write its fingerprints as the
-  expected levels when a finding is present, as documentation and for the report, and expect the
-  numbers to come from the arms that only need the concept scores.
+  Cap at twelve concepts. chestmnist is excluded from arm B (`WORKFLOW.md` §3); write its
+  fingerprints as the expected levels when a finding is present, as documentation and for the
+  report, and expect its numbers to come from the arms that need only the concept scores.
 - **retinamnist** is ordinal. Fingerprints for the five grades should be monotone in the lesion
   concepts; the scale levels do the work.
 - **organa/c/smnist** are greyscale CT slices with a fixed window. Concepts are anatomical
@@ -174,7 +180,9 @@ Then read the sources it cites. The assistant finds and drafts; the reader decid
 ## Deliverables
 
 - `data/concepts/<dataset>.yaml` for all twelve datasets, passing the smoke test.
-- `data/concepts/README.md`: one paragraph on the method, the date, the simulated-review
-  statement, and a note that in a real project a clinician reviews each file.
+- `data/concepts/README.md`: the method and the date, the simulated-review statement and the note
+  that in a real project a clinician reviews each file, a per-dataset table of classes, concepts
+  and sources, and every known limit of the bank — anything a downstream reader would otherwise
+  discover as a bug.
 - `report/references.bib` entries for every source key, so the technical report can cite the
   bank's sources.

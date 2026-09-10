@@ -33,6 +33,11 @@
 # `cardiomegaly` constrains one sign, `nodule` and `mass` one each -- and that thinness is
 # the honest description of what the term means, not a gap to be filled.
 #
+# Since this block was written, chestmnist has been excluded from arm B entirely (WORKFLOW.md
+# §3 and §10): nothing downstream matches images to these fingerprints at all. They stand as
+# documentation and as the expected levels when a finding is present, and the concept scores
+# still carry this dataset through arms A, C, P and E. The argument below is therefore doubly
+# true, and is kept because the failure mode it names is a later audit, not a later reader.
 # DO NOT "FIX" THIS FILE BY MAKING THE FINGERPRINTS SEPARATE BETTER. Pairwise separability
 # is not a meaningful quality measure for chestmnist. Under a multi-label task the classes
 # are not alternatives to choose between: an image showing cardiomegaly and effusion carries

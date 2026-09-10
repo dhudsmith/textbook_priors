@@ -182,14 +182,23 @@ concepts:
         text: >-
           gland-like rings occupy more than half the field
         sources: [fleming2012, mescher2021]
+  # Conditional question, so the scale carries an explicit bottom level. Seven of the nine
+  # classes are fingerprinted `gland_formation: absent`, and a gland-free field has no gland
+  # outline to judge; without `no_glands` those images have no truthful answer. The floor sits
+  # below `regular` so a gland-free field stays furthest from the irregular end.
   - id: gland_regularity
     question: "If gland-like structures are present, are they evenly sized, evenly spaced and
       smoothly outlined, or crowded, angulated and irregular in size and shape?"
-    scale: [regular, mildly_irregular, markedly_irregular]
+    scale: [no_glands, regular, mildly_irregular, markedly_irregular]
     sources: [fleming2012, kather2019]
     # Back-to-back and cribriform growth are Fleming's terms; the twofold and several-fold
     # size spreads are reasoned, as no source states a size-variation cut-off.
     anchors:
+      no_glands:
+        text: >-
+          no ring or tube of cells encloses a lumen anywhere, so there is no gland outline
+          to compare
+        sources: [mescher2021, kather2019]
       regular:
         text: >-
           glands alike in size, round or oval, evenly spaced, smoothly outlined, each with
@@ -227,15 +236,24 @@ concepts:
           clear vacuoles in over half the lining cells, each pushing its nucleus against
           the cell base
         sources: [fleming2012, mescher2021]
+  # Conditional question, so the scale carries an explicit bottom level. A field of empty
+  # glass or of structureless extracellular mucin holds no fibre to orient, and without
+  # `no_fibres` those images have no truthful answer. The floor sits below
+  # `uniformly_parallel`, so the scale runs from no fibres through ordered to disordered.
   - id: fibre_alignment
     question: "Where elongated fibre-like structures are present, do they run in tightly packed
       parallel bundles, or are they wavy, loose and haphazardly oriented?"
-    scale: [uniformly_parallel, mixed, loose_and_haphazard]
+    scale: [no_fibres, uniformly_parallel, mixed, loose_and_haphazard]
     sources: [kather2019, mescher2021, ueno2021]
     # 'a fifth of the field wide' converts Ueno's 20 um minimum bundle width for keloid-like
     # collagen at 0.5 um/px, where the patch spans about 112 um. The amorphous ground
     # substance in 'loose_and_haphazard' is Ueno's myxoid stroma.
     anchors:
+      no_fibres:
+        text: >-
+          no elongated fibre-like structure anywhere; the field holds only round cells,
+          granular material or empty space
+        sources: [kather2019, kather2016]
       uniformly_parallel:
         text: >-
           almost every fibre runs on one axis, tightly packed, with no gaps or crossing bundles
@@ -368,7 +386,7 @@ classes:
       nuclear_density: few
       nuclear_pleomorphism: uniform
       gland_formation: absent
-      gland_regularity: any
+      gland_regularity: no_glands
       goblet_cells: absent
       fibre_alignment: any
       cytoplasm_eosinophilia: pale_or_basophilic
@@ -383,9 +401,9 @@ classes:
       nuclear_density: none
       nuclear_pleomorphism: any
       gland_formation: absent
-      gland_regularity: any
+      gland_regularity: no_glands
       goblet_cells: absent
-      fibre_alignment: any
+      fibre_alignment: no_fibres
       cytoplasm_eosinophilia: any
       extracellular_mucin: absent
       fat_vacuoles: absent
@@ -398,7 +416,7 @@ classes:
       nuclear_density: few
       nuclear_pleomorphism: any
       gland_formation: absent
-      gland_regularity: any
+      gland_regularity: no_glands
       goblet_cells: absent
       fibre_alignment: any
       cytoplasm_eosinophilia: mixed
@@ -413,7 +431,7 @@ classes:
       nuclear_density: very_many
       nuclear_pleomorphism: uniform
       gland_formation: absent
-      gland_regularity: any
+      gland_regularity: no_glands
       goblet_cells: absent
       fibre_alignment: any
       cytoplasm_eosinophilia: pale_or_basophilic
@@ -428,9 +446,9 @@ classes:
       nuclear_density: few
       nuclear_pleomorphism: any
       gland_formation: absent
-      gland_regularity: any
+      gland_regularity: no_glands
       goblet_cells: absent
-      fibre_alignment: any
+      fibre_alignment: no_fibres
       cytoplasm_eosinophilia: pale_or_basophilic
       extracellular_mucin: extensive
       fat_vacuoles: absent
@@ -443,7 +461,7 @@ classes:
       nuclear_density: moderate
       nuclear_pleomorphism: uniform
       gland_formation: absent
-      gland_regularity: any
+      gland_regularity: no_glands
       goblet_cells: absent
       fibre_alignment: uniformly_parallel
       cytoplasm_eosinophilia: strongly_eosinophilic
@@ -473,7 +491,7 @@ classes:
       nuclear_density: moderate
       nuclear_pleomorphism: mildly_variable
       gland_formation: absent
-      gland_regularity: any
+      gland_regularity: no_glands
       goblet_cells: absent
       fibre_alignment: loose_and_haphazard
       cytoplasm_eosinophilia: mixed

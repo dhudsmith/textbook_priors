@@ -26,6 +26,16 @@
 #   usable regressor, without the file asserting something untrue about the class that owns
 #   it. Where a class lumps sub-entities that disagree, `any` is likewise the honest value
 #   and the reason is stated in that class's comment.
+#
+# Scale shapes:
+#   Every scale here is ordinal - level k+1 is more of the same thing than level k - so the
+#   estimators' mapping of the levels onto equally spaced points in [0, 1] means something.
+#   An earlier version scored the network as [absent, regular, irregular]. That scale was
+#   nominal: presence and atypia are two different axes, and a regular network is not
+#   halfway between no network and an atypical one. It is now two binary concepts,
+#   pigment_network and network_atypia. To stay inside the twelve-concept cap, the ABCD
+#   rule's asymmetry and border criteria - whose fingerprint columns were identical across
+#   all seven classes - are merged into one graded concept. No scale in this file is nominal.
 
 dataset: dermamnist
 modality: 3-channel colour dermatoscopic images of pigmented skin lesions
@@ -66,14 +76,14 @@ provenance:
         diagnosis of doubtful melanocytic skin lesions. Journal of the American Academy of
         Dermatology 1994;30(4):551-559.
       doi: 10.1016/S0190-9622(94)70061-3
-      used_for: [asymmetry, border_irregularity, colour_count]
+      used_for: [asymmetry_and_border, colour_count]
     - key: abbasi2004
       citation: >-
         Abbasi NR, Shaw HM, Rigel DS, Friedman RJ, McCarthy WH, Osman I, Kopf AW, Polsky D.
         Early diagnosis of cutaneous melanoma: revisiting the ABCD criteria. JAMA
         2004;292(22):2771-2776.
       doi: 10.1001/jama.292.22.2771
-      used_for: [asymmetry, border_irregularity, colour_count]
+      used_for: [asymmetry_and_border, colour_count]
     - key: argenziano1998
       citation: >-
         Argenziano G, Fabbrocini G, Carli P, De Giorgi V, Sammarco E, Delfino M.
@@ -81,7 +91,7 @@ provenance:
         Comparison of the ABCD rule of dermatoscopy and a new 7-point checklist based on
         pattern analysis. Archives of Dermatology 1998;134(12):1563-1570.
       doi: 10.1001/archderm.134.12.1563
-      used_for: [pigment_network, blue_white_structures]
+      used_for: [pigment_network, network_atypia, blue_white_structures]
     - key: argenziano2003
       citation: >-
         Argenziano G, Soyer HP, Chimenti S, Talamini R, Corona R, Sera F, et al. Dermoscopy of
@@ -89,7 +99,7 @@ provenance:
         the American Academy of Dermatology 2003;48(5):679-693.
       doi: 10.1067/mjd.2003.281
       used_for:
-        [asymmetry, pigment_network, blue_white_structures,
+        [asymmetry_and_border, pigment_network, network_atypia, blue_white_structures,
          milia_like_cysts_and_comedo_openings, surface_keratin_or_scale]
     - key: kittler2016
       citation: >-
@@ -99,9 +109,10 @@ provenance:
         Journal of the American Academy of Dermatology 2016;74(6):1093-1106.
       doi: 10.1016/j.jaad.2015.12.038
       used_for:
-        [colour_count, pigment_network, blue_white_structures, arborizing_vessels,
-         leaf_like_or_spoke_wheel_areas, milia_like_cysts_and_comedo_openings,
-         surface_keratin_or_scale, red_lacunae, central_white_patch]
+        [colour_count, pigment_network, network_atypia, blue_white_structures,
+         arborizing_vessels, leaf_like_or_spoke_wheel_areas,
+         milia_like_cysts_and_comedo_openings, surface_keratin_or_scale, red_lacunae,
+         central_white_patch]
     # Entity-specific dermoscopic criteria.
     - key: menzies2000
       citation: >-
@@ -119,15 +130,15 @@ provenance:
         Archives of Dermatology 2002;138(12):1556-1560.
       doi: 10.1001/archderm.138.12.1556
       used_for:
-        [milia_like_cysts_and_comedo_openings, surface_keratin_or_scale, pigment_network,
-         arborizing_vessels]
+        [pigment_network, network_atypia, arborizing_vessels,
+         milia_like_cysts_and_comedo_openings, surface_keratin_or_scale]
     - key: zaballos2008
       citation: >-
         Zaballos P, Puig S, Llambrich A, Malvehy J. Dermoscopy of dermatofibromas: a
         prospective morphological study of 412 cases. Archives of Dermatology
         2008;144(1):75-83.
       doi: 10.1001/archdermatol.2007.8
-      used_for: [central_white_patch, pigment_network, colour_count]
+      used_for: [colour_count, pigment_network, network_atypia, central_white_patch]
     - key: zaballos2007a
       citation: >-
         Zaballos P, Daufi C, Puig S, Argenziano G, Moreno-Ramirez D, Cabo H, Marghoob AA,
@@ -192,57 +203,34 @@ provenance:
       used_for: [blue_white_structures, background_erythema, central_white_patch]
 
 concepts:
-  - id: asymmetry
+  # MERGED. The ABCD rule's A and B were two concepts until the scale audit; their
+  # fingerprint columns were byte-identical across all seven classes, so folding them costs
+  # no separation, and Nachbar 1994 itself weights the border criterion at 0.1 against
+  # asymmetry's 1.3. The merged level is the WORSE of the two criteria, not their sum: a
+  # lesion extreme on either reads `marked`. Both of the source's numeric thresholds - the
+  # count of asymmetric axes and the count of eighths showing an abrupt cut-off - survive in
+  # the anchors, so nothing sourced is lost. The slot freed pays for network_atypia below.
+  - id: asymmetry_and_border
     question: >-
-      Considering outline, colour and internal structure together, is the lesion asymmetric
-      about one or both of its axes?
+      Taken together, is the lesion asymmetric about one or both of its axes, and does its
+      pigment stop abruptly at the edge rather than fading evenly into the surrounding skin?
     scale: [absent, mild, marked]
     sources: [nachbar1994, abbasi2004, argenziano2003]
-    # The three levels are Nachbar 1994's asymmetry score read straight off: 0, 1 or 2 axes
-    # of asymmetry, with the two perpendicular axes placed so as to give the lowest score
-    # the lesion allows.
     anchors:
       absent:
         text: >-
-          Folded across either of two perpendicular axes, the halves match in outline, in
-          colour and in internal structure.
+          The halves match across both perpendicular axes, and pigment fades gradually into
+          the skin around the whole rim.
         sources: [nachbar1994]
       mild:
         text: >-
-          The halves disagree in outline, colour or structure across one of the two axes
-          but match across the other.
+          Asymmetry across one of the two axes only, or an abrupt pigment cut-off in up to
+          about three of the eight perimeter segments.
         sources: [nachbar1994]
       marked:
         text: >-
-          The halves disagree across both perpendicular axes, in outline, in colour or in
-          how the pigment is spread.
-        sources: [nachbar1994]
-
-  - id: border_irregularity
-    question: >-
-      Are the lesion's edges irregular, notched or abruptly cut off, rather than smooth and
-      evenly fading into the surrounding skin?
-    scale: [absent, mild, marked]
-    sources: [nachbar1994, abbasi2004]
-    # Nachbar 1994 scores the border by dividing the lesion into eighths and counting the
-    # segments in which the pigment pattern ends in an abrupt cut-off, giving 0-8. The
-    # segment counts below are the source's; cutting that 0-8 range into three levels is
-    # ours, since the source scores it continuously and names no cut-point.
-    anchors:
-      absent:
-        text: >-
-          Pigment fades gradually into the surrounding skin the whole way round; no segment
-          of the rim ends abruptly.
-        sources: [nachbar1994]
-      mild:
-        text: >-
-          The pigment pattern is cut off abruptly, or the edge is notched, in up to about
-          three of the eight perimeter segments.
-        sources: [nachbar1994]
-      marked:
-        text: >-
-          An abrupt cut-off or a notched edge over four or more of the eight segments, that
-          is half the rim or more.
+          Asymmetry across both perpendicular axes, or an abrupt cut-off over four or more
+          of the eight segments, half the rim.
         sources: [nachbar1994]
 
   - id: colour_count
@@ -268,11 +256,17 @@ concepts:
           than the skin around the lesion.
         sources: [nachbar1994]
 
+  # SPLIT. This was one concept, scale [absent, regular, irregular], until the scale audit.
+  # That scale was nominal, not ordinal: presence of a network and atypia of a network are
+  # two axes, and a regular network is not halfway between no network and an atypical one,
+  # so mapping the three levels to 0, 0.5, 1 asserted a distance that does not exist. It is
+  # now two binary concepts. Every level of the old scale is still expressible: absent maps
+  # to (absent, absent), regular to (present, absent), irregular to (present, present).
   - id: pigment_network
     question: >-
-      Is a net-like grid of pigmented lines over a lighter background visible, and if so are
-      the lines and holes uniform and evenly spaced, or uneven, thickened and broken?
-    scale: [absent, regular, irregular]
+      Is a net-like grid of pigmented lines over a lighter background visible over any part
+      of the lesion?
+    scale: [absent, present]
     sources: [argenziano1998, argenziano2003, kittler2016, menzies2000, braun2002,
               zaballos2008, zalaudek2012, elgart2001, sahin2004, altamura2010]
     # These anchors deliberately do NOT try to separate a true network from a pseudonetwork
@@ -281,21 +275,42 @@ concepts:
     # apart is essential and difficult at full dermoscopic resolution; at 224 px, with
     # follicular openings and keratin plugs at or below the limit of what resolves, it is
     # not decidable here, and an anchor claiming otherwise would manufacture precision. Any
-    # visible grid therefore reads as present and the regular/irregular split carries the
-    # signal. This is the same reading the `bkl` class comment below records, and the reason
-    # that class stays `any` on this concept.
+    # visible grid of PIGMENTED lines therefore reads as present. A purely erythematous
+    # pseudonetwork has no pigmented lines and reads as absent here; it is carried by
+    # background_erythema instead, which is what keeps the `akiec` level below honest.
+    # This is the same reading the `bkl` class comment records, and the reason that class
+    # stays `any` on both this concept and network_atypia.
     anchors:
       absent:
         text: >-
-          No grid of lines over a lighter background anywhere; pigment is structureless,
+          No grid of pigmented lines over a lighter background; pigment is structureless,
           blotchy, or made of separate globules.
         sources: [kittler2016, argenziano2003]
-      regular:
+      present:
         text: >-
-          Lines of even thickness and colour enclosing holes of near-uniform size and
-          spacing, thinning gradually towards the rim.
-        sources: [argenziano1998, argenziano2003]
-      irregular:
+          A meshwork of brown lines enclosing lighter holes covers at least part of the
+          lesion.
+        sources: [kittler2016, argenziano2003]
+
+  - id: network_atypia
+    question: >-
+      Where a net-like grid of pigmented lines is visible, are its lines thickened, darkened
+      and broken and its holes uneven in size, rather than uniform and evenly spaced?
+    scale: [absent, present]
+    sources: [argenziano1998, argenziano2003, kittler2016, braun2002, zaballos2008]
+    # `absent` covers two situations that look different but agree on what is asked: a grid
+    # whose lines and holes are uniform, and no grid at all. The second is vacuous but it is
+    # what makes the pair of binary concepts coherent, and it is why the three classes with
+    # no network (akiec, bcc, vasc) commit `absent` here definitionally rather than by any
+    # reported frequency. The anchor states it so the reader has somewhere to put a lesion
+    # with no network.
+    anchors:
+      absent:
+        text: >-
+          Lines even in thickness and colour, holes near-uniform in size and thinning
+          gradually at the rim; or no grid at all.
+        sources: [argenziano2003, argenziano1998]
+      present:
         text: >-
           Lines thickened, darkened and broken, holes varying widely in size and shape, the
           grid ending abruptly at the edge.
@@ -486,10 +501,10 @@ classes:
   # than on a reported majority, which the source does not give.
   "actinic keratoses and intraepithelial carcinoma":
     fingerprint:
-      asymmetry: any
-      border_irregularity: any
+      asymmetry_and_border: any
       colour_count: any
       pigment_network: absent
+      network_atypia: absent
       blue_white_structures: absent
       arborizing_vessels: absent
       leaf_like_or_spoke_wheel_areas: absent
@@ -506,9 +521,10 @@ classes:
   # non-pigmented and 33.2% lightly pigmented lesions, where blue-grey structures are absent
   # and arborizing vessels carry the diagnosis. Applying the majority-or-definitional rule to
   # Altamura's frequencies:
-  #   pigment_network = absent. Definitional: its absence is the mandatory half of Menzies'
-  #     rule, and it is what places the lesion on the non-melanocytic branch of the two-step
-  #     algorithm.
+  #   pigment_network = absent, and network_atypia = absent with it. Definitional: the
+  #     absence of a network is the mandatory half of Menzies' rule and is what places the
+  #     lesion on the non-melanocytic branch of the two-step algorithm; where there is no
+  #     network there is no atypical one either.
   #   arborizing_vessels = present. The commonest single feature at 57.1%, a majority, and
   #     the dominant cue in exactly the non-pigmented subset the class also contains.
   #   blue_white_structures = present. Borderline and stated as the PIGMENTED prototype:
@@ -520,14 +536,14 @@ classes:
   #     spoke-wheel areas 9.0%: the classic basal-cell-only cue, but a clear minority, so
   #     committing it asserted something false about the class. It stays `absent` on all six
   #     other classes and so remains a one-sided cue.
-  #   asymmetry, border_irregularity, colour_count, background_erythema = any. Not part of
-  #     either source's criteria.
+  #   asymmetry_and_border, colour_count, background_erythema = any. Not part of either
+  #     source's criteria.
   "basal cell carcinoma":
     fingerprint:
-      asymmetry: any
-      border_irregularity: any
+      asymmetry_and_border: any
       colour_count: any
       pigment_network: absent
+      network_atypia: absent
       blue_white_structures: present
       arborizing_vessels: present
       leaf_like_or_spoke_wheel_areas: any
@@ -564,12 +580,15 @@ classes:
   #     Sahin 2004 found light-brown pseudonetworks significant for the benign group. The
   #     two-step algorithm calls a true network melanocytic, but under this file's question
   #     wording a pseudonetwork reads as present, so the class cannot commit.
+  #   network_atypia = any, for the same reason and from the same source: a seborrhoeic
+  #     keratosis's network-like structure can look as uneven as an atypical network, and
+  #     Braun 2002 gives no way to separate the two at this resolution.
   #   blue_white_structures = any. Bugatti 2007: blue areas in 94% of 16 LPLK, granular grey
   #     pattern in all but one; Zaballos 2007b describes the same grey granules. SK and SL
   #     do not show them. Genuine disagreement between the sub-entities.
   #   background_erythema = any. Bugatti 2007 classifies 37% of LPLK as the flat
   #     erythematous type, so the earlier `absent` was wrong and has been relaxed.
-  #   asymmetry, border_irregularity, colour_count = any. No source addresses these for any
+  #   asymmetry_and_border, colour_count = any. No source addresses these for any
   #     of the three sub-entities; SK's sharp demarcation and SL's moth-eaten border pull in
   #     opposite directions on the border question.
   #   central_white_patch = absent. Bugatti 2007 reports white scar-like depigmentation in
@@ -577,10 +596,10 @@ classes:
   #     pattern this concept asks about (which is Zaballos 2008's dermatofibroma pattern).
   "benign keratosis-like lesions":
     fingerprint:
-      asymmetry: any
-      border_irregularity: any
+      asymmetry_and_border: any
       colour_count: any
       pigment_network: any
+      network_atypia: any
       blue_white_structures: any
       arborizing_vessels: absent
       leaf_like_or_spoke_wheel_areas: absent
@@ -594,7 +613,8 @@ classes:
 
   # df. Zaballos 2008, n=412. The two committed structures are each a majority in their own
   # right: pigment network 71.8% (and only 3% of it atypical, which is what licenses
-  # `regular` rather than `irregular`), white scar-like patch 57.0%. It is their
+  # `network_atypia: absent` alongside `pigment_network: present`), white scar-like patch
+  # 57.0%. It is their
   # CONJUNCTION - the classic central-patch-with-peripheral-network pattern - that falls to
   # 34.7%, with the other 65.3% distributed over nine further patterns, some simulating
   # melanoma. So each level is majority-supported individually even though the prototype as a
@@ -603,7 +623,7 @@ classes:
   #     entity; `two` was inferred from the brown-plus-white classic pattern, and unlike the
   #     ABCD colour criterion used for naevi and melanoma it is not part of any scored
   #     algorithm, so under the majority-or-definitional rule it does not commit.
-  #   asymmetry, border_irregularity = absent. Definitional rather than frequency-based: the
+  #   asymmetry_and_border = absent. Definitional rather than frequency-based: the
   #     classic pattern is concentric, hence symmetric and evenly bordered.
   # This class separates from `melanocytic nevi` on central_white_patch alone. That is not a
   # gap in the bank: a dermatofibroma with a peripheral network and no white patch is a
@@ -611,10 +631,10 @@ classes:
   # feature the literature offers to tell them apart.
   "dermatofibroma":
     fingerprint:
-      asymmetry: absent
-      border_irregularity: absent
+      asymmetry_and_border: absent
       colour_count: any
-      pigment_network: regular
+      pigment_network: present
+      network_atypia: absent
       blue_white_structures: absent
       arborizing_vessels: absent
       leaf_like_or_spoke_wheel_areas: absent
@@ -634,10 +654,10 @@ classes:
   # network entirely and would score `absent` on it.
   "melanoma":
     fingerprint:
-      asymmetry: marked
-      border_irregularity: marked
+      asymmetry_and_border: marked
       colour_count: three_or_more
-      pigment_network: irregular
+      pigment_network: present
+      network_atypia: present
       blue_white_structures: present
       arborizing_vessels: absent
       leaf_like_or_spoke_wheel_areas: absent
@@ -652,16 +672,17 @@ classes:
   # nv. The benign counterpart of the ABCD rule: symmetric, sharply and evenly bordered, one
   # or two shades of brown, with a regular pigment network. Two caveats a reviewer should
   # weigh. Globular and homogeneous naevi exist and would score `absent` on pigment_network;
-  # `regular` is the textbook reticular naevus, not a claim about every naevus in the
-  # dataset. And Elgart 2001 notes that milia-like-cyst-like structures are commonly seen in
-  # melanocytic neoplasms, notably congenital naevi; `absent` here is the expectation for the
-  # common acquired naevus that dominates this class.
+  # `present` with `network_atypia: absent` is the textbook reticular naevus, not a claim
+  # about every naevus in the dataset. And Elgart 2001 notes that milia-like-cyst-like
+  # structures are commonly seen in melanocytic neoplasms, notably congenital naevi;
+  # `absent` here is the expectation for the common acquired naevus that dominates this
+  # class.
   "melanocytic nevi":
     fingerprint:
-      asymmetry: absent
-      border_irregularity: absent
+      asymmetry_and_border: absent
       colour_count: two
-      pigment_network: regular
+      pigment_network: present
+      network_atypia: absent
       blue_white_structures: absent
       arborizing_vessels: absent
       leaf_like_or_spoke_wheel_areas: absent
@@ -681,10 +702,10 @@ classes:
   # non-melanocytic, no pigment network.
   "vascular lesions":
     fingerprint:
-      asymmetry: any
-      border_irregularity: any
+      asymmetry_and_border: any
       colour_count: any
       pigment_network: absent
+      network_atypia: absent
       blue_white_structures: any
       arborizing_vessels: absent
       leaf_like_or_spoke_wheel_areas: absent

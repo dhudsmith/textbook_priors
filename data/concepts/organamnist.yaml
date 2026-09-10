@@ -2,7 +2,7 @@
 # PLANE: AXIAL. The images are 2D bounding-box crops around a single organ taken
 # from abdominal CT volumes in the axial plane.
 #
-# THIS CONCEPT SET IS SHARED, VERBATIM, WITH organamnist.yaml, organcmnist.yaml and
+# THIS CONCEPT SET IS SHARED, VERBATIM, ACROSS organamnist.yaml, organcmnist.yaml and
 # organsmnist.yaml. The `concepts:` block below (ids, questions, scales, source keys) is
 # byte-identical in all three files; only `modality:` and the `classes:` fingerprints differ,
 # because a plane changes which anatomical axes are visible in a crop:

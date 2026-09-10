@@ -1,7 +1,61 @@
 # Change log
 
-Dated findings, decisions and corrections. Appended, never rewritten. Structure lives in
-README.md; the plan lives in WORKFLOW.md.
+Dated findings, decisions and corrections. Appended, never rewritten. Structure will live in
+README.md once the skeleton exists (WORKFLOW.md §9, step 7); the plan lives in WORKFLOW.md.
+
+## 2026-09-09 — Concept bank built; audit against the revised plan
+
+The twelve concept-bank files were built, anchored and committed, then audited against the plan
+by two reviewers that had not written them. Corrections, in order of how much they mattered.
+
+**The sample sizes did not exist for two datasets, and the call budget was wrong.** The plan fixed
+`test_n: 500` and `pool_n: 2000` flat across twelve datasets. breastmnist has 156 test and 546
+train images; retinamnist has 400 and 1,080. Both are now capped by `min()` against the official
+split, which is stated in §4 and §8; breastmnist's learning curve stops at n = 500 and
+retinamnist's at n = 1000, so "seeds collapse at n = 2000" was false for both. **The corrected
+total is 49,406 calls, not the 54,000 recorded in the entry below**, and `primary_upgrade` is
++21,626, not +18,000. The pool is drawn from the official train split only, which had not been
+said anywhere.
+
+**Arm A was degenerate on retinamnist and would have handed H2 a free vote.** The zero-shot prompt
+is a pure function of the label map, and retinamnist's label map is the digit strings "0" to "4".
+A distribution over "0, 1, 2, 3, 4" is not a diagnosis question, so arm B would have beaten it by
+construction on one of the eleven datasets H2 counts — against a threshold of nine, with no slack.
+Config now carries `zeroshot_names` for any dataset whose keys are not clinical terms, and the
+zero-shot prompt states the modality so arm A is not handicapped by not knowing what it is looking
+at. chestmnist leaves arm A as well as arm B, for the same reason it left arm B.
+
+**n_B was defined on the metric that decides nothing, and had no uncertainty.** It read "reaches
+the accuracy of arm B" while the primary metric is AUC. It is now the smallest grid n at which the
+seed-mean AUC of arm P reaches AUC(B), with censoring codes and a 95% interval from the same
+paired bootstrap — free, since the predictions are fixed. Without the interval the headline was a
+threshold on a shallow curve: a 0.02 shift in arm B's line moves the crossing by a grid step.
+
+**One of the two "clean within-family" size contrasts is not clean.** qwen3.5-9b to
+qwen3.8-27b-fp8 crosses a model generation and adds fp8 quantisation — the same confound H3
+refuses to accept across families. H3 now rests on the gemma pair; the qwen pair is corroboration.
+
+**Three files in the bank had questions that could not be answered honestly.** pathmnist asked
+about gland regularity and fibre alignment with no level for "there are no glands" or "there are
+no fibres"; bloodmnist asked for chromatin density and nucleus-to-cytoplasm ratio of a platelet,
+which has no nucleus. `any` in a fingerprint tells the estimator to ignore an answer, but the model
+is still asked and must reply — so the archive would have carried invented levels or missing ones,
+and the archive is a fixed input. Floors added, and the affected classes committed to them, which
+moved eleven fingerprint cells off `any` and gained signal rather than merely avoiding a failure.
+
+**One scale was nominal while the estimators read it as a number.** dermamnist's `pigment_network`
+ran [absent, regular, irregular], and §3 maps scales to equally spaced values — placing "regular
+network" exactly halfway between "no network" and "atypical network", which is not what dermoscopy
+means. Split into two binary concepts, presence and atypia. `asymmetry` and `border_irregularity`
+were merged to hold the twelve-concept cap; they were byte-identical across all seven classes, so
+the merge cost no separation and the split raised total pairwise separation from 57 to 58.
+
+Also corrected: arm E is evaluated twice, because the published MedMNIST numbers are computed on
+the full test split and cannot be reconciled against a 500-image sample; arm B reads AUC from its
+raw score rather than a softmax with an unstated temperature; the sign test's twelve datasets are
+at most ten independent units, since organa/c/smnist are the same LiTS volumes in three planes;
+and contamination is now stated as something no arm here can rule out, since every source dataset
+is public and labelled.
 
 ## 2026-09-09 — Validation pass over the plan; scope cut to three hypotheses
 
@@ -21,7 +75,7 @@ against the published MedMNIST table.
 **The learning curve measured the wrong thing.** It was written as arm E against arm F (a
 supervised network with the prior fused in), which asks whether a prior *helps* a supervised
 model. The project's question is whether a prior *substitutes* for labels, which is C against P
-with arm B's zero-label accuracy as the line to cross. The headline number is now n_B: the labels
+with arm B's zero-label AUC as the line to cross. The headline number is now n_B: the labels
 a pixel model needs to match the textbook.
 
 **Arm B had no estimator.** "Concept scores matched to the bank's class fingerprints" was the
@@ -64,7 +118,7 @@ where the allocation is tighter than that.
 
 **Scope removed** (each with the claim it supported, in WORKFLOW.md §10): arm D and the whole
 embedding stage, arm F and its open fusion design, the 64- and 128-pixel sweep and the GPU-minutes
-figure, the reasoning sweep, and two of the three diagnostics. The permutation controls that
+figure, the reasoning sweep, and all three opt-in diagnostics. The permutation controls that
 replace the prompt ablation are re-analyses of the response archive and cost no calls. Four
 figures became three, six arms became five, nine stages stayed nine, and the plan lost the talk
 narrative to TALK.md so that what remains is the experiment.
