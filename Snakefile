@@ -51,6 +51,7 @@ localrules:
 
 
 OUT = config["outdir"]
+STORAGE = config["storage_root"]
 RAW = config["rawdir"]
 CACHE = config["cachedir"]
 FIGS = config["figdir"]
@@ -292,7 +293,7 @@ rule fetch:
     benchmark: "benchmarks/fetch/{file}.tsv"
     threads: RES["fetch"]["cpus"]
     resources: **res("fetch"), zenodo=1
-    shell: "scripts/fetch_medmnist.sh {params.url} {params.md5} {output} > {log} 2>&1"
+    shell: "scripts/fetch_medmnist.sh {params.url} {params.md5} {output} {STORAGE} > {log} 2>&1"
 
 rule fetch_weights:
     """torchvision's ImageNet ResNet-18 weights, pinned by URL and the sha256 prefix in the file
@@ -324,7 +325,7 @@ rule cache:
     conda: "envs/priors.yml"
     threads: RES["cache"]["cpus"]
     resources: **res("cache")
-    shell: STAGE + "cache {wildcards.dataset} {wildcards.size} --out {output} > {log} 2>&1"
+    shell: f"scripts/link_storage.sh {STORAGE} > {{log}} 2>&1 && " + STAGE + "cache {wildcards.dataset} {wildcards.size} --out {output} >> {log} 2>&1"
 
 rule sample:
     """The seeded test sample (min(500, test)) and labelled pool (min(2000, train)) at 224. x{len(SAMPLES)}."""

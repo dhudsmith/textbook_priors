@@ -1,29 +1,18 @@
 #!/usr/bin/env bash
 # Fetch one MedMNIST file from the pinned Zenodo record and verify its MD5.
 #
-#   scripts/fetch_medmnist.sh <url> <md5> <dest>
+#   scripts/fetch_medmnist.sh <url> <md5> <dest> <storage_root>
 #
 # The files are large (up to ~10 GB at 224) and not this repository's to own, so they are pulled
 # from the record pinned in config/medmnist.yaml rather than vendored. data/raw is a symlink into
-# /scratch/$USER (large, purged periodically); a purge simply makes rule fetch run again. The
-# download resumes on retry and lands atomically: a partial file never carries the final name.
+# <storage_root>/raw on the project filesystem (scripts/link_storage.sh). The download resumes on
+# retry and lands atomically: a partial file never carries the final name.
 set -euo pipefail
 
-url="$1"; md5="$2"; dest="$3"
+url="$1"; md5="$2"; dest="$3"; storage="$4"
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-raw="$root/data/raw"
-scratch="/scratch/$USER/textbook_priors_data"
-# Snakemake creates an output's parent directory before the job runs, so data/raw may already exist
-# as an empty plain directory; replace it with the symlink. A non-empty directory is left alone.
-if [ -d "$raw" ] && [ ! -L "$raw" ] && [ -z "$(ls -A "$raw")" ]; then
-    rmdir "$raw"
-fi
-if [ ! -e "$raw" ]; then
-    mkdir -p "$scratch" "$root/data"
-    ln -s "$scratch" "$raw"
-    echo "linked data/raw -> $scratch"
-fi
+"$root/scripts/link_storage.sh" "$storage"
 mkdir -p "$(dirname "$dest")"
 
 part="$dest.part"

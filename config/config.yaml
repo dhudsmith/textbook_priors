@@ -6,8 +6,11 @@
 # params), so a memory edit reruns nothing.
 
 outdir: results
-rawdir: data/raw              # scripts/fetch_medmnist.sh makes it a symlink to /scratch/$USER/textbook_priors_data
-cachedir: data/cache          # uint8 .npy per split, about 50 GB at 224 over the twelve datasets; gitignored
+# Large data lives on the project filesystem (not purged, unlike /scratch); data/raw and data/cache
+# are symlinks into it, made by scripts/link_storage.sh from the fetch and cache rules.
+storage_root: /project/dane2/wficai/textbook_priors
+rawdir: data/raw              # -> <storage_root>/raw: the 24 MedMNIST release files, ~40 GB
+cachedir: data/cache          # -> <storage_root>/cache: uint8 .npy per split, ~50 GB at 224; gitignored
 conceptdir: data/concepts     # the bank: twelve committed, cited files (CONCEPT_BANK.md)
 figdir: report/figs
 tabdir: report/tables

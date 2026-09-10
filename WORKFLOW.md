@@ -455,7 +455,7 @@ envs/                     priors.yml  priors_torch.yml  priors_llm.yml
 priors/                   data cache features train prompts llm score classify evaluate report
                           stages manifest
 data/concepts/            the twelve concept-bank files and their README, committed
-data/raw -> scratch       MedMNIST files; data/cache the arrays; gitignored
+data/{raw,cache} -> /project storage   MedMNIST files and the arrays; gitignored
 results/                  one JSON per unit of work; results/score/ is the response archive
 benchmarks/  logs/        per job
 report/                   report.tex, references.bib; tables/ and figs/ generated

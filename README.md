@@ -21,7 +21,7 @@ snakemake --profile profiles/palmetto results/score_probe/probe.json   # the ten
 ```
 
 A fresh clone carries no data: `data/raw/` is fetched from the pinned Zenodo record on the first
-run (`scripts/fetch_medmnist.sh`, MD5-checked) into `/scratch/$USER`, and the ImageNet weights
+run (`scripts/fetch_medmnist.sh`, MD5-checked) into `storage_root` (config), and the ImageNet weights
 from their pinned URL. Scoring needs the RCD LLM key in `~/.config/rcd_llm/key` (owner-only;
 the path is `vlm.key_file` in the config and the key appears nowhere else).
 
@@ -58,7 +58,7 @@ priors/                  the code the workflow executes, and nothing else
 tests/                   the smoke tier (pytest); test_torch.py runs in the torch environment
 scripts/                 fetch_medmnist.sh
 data/concepts/           the twelve concept-bank files and their README, committed
-data/raw -> scratch      MedMNIST files; data/cache the arrays and samples; both gitignored
+data/{raw,cache} ->      symlinks into storage_root on the project filesystem: MedMNIST files, arrays, samples
 results/                 one JSON per unit of work, arrays beside it; results/score/ is the response archive
 benchmarks/  logs/       per job
 report/                  report.tex, references.bib; tables/ and figs/ are generated
