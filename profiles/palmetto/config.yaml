@@ -1,0 +1,51 @@
+# Snakemake profile for Palmetto2 (Clemson), SLURM executor.
+#
+#   snakemake --profile profiles/palmetto <target>
+#
+# Per-rule cpus/mem/runtime come from config/config.yaml; the defaults below only cover rules
+# that ask for nothing specific.
+
+executor: slurm
+
+default-resources:
+  slurm_account: cuuser_dane2_medai
+  slurm_partition: work1
+  runtime: 120
+  mem_mb: 4000
+  cpus_per_task: 1
+
+# `jobs` caps submitted SLURM jobs; `cores` caps the summed `threads` of jobs running at once.
+# Without a large `cores`, Snakemake throttles to the submitting node's CPU count and reports
+# "Waiting for more resources" while the cluster sits idle. The widest fan-out is SCORE: with every
+# model's cap in flight at once that is 180 one-core jobs, plus the 72 training jobs at 8 cores.
+jobs: 300
+cores: 800
+latency-wait: 60
+keep-going: True
+rerun-incomplete: True
+printshellcmds: True
+retries: 1
+
+# Throttles (WORKFLOW.md section 7). Each scoring job holds one llm_<model> unit and keeps one
+# call in flight, so the cap is the number of concurrent calls to that model, set below the
+# service's published concurrency (config/config.yaml vlm.models.<m>.cap; tests/test_config.py
+# holds the two equal). zenodo caps concurrent downloads so the fetch is not throttled server-side.
+resources:
+  - llm_qwen3_5_9b=96
+  - llm_gemma_4_12b=24
+  - llm_qwen3_8_27b_fp8=48
+  - llm_gemma_4_31b=12
+  - zenodo=4
+
+use-conda: True
+conda-frontend: conda
+
+# Rerun when the code behind a job changes (its shell line), when an input changes, or when its
+# environment file changes. Modules and config values are tracked through code() inputs and params.
+# The response archive under results/score/ is protected(): a rerun that would rewrite it stops
+# with an error instead, which is what makes re-scoring a deliberate act.
+rerun-triggers:
+  - mtime
+  - input
+  - software-env
+  - code

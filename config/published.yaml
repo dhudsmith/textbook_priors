@@ -1,0 +1,24 @@
+# The MedMNIST v2 benchmark table, for the reconciliation of arm E (WORKFLOW.md section 5,
+# principle 10). Rows are Table 3 of Yang et al., Scientific Data 2023;10:41
+# (doi:10.1038/s41597-022-01721-8): ResNet-18 trained from scratch at 28 and at 224 pixels,
+# test AUC and ACC on the full official test split. Values transcribed from the paper text on
+# 2026-09-09. Arm E is compared against these by `rule reconcile`; the tolerances are in
+# config/config.yaml under `reconcile:`.
+source: "Yang et al. 2023, MedMNIST v2, Table 3 (2D benchmark), rows ResNet-18 (28) and ResNet-18 (224)"
+recipe: >-
+  cross-entropy loss, batch 128, Adam with initial learning rate 0.001, 100 epochs, learning rate
+  multiplied by 0.1 after epochs 50 and 75; best model by validation AUC; inputs at 224 are the
+  28-pixel images resized in the paper, and the native 224 release here.
+resnet18:
+  pathmnist:      {28: {auc: 0.983, acc: 0.907}, 224: {auc: 0.989, acc: 0.909}}
+  chestmnist:     {28: {auc: 0.768, acc: 0.947}, 224: {auc: 0.773, acc: 0.947}}
+  dermamnist:     {28: {auc: 0.917, acc: 0.735}, 224: {auc: 0.920, acc: 0.754}}
+  octmnist:       {28: {auc: 0.943, acc: 0.743}, 224: {auc: 0.958, acc: 0.763}}
+  pneumoniamnist: {28: {auc: 0.944, acc: 0.854}, 224: {auc: 0.956, acc: 0.864}}
+  retinamnist:    {28: {auc: 0.717, acc: 0.524}, 224: {auc: 0.710, acc: 0.493}}
+  breastmnist:    {28: {auc: 0.901, acc: 0.863}, 224: {auc: 0.891, acc: 0.833}}
+  bloodmnist:     {28: {auc: 0.998, acc: 0.958}, 224: {auc: 0.998, acc: 0.963}}
+  tissuemnist:    {28: {auc: 0.930, acc: 0.676}, 224: {auc: 0.933, acc: 0.681}}
+  organamnist:    {28: {auc: 0.997, acc: 0.935}, 224: {auc: 0.998, acc: 0.951}}
+  organcmnist:    {28: {auc: 0.992, acc: 0.900}, 224: {auc: 0.994, acc: 0.920}}
+  organsmnist:    {28: {auc: 0.972, acc: 0.782}, 224: {auc: 0.974, acc: 0.778}}

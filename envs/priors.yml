@@ -1,0 +1,22 @@
+# The light environment: every stage that is numpy/scipy/scikit-learn only (CACHE, CLASSIFY,
+# EVALUATE, REPORT, the smoke tests). Kept small on purpose, because any edit to this file marks
+# every result it produced as stale (software-env is a rerun trigger). Torch and the LLM client
+# have their own files so adding either never invalidates this tier. Loose floors; the exact
+# versions used are recorded in each result's manifest.
+#
+# medmnist (the evaluator whose getAUC/getACC are the primary metric) is installed by
+# envs/priors.post-deploy.sh with --no-deps: the package declares torch and torchvision as
+# requirements it only needs for its Dataset classes, and this tier must not carry torch.
+name: priors
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - numpy>=2
+  - scipy>=1.14
+  - pandas>=2
+  - scikit-learn>=1.5
+  - matplotlib>=3.8
+  - pyyaml
+  - pytest
+  - pip
