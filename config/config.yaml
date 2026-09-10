@@ -132,7 +132,7 @@ resources:
   score:     {cpus: 1, mem_mb: 2000,  runtime: 90}    # one HTTP call in flight; 100 images at ~10 s each
   probe:     {cpus: 1, mem_mb: 2000,  runtime: 30}
   features:  {cpus: 4, mem_mb: 16000, runtime: 60}    # CPU fallback of the features stage (see features.gpu)
-  smoke_torch: {cpus: 2, mem_mb: 8000, runtime: 30}
+  smoke_torch: {cpus: 2, mem_mb: 2000, runtime: 15}   # measured 2026-09-09: 956 MB peak, 53 s (benchmarks/smoke_torch.tsv)
   classify:  {cpus: 4, mem_mb: 8000,  runtime: 180}   # ~2,300 small LR fits per dataset; lbfgs uses a few cores
   evaluate:  {cpus: 2, mem_mb: 8000,  runtime: 120}   # 10,000 bootstrap resamples over ~40 score matrices
   summary:   {cpus: 1, mem_mb: 4000,  runtime: 20}
