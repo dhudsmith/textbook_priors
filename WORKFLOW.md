@@ -119,6 +119,26 @@ subsets as arm C, so features are the only difference.
 Only the primary model scores the labelled pool; arm B is training-free, so the ladder models need
 the 500 test images and nothing else.
 
+**Completed prior work: the data are already on disk.** Like the concept bank, the download was
+done before the workflow and is not redone. The six 224-pixel release files sit in
+`/project/dane2/wficai/textbook_priors/raw/` (project storage, not purged), each verified against
+the MD5 that `medmnist` 3.0.2 records in `medmnist.INFO[<dataset>]["MD5_224"]`:
+
+| file | MD5 | size |
+|---|---|---|
+| `pathmnist_224.npz` | `2c51a510bcdc9cf8ddb2af93af1eadec` | 11.8 GB |
+| `dermamnist_224.npz` | `8974907d8e169bef5f5b96bc506ae45d` | 1.0 GB |
+| `octmnist_224.npz` | `abc493b6d529d5de7569faaef2773ba3` | 3.7 GB |
+| `pneumoniamnist_224.npz` | `d6a3c71de1b945ea11211b03746c1fe1` | 0.2 GB |
+| `bloodmnist_224.npz` | `b718ff6835fcbdb22ba9eacccd7b2601` | 1.4 GB |
+| `organamnist_224.npz` | `50747347e05c87dd3aaf92c49f9f3170` | 1.7 GB |
+
+The same directory also holds files the full version fetched (the 28-pixel files and other 224
+datasets); the talk version ignores them. The fetch rule is still written, so a fresh clone
+bootstraps itself and the provenance stays in the workflow: it declares these files as its
+outputs (through a `data/raw` symlink into that directory), pulls from Zenodo record 10519652 in
+parallel byte ranges, and checks the MD5; with the files present it has nothing to do.
+
 | model | family | role | concept calls | zero-shot calls |
 |---|---|---|---|---|
 | `qwen3.8-27b-fp8` | qwen | primary | 15,000 (test + pool) | 3,000 (test) |
@@ -224,7 +244,8 @@ openai, pillow; `medmnist` for its evaluator, installed without its torch requir
 ## 9. Order of work
 
 1. Skeleton and the bank schema test over the six files.
-2. Fetch the six files; extract the samples; check counts and the class balance of each sample.
+2. The fetch rule, which finds its six outputs already on disk (§4); extract the samples; check
+   counts and the class balance of each sample.
 3. The ten-image probe on the primary model (rule `probe`, outside `all`): a compute node reaches
    the service, the archive and manifest are right, a malformed response is handled.
 4. The primary fan-out under its cap, then the ladder models; features; classify; evaluate.
