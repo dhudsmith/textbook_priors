@@ -73,7 +73,7 @@ package, so the mapping between the two is recorded rather than inferred.
 
 ## Known limits
 
-Recorded here because they bound what arm B (fingerprint matching with no training) can achieve,
+Recorded here because they bound what arm B (nearest fingerprint, no labels) can achieve,
 and because a limitation that is discovered later looks like a bug. Each is documented in its
 own file too.
 
@@ -86,14 +86,16 @@ own file too.
   survives a nuclear stain. These are properties of the images and the labels, not omissions,
   and no concept was invented to paper over them.
 
-- **`chestmnist` is multi-label, and pairwise separability is the wrong measure for it.** An
-  image showing cardiomegaly and effusion is correctly labelled with both, so arm B never
-  chooses between two findings; each finding is scored against its own signs. Its fingerprints
-  are therefore deliberately thin — 74% `any`, and `cardiomegaly` commits exactly one concept, a
-  wide cardiac silhouette. Raising its separability score would require asserting that findings
-  are absent when the sources say nothing of the kind. That trade was tried during construction
-  and reverted; the file carries a header block saying so, because the failure mode is that a
-  later audit flags these pairs and someone "fixes" them back into the defect.
+- **`chestmnist` is out of arm B, and pairwise separability is the wrong measure for it.**
+  `WORKFLOW.md` §10 excludes it: nearest-fingerprint matching is not defined over fourteen
+  co-occurring findings, so chestmnist runs in arms A, C, P and E only. Its fingerprints are
+  deliberately thin — 74% `any`, and `cardiomegaly` commits exactly one concept, a wide cardiac
+  silhouette — which is right for a label that constrains one sign and says nothing about the
+  rest. They stand as documentation and as the expected levels when a finding is present, and
+  the concept *scores* still carry chestmnist through arms C and P. Raising its separability
+  would mean asserting findings are absent when the sources say nothing of the kind. That trade
+  was tried during construction and reverted; the file carries a header block saying so, because
+  the failure mode is a later audit flagging these pairs and someone "fixing" them back.
 
 - **A disjunctive criterion cannot be expressed as one fingerprint.** A fingerprint is a single
   vector per class, but several diagnostic criteria are disjunctions: the ICDR 4-2-1 rule
@@ -107,9 +109,12 @@ own file too.
 - **Some concepts are one-sided.** After the sensitivity rule was applied, several concepts are
   committed by one class and held at the floor by the others — BI-RADS' thick echogenic halo
   (36% sensitive, 99% specific), dermoscopy's leaf-like and spoke-wheel areas, chestmnist's
-  pleural line and supradiaphragmatic gas. These rule *in* and say nothing when absent. A
-  matching rule for arm B that averages a distance over all concepts will under-weight exactly
-  the features clinicians rely on most; this is worth handling explicitly when arm B is built.
+  pleural line and supradiaphragmatic gas. These rule *in* and say nothing when absent. Arm B as
+  specified in `WORKFLOW.md` §3 masks `any` levels and averages the absolute difference over the
+  concepts a fingerprint does commit to, so a class carried by one high-specificity feature is
+  scored on few concepts and a near-miss on any of them costs it proportionally more. That is the
+  honest reading of a thin fingerprint rather than a defect, but it is worth knowing when the
+  per-dataset arm-B numbers come in.
 
 - **`tissuemnist`'s prior is weak by construction.** Its labels were assigned by
   immunofluorescence markers in separate channels and by where each cell sat in the 3D volume —

@@ -34,7 +34,8 @@ provenance:
       citation: "Abbasi NR et al. Early diagnosis of cutaneous melanoma: revisiting the ABCD criteria. JAMA 2004;292:2771-6."
       doi: 10.1001/jama.292.22.2771
       used_for: [asymmetry, border_irregularity, colour_variegation, diameter]
-concepts:
+concepts:                                # abridged: the real file lists all 6-12 concepts,
+                                         # and every fingerprint below names every one of them
   - id: asymmetry
     question: "Is the lesion asymmetric in shape or colour across one or both axes?"
     scale: [absent, mild, marked]
@@ -75,6 +76,10 @@ Rules the smoke test enforces:
   or `any` where the literature does not commit.
 - Every source key referenced exists in `provenance.sources` with a citation and a DOI or URL.
 - `reviewed_by` is present and, for this project, contains the word `simulated`.
+
+The `concepts` block feeds every arm that uses concept scores (arms B and C in
+`WORKFLOW.md` §3); the `classes` fingerprints feed arm B alone, and are the project's only
+label-free predictor, so a careless fingerprint costs a hypothesis rather than a decimal place.
 
 Rules the review enforces (not machine-checkable):
 
@@ -137,7 +142,10 @@ Verify each against the MedMNIST v2 paper before relying on it.
 - **chestmnist** is multi-label with fourteen findings. Write concepts at the level of
   radiographic signs (opacity location and pattern, cardiac silhouette size, pleural line,
   mediastinal contour) rather than one concept per finding, and let fingerprints share concepts.
-  Cap at twelve concepts.
+  Cap at twelve concepts. Nearest-fingerprint matching is not defined over fourteen co-occurring
+  findings, so chestmnist is excluded from arm B (`WORKFLOW.md` §3); write its fingerprints as the
+  expected levels when a finding is present, as documentation and for the report, and expect the
+  numbers to come from the arms that only need the concept scores.
 - **retinamnist** is ordinal. Fingerprints for the five grades should be monotone in the lesion
   concepts; the scale levels do the work.
 - **organa/c/smnist** are greyscale CT slices with a fixed window. Concepts are anatomical

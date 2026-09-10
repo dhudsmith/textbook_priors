@@ -2,312 +2,342 @@
 
 A reproducible medical-imaging study, built as one Snakemake workflow on Palmetto2 with an AI
 coding agent, and the running example for *Reproducible scientific computing with AI coding
-agents* (Clemson HPC Day).
-
-**The question.** A multimodal language model carries textbook knowledge about what pathology
-looks like. Can that knowledge stand in for labelled data? On the twelve MedMNIST 2D benchmarks,
-a vision-language model (VLM) hosted on Clemson's RCD LLM Service scores each image against a
-curated bank of diagnostic visual features. Classifiers built on those scores are compared with
-convolutional networks trained on pixels, across training-set size, image resolution and VLM size.
-
-The concept bank is prepared outside the workflow and committed as an input; see
-`CONCEPT_BANK.md`. Conventions for every rule below are the `research-workflow` skill
-(`~/.claude/skills/research-workflow/SKILL.md`); the agent loads it before touching the workflow.
+agents* (Clemson HPC Day). The talk narrative lives in `TALK.md`; this file is the scientific and
+engineering plan. Workflow conventions are the `research-workflow` skill
+(`~/.claude/skills/research-workflow/SKILL.md`); the concept-bank procedure is `CONCEPT_BANK.md`.
 
 ---
 
-## 1. Principles
+## 1. The question
 
-Each principle names the failure it prevents and the mechanism that enforces it here.
+A multimodal language model carries textbook knowledge about what pathology looks like. **Can
+that knowledge stand in for labelled data?**
 
-1. **The workflow is the documentation.** The Snakefile reads top to bottom through numbered
-   stages, each opening with a paragraph of scientific prose. The dependency graph *is* the
-   project structure, and a dry run prints it. Nothing about the flow lives only in someone's head.
-2. **Every number has a rule.** No ad hoc scripts, no notebook cells, no hand-copied values. If a
-   number appears in a table, a figure or the report, a rule produced it from declared inputs. The
-   workflow ends in a **technical report**, not a manuscript: the complete record of the question,
-   the data provenance, the methods as executed, every table and figure, the reconciliation, the
-   diagnostics and the run record, built from generated tables and number macros so it cannot state
-   a value the run did not produce. The authors write the paper from it. Interpretation and claims
-   stay with them.
-3. **Inputs are pinned, not vendored.** Large data is the output of a fetch rule from a pinned
-   release with recorded checksums. A fresh clone bootstraps itself, and the exact input version is
-   in the repository even though the bytes are not.
-4. **Dependencies are explicit and complete.** The modules a rule's numbers depend on are inputs;
-   the config values they depend on are params; the environment is declared per rule. Editing any
-   of them reruns exactly the jobs whose numbers could have changed, and nothing else.
-5. **Every result carries its own provenance.** Each unit of work writes one JSON with a manifest:
-   parameters, seeds, git commit and dirty flag, package versions, host, wall time. A result can
-   always be traced back to a line in config and a commit.
-6. **Randomness is owned per cell.** Each job seeds its own generator from config; there is no
-   shared module-level state, so inserting a cell never moves another cell's numbers.
-7. **Computation and reporting are separate.** Stages write results; report rules read only
-   results. No script prints a table it also computed.
-8. **Resources are measured, not guessed.** Every submitted rule records wall time and peak
-   memory; requests are set from those measurements with the reasoning written down.
-9. **Non-reproducible boundaries are made explicit.** An LLM call cannot be reproduced bit for bit
-   once the served model changes. Every response is archived raw with the served model name and
-   prompt hash; everything downstream is a deterministic function of the archive; re-querying is a
-   deliberate act, not a side effect.
-10. **Reconcile, never silently replace.** Regenerated numbers are compared against the published
-    benchmark table and written to a report that says what moved and by how much.
-11. **Structure and history live apart.** The README describes what the project is; a dated
-    change log records what was learned and corrected. The README never becomes a lab notebook.
+On the twelve MedMNIST 2D benchmarks, a vision-language model (VLM) scores each image against a
+cited bank of diagnostic visual features (the *concept bank*, built outside the workflow and
+committed as an input). We ask what those scores are worth, measured in the currency a
+practitioner cares about: labelled images.
 
-## 2. Before and after
+## 2. The hypotheses
 
-| before | now |
-|---|---|
-| a folder of numbered scripts run in an order I remembered | one Snakefile whose dry run prints the order |
-| "which version of the data did this come from?" | a fetch rule with a pinned release and checksums |
-| editing a module and hoping downstream results were still valid | the module is an input; Snakemake reruns exactly what depends on it |
-| a conda env that grew by accretion and could not be rebuilt | three declared environment files, one per toolchain |
-| results in folders named by date, seeds set somewhere | one JSON per cell with a manifest and its own seed |
-| copying numbers into the manuscript by hand | a generated technical report; the manuscript is written from it and checked against it |
-| requesting 8 cores and 64 GB for everything | per-rule requests set from measured usage |
-| sbatch scripts in the log directory to redo one thing | a rule; or a gitignored scratch directory that is never cited |
-| a README that turned into a notebook | README for structure, CHANGELOG for findings |
+Three, each with a primary metric and a decision rule fixed before the numbers exist. Everything
+in this plan that does not serve one of them is an extension in §10, not part of `all`.
 
-## 3. Why this works with an AI coding agent
+Primary metric throughout: **test AUC** from the `medmnist` evaluator (macro one-vs-rest for
+multi-class and ordinal; mean over the 14 findings for chestmnist). ACC is reported alongside but
+decides nothing. Every arm predicts on the **same seeded 500-image test sample** per dataset, so
+every comparison is paired. Across datasets we use a one-sided sign test rather than pooling
+incommensurable AUCs.
 
-The workflow and the agent reinforce each other, in both directions.
+**H1 — Substitution.** *Textbook features are worth a measurable number of labelled images.*
 
-- **The workflow is the context.** A Snakefile with stage prose, a config with commented grids
-  and a README with the layout express the project more precisely than any prompt. The agent
-  reads the same document the human reads, and it is machine-checked: a dry run and a lint tell
-  both of us whether an edit fits.
-- **Conventions replace steering.** The decisions that used to be re-explained every session are
-  written once as a skill with templates. The agent applies them; the human reviews the diff. The
-  conversation is about the science, not about where the log goes.
-- **Structure constrains the agent where it needs constraining.** "Every number has a rule" means
-  the agent cannot quietly answer a question with a one-off script. A new computation forces a
-  rule, a config entry, a code bundle, a benchmark and a log, and so becomes part of the record.
-- **The agent sees what the human sees.** Manifests, logs and benchmarks give the agent the
-  evidence to diagnose a failure or right-size a request with the same information a person would
-  use, and its reasoning is written into comments and the change log where a person can check it.
-- **The dependency graph makes edits safe.** When the agent adds a model or a grid point, the dry
-  run shows exactly what will rerun. Surprises are visible before any compute is spent.
+- Compare, at equal labels and with an identical classifier, concept-score features (arm C)
+  against ImageNet pixel-embedding features (arm P) over n = 50…2000 labelled images.
+- Headline number: **n_B**, the smallest n at which the pixel curve reaches the accuracy of the
+  *zero-label* textbook arm B — "this many labels is what the textbook was worth."
+- Supported if median n_B over the arm-B datasets is ≥ 100 **and** AUC(C) > AUC(P) at n = 50 in
+  ≥ 10 of 12 datasets (one-sided sign test, p = 0.019).
 
-## 4. Opportunities and challenges that are specific to science
+**H2 — The bank, not just the model.** *Directing the VLM at cited visual features beats asking
+it for the diagnosis, and the bank's structure carries the difference.*
 
-Software engineering has its own literature on working with coding agents. Science adds an
-asymmetry: the code is not the product, the claim is, and a claim rests on understanding what was
-done. That produces one opportunity and one challenge that are not the general case.
+- AUC(B) > AUC(A) (zero-shot class distribution) in ≥ 9 of the 11 arm-B datasets (p = 0.033).
+  A and B come from **separate calls on separate prompts**: one prompt asks for the class, the
+  other for the concept levels and never names a class. In one prompt the concept answers could be
+  rationalisations of a guess the model had already made, which would make the comparison
+  circular.
+- Both B and C lose accuracy under the permutation controls (§5, principle 9; a free re-analysis of the
+  archive: fingerprints permuted across classes, concept columns permuted across images).
 
-**The opportunity: the recipe becomes cheap to write and cheap to keep honest.** The work of
-making a study reproducible (fetch rules, manifests, declared environments, generated tables, a
-complete technical report) is exactly the work researchers skip under deadline. An agent does it
-without complaint, and a convention makes it do it the same way every time. Reproducibility stops
-being a virtue practised after the fact and becomes the default shape of the project. What the
-agent produces is the evidence base; the paper, the interpretation and the claim remain the
-authors' work, written from a record that is complete.
+**H3 — Scale.** *The prior gets better with a bigger model, within a model family.*
 
-**The challenge: understanding debt.** An agent can produce a working stage faster than its owner
-can understand it. Every such stage is a loan against future comprehension: the numbers exist, the
-paper cites them, and the person whose name is on the paper cannot say from memory how they were
-made. Technical debt slows the next change; understanding debt undermines the claim itself. The
-two questions it raises are *what did the agent do* and *how do I know it is right*.
+- Two clean within-family size contrasts, `qwen3.5-9b` → `qwen3.8-27b-fp8` and `gemma-4-12b` →
+  `gemma-4-31b`, on arm B. Comparing across families would confound size with training data, so
+  the ladder is read pairwise, not as one curve. The ladder scores concepts only; arm A is a
+  baseline for H2 and runs on the primary model alone.
+- Supported if, in each pair, the larger model's AUC(B) exceeds the smaller's in ≥ 9 of 11
+  datasets.
 
-**What the workflow repays.** Snakemake expresses the work as a recipe, and a recipe is
-inspectable in ways a transcript is not.
+What we deliberately do **not** claim: that the concept scores are clinically valid, that the
+simulated review substitutes for a clinician, or that any arm is state of the art.
 
-- *What was done* is answered by the DAG. Every computation is a rule with declared inputs,
-  declared code, a log and a manifest. There is no hidden step, because a hidden step would have no
-  rule and so no place to put its output.
-- *In what order and from what* is answered by a dry run, which prints the plan before a job runs
-  and the rerun reasons after an edit.
-- *With which code and settings* is answered by the manifest: commit, parameters, seeds, versions.
-- *Why* is answered by prose the agent is required to write: the stage banner states the
-  scientific question and the reason for each non-obvious choice. A wrong explanation is visible
-  in a way a wrong line of code is not, and writing it forces the agent to have one.
-- *Whether the numbers are plausible* is answered by reconciliation against the published table
-  and by the smoke tests, which are the parts of the recipe that check the recipe.
+## 3. Arms
 
-**What it does not repay.** A rule can be structurally perfect and scientifically wrong: the right
-metric on the wrong split, a leak between train and test, an evaluator that silently handles
-multi-label as multi-class. The DAG shows that a stage exists and what it depends on; it does not
-show that the stage computes the right thing. That remains the owner's job, and the workflow's
-contribution is to make the job tractable: one stage at a time, small before large, with a test
-or a published number to check against, and a change log that records what was understood and
-when. The practices that pay the debt down:
+Five, all predicting on the shared test sample. Arms A and B use no labels; C and P are the same
+regularised logistic regression on different feature blocks; E is the fully supervised reference.
 
-- Read every rule the agent writes before it runs at scale, as one would a student's code.
-- Run one cell first and check it by hand against a known answer; only then fan out.
-- Ask the agent to explain a stage in the banner, then judge the explanation, not the code.
-- Keep the CHANGELOG as the owner's record of understanding, not the agent's record of activity.
-- Treat any number without a reconciliation or a test as provisional, in the report and in
-  anything written from it.
+| arm | labels | features | what it establishes |
+|---|---|---|---|
+| A zero-shot | 0 | — | the VLM's class distribution from the image and the class names, asked in its own prompt: the undirected baseline for H2, primary model only |
+| B textbook-only | 0 | concept scores | nearest class fingerprint from the bank; the zero-label prior, and the horizontal line that defines n_B |
+| C concept regression | n | concept scores | what the prior is worth once a few labels exist (H1) |
+| P pixel probe | n | ImageNet ResNet-18 penultimate features | the label-matched pixel baseline (H1) |
+| E pixel network | full split | pixels | ResNet-18 from scratch, official splits: the fully supervised ceiling and the reconciliation against the published MedMNIST table |
 
-The honest summary for a slide: the workflow converts hidden work into inspectable work. It does
-not inspect it for you.
+**Why the pixel baseline is a pretrained probe.** A VLM is an enormous pretrained model; comparing
+it against a ResNet-18 trained from scratch on 50 images would make H1 true by construction. Arm
+P is the strong, fair, cheap baseline: transfer learning without the textbook. It also makes the
+comparison exactly paired — same n, same nested subsets, same classifier, same CV — so the only
+thing that differs between C and P is the features. Arm E keeps the from-scratch reference where
+it belongs: as the ceiling and as the number we reconcile against the literature.
 
-## 5. Inputs given at the outset
+**Estimator definitions** (fixed here, because "nearest fingerprint" and "logistic regression on
+scores" are not self-explanatory):
 
-- **The concept bank**, `data/concepts/<dataset>.yaml`, one file per dataset, committed with
-  provenance (sources, method, reviewer). Produced by the procedure in `CONCEPT_BANK.md`. Each
-  concept carries a `question`, an ordered `scale` of two to five levels, and an `anchors` block
-  giving every level a described visual referent with its own source keys — so the model is told
-  what `mild` looks like rather than left to invent the threshold. Each class carries a
-  `fingerprint` naming every concept with a level or `any`. A smoke test validates the schema, the
-  completeness of every `anchors` block, and the class names against the MedMNIST label maps.
-  `data/concepts/README.md` records the method, the simulated-review statement and the bank's
-  known limits, including the concepts whose anchors cannot be applied at 224 pixels.
-- **MedMNIST v2**, through the `medmnist` package at a pinned version, including the 224-pixel
-  files. Twelve datasets, official train/validation/test splits, sizes 28/64/128/224. Task types:
-  multi-class (pathmnist, dermamnist, octmnist, bloodmnist, tissuemnist, organa/c/smnist), binary
-  (pneumoniamnist, breastmnist), multi-label (chestmnist, 14 findings), ordinal (retinamnist). The
-  fetch rule records counts and checksums; the `medmnist` evaluator gives comparable metrics.
-- **The VLMs** on the RCD LLM Service, by concrete name, never alias: `qwen3.5-9b`,
-  `gemma-4-12b`, `qwen3.8-27b-fp8`, `gemma-4-31b`, each with its published concurrency in config.
-  Text embeddings from `qwen3-embedding-4b`.
+- *Concept vector*: each concept's ordered scale is mapped to equally spaced values on [0, 1];
+  a missing answer becomes the labelled-pool median plus a missing-indicator column.
+- *Arm B*: a class's fingerprint maps the same way, with `any` levels masked out; the class score
+  is the negative mean absolute difference over the concepts the fingerprint commits to and the
+  image answered; class probabilities are a softmax over those scores, which is what AUC reads.
+  Arm B needs single-label fingerprints, so it covers **11 datasets** — chestmnist (multi-label)
+  is in A, C, P and E only.
+- *Arms C and P*: multinomial logistic regression (one-vs-rest per finding for chestmnist), L2
+  strength chosen by 5-fold CV **inside the n labelled images**, features standardised on those
+  same n. No separate validation set is used, so "n labels" means n labels.
+- *Nested subsets*: for each dataset and subsample seed, class-stratified nested subsets of the
+  scored labelled pool at each n, shared by C and P. Seeds collapse at n = 2000, the whole pool.
 
-## 6. Arms
+## 4. Scope, and the call budget
 
-All arms predict on the same seeded test sample per dataset, so comparisons are paired.
+The grid is set by the hypotheses and nothing else.
 
-| arm | labels | what it is |
+| dimension | value | why not more |
 |---|---|---|
-| A zero-shot | no | the VLM's class distribution from the image and class names |
-| B textbook-only | no | concept scores matched to the bank's class fingerprints; no training |
-| C concept regression | yes | logistic regression on the concept-score vector, n labelled images |
-| D description embedding | yes | logistic regression on the embedding of the VLM's free-text description |
-| E pixel network | yes | ResNet-18 per resolution and seed on the full training split |
-| F pixel network + prior | yes | E with concept scores fused late, and with zero-shot probabilities as a soft label; the learning-curve arm |
+| datasets | all 12 MedMNIST 2D | breadth across modalities is the generality claim, and the sign tests need the 12 |
+| resolution | **224** for every arm | it is what the VLM sees and what the ImageNet encoder wants; a resolution sweep tests no hypothesis |
+| resolution, arm E only | 28 and 224 | the two sizes with published ResNet-18 numbers, for reconciliation |
+| VLMs | 4, as two within-family pairs | H3 needs the pairs; more models buy nothing |
+| test sample | 500 per dataset, seed 0 | shared by every arm; per-dataset CIs are wide, which is why the inference is the sign test across datasets |
+| labelled pool | 2000 per dataset, seed 0 | the largest curve point; the pool is what SCORE must cover beyond the test sample |
+| curve | n = 50, 100, 200, 500, 1000, 2000 × 3 seeds | CPU-cheap, so the resolution of n_B is limited only by the grid |
 
-Four figures: the learning curve of E against F (how many labelled images is the textbook
-worth); A and B against VLM size; E against resolution and GPU minutes; the per-modality gap
-between concept-based and pixel-based accuracy. If time is short, D is dropped first.
+**Only the primary model scores the labelled pool.** Arm B is training-free, so the three ladder
+models need the 500 test images and nothing else. That single observation takes the call volume
+from 120,000 to 54,000 without dropping a dataset or a model.
 
-## 7. Stages
+| model | family | role | concept calls | zero-shot calls |
+|---|---|---|---|---|
+| `qwen3.8-27b-fp8` | qwen | primary | 30,000 (test + pool) | 6,000 (test) |
+| `qwen3.5-9b` | qwen | ladder | 6,000 (test) | — |
+| `gemma-4-12b` | gemma | ladder | 6,000 (test) | — |
+| `gemma-4-31b` | gemma | ladder | 6,000 (test) | — |
+
+54,000 calls in total. The zero-shot prompt is short and its output is a class distribution, so
+the 6,000 extra calls that keep A independent of B are the cheapest part of the budget.
+
+`qwen3.8-27b-fp8` is primary for throughput per unit capability (cap 48 against `gemma-4-31b`'s
+12); at ten seconds a call under its cap the primary fan-out is a couple of hours of wall clock,
+the largest model would have been most of a day. If the ladder shows `gemma-4-31b` clearly ahead
+on arm B, scoring its labelled pool is a documented extension (+18,000 calls), not
+a silent change. All wall-clock numbers here are estimates until the first chunk is benchmarked.
+
+If the allocation bites, the documented contingency is a six-dataset core spanning the modalities
+— pathmnist, dermamnist, octmnist, pneumoniamnist, bloodmnist, organamnist — at 27,000 calls, with
+the sign-test thresholds restated for six.
+
+## 5. Principles
+
+Each names the failure it prevents. `TALK.md` argues them; here they are the contract.
+
+1. **The workflow is the documentation.** Numbered stages, each opening with prose; a dry run
+   prints the plan.
+2. **Every number has a rule.** No ad hoc scripts, no notebook cells, no hand-copied values. The
+   workflow ends in a technical report built from generated tables and macros; the paper is
+   written from it, and interpretation stays with the authors.
+3. **Inputs are pinned, not vendored.** Large data is a fetch rule from a pinned release with
+   recorded checksums.
+4. **Dependencies are explicit.** Modules are inputs via `code()`, config values are `params`,
+   environments are per rule; an edit reruns exactly what could have changed.
+5. **Every result carries a manifest.** Parameters, seeds, commit and dirty flag, versions, host,
+   wall time.
+6. **Randomness is owned per cell.** No module-level RNG; inserting a cell never moves another
+   cell's numbers.
+7. **Computation and reporting are separate.** Report rules read only results.
+8. **Resources are measured.** `benchmark:` and `log:` on every submitted rule; requests set from
+   the measurements with the reasoning in a comment.
+9. **The LLM boundary is explicit.** Every response is archived raw with the served model name and
+   prompt hash; everything downstream is a deterministic function of the archive; re-querying is a
+   deliberate act. The permutation controls of H2 are re-analyses of the archive and cost nothing.
+10. **Reconcile, never silently replace.** Arm E is compared against the published table and the
+    differences are written down.
+11. **Structure and history live apart.** README for structure, CHANGELOG for dated findings.
+
+## 6. Stages
 
 ```
-0  SMOKE      bank schema and anchors, prompt rendering, metric conventions, client retry  seconds
-1  FETCH      MedMNIST from the pinned release, checksummed; data/raw on scratch           1 job
-2  CACHE      per dataset x size: uint8 arrays, labels, the seeded samples                 48 CPU
-3  TRAIN      per dataset x size x seed, and the learning-curve grid at one size           GPU
-4  SCORE      per dataset x VLM x chunk of ~100 images: concept scores, zero-shot          CPU,
-              distribution, description; raw responses archived                            throttled
-5  EMBED      per dataset: embeddings of the descriptions                                  CPU
-6  CLASSIFY   per dataset x arm x n x seed: arms B, C, D; arm F training                   CPU / GPU
-7  EVALUATE   every arm on the test sample; medmnist evaluator; paired bootstrap           CPU
-8  REPORT     reconciliation against the published table; tables, macros, figures; the
-              technical report                                                            local
+0  SMOKE      bank schema, anchors and label maps, both prompt templates, arm-B
+              estimator on a fixture, metric conventions, client retry                seconds
+1  FETCH      MedMNIST from the pinned release, checksummed; data/raw on scratch       1 job
+2  CACHE      per dataset x {224, 28}: uint8 arrays and labels for the full official
+              splits; the seeded test sample and labelled pool at 224                 24 CPU
+3  SCORE      per dataset x model x split x prompt x chunk of 100: concept levels, or the
+              zero-shot distribution; raw response archived                           540, throttled
+4  FEATURES   per dataset: ImageNet ResNet-18 penultimate features for the sampled
+              images at 224                                                           12 short GPU
+5  TRAIN      per dataset x {224, 28} x seed: ResNet-18 from scratch on the official
+              split, best epoch by validation AUC                                     72 GPU
+6  CLASSIFY   per dataset, grouped: arms A, B, C, P at every n and seed, plus the
+              permutation controls; predictions on the shared test sample             12 CPU
+7  EVALUATE   every arm through the medmnist evaluator; paired bootstrap per dataset;
+              n_B; the sign tests                                                     12 CPU
+8  REPORT     reconciliation against the published table; three figures, tables,
+              number macros, the technical report                                     local
 ```
 
-Targets: `all` (the technical report), `smoke`, `cache`, `train`, `score`, `classify`, `evaluate`,
-`report`. Opt-in diagnostics outside `all`: `reasoning_sweep` (does a reasoning level help a
-model look at a picture, at what cost per image), `prompt_ablation` (how much of arm B is the
-bank and how much the model, including anchored scale levels against bare ones),
-`vlm_utilisation` (calls per minute per model against the caps).
+Targets: `all` (the report), `smoke`, `cache`, `score`, `features`, `train`, `classify`,
+`evaluate`, `report`. Nine stages, one rule family each; A and B enter through CLASSIFY as
+parameter-free predictors so EVALUATE is uniform over arms.
 
-## 8. The scoring stage
+Figures, one per hypothesis plus the reconciliation table: the learning curve with arm B's line
+and arm E's ceiling (H1); the two within-family size contrasts (H3); n_B per dataset ordered by
+modality — where the textbook pays (H1 detail). H2 is a table of paired differences and the
+permutation drops.
+
+## 7. The scoring stage
 
 The one stage type not seen in earlier projects, and the one that tests principle 9.
 
-- **Unit**: one dataset, one VLM, one chunk. Output `results/score/<dataset>__<model>__<split>__chunk<k>.json`:
-  per image the concept scores as integers on the bank's scales, the zero-shot distribution, the
-  description, and the raw response. The manifest adds the served model name from the response,
-  the prompt-template hash, the concept-bank file hash, temperature, reasoning level, timestamp.
-- **Prompt**: rendered from the bank by a pure function, tested in `smoke`; the image at 224
-  pixels; structured JSON requested and validated against the scales; one retry on a malformed
-  answer, then recorded as missing, never guessed. The renderer emits each concept's question, its
-  ordered levels, and — when `vlm.prompt.anchors` is true, the default — the anchor text for every
-  level, which is what makes an ordinal answer mean the same thing to the model as it did to the
-  source. The model still answers with the bare level token, so the parser and the archive format
-  do not change. Rendering bare from an anchored file leaves the concept-bank file hash identical
-  and moves only the prompt-template hash, so the manifest already distinguishes the two
-  renderings without a second copy of the bank.
-- **Throttling**: `resources: llm_<model>=1` on the rule, caps below each model's published
-  concurrency in the profile, so the workflow is never the noisy neighbour while GPU training runs
-  unconstrained beside it.
+- **Unit**: one dataset, one model, one split, one prompt, one chunk. Output
+  `results/score/<dataset>__<model>__<split>__<prompt>__chunk<k>.json`: per image the parsed
+  answer — concept levels on the bank's scales, or the zero-shot class distribution — and the raw
+  response. The manifest adds the served model name from the response, the prompt-template hash,
+  the concept-bank file hash, temperature, reasoning level, timestamp.
+- **Two prompts, both pure functions of the bank and the label map, both tested in `smoke`**: the
+  concept prompt asks for a level per concept and never names a class; the zero-shot prompt asks
+  for a distribution over the class names and never mentions a concept. Keeping them in separate
+  calls is what makes H2 a comparison rather than a tautology.
+- **The concept prompt renders each level's anchor.** Every concept in the bank carries an
+  `anchors` block giving each scale level a described visual referent with its own source keys, and
+  the renderer emits them alongside the question when `vlm.prompt.anchors` is set, which is the
+  default. Without them the model is sent a bare token like `mild` and invents the threshold it
+  means, which is not the threshold the source intended — and since the levels are mapped to
+  equally spaced values in §3, an invented threshold is an invented number. The model still answers
+  with the bare token, so the parser, the archive format and the estimators are unchanged.
+- **Per call**: the image at 224 pixels; structured JSON requested and validated against the
+  scales; one retry on a malformed answer, then recorded as missing, never guessed. A
+  dataset-model cell whose images are more than 5% incomplete is flagged in the report and
+  excluded from the headline.
+- **Throttling**: `resources: llm_<model>=1` with caps below each model's published concurrency in
+  the profile, so the workflow is never the noisy neighbour while GPU jobs run beside it.
 - **Client**: the `openai` package against `https://llm.rcd.clemson.edu/v1`; backoff on 429 and
   5xx; raw response archived before parsing. The key is read from an owner-only file whose path is
   in config; it is never in config, the repository, a command line or a log.
 - **Environment**: its own file, so the client never invalidates the numpy or torch tiers.
-- **Reasoning level**: a per-model config knob, `none` by default; swept only in the diagnostic.
+- **No free-text description is requested.** The arm that used it was cut (§10), and prose we do
+  not analyse would cost tokens and latency on all 54,000 calls.
 
-## 9. Config, environments, resources
+## 8. Config, environments, resources
 
 ```yaml
 datasets: [pathmnist, chestmnist, dermamnist, octmnist, pneumoniamnist, retinamnist,
            breastmnist, bloodmnist, tissuemnist, organamnist, organcmnist, organsmnist]
-sizes: [28, 64, 128, 224]
-seeds: [0, 1, 2]
-learning_curve: {n: [50, 100, 200, 500, 1000, 2000], size: 224, seeds: [0, 1, 2]}
-sample: {test_n: 500, train_n: 2000, seed: 0, cache_cap_224: 60000}
+size: 224                       # every arm sees this
+recon_sizes: [28, 224]          # TRAIN only; the sizes with published ResNet-18 numbers
+sample: {test_n: 500, pool_n: 2000, seed: 0}
+curve:  {n: [50, 100, 200, 500, 1000, 2000], seeds: [0, 1, 2]}
 vlm:
-  models:
-    qwen3.5-9b:      {concurrency: 128, cap: 96}
-    gemma-4-12b:     {concurrency: 32,  cap: 24}
-    qwen3.8-27b-fp8: {concurrency: 64,  cap: 48}
-    gemma-4-31b:     {concurrency: 16,  cap: 12}
+  primary: qwen3.8-27b-fp8
+  models:                       # concurrency published, cap ours, splits = what it scores
+    qwen3.5-9b:      {family: qwen,  params_b: 9,  concurrency: 128, cap: 96, splits: [test]}
+    gemma-4-12b:     {family: gemma, params_b: 12, concurrency: 32,  cap: 24, splits: [test]}
+    qwen3.8-27b-fp8: {family: qwen,  params_b: 27, concurrency: 64,  cap: 48, splits: [test, pool]}
+    gemma-4-31b:     {family: gemma, params_b: 31, concurrency: 16,  cap: 12, splits: [test]}
   chunk: 100
+  prompts: [concept, zeroshot]  # separate calls; zeroshot only for vlm.primary
+  prompt: {anchors: true}       # render each scale level's anchor text; false = bare tokens
   temperature: 0.0
-  reasoning: none
-  prompt: {anchors: true}   # render each scale level with its anchor text; false = bare tokens
+  reasoning: none               # a knob, not a grid; swept only in the extension
+  retries: 1
   base_url: https://llm.rcd.clemson.edu/v1
   key_file: ~/.config/rcd_llm/key
-  embedding_model: qwen3-embedding-4b
-train: {arch: resnet18, epochs: 100, gpu: {enabled: true, type: a100, cpus: 8, mem_mb: 32000, runtime: 240}}
+features: {arch: resnet18, weights: imagenet1k_v1, layer: penultimate}
+classify: {l2_grid: [0.01, 0.1, 1, 10, 100], cv_folds: 5, missing_max_frac: 0.05, bootstrap: 10000}
+train: {arch: resnet18, pretrained: false, epochs: 100, select_on: val_auc, seeds: [0, 1, 2],
+        gpu: {enabled: true, type: a100, cpus: 8, mem_mb: 32000, runtime: 240}}
 published: config/published.yaml
-resources: {...}      # first guesses, then set from benchmarks/ with the reasoning in comments
+resources: {...}                # first guesses, then set from benchmarks/ with the reasoning
 ```
 
 Environments: `envs/priors.yml` (numpy, scipy, pandas, scikit-learn, matplotlib, pyyaml, pytest,
 medmnist), `envs/priors_torch.yml` (plus the CUDA torch wheel), `envs/priors_llm.yml` (openai,
 pyyaml, numpy, pillow). Loose floors; exact versions in every manifest.
 
-Resources to measure before trusting: 28-pixel training leaves an A100 nearly idle, so pack
-cells per GPU job once a utilisation sample says so and record the number; scoring jobs are
-network-bound and need one core; the cache for tissuemnist and the 224 files scales with the
-array size; profile `cores` and `jobs` sized so the widest fan-out runs as one wave against the
-per-model caps.
+Resources to measure before trusting: 28-pixel training leaves an A100 nearly idle, so pack cells
+per GPU job once a utilisation sample says so, and record the number where the packing is
+configured; scoring jobs are network-bound and need one core; the 224 cache scales with the array
+size, and tissuemnist and pathmnist are the large ones. Cache the full training split at both
+sizes — a cap on the cached array would change what arm E trains on and quietly break the
+reconciliation.
 
-## 10. Order of work
+## 9. Order of work
 
-1. Skeleton from the skill's templates; the concept-bank schema test with the twelve files.
-2. Fetch and cache at 28 and 224; verify counts and checksums.
-3. Arm E on one dataset at 28; benchmark; set resources; the full resolution sweep; reconcile 28
-   and 224 against the published table before anything else is trusted.
-4. The client and one scoring chunk of ten images on one dataset and model: confirm a compute node
-   reaches the service, the archive and manifest are right, a malformed response is handled. Then
-   the full fan-out under the caps.
-5. Arms A to D; evaluate; the size and modality figures.
-6. The learning curve, E then F; the crossing figure.
-7. Tables, figures, the technical report; a CHANGELOG entry per milestone; the README stage
-   table with job counts.
-8. Demo rehearsal.
+1. Skeleton from the skill's templates; the bank schema test over the twelve files.
+2. Fetch and cache at 224 and 28; verify counts and checksums.
+3. Arm E on one dataset at 28; benchmark; set resources; then the full 72 jobs, and **reconcile
+   against the published table before anything else is trusted**.
+4. One scoring chunk of ten images, one dataset, the primary model: a compute node reaches the
+   service, the archive and manifest are right, a malformed response is handled. Then the primary
+   fan-out under its cap, then the ladder.
+5. FEATURES and CLASSIFY; arms A, B, C, P; EVALUATE with the paired bootstrap; H2 and its
+   permutation controls, which need no new calls.
+6. The learning curve and n_B; the three figures.
+7. Tables, macros, the technical report; a CHANGELOG entry per milestone; the README stage table
+   with job counts.
+8. Demo rehearsal (`TALK.md`).
 
 Commit after each coherent change with a descriptive imperative sentence. Dry-run and lint before
 every submission; ask before any GPU jobs or more than 50 CPU jobs.
 
-## 11. The demo
+## 10. Decisions, and what was cut
 
-Everything runs before the talk; the response archive is the fixed input. Live, and reversible:
+Resolved, so they stop being open questions:
 
-- Add a fifth VLM to the config. The dry run lists exactly the new scoring chunks, the classify
-  jobs that read them and the tables downstream, and nothing else.
-- Ask the agent to make the reasoning level a wildcard of the score rule; watch it change the
-  config, the rule, the entry point and the resource cap together, then dry-run.
-- Show a scoring log where the cap held, and the calls-per-minute summary against the published
-  concurrency.
+- **One resolution, 224, for every arm**; 28 survives only inside arm E for the reconciliation.
+- **The curve's pixel baseline is a pretrained linear probe**, not a from-scratch CNN, and it
+  shares the classifier and the subsets with arm C. This removes the GPU learning-curve grid
+  entirely: the curve is CPU logistic regressions over features computed once.
+- **The learning curve compares C against P**, with arm B as the horizontal line that defines the
+  headline number. The earlier plan compared E against F, which measures whether a prior helps a
+  supervised model — a different question from whether it substitutes for labels.
+- **chestmnist stays in A, C, P and E and leaves arm B**, because fingerprint matching is not
+  defined for 14 co-occurring findings. The sign tests are stated over 11 or 12 datasets
+  accordingly.
+- **The ladder scores the test split only**, which is what pays for keeping all twelve datasets.
+- **H3 is read within family**, because size and training data are confounded across families.
+- **The concept prompt renders each scale level's anchor**, so an ordinal answer means what the
+  cited source meant rather than what the model guessed. The levels are mapped to equally spaced
+  values by the arm-B and arm-C estimators, so an unanchored `mild` is an unanchored number.
 
-Record each beforehand as a fallback for a slow queue or a sleeping model.
+Cut from the plan, each with the claim it would have supported:
 
-## 12. Open decisions
+- *The free-text description field on every call*: it fed arm D only, and asking for prose we do
+  not analyse would have cost tokens and latency on every one of 54,000 calls.
+- *Arm D, description embedding* (and the whole EMBED stage, and the embedding model): a control
+  for structured versus free-text elicitation. The permutation controls test the bank's structure
+  for free, so D is an extension, not a hypothesis.
+- *Arm F, prior fused into a supervised network*: tests complementarity, not substitution. Its
+  design was itself an open question (late fusion, soft label, or both).
+- *The 64- and 128-pixel sweep and the GPU-minutes figure*: no hypothesis, half the training grid.
+- *`reasoning_sweep`*: a cost curve for the service, not a result about priors.
+- *`prompt_ablation` and `vlm_utilisation`*: the first is subsumed by the permutation controls
+  except for a generic-question prompt (an extension at ~1,500 calls); the second is two lines in
+  the report from the scoring logs.
 
-- Learning-curve resolution: 224 matches what the VLM saw (default); 64 buys more points and seeds.
-- How the prior enters arm F: late fusion, soft label, or both (default both).
-- ChestMNIST in all arms, or A and E only (default all).
-- Whether to re-score with bare scale levels to measure what the anchors buy. Anchors change the
-  concept scores themselves, so this is a second archive for the arms that read them, not a
-  reporting choice — principle 9 says that is a deliberate act. Default: run it as a
-  `prompt_ablation` subset on two or three datasets before considering a full re-score. The bare
-  bank is committed history, so the contrast is available without re-authoring anything.
-- Total call volume, roughly 120,000 at the default samples, against the allocation.
+Extensions, outside `all`, each one rule and a config block: `fusion` (F), `description_embedding`
+(D), `generic_prompt` (a non-diagnostic question set on three datasets), `primary_upgrade` (the
+labelled pool on `gemma-4-31b` if the ladder demands it), `bare_levels` (the concept prompt with
+`vlm.prompt.anchors: false`, to measure what the anchors buy). `bare_levels` is a re-score, not a
+re-report: anchors change the concept scores themselves, so it writes a second archive that arms
+B and C read, which principle 9 makes a deliberate act. Two or three datasets on the primary model
+is enough to size the effect, and the pre-anchor bank is committed history, so the contrast costs
+no re-authoring.
+
+Still open, and needing a person:
+
+- Total volume of 54,000 image calls against the allocation, confirmed with the service owners.
 - Acceptable-use confirmation for de-identified public medical images; one sentence on a slide.
 
-## 13. Layout
+## 11. Layout
 
 ```
 Snakefile                 one file, nine labelled stages
@@ -316,11 +346,12 @@ config/published.yaml     the MedMNIST v2 benchmark table
 profiles/palmetto/        SLURM executor; job, core and per-model llm_* caps
 profiles/local/           dry runs, smoke, touch
 envs/                     priors.yml  priors_torch.yml  priors_llm.yml
-priors/                   data cache models train prompts llm score classify evaluate report stages manifest
+priors/                   data cache features train prompts llm score classify evaluate report
+                          stages manifest
 data/concepts/            the twelve concept-bank files, committed
 data/raw -> scratch       MedMNIST files; data/cache the arrays; gitignored
 results/                  one JSON per unit of work; results/score/ is the response archive
 benchmarks/  logs/        per job
 report/                   report.tex, references.bib; tables/ and figs/ generated
-README.md  CHANGELOG.md  CLAUDE.md  CONCEPT_BANK.md  WORKFLOW.md
+README.md  CHANGELOG.md  CLAUDE.md  CONCEPT_BANK.md  WORKFLOW.md  TALK.md
 ```
