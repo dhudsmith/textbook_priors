@@ -228,6 +228,27 @@ network" exactly halfway between "no network" and "atypical network", which is n
 literature means. `asymmetry` and `border_irregularity` were merged to stay within the concept
 cap — they were byte-identical across all seven classes, so the merge cost no separation.
 
+### What the prompt-rendering pass changed
+
+One further change, on 2026-09-11, when the workflow's `render_prompts` rule made the prompt a
+file that can be inspected. The concept prompt must never name a class, because H2 compares it
+against the zero-shot prompt and a class name in the wrong one makes that comparison circular.
+Checked as a property of the rendered strings, it held on five of the six talk-version datasets
+and failed on `octmnist`, whose `retinal_thickness` scale had a level named `normal` while
+`normal` is also one of its four classes. Two levels were renamed in that file:
+`retinal_thickness: normal` became `not_increased`, and `foveal_contour: normal_depression`
+became `depressed` so that the word leaves the file's scales altogether. Scale order, questions,
+anchor text and sources are unchanged, and the four fingerprint cells naming those levels were
+renamed with them, so no class's expected level moved; the estimators index a scale by position,
+so no number moves either.
+
+Three apparent collisions elsewhere were left alone, because they are shared words and not class
+names: `pathmnist`'s concept `necrotic_debris` against its class `debris` (the concept is the
+criterion for that class, and the prompt never offers it as a category), `bloodmnist`'s
+`cytoplasm_basophilia` against `basophil`, and `organamnist`'s left/right levels against
+`lung-left` and `lung-right`. The check that separates these from a real leak matches a class
+name as a whole word, treating an identifier such as `necrotic_debris` as one word.
+
 ### Anchors that cannot be applied at this resolution
 
 Written anyway, because the scales are built on them, but recorded here because a score against

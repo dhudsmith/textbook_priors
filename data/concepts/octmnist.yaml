@@ -3,6 +3,15 @@
 # Built 2026-09-09 by literature review with a web-connected assistant.
 # Expert review is SIMULATED; no clinician has signed off on this file.
 
+# CORRECTION 2026-09-11. Two scale levels were renamed so that no class name of this dataset
+# reaches the rendered concept prompt, which is what keeps the H2 comparison non-circular
+# (WORKFLOW.md section 7: the concept prompt never names a class). `foveal_contour`'s
+# `normal_depression` is now `depressed`, and `retinal_thickness`'s `normal` - which collided with
+# the class `normal` as a whole word - is now `not_increased`. Only the level tokens moved: the
+# scale ORDER, the questions, the anchor text and the sources are untouched, and the four
+# fingerprint cells that named those levels were renamed with them, so no class's expected level
+# changed. The equal-spacing estimator indexes a scale by position, so no number moves either.
+
 dataset: octmnist
 modality: 1-channel greyscale retinal optical coherence tomography (OCT) B-scans
 task: multi-class
@@ -114,10 +123,10 @@ concepts:
         sources: [keane2012, kermany2018]
   - id: foveal_contour
     question: "Does the retinal surface at the centre form a smooth shallow depression?"
-    scale: [normal_depression, flattened, elevated]
+    scale: [depressed, flattened, elevated]
     sources: [staurenghi2014, otani1999, yang2023]
     anchors:
-      normal_depression:
+      depressed:
         text: >-
           the inner surface dips into a smooth shallow concave pit whose floor lies below the
           inner surface on either side
@@ -134,12 +143,12 @@ concepts:
         sources: [otani1999, keane2012]
   - id: retinal_thickness
     question: "How thick is the retina between its inner surface and the bright outer band?"
-    scale: [normal, mildly_increased, markedly_increased]
+    scale: [not_increased, mildly_increased, markedly_increased]
     sources: [staurenghi2014, otani1999, keane2012]
     anchors:
       # Ruler is the same scan's own edges, since a healthy macula is thinnest at its centre;
       # the one-and-a-half-fold cut is reasoned, as neither source states a thickness boundary.
-      normal:
+      not_increased:
         text: >-
           the retina is at its thinnest in the centre of the frame and grows thicker towards
           both edges
@@ -321,8 +330,8 @@ classes:
   "drusen":
     fingerprint:
       retinal_layer_integrity: intact
-      foveal_contour: normal_depression
-      retinal_thickness: normal
+      foveal_contour: depressed
+      retinal_thickness: not_increased
       intraretinal_cystoid_spaces: absent
       subretinal_fluid: absent
       rpe_line_contour: small_domed_undulations
@@ -333,8 +342,8 @@ classes:
   "normal":
     fingerprint:
       retinal_layer_integrity: intact
-      foveal_contour: normal_depression
-      retinal_thickness: normal
+      foveal_contour: depressed
+      retinal_thickness: not_increased
       intraretinal_cystoid_spaces: absent
       subretinal_fluid: absent
       rpe_line_contour: smooth

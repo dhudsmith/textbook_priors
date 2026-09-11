@@ -37,3 +37,11 @@ Two conventions settled while doing it, both recorded because they will be asked
   and is read by rules as an *input file* rather than as a second configfile, so that a change to
   a label map reruns the prompts and everything below them. The `smoke` target will hold it to the
   installed package.
+
+## 2026-09-11 16:05 — Fix the octmnist collision rather than exempt it
+
+Asked to fix the octmnist issue reported at the end of the previous turn, and to see a rendered
+prompt file in the session rather than only on disk. The choice was between renaming two scale
+levels in a reviewed input and recording an exemption in the smoke test; the user chose the first,
+so the bank changed and `data/concepts/README.md`, the file's own header and `CHANGELOG.md` all
+record the correction. The rule itself did not change.

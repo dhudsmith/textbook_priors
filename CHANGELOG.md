@@ -216,3 +216,24 @@ describes a thickness and not a diagnosis. Unresolved as of this entry.
 **Class order comes from the release, not the bank.** bloodmnist's bank lists its classes in
 reading order, which is not the label-index order the AUC columns and the zero-shot distribution
 use. Every artifact that is indexed by class takes its order from `config/medmnist.yaml`.
+
+## 2026-09-11 — octmnist's colliding level names renamed; the concept prompt now names no class
+
+Resolved the open question of the previous entry, in favour of changing the bank. `octmnist`'s
+`retinal_thickness: normal` is now `not_increased`, and `foveal_contour: normal_depression` is now
+`depressed`, so the word `normal` no longer appears in any of that file's scales and the property
+needs no exemption anywhere. Scale order, questions, anchor text and sources are unchanged; the
+four fingerprint cells that named those levels were renamed with them, so no class's expected
+level changed, and the estimators index a scale by position, so no number would move even once
+there are numbers. The correction is recorded in the file's own header and in
+`data/concepts/README.md`.
+
+**The concept prompt now names no class on any of the six datasets, and the zero-shot prompt
+mentions no concept on any of them.** The check is a whole-word match of each class name against
+the rendered strings, which treats an identifier such as `necrotic_debris` as one word; on that
+reading `pathmnist`'s `necrotic_debris` (class `debris`), `bloodmnist`'s `cytoplasm_basophilia`
+(class `basophil`) and `organamnist`'s left/right levels (classes `lung-left`, `lung-right`) are
+shared words rather than leaks, and were left alone.
+
+Snakemake rebuilt exactly one prompt file from the bank edit, which is the input trigger doing its
+job: the other five were left untouched because their inputs did not change.
