@@ -1,0 +1,37 @@
+# Configuration for the textbook-priors workflow.
+#
+# Every grid, seed and cap lives here, so a number in results/ traces to a line in this file plus
+# the seed in its manifest. The Snakefile only expands these lists. WORKFLOW.md section 8 is the
+# plan's version of this file; sections arrive here as the stages that read them are implemented,
+# so that no key in this file is unread by a rule.
+#
+# Resources sit at the bottom. They are not a rerun trigger - the values a rule's numbers depend
+# on reach it as `params` - so editing a memory request reruns nothing.
+
+outdir: results
+figdir: report/figs
+tabdir: report/tables
+
+# The fixed inputs of WORKFLOW.md section 4, both completed before the workflow and never
+# refetched: the concept bank (committed) and the pinned release description (read as an input
+# file by the rules that need a label map, not as a configfile).
+conceptdir: data/concepts
+release: config/medmnist.yaml
+
+# One dataset per modality: histology, dermoscopy, OCT, chest X-ray, blood smear, CT.
+datasets: [pathmnist, dermamnist, octmnist, pneumoniamnist, bloodmnist, organamnist]
+size: 224                          # what the VLM sees and what the ImageNet encoder wants
+
+vlm:
+  # Both prompts are pure functions of the concept bank and the label map, rendered by their own
+  # rule (stage 2) rather than inline in the scoring loop.
+  prompt:
+    anchors: true                  # render each level's cited anchor text; false is the
+                                   # `bare_levels` extension of WORKFLOW.md section 10
+
+# Resources per rule. cpus is also `threads`; mem_mb per job; runtime in minutes.
+#
+# First guesses until benchmarks/ exists, then set from the measured peaks with the reasoning in a
+# comment. render_prompts is a localrule (seconds of yaml and string formatting, no LLM calls), so
+# it asks for nothing.
+resources: {}

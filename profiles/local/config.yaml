@@ -1,0 +1,15 @@
+# Local profile: run in the current allocation instead of submitting jobs.
+#
+# Deliberately NOT named "default": Snakemake 8 auto-loads a profile called `default` as the
+# workflow profile, which would silently override the cluster profile. For dry runs, the smoke
+# target, --touch, and debugging one cell.
+#
+#   snakemake --profile profiles/local -j 2 <target>
+
+jobs: 2
+latency-wait: 15
+keep-going: False
+rerun-incomplete: True
+printshellcmds: True
+use-conda: True
+conda-frontend: conda

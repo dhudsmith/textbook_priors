@@ -1,0 +1,129 @@
+# The pinned MedMNIST v2 release, as the workflow reads it.
+#
+# Not a set of knobs: this file DESCRIBES the fixed input of WORKFLOW.md section 4 - the six
+# 224-pixel release files that were downloaded, checksummed and set aside before the workflow
+# existed. Rules take it as an INPUT file, not as a configfile, so a change to a label map
+# reruns the prompts and everything below them.
+#
+# Every value below was read from the `medmnist` package (version 3.0.2, PyPI wheel
+# medmnist-3.0.2-py3-none-any.whl) rather than retyped: `label`, `task` and `n_samples` come
+# verbatim from `medmnist.INFO[<dataset>]`, and `md5_224` from its `MD5_224`. `size_bytes` is
+# the size of the file on disk under storage_root/raw. The `smoke` target holds this file to
+# the installed package and to the concept bank's class names, so a package upgrade that moved
+# a label map fails loudly instead of quietly rewriting a prompt.
+#
+# `label` keys are the integer class indices of the release; their ORDER is the order every
+# arm's scores, every zero-shot distribution and every AUC column use.
+
+medmnist_version: "3.0.2"
+zenodo_record: 10519652          # the pinned release record; provenance, never re-fetched
+size: 224                        # the only resolution the talk version uses
+
+datasets:
+  pathmnist:
+    file: pathmnist_224.npz
+    md5_224: 2c51a510bcdc9cf8ddb2af93af1eadec
+    size_bytes: 12629854322
+    medmnist_task: "multi-class"
+    n_channels: 3
+    n_samples:
+      train: 89996
+      val: 10004
+      test: 7180
+    label:
+      0: "adipose"
+      1: "background"
+      2: "debris"
+      3: "lymphocytes"
+      4: "mucus"
+      5: "smooth muscle"
+      6: "normal colon mucosa"
+      7: "cancer-associated stroma"
+      8: "colorectal adenocarcinoma epithelium"
+  dermamnist:
+    file: dermamnist_224.npz
+    md5_224: 8974907d8e169bef5f5b96bc506ae45d
+    size_bytes: 1091112502
+    medmnist_task: "multi-class"
+    n_channels: 3
+    n_samples:
+      train: 7007
+      val: 1003
+      test: 2005
+    label:
+      0: "actinic keratoses and intraepithelial carcinoma"
+      1: "basal cell carcinoma"
+      2: "benign keratosis-like lesions"
+      3: "dermatofibroma"
+      4: "melanoma"
+      5: "melanocytic nevi"
+      6: "vascular lesions"
+  octmnist:
+    file: octmnist_224.npz
+    md5_224: abc493b6d529d5de7569faaef2773ba3
+    size_bytes: 3959197818
+    medmnist_task: "multi-class"
+    n_channels: 1
+    n_samples:
+      train: 97477
+      val: 10832
+      test: 1000
+    label:
+      0: "choroidal neovascularization"
+      1: "diabetic macular edema"
+      2: "drusen"
+      3: "normal"
+  pneumoniamnist:
+    file: pneumoniamnist_224.npz
+    md5_224: d6a3c71de1b945ea11211b03746c1fe1
+    size_bytes: 214384716
+    medmnist_task: "binary-class"
+    n_channels: 1
+    n_samples:
+      train: 4708
+      val: 524
+      test: 624
+    label:
+      0: "normal"
+      1: "pneumonia"
+  bloodmnist:
+    file: bloodmnist_224.npz
+    md5_224: b718ff6835fcbdb22ba9eacccd7b2601
+    size_bytes: 1540731655
+    medmnist_task: "multi-class"
+    n_channels: 3
+    n_samples:
+      train: 11959
+      val: 1712
+      test: 3421
+    label:
+      0: "basophil"
+      1: "eosinophil"
+      2: "erythroblast"
+      3: "immature granulocytes(myelocytes, metamyelocytes and promyelocytes)"
+      4: "lymphocyte"
+      5: "monocyte"
+      6: "neutrophil"
+      7: "platelet"
+  organamnist:
+    file: organamnist_224.npz
+    md5_224: 50747347e05c87dd3aaf92c49f9f3170
+    size_bytes: 1803859544
+    medmnist_task: "multi-class"
+    n_channels: 1
+    n_samples:
+      train: 34561
+      val: 6491
+      test: 17778
+    label:
+      0: "bladder"
+      1: "femur-left"
+      2: "femur-right"
+      3: "heart"
+      4: "kidney-left"
+      5: "kidney-right"
+      6: "liver"
+      7: "lung-left"
+      8: "lung-right"
+      9: "pancreas"
+      10: "spleen"

@@ -2,6 +2,7 @@
 data/raw/
 data/cache/
 results/
+.snakemake/
 benchmarks/
 logs/
 report/tables/

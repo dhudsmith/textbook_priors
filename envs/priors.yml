@@ -1,0 +1,25 @@
+# The light environment: everything except the ImageNet feature extractor. Kept small on purpose,
+# because any edit to this file marks every result it produced as stale (software-env is a rerun
+# trigger). Torch enters in envs/priors_torch.yml and nowhere else.
+#
+# `medmnist` is NOT listed here: it is installed by envs/priors.post-deploy.sh, which runs once
+# after this environment is created, because it has to go in without its dependencies and a `pip:`
+# section cannot say so (conda passes those entries to pip as requirements, not as options). Its
+# evaluator needs numpy, pandas, scikit-learn and pillow, which are named below as conda packages.
+#
+# Loose floors; each result's manifest records the versions actually used.
+name: priors
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - numpy>=2
+  - scipy>=1.14
+  - pandas>=2
+  - scikit-learn>=1.5
+  - matplotlib>=3.8
+  - pillow>=10
+  - pyyaml
+  - pytest
+  - openai>=1.40
+  - pip

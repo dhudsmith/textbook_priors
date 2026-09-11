@@ -190,3 +190,29 @@ narrative to TALK.md so that what remains is the experiment.
 
 **Still needing a person:** confirmation of the 54,000-call volume with the service owners, and
 the acceptable-use statement for de-identified public medical images.
+
+## 2026-09-11 — The prompts are an artifact; one class name survives in a concept prompt
+
+`render_prompts` is built and run for all six datasets (stage 2, 6 local jobs). Both prompt
+strings, their hashes, the concept scales a response is validated against, and the class names in
+label-index order now live in one file per dataset, `results/prompts/<dataset>.json`, which every
+score job will read instead of formatting a prompt where it sends it.
+
+**H2's non-circularity is now a checkable property of the strings, and it holds on five of six
+datasets.** The concept prompt contains no class name on pathmnist, dermamnist, pneumoniamnist,
+bloodmnist and organamnist, and the zero-shot prompt mentions no concept id or question on any
+dataset. The exception is octmnist, where the `retinal_thickness` scale has a level named `normal`
+and `normal` is also one of the four classes; the word reaches the concept prompt twice, as a level
+name and in the JSON template. Three further apparent hits are substring coincidences and not
+occurrences of a class name: pathmnist's concept `necrotic_debris` against the class `debris`,
+bloodmnist's `cytoplasm_basophilia` against `basophil`, and octmnist's level `normal_depression`.
+A whole-word check separates the two kinds.
+
+Two ways to close the octmnist case, both deliberate: rename that scale level in the bank (and the
+fingerprint cells that reference it), which makes "the concept prompt names no class" exact and
+needs no exemption in the smoke test; or record the exemption, on the argument that `normal` there
+describes a thickness and not a diagnosis. Unresolved as of this entry.
+
+**Class order comes from the release, not the bank.** bloodmnist's bank lists its classes in
+reading order, which is not the label-index order the AUC columns and the zero-shot distribution
+use. Every artifact that is indexed by class takes its order from `config/medmnist.yaml`.

@@ -15,3 +15,25 @@ records of how they directed the agent through prompts, as a helpful record for 
 Added this file, a principle in `WORKFLOW.md` §5, a layout entry in §11, and a pointer in
 `CLAUDE.md` telling the agent to append here — separately from `CHANGELOG.md` — whenever a prompt
 materially directs the work.
+
+## 2026-09-11 15:26 — Build the workflow one rule at a time, starting with the prompts
+
+The user asked to start implementing `WORKFLOW.md`, but explicitly not all at once: first list the
+rules the workflow will have, then implement the first one and test it, then stop for review
+before proceeding. They named the first rule themselves — render the prompts.
+
+That changed the order of work in `WORKFLOW.md` §9, which starts with the skeleton and the bank
+schema test (`smoke`). `render_prompts` needs no samples, no service and no labels, so it can go
+first and the skeleton it needs is small: `config/config.yaml` (paths, the dataset list, the
+anchors switch), `config/medmnist.yaml` (the pinned label maps), `envs/priors.yml`, both profiles,
+and `priors/{data,prompts,stages,manifest}.py`. `smoke` is next, and every rule then gains its
+marker as an input.
+
+Two conventions settled while doing it, both recorded because they will be asked about again:
+
+- `config/config.yaml` grows section by section as the rules that read it land, rather than
+  arriving whole from `WORKFLOW.md` §8, so that no key in the file is unread by a rule.
+- `config/medmnist.yaml` is generated once from the `medmnist` 3.0.2 wheel rather than retyped,
+  and is read by rules as an *input file* rather than as a second configfile, so that a change to
+  a label map reruns the prompts and everything below them. The `smoke` target will hold it to the
+  installed package.
