@@ -45,3 +45,16 @@ prompt file in the session rather than only on disk. The choice was between rena
 levels in a reviewed input and recording an exemption in the smoke test; the user chose the first,
 so the bank changed and `data/concepts/README.md`, the file's own header and `CHANGELOG.md` all
 record the correction. The rule itself did not change.
+
+## 2026-09-11 16:20 — Smoke next, and show the artifacts in the chat
+
+The user asked for stage 0 next, and for representative artifacts and rule code to be linked in
+the session afterwards so that readiness for the next stage can be judged without hunting through
+the repository. The tests that had been run by hand at the end of the previous turn became
+`tests/`, and two tiers of stage 0 that WORKFLOW.md §6 lists are deliberately absent because the
+code they test does not exist yet: the arm-B estimator fixture and the LLM client's retry.
+
+One design question came up that the plan does not settle, and the answer is in the Snakefile's
+stage-0 banner: a marker that every rule depends on propagates its timestamp, so the obvious
+`ancient()` wrapper was tried first, rejected on evidence (it suppressed rerun detection for the
+whole job), and replaced by keeping the bank files out of the marker's inputs.

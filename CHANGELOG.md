@@ -237,3 +237,46 @@ shared words rather than leaks, and were left alone.
 
 Snakemake rebuilt exactly one prompt file from the bank edit, which is the input trigger doing its
 job: the other five were left untouched because their inputs did not change.
+
+## 2026-09-11 — The smoke tier: 173 tests, and what the AUC convention actually is
+
+Stage 0 is built and passes in under a second: 110 tests over the bank, 20 over the pinned
+release, 40 over the prompts, 3 over the metric.
+
+**The bank passes every rule `CONCEPT_BANK.md` states as machine-checkable, on all twelve files** —
+class names and task strings against the installed `medmnist`, concept ids and two-to-five-level
+scales, one sourced anchor per level with no anchor restating its own token or repeating another,
+every fingerprint naming every concept with a level or `any`, every source key resolving to a
+citation with a DOI or URL, and `reviewed_by` recording that the review was simulated. The two
+structural rules its prose requires hold too: the three `organ*mnist` files share a byte-identical
+`concepts` block, and every `retinamnist` concept is monotone across grades 0 to 4 (not only the
+lesion concepts — the stronger property is what the file actually satisfies).
+
+**Three properties of `medmnist.evaluator.getAUC` are now pinned, because the arms depend on
+them.** It is the *unweighted* mean of one-vs-rest AUCs, equal to sklearn's macro-ovr and
+deliberately not its weighted variant, so a dataset's class balance cannot reweight a comparison
+between arms. It ranks each class column independently, so any strictly increasing per-column
+transform leaves it unchanged — which is what makes arm B legitimate: its class score is a negative
+mean absolute distance from a fingerprint, and WORKFLOW.md §3's "AUC reads that score directly, no
+softmax" is exactly this invariance. sklearn's own macro-ovr *raises* on those scores, so the
+choice of evaluator is load-bearing rather than conventional. And for `binary-class` the package
+takes the **last** column of a two-column score matrix as the positive class; feeding column 0
+would report 1 − AUC, a plausible-looking number that is exactly backwards.
+
+**Two tests were written too strictly and told us something about the bank.** A question need not
+*end* with its question mark: the three organ files append the radiological left-right convention
+as a second sentence, which is a clarification a reader needs and not a defect. And the zero-shot
+prompt cannot be checked against bare level tokens, because levels are ordinary words —
+dermamnist's `colour_count` runs `one`, `two`, … and "exactly one of these 7 categories" is not a
+mention of a concept. The check is concept ids, questions and anchor texts.
+
+**The smoke marker is a gate, not a data dependency, and `ancient()` cannot express that.** Every
+rule takes `results/smoke_ok.txt` as an input so nothing is computed on code that fails its tests.
+Wrapping it in `ancient()` — the documented way to say "must exist, but its timestamp means
+nothing" — suppressed rerun detection for the entire job: with it in place, a genuinely changed
+bank file stopped re-rendering its own prompt, which is the one edge that must never be lost. It
+was removed. The bank files are therefore deliberately *not* inputs of `smoke`, so that a marker
+every rule depends on cannot let one dataset's bank edit invalidate every other dataset's response
+archive; the cost is that the schema tests re-run on demand (`-F smoke`) rather than by themselves
+after a bank edit. Verified on the current DAG: a bank edit reruns one job, a test or code edit
+reruns the tests and the six prompts.

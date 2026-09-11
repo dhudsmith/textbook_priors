@@ -8,10 +8,17 @@ technical report, is one Snakemake workflow on Palmetto2. The plan and the three
 `WORKFLOW.md`; dated findings are `CHANGELOG.md`; the talk narrative is `TALK.md`.
 
 ```bash
-snakemake --profile profiles/palmetto            # everything, on SLURM
-snakemake --profile profiles/palmetto -n         # dry run: inspect the DAG
-snakemake --profile profiles/local -j 2 prompts  # one stage by name
+snakemake --profile profiles/palmetto             # everything, on SLURM
+snakemake --profile profiles/palmetto -n          # dry run: inspect the DAG
+snakemake --profile profiles/local -j 2 smoke     # the tests, seconds
+snakemake --profile profiles/local -j 2 prompts   # one stage by name
+snakemake --profile profiles/local -j 2 -F smoke  # re-run the tests after editing a bank file
 ```
+
+Every rule takes the `smoke` marker as an input, so nothing is computed on code that fails its
+tests. The bank files are deliberately not inputs of `smoke`, so that editing one dataset's bank
+invalidates that dataset alone; the last invocation above is how the schema tests are re-run after
+such an edit, and the reasoning is in the Snakefile's stage-0 banner.
 
 The workflow is being built one stage at a time; the foot of the `Snakefile` lists the rules still
 to come, and the table below marks what exists today.
@@ -20,7 +27,7 @@ to come, and the table below marks what exists today.
 
 | # | Stage | What happens | Jobs | Built |
 |---|---|---|---|---|
-| 0 | **Smoke** | The tests: bank schema, label maps, prompts, the arm-B estimator, the metric | 1 | |
+| 0 | **Smoke** | The tests: bank schema, label maps, prompts, the arm-B estimator, the metric | 1 | bank, release, prompts, metric |
 | 1 | **Sample** | Per dataset: the seeded 500-image test sample and 2000-image labelled pool | 6 | |
 | 2 | **Score** | Per dataset: render both prompts; then the VLM calls, archived raw | 6 + 270 | prompts |
 | 3 | **Features** | Per dataset: ImageNet ResNet-18 penultimate features | 6 | |
@@ -38,7 +45,7 @@ profiles/palmetto/     SLURM executor settings (account, partition, job caps)
 profiles/local/        run in the current allocation instead of submitting
 envs/                  the conda environments the rules run in
 priors/                the code the workflow executes, and nothing else
-tests/                 the smoke tier
+tests/                 the smoke tier: one module per kind of claim
 data/concepts/         the concept bank, committed: the project's prior knowledge
 data/raw               symlink to the raw MedMNIST releases on project storage; gitignored
 results/               one JSON per unit of work, each with a manifest
@@ -58,6 +65,18 @@ SESSION_LOG.md         timestamped record of how the work was directed
 | `prompts.py` | The concept and zero-shot prompt strings, rendered from the bank and the label map. |
 | `stages.py` | **The workflow driver.** One entry point per unit of parallel work. |
 | `manifest.py` | The run manifest every result carries. |
+
+## `tests/`: the smoke tier
+
+| module | what it holds to what | tests |
+|---|---|---|
+| `test_bank.py` | the twelve committed bank files to the schema `CONCEPT_BANK.md` defines | 110 |
+| `test_release.py` | `config/medmnist.yaml` to the installed `medmnist` package | 20 |
+| `test_prompts.py` | both prompts to H2's separation, and the renderer to its switches | 40 |
+| `test_metrics.py` | the AUC convention to the package that defines it | 3 |
+
+Still to come, each with the code it tests: the arm-B estimator on a fixture (`priors/classify.py`)
+and the LLM client's retry on a malformed answer (`priors/llm.py`).
 
 ## Where the data comes from
 

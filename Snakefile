@@ -29,12 +29,14 @@
 # refetches or re-verifies them (WORKFLOW.md section 4).
 # =====================================================================================
 
+from pathlib import Path
+
 configfile: "config/config.yaml"
 
 # Seconds-long bookkeeping runs in the submitting process rather than paying a SLURM round-trip.
 # Anything with a real toolchain or a real cost is submitted so it runs with declared resources.
 localrules:
-    all, prompts, render_prompts,
+    all, prompts, smoke, render_prompts,
 
 
 OUT = config["outdir"]
@@ -58,6 +60,9 @@ def code(*modules):
 
 CODE_PROMPTS = code("data", "prompts", "stages")
 
+TEST_FILES = sorted(str(p) for p in Path("tests").glob("*.py"))
+
+SMOKE = f"{OUT}/smoke_ok.txt"
 PROMPTS = expand(f"{OUT}/prompts/{{dataset}}.json", dataset=DATASETS)
 
 wildcard_constraints:
@@ -70,6 +75,52 @@ rule all:
 
 rule prompts:
     input: PROMPTS
+
+
+# =====================================================================================
+# 0  SMOKE
+#
+# The tests, in seconds: the concept bank against the schema CONCEPT_BANK.md defines, over all
+# twelve committed files; config/medmnist.yaml against the installed `medmnist`, because its label
+# maps were read from the package and not retyped; both prompts as properties of the rendered
+# strings, so that H2's non-circularity - the concept prompt names no class, the zero-shot prompt
+# mentions no concept - fails here rather than after an archive has been written; and the AUC
+# convention the study reports, pinned to the package that defines it.
+#
+# Every rule below takes the marker as an input, so nothing is computed on code that fails its
+# tests, and the edge also fixes the order: the tests finish before any job that could waste an
+# LLM call starts.
+#
+# What this rule does NOT take as an input is the twelve bank files, even though the bank tests
+# read them. A marker that every rule depends on propagates: anything that reruns the tests
+# reruns everything below them, and one dataset's bank edit would then invalidate every other
+# dataset's response archive. Keeping the bank out preserves the per-dataset edge that matters -
+# a bank file is an input of its own `render_prompts` job and of nothing else - at the price of
+# the schema tests not re-running by themselves after a bank edit. Re-run them on demand:
+#
+#     snakemake --profile profiles/local -j 2 -F smoke
+#
+# The release description and the code are in, because both are global: a change to either
+# already invalidates every rule that reads them, so the marker adds nothing. `ancient()` would
+# have been the tidier way to say "a gate, not a data dependency", and was tried and rejected: it
+# suppresses rerun detection for the whole job, so a changed bank file stopped re-rendering its
+# own prompt. After a change that cannot have moved a number (a new test, a comment), the honest
+# move is `snakemake --touch <targets>`.
+# =====================================================================================
+
+rule smoke:
+    """The tests. Nothing below runs until they pass. x1, local, seconds."""
+    input:
+        code=code("data", "prompts", "stages", "manifest"),
+        release=config["release"],
+        tests=TEST_FILES,
+    params:
+        datasets=",".join(DATASETS),
+        size=config["size"],
+    output: touch(SMOKE)
+    log: "logs/smoke.log"
+    conda: "envs/priors.yml"
+    shell: "python -m pytest tests -q > {log} 2>&1"
 
 
 # =====================================================================================
@@ -96,6 +147,7 @@ rule render_prompts:
         bank=lambda w: f"{config['conceptdir']}/{w.dataset}.yaml",
         release=config["release"],
         code=CODE_PROMPTS,
+        smoke=SMOKE,
     params:
         size=config["size"],
         anchors=config["vlm"]["prompt"]["anchors"],
@@ -108,10 +160,9 @@ rule render_prompts:
 # =====================================================================================
 # STILL TO COME, in this order, each one tested before the next is written:
 #
-#   0  smoke              the tests of CONCEPT_BANK.md's schema rules, the label maps against the
-#                         installed medmnist package, both prompts, the arm-B estimator on a
-#                         fixture, the metric convention, the client's retry. Every rule above
-#                         gains its marker as an input when it lands.
+#   0  smoke              two tiers of it are still missing, and arrive with the code they test:
+#                         the arm-B estimator on a fixture (with priors/classify.py) and the LLM
+#                         client's retry on a malformed answer (with priors/llm.py)
 #   1  sample_dataset     x6, submitted: the seeded test sample and labelled pool, streamed out
 #                         of the compressed npz
 #   2  probe              opt-in, outside `all`: ten images on the primary model, to prove a
