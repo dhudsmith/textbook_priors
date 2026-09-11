@@ -10,3 +10,8 @@ as `params`, grids live in `config/config.yaml`, every submitted rule has `bench
 README is structure only and findings go to CHANGELOG.md. The VLM response archive under
 results/score/ is a fixed input from the moment it is written; re-scoring is deliberate, not
 incidental.
+
+Append a timestamped entry to SESSION_LOG.md whenever a prompt materially directs the work — what
+was asked and why it changed the plan — separately from CHANGELOG.md, which stays the owner's
+record of scientific understanding, not of agent activity. SESSION_LOG.md is talk material
+(WORKFLOW.md §5.10).

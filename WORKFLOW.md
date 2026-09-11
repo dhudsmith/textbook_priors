@@ -168,6 +168,9 @@ Each names the failure it prevents; `TALK.md` argues them.
    is write-protected, so re-querying is a deliberate act.
 8. **Resources are measured.** `benchmark:` and `log:` on every submitted rule.
 9. **Structure and history live apart.** README for structure, CHANGELOG for dated findings.
+10. **Direction is recorded, timestamped.** SESSION_LOG.md logs, to the minute, what the user
+    asked for and why it changed the work; it is talk material, not a substitute for CHANGELOG.md,
+    which stays the owner's record of understanding rather than of agent activity.
 
 ## 6. Stages
 
@@ -304,5 +307,5 @@ data/raw, data/cache      symlinks into storage_root on the project filesystem; 
 results/                  one JSON per unit of work; results/score/ is the response archive
 benchmarks/  logs/        per job
 report/                   report.tex, references.bib; tables/ and figs/ generated
-README.md  CHANGELOG.md  CLAUDE.md  CONCEPT_BANK.md  WORKFLOW.md  TALK.md
+README.md  CHANGELOG.md  SESSION_LOG.md  CLAUDE.md  CONCEPT_BANK.md  WORKFLOW.md  TALK.md
 ```
