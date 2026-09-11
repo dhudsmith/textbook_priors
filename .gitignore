@@ -1,6 +1,8 @@
 # Generated or fetched, never committed. See WORKFLOW.md section 11.
-data/raw/
-data/cache/
+# Symlinks onto the project filesystem, made by scripts/link_storage.sh. Matched without a
+# trailing slash, which git reads as "a directory only" and a symlink is not one.
+data/raw
+data/cache
 results/
 .snakemake/
 benchmarks/

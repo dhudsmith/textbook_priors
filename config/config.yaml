@@ -18,9 +18,23 @@ tabdir: report/tables
 conceptdir: data/concepts
 release: config/medmnist.yaml
 
+# The project filesystem, which is not purged: the raw releases sit under <storage_root>/raw and
+# the sampled arrays under <storage_root>/cache. `data/raw` and `data/cache` are symlinks onto it,
+# made once by scripts/link_storage.sh and gitignored - a symlink is not a computation, and the
+# releases are prior work no rule fetches (WORKFLOW.md section 4).
+storage_root: /project/dane2/wficai/textbook_priors
+rawdir: data/raw
+cachedir: data/cache/sample
+
 # One dataset per modality: histology, dermoscopy, OCT, chest X-ray, blood smear, CT.
 datasets: [pathmnist, dermamnist, octmnist, pneumoniamnist, bloodmnist, organamnist]
 size: 224                          # what the VLM sees and what the ImageNet encoder wants
+
+# The two samples every arm is measured on. One seed for both, so the whole study is paired: every
+# arm and every model predicts on the same 500 test images, and the curve's largest point is a
+# prefix of the same 2000-image labelled pool. Every dataset has at least 624 test and 4708 train
+# images, which the smoke tier checks against the pinned split sizes.
+sample: {test_n: 500, pool_n: 2000, seed: 0}
 
 vlm:
   # Both prompts are pure functions of the concept bank and the label map, rendered by their own
@@ -32,6 +46,14 @@ vlm:
 # Resources per rule. cpus is also `threads`; mem_mb per job; runtime in minutes.
 #
 # First guesses until benchmarks/ exists, then set from the measured peaks with the reasoning in a
-# comment. render_prompts is a localrule (seconds of yaml and string formatting, no LLM calls), so
-# it asks for nothing.
-resources: {}
+# comment. render_prompts and smoke are localrules (seconds of yaml, string formatting and tests,
+# no LLM calls), so they ask for nothing.
+resources:
+  # Measured on 2026-09-11 over all six datasets (benchmarks/sample/). One core: mean load came out
+  # at 0.27 to 0.79 of a core, because inflating a zip member is single-threaded and the copy loop
+  # is sequential, so a second core would only spin. Peak RSS 133-398 MB, the top of it being
+  # pathmnist's 376 MB sample array itself plus inflate buffers, so 1500 MB is a little under four
+  # times the peak and leaves room for a wider sample; the first guess of 4000 was blocking node
+  # packing for nothing. Wall time 19 s to 126 s - pathmnist inflates 13.5 GB in one pass at about
+  # 100 MB/s - so 20 minutes is ten times the longest run and covers a contended filesystem.
+  sample: {cpus: 1, mem_mb: 1500, runtime: 20}

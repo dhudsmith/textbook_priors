@@ -58,3 +58,19 @@ One design question came up that the plan does not settle, and the answer is in 
 stage-0 banner: a marker that every rule depends on propagates its timestamp, so the obvious
 `ancient()` wrapper was tried first, rejected on evidence (it suppressed rerun detection for the
 whole job), and replaced by keeping the bank files out of the marker's inputs.
+
+## 2026-09-11 17:30 — Stage 1, and the storage links as a script rather than a rule
+
+Asked to proceed to the next step, which the rule list puts at `sample_dataset`. Two choices in it
+are worth recording because neither is settled by `WORKFLOW.md`.
+
+The sampled images go to `data/cache/sample/<dataset>.npz` on the project filesystem rather than
+beside the result JSON in `results/`, which is what the `research-workflow` skill's sidecar
+convention would say. A quarter of a gigabyte of pixels per dataset is an input to the score and
+features stages, not a result anything reads, and `WORKFLOW.md` §11 already reserves `data/cache`
+for exactly this. The JSON stays the unit of work and carries what defines the sample.
+
+The two symlinks (`data/raw`, `data/cache`) are made by `scripts/link_storage.sh`, not by a rule.
+A symlink is not a computation, the releases behind it are prior work no rule fetches, and a rule
+that created it would be a rule whose output is a promise about someone else's filesystem. It is
+the only setup step a fresh clone needs, and it is named in the README.

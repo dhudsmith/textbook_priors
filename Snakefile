@@ -31,16 +31,23 @@
 
 from pathlib import Path
 
+import yaml
+
 configfile: "config/config.yaml"
 
 # Seconds-long bookkeeping runs in the submitting process rather than paying a SLURM round-trip.
 # Anything with a real toolchain or a real cost is submitted so it runs with declared resources.
 localrules:
-    all, prompts, smoke, render_prompts,
+    all, sample, prompts, smoke, render_prompts,
 
 
 OUT = config["outdir"]
 DATASETS = config["datasets"]
+RES = config["resources"]
+
+# The pinned release description, read here only to name each dataset's release file: the file a
+# sample job reads has to be a declared input, and this file is the authority on what it is called.
+RELEASE = yaml.safe_load(Path(config["release"]).read_text())["datasets"]
 
 # BLAS sizes its thread pool from the machine, not the cgroup; pin it to the allocation.
 PIN = "export OMP_NUM_THREADS={threads} MKL_NUM_THREADS={threads} OPENBLAS_NUM_THREADS={threads}; "
@@ -58,11 +65,19 @@ def code(*modules):
     return [f"priors/{m}.py" for m in modules]
 
 
+def res(name):
+    """Per-rule resources from config, as the keyword arguments `resources:` wants."""
+    r = RES[name]
+    return dict(mem_mb=r["mem_mb"], runtime=r["runtime"], cpus_per_task=r["cpus"])
+
+
+CODE_SAMPLE = code("data", "sample", "stages")
 CODE_PROMPTS = code("data", "prompts", "stages")
 
 TEST_FILES = sorted(str(p) for p in Path("tests").glob("*.py"))
 
 SMOKE = f"{OUT}/smoke_ok.txt"
+SAMPLES = expand(f"{OUT}/sample/{{dataset}}.json", dataset=DATASETS)
 PROMPTS = expand(f"{OUT}/prompts/{{dataset}}.json", dataset=DATASETS)
 
 wildcard_constraints:
@@ -71,7 +86,10 @@ wildcard_constraints:
 
 # ---- targets: one phony target per stage; `all` becomes the technical report at stage 6 --------
 rule all:
-    input: PROMPTS
+    input: SAMPLES, PROMPTS
+
+rule sample:
+    input: SAMPLES
 
 rule prompts:
     input: PROMPTS
@@ -124,6 +142,49 @@ rule smoke:
 
 
 # =====================================================================================
+# 1  SAMPLE
+#
+# The two seeded samples every later stage is defined over: 500 test images per dataset, shared by
+# every arm and every model so that every comparison in the study is paired, and a 2000-image
+# labelled pool from the official train split, the largest point of the learning curve. One seed
+# from config for both.
+#
+# The releases are prior work and no rule fetches them (WORKFLOW.md section 4): each job reads its
+# file straight through the `data/raw` symlink, and records the MD5 the pinned release already
+# carries rather than recomputing it. Their members are deflated, so there is no random access -
+# `np.load` would materialise a 13.5 GB array to keep 2000 images of it - and priors/sample.py
+# instead inflates the member as a stream and copies out the wanted rows, one row at a time.
+#
+# Two outputs per job. The JSON is the unit of work and carries what defines the sample: the drawn
+# indices, their labels, and the sample's class balance beside the whole split's, so that the
+# report can show what the seed drew against what it drew from. The images go to the cache on the
+# project filesystem, because a quarter of a gigabyte of pixels per dataset is an input to the
+# score and features stages rather than a result anything reads.
+# =====================================================================================
+
+rule sample_dataset:
+    """One dataset's test sample and labelled pool, streamed out of its release file. x6."""
+    input:
+        raw=lambda w: f"{config['rawdir']}/{RELEASE[w.dataset]['file']}",
+        release=config["release"],
+        smoke=SMOKE,
+        code=CODE_SAMPLE,
+    params:
+        test_n=config["sample"]["test_n"],
+        pool_n=config["sample"]["pool_n"],
+        seed=config["sample"]["seed"],
+    output:
+        json=f"{OUT}/sample/{{dataset}}.json",
+        arrays=f"{config['cachedir']}/{{dataset}}.npz",
+    log: "logs/sample/{dataset}.log"
+    benchmark: "benchmarks/sample/{dataset}.tsv"
+    conda: "envs/priors.yml"
+    threads: RES["sample"]["cpus"]
+    resources: **res("sample")
+    shell: STAGE + "sample {wildcards.dataset} --out {output.json} --arrays {output.arrays} > {log} 2>&1"
+
+
+# =====================================================================================
 # 2  SCORE
 #
 # The stage where the prior enters, and the one that tests principle 7 (the LLM boundary is
@@ -163,8 +224,6 @@ rule render_prompts:
 #   0  smoke              two tiers of it are still missing, and arrive with the code they test:
 #                         the arm-B estimator on a fixture (with priors/classify.py) and the LLM
 #                         client's retry on a malformed answer (with priors/llm.py)
-#   1  sample_dataset     x6, submitted: the seeded test sample and labelled pool, streamed out
-#                         of the compressed npz
 #   2  probe              opt-in, outside `all`: ten images on the primary model, to prove a
 #                         compute node reaches the service and the archive is right
 #   2  score_<model>      one rule per model, throttled by an llm_<model> resource; 270 jobs

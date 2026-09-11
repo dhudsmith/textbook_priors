@@ -27,8 +27,8 @@ to come, and the table below marks what exists today.
 
 | # | Stage | What happens | Jobs | Built |
 |---|---|---|---|---|
-| 0 | **Smoke** | The tests: bank schema, label maps, prompts, the arm-B estimator, the metric | 1 | bank, release, prompts, metric |
-| 1 | **Sample** | Per dataset: the seeded 500-image test sample and 2000-image labelled pool | 6 | |
+| 0 | **Smoke** | The tests: bank schema, label maps, prompts, the sampler, the arm-B estimator, the metric | 1 | all but the arm-B estimator and the client |
+| 1 | **Sample** | Per dataset: the seeded 500-image test sample and 2000-image labelled pool | 6 | yes |
 | 2 | **Score** | Per dataset: render both prompts; then the VLM calls, archived raw | 6 + 270 | prompts |
 | 3 | **Features** | Per dataset: ImageNet ResNet-18 penultimate features | 6 | |
 | 4 | **Classify** | Per dataset: arms A, B, C, P over the curve, and the permutation controls | 6 | |
@@ -48,6 +48,8 @@ priors/                the code the workflow executes, and nothing else
 tests/                 the smoke tier: one module per kind of claim
 data/concepts/         the concept bank, committed: the project's prior knowledge
 data/raw               symlink to the raw MedMNIST releases on project storage; gitignored
+data/cache/sample/     symlink target: the sampled image arrays, one npz per dataset; gitignored
+scripts/link_storage.sh  one-time setup: make those two symlinks
 results/               one JSON per unit of work, each with a manifest
 results/score/         the raw VLM response archive, write-protected once written
 benchmarks/            wall time and peak memory per job
@@ -62,6 +64,7 @@ SESSION_LOG.md         timestamped record of how the work was directed
 | module | role |
 |---|---|
 | `data.py` | The two fixed inputs — the concept bank and the pinned release — read and hashed in one place. |
+| `sample.py` | The seeded samples, and the streaming reader that takes their rows out of a deflated release file without materialising the split. |
 | `prompts.py` | The concept and zero-shot prompt strings, rendered from the bank and the label map. |
 | `stages.py` | **The workflow driver.** One entry point per unit of parallel work. |
 | `manifest.py` | The run manifest every result carries. |
@@ -73,6 +76,7 @@ SESSION_LOG.md         timestamped record of how the work was directed
 | `test_bank.py` | the twelve committed bank files to the schema `CONCEPT_BANK.md` defines | 110 |
 | `test_release.py` | `config/medmnist.yaml` to the installed `medmnist` package | 20 |
 | `test_prompts.py` | both prompts to H2's separation, and the renderer to its switches | 40 |
+| `test_sample.py` | the streaming reader to a release-shaped fixture whose rows identify themselves | 14 |
 | `test_metrics.py` | the AUC convention to the package that defines it | 3 |
 
 Still to come, each with the code it tests: the arm-B estimator on a fixture (`priors/classify.py`)
@@ -102,6 +106,8 @@ everything downstream of the model is a deterministic function of the archive.
 ## Setup
 
 Snakemake on `PATH` (`conda activate snakemake`); the workflow builds its own environments from
-`envs/` on first use. `profiles/palmetto/config.yaml` carries the account and partition. The API
+`envs/` on first use. `scripts/link_storage.sh` makes the two symlinks onto the project filesystem
+(`data/raw` for the releases, `data/cache` for the sampled arrays) and is the only setup step a
+fresh clone needs. `profiles/palmetto/config.yaml` carries the account and partition. The API
 key for the VLM service will be read from an owner-only file whose path enters
 `config/config.yaml` with the scoring rules, and appears nowhere else.

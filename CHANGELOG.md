@@ -280,3 +280,40 @@ every rule depends on cannot let one dataset's bank edit invalidate every other 
 archive; the cost is that the schema tests re-run on demand (`-F smoke`) rather than by themselves
 after a bank edit. Verified on the current DAG: a bank edit reruns one job, a test or code edit
 reruns the tests and the six prompts.
+
+## 2026-09-11 — Stage 1 run: the samples exist, and dermamnist's rarest class is five images
+
+All six `sample_dataset` jobs ran on `work1`. Each dataset now has its 500-image test sample and
+its 2000-image labelled pool, drawn with seed 0 from the official splits, with the drawn indices
+and labels in `results/sample/<dataset>.json` and the images in `data/cache/sample/<dataset>.npz`
+(1.5 GB in total).
+
+**Streaming works and is cheap.** The 224-pixel release members are deflated, so there is no
+random access; the reader inflates the image member as a stream and copies out only the wanted
+rows. pathmnist — 13.5 GB of pixels behind a 12.6 GB file — took 2 min 6 s and peaked at 392 MB of
+resident memory, which is the 376 MB sample array itself. `np.load` would have needed 13.5 GB to
+keep 376 MB of it. Measured requests are now in config: 1 core (mean load 0.27 to 0.79 of a core),
+1500 MB, 20 minutes.
+
+**The cached rows are the rows they claim to be.** Checked end to end on the real releases, not
+only on the fixture the smoke tier uses: for pneumoniamnist (both splits) and dermamnist (test),
+the whole image member was loaded the ordinary way and compared against the cache at the recorded
+indices — every image, every label, and the labels in the JSON, all identical. A one-off check,
+not a rule: verifying every sampled row this way costs a second full read of each release.
+
+**Every sample tracks its split's class balance to within 2.8 percentage points**, the widest
+being bloodmnist basophils (2.8) and organamnist kidney-right (2.7) in the test samples; the pools
+are all within 1.4. No sample lost a class.
+
+**But an unstratified 500-image test sample leaves very few images in a rare class, and that bounds
+what the intervals can say.** dermamnist's test sample holds 5 vascular lesions and 6
+dermatofibromas out of 500; bloodmnist's holds 25 basophils, organamnist's 21 femur-left. The AUC
+convention is the *unweighted* mean of one-vs-rest columns (pinned in the smoke tier), so
+dermamnist's macro AUC gives a column built on five positives the same weight as one built on 337,
+and the paired bootstrap over test images will show it as a wide interval on every arm at once.
+This is a consequence of WORKFLOW.md §4 fixing the sample at 500 with one seed, not a defect: the
+same 500 images are what makes every comparison paired. Three ways out, in order of cost: report
+it as a limit and read the per-dataset differences rather than the absolute AUCs; stratify the test
+sample by class (changes every arm's definition, and the sample then no longer mirrors the split);
+or raise the sample above 500 (the test splits allow 624 at the smallest, so pneumoniamnist caps
+the shared size at 624). Left open for the owner; the numbers above are in every sample's JSON.
