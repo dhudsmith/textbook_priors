@@ -9,7 +9,7 @@ demo. Nothing here is a requirement on the workflow.
 | before | now |
 |---|---|
 | a folder of numbered scripts run in an order I remembered | one Snakefile whose dry run prints the order |
-| "which version of the data did this come from?" | a fetch rule with a pinned release and checksums |
+| "which version of the data did this come from?" | a pinned release and a recorded checksum, verified once and treated as a fixed input |
 | editing a module and hoping downstream results were still valid | the module is an input; Snakemake reruns exactly what depends on it |
 | a conda env that grew by accretion and could not be rebuilt | three declared environment files, one per toolchain |
 | results in folders named by date, seeds set somewhere | one JSON per cell with a manifest and its own seed |
@@ -45,7 +45,7 @@ asymmetry: the code is not the product, the claim is, and a claim rests on under
 done. That produces one opportunity and one challenge that are not the general case.
 
 **The opportunity: the recipe becomes cheap to write and cheap to keep honest.** The work of making
-a study reproducible (fetch rules, manifests, declared environments, generated tables, a complete
+a study reproducible (pinned inputs, manifests, declared environments, generated tables, a complete
 technical report) is exactly the work researchers skip under deadline. An agent does it without
 complaint, and a convention makes it do it the same way every time. Reproducibility stops being a
 virtue practised after the fact and becomes the default shape of the project. What the agent

@@ -3,6 +3,24 @@
 Dated findings, decisions and corrections. Appended, never rewritten. Structure will live in
 README.md once the skeleton exists (WORKFLOW.md §9, step 7); the plan lives in WORKFLOW.md.
 
+## 2026-09-11 — Fetch dropped as a rule; prompts get their own rule
+
+Verified today that the six talk-version 224-pixel files on
+`/project/dane2/wficai/textbook_priors/raw/` match the sizes and MD5s recorded in WORKFLOW.md §4
+exactly (pathmnist 12G, dermamnist 1.1G, octmnist 3.7G, pneumoniamnist 205M, bloodmnist 1.5G,
+organamnist 1.7G). On the strength of that, WORKFLOW.md no longer plans a `fetch` rule or stage:
+the raw releases are prior work, exactly like the concept bank, reached through the `data/raw`
+symlink and read directly by SAMPLE. The Zenodo record and MD5 table stay in §4 as provenance, not
+as something a rule re-verifies. Stages renumber down by one (SAMPLE is now stage 1); the `fetch`
+target is gone from the target list; TALK.md's two mentions of "a fetch rule" are reworded to
+match.
+
+SCORE (now stage 2) gains `render_prompts`, one rule per dataset (6 local jobs, no LLM calls) that
+turns the concept bank and label map into both prompt strings and writes
+`results/prompts/<dataset>.json`. Every `score_*` rule reads that file rather than re-deriving the
+prompt inline, so the string sent to the model, the one hashed into its manifest, and the one a
+demo or the report can print are the same artifact.
+
 ## 2026-09-09 — Talk branch: the plan cut to six datasets and four arms; the workflow to be rebuilt live
 
 This branch is the version the talk shows. WORKFLOW.md is cut to six datasets (one per modality),

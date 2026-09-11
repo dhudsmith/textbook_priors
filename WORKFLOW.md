@@ -119,10 +119,12 @@ subsets as arm C, so features are the only difference.
 Only the primary model scores the labelled pool; arm B is training-free, so the ladder models need
 the 500 test images and nothing else.
 
-**Completed prior work: the data are already on disk.** Like the concept bank, the download was
-done before the workflow and is not redone. The six 224-pixel release files sit in
-`/project/dane2/wficai/textbook_priors/raw/` (project storage, not purged), each verified against
-the MD5 that `medmnist` 3.0.2 records in `medmnist.INFO[<dataset>]["MD5_224"]`:
+**Completed prior work: the data are already on disk, and the workflow does not fetch it.** Like
+the concept bank, the download was done before the workflow, verified once, and is not redone —
+there is no `fetch` rule or stage. The six 224-pixel release files sit in
+`/project/dane2/wficai/textbook_priors/raw/` (project storage, not purged), confirmed present on
+2026-09-11 at the exact size and against the MD5 that `medmnist` 3.0.2 records in
+`medmnist.INFO[<dataset>]["MD5_224"]`:
 
 | file | MD5 | size |
 |---|---|---|
@@ -134,10 +136,10 @@ the MD5 that `medmnist` 3.0.2 records in `medmnist.INFO[<dataset>]["MD5_224"]`:
 | `organamnist_224.npz` | `50747347e05c87dd3aaf92c49f9f3170` | 1.7 GB |
 
 The same directory also holds files the full version fetched (the 28-pixel files and other 224
-datasets); the talk version ignores them. The fetch rule is still written, so a fresh clone
-bootstraps itself and the provenance stays in the workflow: it declares these files as its
-outputs (through a `data/raw` symlink into that directory), pulls from Zenodo record 10519652 in
-parallel byte ranges, and checks the MD5; with the files present it has nothing to do.
+datasets); the talk version ignores them. `data/raw` is a symlink into that directory (§11,
+gitignored); the sample stage reads the six files straight from it. Provenance — the pinned
+Zenodo record (10519652) and the MD5 check above — is recorded here for the reader, not
+re-verified by any rule.
 
 | model | family | role | concept calls | zero-shot calls |
 |---|---|---|---|---|
@@ -155,7 +157,9 @@ Each names the failure it prevents; `TALK.md` argues them.
 
 1. **The workflow is the documentation.** Numbered stages with prose; a dry run prints the plan.
 2. **Every number has a rule.** No ad hoc scripts; the report is built from generated tables.
-3. **Inputs are pinned.** Data is a fetch rule from a pinned record with recorded checksums.
+3. **Inputs are pinned.** The concept bank and the raw MedMNIST releases are fixed inputs
+   completed before the workflow runs, with recorded checksums; no rule re-fetches or
+   re-verifies them.
 4. **Dependencies are explicit.** Modules are inputs via `code()`, config values are `params`.
 5. **Every result carries a manifest.** Parameters, seeds, commit, versions, host, wall time.
 6. **Randomness is owned per cell.** No module-level RNG.
@@ -170,22 +174,22 @@ Each names the failure it prevents; `TALK.md` argues them.
 ```
 0  SMOKE      bank schema and anchors, label maps against the pinned release, both prompts,
               the arm-B estimator on a fixture, metric conventions, client retry      seconds
-1  FETCH      the six 224-pixel MedMNIST files from the pinned Zenodo record, MD5-checked
-              (parallel byte ranges: Zenodo serves ~105 KB/s per connection)             6 jobs
-2  SAMPLE     per dataset: the seeded 500-image test sample and 2000-image labelled pool,
-              streamed out of the compressed npz without loading it                     6 CPU
-3  SCORE      per dataset x model x split x prompt x chunk of 100: concept levels, or the
-              zero-shot distribution; every raw response archived and protected     270, throttled
-4  FEATURES   per dataset: ImageNet ResNet-18 penultimate features of the sampled images  6 CPU
-5  CLASSIFY   per dataset: arms A, B, C, P at every n and seed, and the permutation controls 6 CPU
-6  EVALUATE   AUC per arm; the paired bootstrap; n_B; then the sign tests and the ladder
+1  SAMPLE     per dataset: the seeded 500-image test sample and 2000-image labelled pool,
+              streamed out of the compressed npz without loading it (the raw releases are
+              prior work, §4 — no fetch rule)                                           6 CPU
+2  SCORE      per dataset: render the concept and zero-shot prompts from the bank; then,
+              per model x split x prompt x chunk of 100: concept levels, or the zero-shot
+              distribution; every raw response archived and protected  6 local + 270 throttled
+3  FEATURES   per dataset: ImageNet ResNet-18 penultimate features of the sampled images  6 CPU
+4  CLASSIFY   per dataset: arms A, B, C, P at every n and seed, and the permutation controls 6 CPU
+5  EVALUATE   AUC per arm; the paired bootstrap; n_B; then the sign tests and the ladder
               across datasets                                                             6 + 1
-7  REPORT     three figures, tables, number macros, the technical report PDF              local
+6  REPORT     three figures, tables, number macros, the technical report PDF              local
 ```
 
-Targets: `all` (the report), `smoke`, `fetch`, `sample`, `score`, `features`, `classify`,
-`evaluate`, `report`. Three figures: the learning curve with arm B's line (H1), n_B per dataset
-(H1 detail), the model ladder (H3). H2 is a table of paired differences and permutation drops.
+Targets: `all` (the report), `smoke`, `sample`, `score`, `features`, `classify`, `evaluate`,
+`report`. Three figures: the learning curve with arm B's line (H1), n_B per dataset (H1 detail),
+the model ladder (H3). H2 is a table of paired differences and permutation drops.
 
 ## 7. The scoring stage
 
@@ -199,6 +203,12 @@ The one stage type not seen in earlier projects, and the one that tests principl
   concept prompt asks for a level per concept, renders every level's cited anchor text, and never
   names a class; the zero-shot prompt asks for a distribution over the class names and never
   mentions a concept.
+- **Rendering is its own rule, not inline in the score loop.** `render_prompts`, one per dataset
+  (6 local jobs, no LLM calls, no throttling), turns the bank and the label map into both prompt
+  strings and writes `results/prompts/<dataset>.json` (the rendered concept prompt with its
+  anchors, the rendered zero-shot prompt, the bank-file hash). Every `score_*` rule takes that file
+  as an input instead of re-deriving the prompt, so the string sent to the model, the one hashed
+  into the manifest, and the one the report or the demo shows are the same artifact.
 - **Per call**: the 224-pixel PNG; JSON requested and validated against the scales; one retry with
   a doubled token budget on a malformed answer, then recorded as missing, never guessed.
 - **Thinking off.** With reasoning left on, the primary model spends its whole token budget in
@@ -244,8 +254,8 @@ openai, pillow; `medmnist` for its evaluator, installed without its torch requir
 ## 9. Order of work
 
 1. Skeleton and the bank schema test over the six files.
-2. The fetch rule, which finds its six outputs already on disk (§4); extract the samples; check
-   counts and the class balance of each sample.
+2. Point the sample stage straight at the six on-disk releases (§4 — prior work, no fetch rule);
+   extract the samples; check counts and the class balance of each sample.
 3. The ten-image probe on the primary model (rule `probe`, outside `all`): a compute node reaches
    the service, the archive and manifest are right, a malformed response is handled.
 4. The primary fan-out under its cap, then the ladder models; features; classify; evaluate.
@@ -282,7 +292,7 @@ non-diagnostic question set), `primary_upgrade` (the pool on `gemma-4-31b`).
 ## 11. Layout
 
 ```
-Snakefile                 one file, eight labelled stages
+Snakefile                 one file, seven labelled stages
 config/config.yaml        every grid and knob; per-rule resources
 config/medmnist.yaml      the pinned release: file names, MD5s, sizes, split sizes, label maps
 profiles/palmetto/        SLURM executor; job, core and per-model llm_* caps
