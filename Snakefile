@@ -137,7 +137,8 @@ EVALUATED = expand(f"{OUT}/evaluate/{{dataset}}.json", dataset=DATASETS)
 EVALUATION = f"{OUT}/evaluation.json"
 FIGS, TABS = config["figdir"], config["tabdir"]
 FIG_FILES = expand(f"{FIGS}/fig_{{f}}.png", f=["curve", "n_b", "ladder"])
-TABLE_TEX = expand(f"{TABS}/{{t}}.tex", t=["h1", "h2", "h3", "arm_d", "completeness", "numbers"])
+TABLE_TEX = expand(f"{TABS}/{{t}}.tex",
+                   t=["h1", "h2", "h3", "arm_d", "literature", "completeness", "numbers"])
 
 wildcard_constraints:
     dataset="|".join(DATASETS),
@@ -207,6 +208,7 @@ rule smoke:
     input:
         code=code("data", "prompts", "stages", "manifest"),
         release=config["release"],
+        literature=config["literature"],
         tests=TEST_FILES,
     params:
         datasets=",".join(DATASETS),
@@ -611,11 +613,19 @@ rule evaluate_across:
 # manuscript - interpretation stays with the authors - and no number in it is typed by hand. Every
 # table is generated into report/tables/, and the sentences whose direction depends on a value read
 # a macro from numbers.tex, so the prose cannot state something the run did not produce.
+#
+# One table reads a fixed input rather than results/ alone: `literature`, this study's zero-label
+# and largest-labelled-subset arms against published, fully supervised numbers for the same six
+# tasks (data/literature/benchmarks.yaml, WORKFLOW.md section 10). It is an extension like arm D -
+# cheap, decides no hypothesis - and sits in `rule all` for the same reason: nothing here is
+# recomputed, only read alongside numbers the workflow already produced.
 # =====================================================================================
 
 rule tables:
     """Every table and number macro, from results/ alone. x1, local."""
-    input: evaluation=EVALUATION, per_dataset=EVALUATED, code=CODE_REPORT
+    input:
+        evaluation=EVALUATION, per_dataset=EVALUATED, code=CODE_REPORT,
+        literature=config["literature"],
     output: TABLE_TEX
     log: "logs/tables.log"
     conda: "envs/priors.yml"
@@ -623,7 +633,9 @@ rule tables:
 
 rule figures:
     """The three figures, one per hypothesis. x1."""
-    input: evaluation=EVALUATION, per_dataset=EVALUATED, code=CODE_REPORT
+    input:
+        evaluation=EVALUATION, per_dataset=EVALUATED, code=CODE_REPORT,
+        literature=config["literature"],
     output: FIG_FILES
     log: "logs/figures.log"
     benchmark: "benchmarks/figures.tsv"

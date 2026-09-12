@@ -154,6 +154,32 @@ flags are computed from H1, H2 and H3 alone and were not touched.
 Cost: 3,000 calls on the primary model, 30 chunks, the budget from 27,000 to 30,000. The existing
 archive is untouched — arm D is 30 new files beside it, not a re-score.
 
+## 2026-09-12 09:02 — Literature benchmarks, pulled and cited, not rerun
+
+"I would like to pull results from the literature on these particular med mnist tasks and verify
+and add them as benchmarks in the paper. I don't want to rerun those results. I just want to pull
+the results from published works."
+
+Read as: a third fixed input beside the concept bank and the pinned release (WORKFLOW.md section
+4), not a rule that recomputes anything. `data/literature/benchmarks.yaml` pins the AUC and ACC
+Yang et al. 2023 report (Table 3) for five fully supervised methods on these six tasks at 224
+pixels — the same paper the concept bank already cites as its anchor, `yang2023` in
+`references.bib`, reused rather than duplicated. Fetched the arXiv PDF, extracted Table 3's text
+directly (not from memory) and cross-checked every value twice: once against the paper's own
+across-dataset average table as a sanity check, once by re-reading the extracted text a second
+time before committing it.
+
+It is an extension like arm D — decides no hypothesis, WORKFLOW.md section 2 — but unlike arm D it
+costs nothing to compute: no new calls, no new bootstrap, just one more table the `tables` rule
+writes by reading the pinned file beside results/ already on disk. Placed inside `rule all` for
+the same reason arm D is: cheap, and keeping a costless, hypothesis-neutral table out would only
+cost the reader a second document. Added a schema test (`test_literature.py`) holding the file to
+the datasets the workflow runs and to the bibliography, a loader in `priors/data.py` alongside the
+bank and release loaders, and a `WORKFLOW.md` §10 entry recording the same reasoning here in
+briefer form. `results/` does not exist in this worktree (README: agent sessions do not run the
+pipeline), so the table's actual numbers are unverified beyond the pipeline test's synthetic
+fixture; the owner's checkout will produce the real one on the next `tables` build.
+
 ## 2026-09-12 09:35 — Arm D landed, and two estimates that were wrong
 
 The run finished at 09:34, exit 0. Asked mid-run to estimate the total time, I gave 08:45–08:55 and

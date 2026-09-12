@@ -56,6 +56,7 @@ def workspace(tmp_path):
     config = {
         "outdir": str(tmp_path / "results"), "conceptdir": str(tmp_path / "concepts"),
         "release": str(tmp_path / "medmnist.yaml"), "cachedir": str(tmp_path / "cache"),
+        "literature": str(tmp_path / "literature.yaml"),
         "featuredir": str(tmp_path / "features"), "figdir": str(tmp_path / "figs"),
         "tabdir": str(tmp_path / "tabs"), "datasets": ["toymnist"], "size": 224,
         "sample": {"test_n": n_test, "pool_n": n_pool, "seed": 0},
@@ -84,6 +85,8 @@ def workspace(tmp_path):
         "concepts": CONCEPTS,
         "classes": {"alpha": {"fingerprint": {"one": "low", "two": "small"}},
                     "beta": {"fingerprint": {"one": "high", "two": "any"}}}}))
+    (tmp_path / "literature.yaml").write_text(yaml.safe_dump({
+        "citation": "toy2020", "datasets": {"toymnist": {"resnet18_224": {"auc": 0.99, "acc": 0.95}}}}))
 
     results = Path(config["outdir"])
     (results / "prompts").mkdir(parents=True, exist_ok=True)
@@ -189,7 +192,7 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
 
     stages.tables(config["tabdir"])
     stages.figures(config["figdir"])
-    for name in ("h1", "h2", "h3", "arm_d", "completeness", "numbers"):
+    for name in ("h1", "h2", "h3", "arm_d", "literature", "completeness", "numbers"):
         assert (Path(config["tabdir"]) / f"{name}.tex").stat().st_size > 0
     for name in ("curve", "n_b", "ladder"):
         assert (Path(config["figdir"]) / f"fig_{name}.png").stat().st_size > 0

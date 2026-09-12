@@ -90,7 +90,10 @@ $p = \cBeatsPp$); the pixel probe never reached the textbook arm inside the curv
   \includegraphics[width=\textwidth]{fig_curve.png}
   \caption{What labelled images buy (arms C and P, with 95\% intervals) against what the textbook
   gives for nothing (arm B, dashed; arm A, dotted; the post-hoc arm D, dash-dotted). Where the
-  pixel probe crosses arm B's line is $n_B$.}\label{fig:curve}
+  pixel probe crosses arm B's line is $n_B$. The finely dotted brown line is not an arm: the
+  published, fully supervised ResNet-18 (224) AUC for the same task \cite{yang2023}, trained on
+  the whole official training split rather than this study's labelled pool, read here as a ceiling
+  rather than a comparison (Section~\ref{sec:literature}).}\label{fig:curve}
 \end{figure}
 
 \input{tables/h1}
@@ -141,6 +144,23 @@ formed after seeing the data cannot be tested on the same data, and no \emph{sup
 this report reads arm D.
 
 \input{tables/arm_d}
+
+\section{Extension: reading the arms against the published literature}
+\label{sec:literature}
+
+Everything in this section is a fixed comparison point, not a computation, and it decides no
+hypothesis. \texttt{data/literature/benchmarks.yaml} pins the AUC and ACC that
+\cite{yang2023} report for five fully supervised methods on these same six MedMNIST v2 tasks at
+the same 224-pixel resolution --- trained on each dataset's whole official training split,
+thousands to tens of thousands of images, not this study's $n \leq 2000$ labelled pool. Table~%
+\ref{tab:literature} sets the zero-label textbook arm and this study's largest labelled subset
+beside the best of those five published numbers, so a reader can see how far a handful of labels
+and a textbook prior sit from a benchmark trained at full scale, without mistaking the gap for a
+finding about any arm here. The same ResNet-18 (224) row rides along on Figure~\ref{fig:curve} as a
+finely dotted line, so the ceiling is visible on the learning curve itself and not only in this
+table.
+
+\input{tables/literature}
 
 \section{Diagnostics}
 

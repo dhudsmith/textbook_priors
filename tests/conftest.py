@@ -46,6 +46,11 @@ def release():
 
 
 @pytest.fixture(scope="session")
+def literature():
+    return data.load_literature(ROOT / CONFIG["literature"])
+
+
+@pytest.fixture(scope="session")
 def banks():
     """Every bank file, keyed by dataset."""
     return {d: data.load_bank(d, ROOT / CONFIG["conceptdir"]) for d in BANK_DATASETS}

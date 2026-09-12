@@ -50,6 +50,7 @@ envs/                  the conda environments the rules run in
 priors/                the code the workflow executes, and nothing else
 tests/                 the smoke tier: one module per kind of claim
 data/concepts/         the concept bank, committed: the project's prior knowledge
+data/literature/       the pinned published-benchmark table, committed: cited, not rerun
 data/raw               symlink to the raw MedMNIST releases on project storage; gitignored
 data/cache/sample/     symlink target: the sampled image arrays, one npz per dataset; gitignored
 scripts/link_storage.sh  one-time setup: make those two symlinks
@@ -66,7 +67,7 @@ SESSION_LOG.md         timestamped record of how the work was directed
 
 | module | role |
 |---|---|
-| `data.py` | The two fixed inputs — the concept bank and the pinned release — read and hashed in one place. |
+| `data.py` | The three fixed inputs — the concept bank, the pinned release and the literature benchmarks — read and hashed in one place. |
 | `sample.py` | The seeded samples, and the streaming reader that takes their rows out of a deflated release file without materialising the split. |
 | `llm.py` | The boundary: one kind of call, the key read from an owner-only file, thinking switched off, transport backoff, and what came back recorded verbatim. |
 | `score.py` | The deterministic half of scoring: the image as a lossless PNG, and a reply parsed into a validated answer or a recorded absence. |
@@ -74,7 +75,7 @@ SESSION_LOG.md         timestamped record of how the work was directed
 | `features.py` | Arm P's frozen ImageNet encoder, and the preprocessing that does not resize. |
 | `classify.py` | Every estimator: the concept vectors, arm B's fingerprint match, the regression behind arms C and P, and the two permutation controls. |
 | `evaluate.py` | The AUC convention as a rank formula, the shared paired bootstrap, n_B, and the tests the hypotheses are decided by. |
-| `report.py` | Every figure, table and number macro, from results/ alone. |
+| `report.py` | Every figure, table and number macro, from results/ alone — plus one table that also reads the pinned literature benchmarks. |
 | `stages.py` | **The workflow driver.** One entry point per unit of parallel work. |
 | `manifest.py` | The run manifest every result carries. |
 
@@ -84,6 +85,7 @@ SESSION_LOG.md         timestamped record of how the work was directed
 |---|---|---|
 | `test_bank.py` | the twelve committed bank files to the schema `CONCEPT_BANK.md` defines | 110 |
 | `test_release.py` | `config/medmnist.yaml` to the installed `medmnist` package | 20 |
+| `test_literature.py` | the pinned literature-benchmark table to the datasets the workflow runs and to `references.bib` | 4 |
 | `test_prompts.py` | the two pre-registered prompts to H2's separation, the directed prompt to its inverse, and the renderer to its switches | 58 |
 | `test_sample.py` | the streaming reader to a release-shaped fixture whose rows identify themselves | 14 |
 | `test_score.py` | the image encoding, the reply parser and the two retry policies, without calling the service | 51 |
@@ -96,7 +98,7 @@ Every tier WORKFLOW.md section 6 asks for now exists, including the arm-B estima
 
 ## Where the data comes from
 
-Two inputs are fixed before the workflow runs and no rule refetches or re-verifies them
+Three inputs are fixed before the workflow runs and no rule refetches, reruns or re-verifies them
 (`WORKFLOW.md` §4):
 
 - **The concept bank**, `data/concepts/*.yaml`: built outside the workflow by the procedure in
@@ -106,6 +108,10 @@ Two inputs are fixed before the workflow runs and no rule refetches or re-verifi
   through the `data/raw` symlink. `config/medmnist.yaml` records each file's name, MD5, size, split
   sizes and label map, read from the `medmnist` package rather than retyped; the smoke target holds
   that file to the installed package.
+- **The published literature benchmarks**, `data/literature/benchmarks.yaml`: AUC and ACC for five
+  fully supervised methods on these same six tasks, transcribed from Yang et al. 2023's Table 3 and
+  cross-checked against that paper's own across-dataset average. Read into the report as a
+  reconciliation point (`data/literature/README.md`), not rerun and not a comparison arm.
 
 ## Reproducibility
 
