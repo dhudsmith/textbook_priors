@@ -325,3 +325,21 @@ def test_the_call_budget_is_what_the_plan_says(config):
             jobs += len(score.chunks(n, chunk)) * len(datasets) * prompts
     assert calls == 27_000
     assert jobs == 270
+
+
+def test_a_job_refuses_to_write_a_file_named_for_another_cell(tmp_path):
+    """The guard that would have caught the fan-out's first bug: four rules generated in a loop
+    kept their own output paths but shared the last one's command, so the primary model's archive
+    was written by gemma-4-31b. The archive was internally consistent; only the served model name
+    disagreed with the file name, which no downstream stage reads."""
+    from priors import stages
+
+    good = tmp_path / "pneumoniamnist__qwen3.8-27b-fp8__test__concept__chunk00.json"
+    stages.check_output_name(good, "pneumoniamnist", "qwen3.8-27b-fp8", "test", "concept", 0)
+
+    for wrong in [dict(model="gemma-4-31b"), dict(dataset="pathmnist"), dict(split="pool"),
+                  dict(prompt="zero_shot"), dict(chunk=1)]:
+        cell = {"dataset": "pneumoniamnist", "model": "qwen3.8-27b-fp8", "split": "test",
+                "prompt": "concept", "chunk": 0, **wrong}
+        with pytest.raises(ValueError, match="refusing"):
+            stages.check_output_name(good, **cell)

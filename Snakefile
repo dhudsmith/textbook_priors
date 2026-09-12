@@ -296,43 +296,131 @@ rule probe:
     shell: STAGE + "probe {wildcards.dataset} {wildcards.model} --out {output} > {log} 2>&1"
 
 
+SCORE_CMD = STAGE + ("score {wildcards.dataset} {wildcards.model} {wildcards.split}"
+                     " {wildcards.prompt} {wildcards.chunk} --out {output} > {log} 2>&1")
+
+
 # One rule per model rather than one rule with a model wildcard, because each model gets its own
 # `llm_<model>` resource and Snakemake resource names are fixed per rule. The cap for each lives in
 # profiles/palmetto/config.yaml, below the concurrency the service publishes; a job holds one unit
 # for as long as it runs, so the number of jobs in flight for a model is the number of calls in
 # flight for it. The smoke tier checks the profile's caps against config's.
-for _model in MODELS:
-    # The command is built here rather than inline: Snakemake's parser rejects a `shell:` whose
-    # expression spans lines inside a rule generated in a loop, though it accepts one in a rule
-    # declared with a name.
-    _cmd = (STAGE + "score {wildcards.dataset} " + _model +
-            " {wildcards.split} {wildcards.prompt} {wildcards.chunk} --out {output} > {log} 2>&1")
-    # x30 for the primary model (test concept, test zero-shot, pool concept, six datasets each)
-    # and x30 for each ladder model; 270 jobs of a hundred images in all.
-    rule:
-        name: f"score_{slug(_model)}"
-        input:
-            prompts=f"{OUT}/prompts/{{dataset}}.json",
-            sample=f"{OUT}/sample/{{dataset}}.json",
-            arrays=f"{config['cachedir']}/{{dataset}}.npz",
-            smoke=SMOKE,
-            code=CODE_SCORE,
-        params:
-            chunk_size=CHUNK,
-            temperature=config["vlm"]["temperature"],
-            reasoning=config["vlm"]["reasoning"],
-            max_tokens=config["vlm"]["max_tokens"],
-            retries=config["vlm"]["retries"],
-        # protected(): Snakemake makes the file read-only once written, which is principle 7 with
-        # teeth. Re-scoring then costs an explicit chmod, so 27,000 calls cannot be spent again by
-        # a stray rerun.
-        output: protected(f"{OUT}/score/{{dataset}}__{_model}__{{split}}__{{prompt}}__chunk{{chunk}}.json")
-        log: f"logs/score/{{dataset}}__{_model}__{{split}}__{{prompt}}__chunk{{chunk}}.log"
-        benchmark: f"benchmarks/score/{{dataset}}__{_model}__{{split}}__{{prompt}}__chunk{{chunk}}.tsv"
-        conda: "envs/priors.yml"
-        threads: RES["score"]["cpus"]
-        resources: **res("score"), **{f"llm_{slug(_model)}": 1}
-        shell: _cmd
+#
+# Written out four times rather than generated in a loop, and the repetition is deliberate. The
+# loop version ran once and wrote gemma-4-31b's answers into the file named for the primary model:
+# each generated rule kept its own `output:` but they all shared the LAST iteration's `shell:`, and
+# Snakemake printed the command it had not run. Four explicit rules cannot do that, and the model
+# each one names is visible in the rule the reader is looking at. The stage refuses a mismatch
+# between the model it is told to use and the file it is told to write, so the same class of error
+# now fails before the first call rather than after a hundred.
+
+rule score_qwen3_5_9b:
+    """One chunk of qwen3.5-9b: a hundred images, one prompt. x30."""
+    input:
+        prompts=f"{OUT}/prompts/{{dataset}}.json",
+        sample=f"{OUT}/sample/{{dataset}}.json",
+        arrays=f"{config['cachedir']}/{{dataset}}.npz",
+        smoke=SMOKE,
+        code=CODE_SCORE,
+    params:
+        chunk_size=CHUNK,
+        temperature=config["vlm"]["temperature"],
+        reasoning=config["vlm"]["reasoning"],
+        max_tokens=config["vlm"]["max_tokens"],
+        retries=config["vlm"]["retries"],
+    wildcard_constraints:
+        model="qwen3\.5\-9b",
+    # protected(): the file is read-only once written, which is principle 7 with teeth. Re-scoring
+    # then costs an explicit chmod, so 27,000 calls cannot be spent again by a stray rerun.
+    output: protected(f"{OUT}/score/{{dataset}}__{{model}}__{{split}}__{{prompt}}__chunk{{chunk}}.json")
+    log: "logs/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.log"
+    benchmark: "benchmarks/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.tsv"
+    conda: "envs/priors.yml"
+    threads: RES["score"]["cpus"]
+    resources: **res("score"), **{"llm_qwen3_5_9b": 1}
+    shell: SCORE_CMD
+
+
+rule score_gemma_4_12b:
+    """One chunk of gemma-4-12b: a hundred images, one prompt. x30."""
+    input:
+        prompts=f"{OUT}/prompts/{{dataset}}.json",
+        sample=f"{OUT}/sample/{{dataset}}.json",
+        arrays=f"{config['cachedir']}/{{dataset}}.npz",
+        smoke=SMOKE,
+        code=CODE_SCORE,
+    params:
+        chunk_size=CHUNK,
+        temperature=config["vlm"]["temperature"],
+        reasoning=config["vlm"]["reasoning"],
+        max_tokens=config["vlm"]["max_tokens"],
+        retries=config["vlm"]["retries"],
+    wildcard_constraints:
+        model="gemma\-4\-12b",
+    # protected(): the file is read-only once written, which is principle 7 with teeth. Re-scoring
+    # then costs an explicit chmod, so 27,000 calls cannot be spent again by a stray rerun.
+    output: protected(f"{OUT}/score/{{dataset}}__{{model}}__{{split}}__{{prompt}}__chunk{{chunk}}.json")
+    log: "logs/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.log"
+    benchmark: "benchmarks/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.tsv"
+    conda: "envs/priors.yml"
+    threads: RES["score"]["cpus"]
+    resources: **res("score"), **{"llm_gemma_4_12b": 1}
+    shell: SCORE_CMD
+
+
+rule score_qwen3_8_27b_fp8:
+    """One chunk of qwen3.8-27b-fp8: a hundred images, one prompt. x180. The primary model: the only one that scores the labelled pool,
+    and the only one asked the zero-shot prompt."""
+    input:
+        prompts=f"{OUT}/prompts/{{dataset}}.json",
+        sample=f"{OUT}/sample/{{dataset}}.json",
+        arrays=f"{config['cachedir']}/{{dataset}}.npz",
+        smoke=SMOKE,
+        code=CODE_SCORE,
+    params:
+        chunk_size=CHUNK,
+        temperature=config["vlm"]["temperature"],
+        reasoning=config["vlm"]["reasoning"],
+        max_tokens=config["vlm"]["max_tokens"],
+        retries=config["vlm"]["retries"],
+    wildcard_constraints:
+        model="qwen3\.8\-27b\-fp8",
+    # protected(): the file is read-only once written, which is principle 7 with teeth. Re-scoring
+    # then costs an explicit chmod, so 27,000 calls cannot be spent again by a stray rerun.
+    output: protected(f"{OUT}/score/{{dataset}}__{{model}}__{{split}}__{{prompt}}__chunk{{chunk}}.json")
+    log: "logs/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.log"
+    benchmark: "benchmarks/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.tsv"
+    conda: "envs/priors.yml"
+    threads: RES["score"]["cpus"]
+    resources: **res("score"), **{"llm_qwen3_8_27b_fp8": 1}
+    shell: SCORE_CMD
+
+
+rule score_gemma_4_31b:
+    """One chunk of gemma-4-31b: a hundred images, one prompt. x30."""
+    input:
+        prompts=f"{OUT}/prompts/{{dataset}}.json",
+        sample=f"{OUT}/sample/{{dataset}}.json",
+        arrays=f"{config['cachedir']}/{{dataset}}.npz",
+        smoke=SMOKE,
+        code=CODE_SCORE,
+    params:
+        chunk_size=CHUNK,
+        temperature=config["vlm"]["temperature"],
+        reasoning=config["vlm"]["reasoning"],
+        max_tokens=config["vlm"]["max_tokens"],
+        retries=config["vlm"]["retries"],
+    wildcard_constraints:
+        model="gemma\-4\-31b",
+    # protected(): the file is read-only once written, which is principle 7 with teeth. Re-scoring
+    # then costs an explicit chmod, so 27,000 calls cannot be spent again by a stray rerun.
+    output: protected(f"{OUT}/score/{{dataset}}__{{model}}__{{split}}__{{prompt}}__chunk{{chunk}}.json")
+    log: "logs/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.log"
+    benchmark: "benchmarks/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.tsv"
+    conda: "envs/priors.yml"
+    threads: RES["score"]["cpus"]
+    resources: **res("score"), **{"llm_gemma_4_31b": 1}
+    shell: SCORE_CMD
 
 
 rule collect_scores:

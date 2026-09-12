@@ -120,3 +120,13 @@ of "stratify", which showed that the proportional one changes nothing and the eq
 gains a factor of two to four while changing what each one-vs-rest column is measured against. On
 that evidence the user chose to keep the sample as drawn and document the limit, which is now in
 WORKFLOW.md §3 and CHANGELOG.md. Work continues on the scoring rules.
+
+## 2026-09-11 22:00 — Go for the fan-out, and what the first chunk caught
+
+The user said go for the 270-job fan-out. One chunk had been submitted first as a deliberate check
+of the archive format, `protected()` and the gather; it came back holding gemma-4-31b's answers
+under the primary model's file name, which is recorded in CHANGELOG.md as a finding rather than
+here, because it changes what the code has to look like and not merely what was asked for. Fixing
+it cost four explicit rules in place of a loop, a model wildcard so the command cannot disagree
+with the file name, and a guard in the stage that refuses the mismatch before the first call. The
+fan-out goes out after the replacement chunk verifies.

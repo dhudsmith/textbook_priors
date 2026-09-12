@@ -165,6 +165,22 @@ def probe(dataset: str, model: str, out: str) -> None:
         ))
 
 
+def check_output_name(out, dataset: str, model: str, split: str, prompt: str, chunk: int) -> None:
+    """The cell this job was told to compute must be the cell it was told to write.
+
+    Written after a rule wrote one model's answers into the file named for another: the rules that
+    generated the fan-out kept their own output paths but shared a single command, and Snakemake
+    printed the command it had not run. Nothing downstream could have caught it - the archive was
+    internally consistent and only `served_model` disagreed with the file name - so the check lives
+    here, before the first call, where a mismatch costs nothing instead of a hundred calls or a
+    hypothesis. Cheap, and it fires on any rule that is edited into disagreeing with itself.
+    """
+    stem = Path(out).stem
+    expected = f"{dataset}__{model}__{split}__{prompt}__chunk{int(chunk):02d}"
+    if stem != expected:
+        raise ValueError(f"this job was told to score {expected} and to write {stem}: refusing")
+
+
 def score_chunk(dataset: str, model: str, split: str, prompt: str, chunk: int, out: str) -> None:
     """One unit of the scoring fan-out: one dataset, one model, one split, one prompt, one chunk.
 
@@ -175,6 +191,7 @@ def score_chunk(dataset: str, model: str, split: str, prompt: str, chunk: int, o
     downstream is a deterministic function of these files, so nothing below this rule ever needs to
     ask the model again.
     """
+    check_output_name(out, dataset, model, split, prompt, chunk)
     vlm = CONFIG["vlm"]
     rendered = json.loads(Path(f"{CONFIG['outdir']}/prompts/{dataset}.json").read_text())
     arrays = np.load(f"{CONFIG['cachedir']}/{dataset}.npz")
