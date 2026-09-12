@@ -491,3 +491,31 @@ on its first run it found that a bootstrap distribution of n_B mixing `<=50` wit
 NaN quantile — the evaluate stage would have died on it after the entire night of calls. Quantiles
 of n_B are now taken on the ordinal ranks, since there is no crossing half way between 200 and 500
 labelled images.
+
+## 2026-09-12 — The primary model is contention-bound, and a wave that wrote nothing
+
+The 48-job wave submitted at 23:06 ran its full two hours and produced **no chunks at all**. Every
+job was killed at its time limit mid-chunk, and a chunk that times out writes nothing: the hundred
+calls it made are spent and unrecorded. That is the single most expensive shape of failure in this
+workflow, and it is worth stating plainly because the fix is not obvious from the inside.
+
+**What the measurements say.** A call to `qwen3.8-27b-fp8` costs 4.5 s with nothing else running
+and 89 s while 48 of our own jobs are in flight — measured, not inferred. The ladder models do not
+behave this way: qwen3.5-9b held 2.8 s per call under a cap of 96, gemma-4-12b 3.4 s under 24,
+gemma-4-31b 5.0 s under 12. So this is the 27B model's capacity (and whatever else is using it),
+not concurrency as a general phenomenon. Aggregate throughput on it rose only about 2.5-fold going
+from one stream to 48, which is a nearly saturated endpoint.
+
+**Three consequences, all recorded in config where the numbers live.** The runtime request is now
+240 minutes, four times the worst chunk observed rather than twice the best. The remaining work is
+ordered by dataset, three at a time, because the analysis chain needs every chunk of a dataset
+before it can say anything about it — so a cutoff at any hour leaves whole datasets analysable
+instead of six half-finished ones. And the existing archive was marked current rather than
+re-bought when the reader fix changed the code behind it, which is what `--touch` is for.
+
+**What a timed-out chunk should have left behind.** Nothing in the archive says how far a killed
+job got, because the stage writes its JSON at the end. A progress line every ten calls would have
+turned two hours of silence into a measurement, and would have let this be diagnosed in twenty
+minutes rather than at the deadline. Not changed now: `priors/score.py` is an input to every
+protected chunk already written, and re-scoring 91 chunks to add a log line would cost more than
+the line is worth tonight. It belongs in the next re-score.
