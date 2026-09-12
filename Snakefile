@@ -39,8 +39,8 @@ configfile: "config/config.yaml"
 # Seconds-long bookkeeping runs in the submitting process rather than paying a SLURM round-trip.
 # Anything with a real toolchain or a real cost is submitted so it runs with declared resources.
 localrules:
-    all, sample, prompts, score, features, classify, evaluate, smoke, render_prompts,
-    collect_scores, evaluate_across,
+    all, sample, prompts, score, features, classify, evaluate, report, smoke, render_prompts,
+    collect_scores, evaluate_across, tables,
 
 
 OUT = config["outdir"]
@@ -54,6 +54,11 @@ RELEASE = yaml.safe_load(Path(config["release"]).read_text())["datasets"]
 # BLAS sizes its thread pool from the machine, not the cgroup; pin it to the allocation.
 PIN = "export OMP_NUM_THREADS={threads} MKL_NUM_THREADS={threads} OPENBLAS_NUM_THREADS={threads}; "
 STAGE = PIN + "python -m priors.stages "
+
+# pdflatex loads libz, and this cluster's login environment puts a spack zlib-ng ahead of the
+# system library whose optimised path is an illegal instruction on the older compute nodes: TeX
+# ships page one and then dies of SIGILL, leaving a truncated but readable PDF.
+TEX = "env -u LD_LIBRARY_PATH "
 
 
 def code(*modules):
@@ -79,6 +84,7 @@ CODE_SCORE = code("llm", "score", "stages")     # the prompts arrive as a file, 
 CODE_FEATURES = code("features", "stages")
 CODE_CLASSIFY = code("classify", "data", "stages")
 CODE_EVALUATE = code("evaluate", "data", "stages")
+CODE_REPORT = code("report", "stages")          # figures never depend on the estimators
 
 TEST_FILES = sorted(str(p) for p in Path("tests").glob("*.py"))
 
@@ -126,6 +132,9 @@ FEATURES = expand(f"{OUT}/features/{{dataset}}.json", dataset=DATASETS)
 CLASSIFIED = expand(f"{OUT}/classify/{{dataset}}.json", dataset=DATASETS)
 EVALUATED = expand(f"{OUT}/evaluate/{{dataset}}.json", dataset=DATASETS)
 EVALUATION = f"{OUT}/evaluation.json"
+FIGS, TABS = config["figdir"], config["tabdir"]
+FIG_FILES = expand(f"{FIGS}/fig_{{f}}.png", f=["curve", "n_b", "ladder"])
+TABLE_TEX = expand(f"{TABS}/{{t}}.tex", t=["h1", "h2", "h3", "completeness", "numbers"])
 
 wildcard_constraints:
     dataset="|".join(DATASETS),
@@ -134,7 +143,7 @@ wildcard_constraints:
 
 # ---- targets: one phony target per stage; `all` becomes the technical report at stage 6 --------
 rule all:
-    input: SAMPLES, PROMPTS
+    input: "report/report.pdf"
 
 rule sample:
     input: SAMPLES
@@ -153,6 +162,10 @@ rule classify:
 
 rule evaluate:
     input: EVALUATION
+
+rule report:
+    """Tables and figures without the PDF."""
+    input: TABLE_TEX, FIG_FILES
 
 
 # =====================================================================================
@@ -588,13 +601,58 @@ rule evaluate_across:
 
 
 # =====================================================================================
+# 6  REPORT
+#
+# The technical report is the complete record of what was computed: the question, the provenance,
+# the methods as executed, every table and figure, the diagnostics and the run record. It is not a
+# manuscript - interpretation stays with the authors - and no number in it is typed by hand. Every
+# table is generated into report/tables/, and the sentences whose direction depends on a value read
+# a macro from numbers.tex, so the prose cannot state something the run did not produce.
+# =====================================================================================
+
+rule tables:
+    """Every table and number macro, from results/ alone. x1, local."""
+    input: evaluation=EVALUATION, per_dataset=EVALUATED, code=CODE_REPORT
+    output: TABLE_TEX
+    log: "logs/tables.log"
+    conda: "envs/priors.yml"
+    shell: STAGE + "tables --dest " + TABS + " > {log} 2>&1"
+
+rule figures:
+    """The three figures, one per hypothesis. x1."""
+    input: evaluation=EVALUATION, per_dataset=EVALUATED, code=CODE_REPORT
+    output: FIG_FILES
+    log: "logs/figures.log"
+    benchmark: "benchmarks/figures.tsv"
+    conda: "envs/priors.yml"
+    threads: RES["report"]["cpus"]
+    resources: **res("report")
+    shell: STAGE + "figures --dest " + FIGS + " > {log} 2>&1"
+
+rule technical_report:
+    input: tex="report/report.tex", bib="report/references.bib", tables=TABLE_TEX, figs=FIG_FILES
+    output: "report/report.pdf"
+    log: "logs/technical_report.log"
+    threads: RES["report_pdf"]["cpus"]
+    resources: **res("report_pdf")
+    shell:
+        # pdflatex, bibtex, pdflatex twice more: the later passes resolve the citations and the
+        # references. The last line asserts the document was finished, because a pdflatex that dies
+        # part-way still leaves a readable PDF behind. TeX runs without the login environment's
+        # LD_LIBRARY_PATH: a spack zlib-ng there is an illegal instruction on the older nodes.
+        "cd report && " + TEX + "pdflatex -interaction=nonstopmode -halt-on-error report.tex > ../{log} 2>&1 "
+        "&& (" + TEX + "bibtex report >> ../{log} 2>&1 || test $? -lt 2) "
+        "&& " + TEX + "pdflatex -interaction=nonstopmode -halt-on-error report.tex >> ../{log} 2>&1 "
+        "&& " + TEX + "pdflatex -interaction=nonstopmode -halt-on-error report.tex >> ../{log} 2>&1 "
+        "&& grep -q 'Output written on report.pdf' ../{log}"
+
+
+# =====================================================================================
 # STILL TO COME, in this order, each one tested before the next is written:
 #
 #   0  smoke              two tiers of it are still missing, and arrive with the code they test:
 #                         the arm-B estimator on a fixture (with priors/classify.py) and the LLM
 #                         client's retry on a malformed answer (with priors/llm.py)
-#   6  figures, tables, technical_report
-#
-# Extensions (WORKFLOW.md section 10), each outside `all`: bare_levels, generic_prompt,
+#\n# Extensions (WORKFLOW.md section 10), each outside `all`: bare_levels, generic_prompt,
 # primary_upgrade.
 # =====================================================================================

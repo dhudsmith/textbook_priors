@@ -23,20 +23,20 @@ tests. The bank files are deliberately not inputs of `smoke`, so that editing on
 invalidates that dataset alone; the last invocation above is how the schema tests are re-run after
 such an edit, and the reasoning is in the Snakefile's stage-0 banner.
 
-The workflow is being built one stage at a time; the foot of the `Snakefile` lists the rules still
-to come, and the table below marks what exists today.
+All seven stages are built. `rule all` is the technical report, and a dry run from a clean clone is
+312 jobs: 270 of them the scoring fan-out.
 
 ## The stages
 
 | # | Stage | What happens | Jobs | Built |
 |---|---|---|---|---|
-| 0 | **Smoke** | The tests: bank schema, label maps, prompts, the sampler, the arm-B estimator, the metric | 1 | all but the arm-B estimator |
+| 0 | **Smoke** | The tests: bank schema, label maps, prompts, the sampler, the estimators, the metric | 1 | yes |
 | 1 | **Sample** | Per dataset: the seeded 500-image test sample and 2000-image labelled pool | 6 | yes |
 | 2 | **Score** | Per dataset: render both prompts; then the VLM calls, archived raw | 6 + 270 | prompts, probe |
-| 3 | **Features** | Per dataset: ImageNet ResNet-18 penultimate features | 6 | |
-| 4 | **Classify** | Per dataset: arms A, B, C, P over the curve, and the permutation controls | 6 | |
-| 5 | **Evaluate** | AUC, the paired bootstrap, n_B; then the sign tests and the ladder | 6 + 1 | |
-| 6 | **Report** | Three figures, the tables, the technical report PDF | 3 | |
+| 3 | **Features** | Per dataset: ImageNet ResNet-18 penultimate features | 6 | yes |
+| 4 | **Classify** | Per dataset: arms A, B, C, P over the curve, and the permutation controls | 6 | yes |
+| 5 | **Evaluate** | AUC, the paired bootstrap, n_B; then the sign tests and the ladder | 6 + 1 | yes |
+| 6 | **Report** | Three figures, the tables, the technical report PDF | 3 | yes |
 
 ## Layout
 
@@ -71,6 +71,10 @@ SESSION_LOG.md         timestamped record of how the work was directed
 | `llm.py` | The boundary: one kind of call, the key read from an owner-only file, thinking switched off, transport backoff, and what came back recorded verbatim. |
 | `score.py` | The deterministic half of scoring: the image as a lossless PNG, and a reply parsed into a validated answer or a recorded absence. |
 | `prompts.py` | The concept and zero-shot prompt strings, rendered from the bank and the label map. |
+| `features.py` | Arm P's frozen ImageNet encoder, and the preprocessing that does not resize. |
+| `classify.py` | Every estimator: the concept vectors, arm B's fingerprint match, the regression behind arms C and P, and the two permutation controls. |
+| `evaluate.py` | The AUC convention as a rank formula, the shared paired bootstrap, n_B, and the tests the hypotheses are decided by. |
+| `report.py` | Every figure, table and number macro, from results/ alone. |
 | `stages.py` | **The workflow driver.** One entry point per unit of parallel work. |
 | `manifest.py` | The run manifest every result carries. |
 
@@ -83,9 +87,11 @@ SESSION_LOG.md         timestamped record of how the work was directed
 | `test_prompts.py` | both prompts to H2's separation, and the renderer to its switches | 40 |
 | `test_sample.py` | the streaming reader to a release-shaped fixture whose rows identify themselves | 14 |
 | `test_score.py` | the image encoding, the reply parser and the two retry policies, without calling the service | 31 |
+| `test_classify.py` | the estimators to fixtures small enough to check by hand, arm B included | 28 |
+| `test_evaluate.py` | the fast AUC to the package's evaluator, and the decision rules to the plan | 12 |
 | `test_metrics.py` | the AUC convention to the package that defines it | 3 |
 
-Still to come with the code it tests: the arm-B estimator on a fixture (`priors/classify.py`).
+Every tier WORKFLOW.md section 6 asks for now exists, including the arm-B estimator on a fixture.
 
 ## Where the data comes from
 

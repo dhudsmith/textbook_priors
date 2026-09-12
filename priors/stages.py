@@ -13,6 +13,8 @@ a table; tables and figures are drawn from those files by the report stages.
     classify DATASET --out FILE --arrays FILE    arms A, B, C, P and the controls (stage 4)
     evaluate DATASET --out FILE                  AUCs, the paired bootstrap and n_B (stage 5)
     evaluate-across --out FILE                   the sign tests, the ladder, the verdicts (stage 5)
+    tables --dest DIR                            every table and number macro the report states
+    figures --dest DIR                           the three figures
 
 Run with  python -m priors.stages <stage> [args]
 """
@@ -26,7 +28,8 @@ from pathlib import Path
 import numpy as np
 import yaml
 
-from . import classify as arms, data, evaluate as metrics, features as pixels, llm, prompts, sample as sampling, score
+from . import (classify as arms, data, evaluate as metrics, features as pixels, llm,
+               prompts, report as reporting, sample as sampling, score)
 from .manifest import Run
 
 CONFIG = yaml.safe_load(Path(os.environ.get("PRIORS_CONFIG", "config/config.yaml")).read_text())
@@ -601,6 +604,34 @@ def evaluate_across(out: str) -> None:
                                            for d in datasets}))
 
 
+def tables(dest: str) -> None:
+    """Every table and every number macro the report states, from results/ alone."""
+    datasets, curve = CONFIG["datasets"], CONFIG["curve"]["n"]
+    primary = CONFIG["vlm"]["primary"]
+    per, across = reporting.load(CONFIG["outdir"], datasets)
+    Path(dest).mkdir(parents=True, exist_ok=True)
+    with Run("tables", dict(datasets=datasets)) as run:
+        reporting.table_h1(per, datasets, curve, dest)
+        reporting.table_h2(per, datasets, curve, primary, dest)
+        reporting.table_h3(across, datasets, dest)
+        reporting.table_completeness(per, datasets, dest)
+        macros = reporting.numbers(per, across, datasets, curve, primary, dest)
+        run.write(f"{CONFIG['outdir']}/tables.json", dict(dest=dest, macros=macros))
+
+
+def figures(dest: str) -> None:
+    """The three figures, one per hypothesis."""
+    datasets, curve = CONFIG["datasets"], CONFIG["curve"]["n"]
+    per, across = reporting.load(CONFIG["outdir"], datasets)
+    Path(dest).mkdir(parents=True, exist_ok=True)
+    with Run("figures", dict(datasets=datasets)) as run:
+        reporting.figure_curve(per, datasets, curve, dest)
+        reporting.figure_n_b(per, datasets, curve, dest)
+        reporting.figure_ladder(across, datasets, dest)
+        run.write(f"{CONFIG['outdir']}/figures.json", dict(dest=dest,
+                  files=["fig_curve.png", "fig_n_b.png", "fig_ladder.png"]))
+
+
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="stage", required=True)
@@ -619,6 +650,8 @@ def main(argv=None) -> None:
     p.add_argument("--out", required=True); p.add_argument("--arrays", required=True)
     p = sub.add_parser("evaluate"); p.add_argument("dataset"); p.add_argument("--out", required=True)
     p = sub.add_parser("evaluate-across"); p.add_argument("--out", required=True)
+    for name in ("tables", "figures"):
+        q = sub.add_parser(name); q.add_argument("--dest", required=True)
     a = ap.parse_args(argv)
     if a.stage == "sample":
         sample(a.dataset, a.out, a.arrays)
@@ -638,6 +671,10 @@ def main(argv=None) -> None:
         evaluate(a.dataset, a.out)
     elif a.stage == "evaluate-across":
         evaluate_across(a.out)
+    elif a.stage == "tables":
+        tables(a.dest)
+    elif a.stage == "figures":
+        figures(a.dest)
     else:
         raise SystemExit(f"stage {a.stage} not implemented yet")
 

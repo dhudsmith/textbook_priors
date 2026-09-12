@@ -131,3 +131,5 @@ resources:
   # Guess. The bootstrap is 10,000 ranked resamples of a 500-row matrix with a column per arm and
   # class; one core, since it is one numpy loop, and the arrays are megabytes.
   evaluate: {cpus: 2, mem_mb: 4000, runtime: 60}
+  report: {cpus: 2, mem_mb: 4000, runtime: 30}        # matplotlib over a few hundred numbers
+  report_pdf: {cpus: 1, mem_mb: 4000, runtime: 20}
