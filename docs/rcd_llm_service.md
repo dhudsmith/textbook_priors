@@ -134,3 +134,53 @@ and the number of calls, not from the cap. The full measurement is in `CHANGELOG
 (2026-09-12, "The service serialises us").
 
 Multiply that by the thinking-on factor above before planning any run with reasoning enabled.
+
+## The OpenAI gateway, and what a call of this study actually costs
+
+Documented: the same RLS key reaches OpenAI-hosted models at the same base URL, charged against
+RLS OpenAI credits. Your individual monthly allocation is spent first, then credits released
+gradually from a shared pool; heavy shared use is rate-limited for the rest of the month, and
+accounting resets on the first of the month. RLS does not log prompts or outputs for the gateway,
+but the content does reach OpenAI, so the acceptable-use question is a real one for medical images
+even when they are public and de-identified. Supported endpoints are `/models`, `/responses`,
+`/chat/completions`, `/embeddings` and `/moderations`; file inputs, batches and the realtime and
+assistants APIs are not.
+
+Measured 2026-09-12 on `gpt-5.6-terra`, this workflow's real concept prompt with a real 224-pixel
+image, `reasoning_effort: low`, two images per dataset. Every one of the twelve parsed complete.
+
+| dataset | concepts | prompt tokens | completion tokens |
+|---|---|---|---|
+| pathmnist | 12 | 1873 | 182–245 |
+| dermamnist | 12 | 1735 | 113–301 |
+| octmnist | 9 | 1500 | 185–614 |
+| pneumoniamnist | 8 | 1226 | 259–312 |
+| bloodmnist | 9 | 1751 | 167–265 |
+| organamnist | 12 | 2018 | 499–617 |
+
+Mean per call: **1,684 prompt and 313 completion tokens**, of which about 212 are reasoning.
+
+**Two levers cut that substantially, and both are measured, not assumed.**
+
+*Prompt caching works, and this workflow's shape is close to ideal for it.* The concept prompt is
+identical for every image of a dataset — only the image differs — so the text prefix is a stable
+1,500 to 2,000 tokens repeated 500 times. Six consecutive organamnist calls each reported
+**1,792 of 2,018 prompt tokens cached**, 89%, from the second call onward and on the first. Cached
+input is billed at a fraction of fresh input, so the price-equivalent input falls to roughly 340
+tokens per call rather than 1,684.
+
+*The `flex` service tier is accepted on ordinary chat completions* and is documented as the way to
+get the equivalent of OpenAI's 50% batch discount through this gateway (the RLS Batch API does not
+itself pass OpenAI batch pricing through). Every measurement in the table above was taken with
+`service_tier: "flex"` set, and nothing rejected it.
+
+So one scoring pass of this study on a gateway model — the concept prompt over six datasets'
+500-image test samples, 3,000 calls — is about **1.0M price-equivalent input and 0.94M output
+tokens** with caching and flex, against 5.05M nominal input without them.
+
+**What a credit is worth is not documented anywhere we could find**, and the service exposes no
+pricing or credit endpoint (`/v1/credits`, `/api/credits` and the OpenAI-style billing paths all
+return 404). The balance is visible only on the OpenAI Credits page in the service UI. To calibrate
+it, note that this session spent, on the gateway and nothing else: **33,540 prompt and 7,387
+completion tokens on `gpt-5.6-terra`**, plus 1,226 and 291 on `gpt-5.5`. The delta on that page is
+the exchange rate.

@@ -815,3 +815,32 @@ manifest is what makes it survivable; naming the target rather than the alias is
 may be removed without notice and their engines updated underneath a run; `active-lts` models are
 promised not to retire mid-semester. A study that spans weeks should read that field before
 choosing, and this one did not know it existed.
+
+## 2026-09-12 — What a gateway call costs: caching carries this workflow, and flex halves the rest
+
+Measured while answering how far the project's OpenAI credits would go on `gpt-5.6-terra`. The
+numbers are in `docs/rcd_llm_service.md`; the finding is that this workflow's prompt shape is
+unusually cheap to run on a metered model, for a reason worth stating.
+
+**The concept prompt is a fixed prefix repeated five hundred times per dataset.** Only the image
+changes between calls of a cell, so the 1,500-to-2,000-token rendered prompt is identical across
+the whole cell. Six consecutive organamnist calls each reported 1,792 of 2,018 prompt tokens
+cached — 89%. That is not a tuning trick; it is a consequence of `render_prompts` being its own
+rule (2026-09-11), which made the prompt an artifact rather than a string formatted at the call
+site. A workflow that rebuilt the prompt per image with the image's own id in it would cache
+nothing.
+
+**Mean cost per call, six datasets, two images each, `reasoning_effort: low`: 1,684 prompt and 313
+completion tokens**, every one parsing complete. With caching and the documented `flex` service
+tier — accepted on ordinary chat completions, not only through the Batch API — a full 3,000-call
+concept pass over the six test samples is about 1.0M price-equivalent input against 5.05M nominal.
+
+**No credit-to-currency rate is documented and the service exposes no pricing endpoint**, so the
+absolute cost is not knowable from here. Recorded instead: this session spent 33,540 prompt and
+7,387 completion tokens on `gpt-5.6-terra` and 1,226 and 291 on `gpt-5.5`, so the delta on the
+OpenAI Credits page fixes the rate for every estimate above.
+
+Nothing was bought toward a result. These were diagnostic calls, no archive was written, and
+whether a gateway model enters the study at all is undecided: it cannot join H3, since a closed
+model of unknown size has no place on a parameter axis, and it makes the contamination limit
+(§2) strictly worse.
