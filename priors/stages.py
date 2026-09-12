@@ -505,14 +505,12 @@ def evaluate(dataset: str, out: str) -> None:
                                                              for s in curve["seeds"]]))
                                            for n in curve["n"]}, b_primary[b], curve["n"]))
         draws = np.array(draws, dtype=float)
-        finite = np.isfinite(draws)
+        half = (1 - spec["ci"]) / 2
         n_b = {
             "point": metrics.code_crossing(n_b_point, curve["n"]),
-            "median": metrics.code_crossing(float(np.median(draws)) if finite.all()
-                                            else float(np.median(draws[finite])) if finite.any()
-                                            else np.inf, curve["n"]),
-            "lo": metrics.code_crossing(float(np.quantile(draws, 0.025)), curve["n"]),
-            "hi": metrics.code_crossing(float(np.quantile(draws, 0.975)), curve["n"]),
+            "median": metrics.quantile_code(draws, 0.5, curve["n"]),
+            "lo": metrics.quantile_code(draws, half, curve["n"]),
+            "hi": metrics.quantile_code(draws, 1 - half, curve["n"]),
             "already_above_frac": float(np.mean(draws == -np.inf)),
             "never_reaches_frac": float(np.mean(draws == np.inf)),
         }

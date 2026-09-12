@@ -125,6 +125,42 @@ def code_crossing(value: float, grid) -> str:
     return str(int(value))
 
 
+def rank_of(value: float, grid) -> int:
+    """The crossing as an ordinal position: 0 is below the grid, i+1 is the i-th grid point, and
+    len(grid)+1 is above it.
+
+    n_B is ordinal, not numeric, and its bootstrap distribution mixes `<=50`, real grid points and
+    `>2000`. Interpolating quantiles over those directly gives NaN the moment a replicate at one
+    infinity meets one at the other - which is what a 10,000-replicate bootstrap does routinely on
+    a dataset where the probe is sometimes already ahead and sometimes never catches up.
+    """
+    ordered = sorted(grid)
+    if value == -np.inf:
+        return 0
+    if value == np.inf:
+        return len(ordered) + 1
+    return ordered.index(int(value)) + 1
+
+
+def code_of_rank(rank: int, grid) -> str:
+    ordered = sorted(grid)
+    if rank <= 0:
+        return f"<={ordered[0]}"
+    if rank > len(ordered):
+        return f">{ordered[-1]}"
+    return str(ordered[int(rank) - 1])
+
+
+def quantile_code(values, q: float, grid) -> str:
+    """A quantile of a bootstrap distribution of crossings, as a code.
+
+    Taken on the ordinal ranks and with `nearest` rather than interpolation, because there is no
+    such thing as a crossing half way between 200 and 500 labelled images.
+    """
+    ranks = [rank_of(v, grid) for v in values]
+    return code_of_rank(int(np.quantile(ranks, q, method="nearest")), grid)
+
+
 def sign_test(wins: int, n: int) -> float:
     """One-sided exact binomial test that an arm wins more often than chance across datasets.
 

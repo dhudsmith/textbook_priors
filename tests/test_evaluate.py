@@ -125,3 +125,24 @@ def test_the_friedman_test_runs_over_the_model_ladder(config):
 
 def test_friedman_says_so_rather_than_failing_on_too_few_models():
     assert metrics.friedman(np.zeros((6, 2)))["p"] is None
+
+
+@pytest.mark.parametrize("values, expect", [
+    ([-np.inf, -np.inf, 100.0], "<=50"),
+    ([50.0, 100.0, 200.0], "100"),
+    ([np.inf, np.inf, 200.0], ">200"),
+    ([-np.inf, np.inf], "<=50"),
+])
+def test_an_n_b_quantile_mixes_codes_and_numbers_without_producing_nan(values, expect):
+    """Caught by the pipeline test before the real run: a bootstrap distribution that contains both
+    "already above at the first grid point" and "never reaches" makes an interpolated quantile NaN,
+    and NaN is not a crossing. The quantile is taken on the ordinal ranks instead."""
+    grid = [50, 100, 200]
+    assert metrics.quantile_code(values, 0.5, grid) == expect
+
+
+def test_the_ordinal_positions_are_the_ones_the_codes_mean():
+    grid = [50, 100, 200]
+    assert metrics.rank_of(-np.inf, grid) == 0 and metrics.code_of_rank(0, grid) == "<=50"
+    assert metrics.rank_of(100.0, grid) == 2 and metrics.code_of_rank(2, grid) == "100"
+    assert metrics.rank_of(np.inf, grid) == 4 and metrics.code_of_rank(4, grid) == ">200"
