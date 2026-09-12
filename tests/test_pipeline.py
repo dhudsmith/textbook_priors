@@ -187,3 +187,25 @@ def test_n_b_is_reported_as_a_code_when_the_crossing_is_outside_the_grid(workspa
     n_b = json.loads((results / "evaluate/toymnist.json").read_text())["n_b"]
     assert n_b["point"] in {"20", "50", "<=20", ">50"}
     assert 0.0 <= n_b["never_reaches_frac"] <= 1.0
+
+
+def test_the_driver_imports_nothing_a_stage_does_not_need():
+    """The stages do not share an environment. The features job runs in envs/priors_torch.yml,
+    which has torch and neither sklearn nor openai, and a driver that imported every module at the
+    top made that job fail on `import sklearn` before it did any work. One entry point per unit of
+    work does not mean one dependency set for all of them."""
+    source = (ROOT / "priors" / "stages.py").read_text()
+    top = source[:source.index("def ")]
+    for heavy in ("classify", "evaluate", "llm", "score", "features", "report", "prompts", "sample"):
+        assert f"from . import {heavy}" not in top, f"{heavy} is imported at module scope"
+        assert f"import {heavy} as" not in top, f"{heavy} is imported at module scope"
+    assert "from . import data" in top, "data is yaml only and every stage uses it"
+
+
+def test_the_light_environment_carries_no_torch_and_the_torch_one_no_sklearn():
+    """Stated as a test because the two environments are the reason the imports are lazy."""
+    light = (ROOT / "envs" / "priors.yml").read_text()
+    heavy = (ROOT / "envs" / "priors_torch.yml").read_text()
+    assert "torch" not in light.split("dependencies:")[1]
+    assert "scikit-learn" not in heavy and "openai" not in heavy
+    assert "torch" in heavy and "scikit-learn" in light

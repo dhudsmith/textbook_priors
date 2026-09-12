@@ -28,9 +28,14 @@ from pathlib import Path
 import numpy as np
 import yaml
 
-from . import (classify as arms, data, evaluate as metrics, features as pixels, llm,
-               prompts, report as reporting, sample as sampling, score)
+from . import data
 from .manifest import Run
+
+# Only `data` (yaml) and `manifest` are imported at module scope. Every other module is imported
+# inside the stage that needs it, because the stages do not share an environment: the features job
+# runs in envs/priors_torch.yml, which has torch and neither sklearn nor openai, and a driver that
+# imported every module at the top made that job fail on `import sklearn` before it did anything.
+# One entry point per unit of work does not mean one dependency set for all of them.
 
 CONFIG = yaml.safe_load(Path(os.environ.get("PRIORS_CONFIG", "config/config.yaml")).read_text())
 
@@ -42,6 +47,7 @@ def sample(dataset: str, out: str, arrays: str) -> None:
     reader should check) and the images ride in an .npz beside the cache, not in results/, because
     a quarter of a gigabyte of pixels per dataset is an input to later stages rather than a result
     anything reads. `data/cache` is a symlink onto the project filesystem (WORKFLOW.md 11)."""
+    from . import sample as sampling
     spec = CONFIG["sample"]
     release = data.load_release(CONFIG["release"])
     described = release.dataset(dataset)
@@ -76,6 +82,7 @@ def render_prompts(dataset: str, out: str) -> None:
     No LLM call, no image, no randomness: the output is a deterministic function of the two fixed
     inputs and three config values, and it carries the hash of each input and of each rendered
     prompt so that a score archive can be traced to the exact strings that produced it."""
+    from . import prompts
     size, anchors = CONFIG["size"], CONFIG["vlm"]["prompt"]["anchors"]
     bank = data.load_bank(dataset, CONFIG["conceptdir"])
     release = data.load_release(CONFIG["release"])
@@ -111,6 +118,7 @@ def probe(dataset: str, model: str, out: str) -> None:
     fixed from the moment it exists (CLAUDE.md); a probe that wrote into it would make re-scoring
     an accident rather than a decision.
     """
+    from . import llm, score
     vlm = CONFIG["vlm"]
     spec = vlm["probe"]
     rendered = json.loads(Path(f"{CONFIG['outdir']}/prompts/{dataset}.json").read_text())
@@ -198,6 +206,7 @@ def score_chunk(dataset: str, model: str, split: str, prompt: str, chunk: int, o
     downstream is a deterministic function of these files, so nothing below this rule ever needs to
     ask the model again.
     """
+    from . import llm, score
     check_output_name(out, dataset, model, split, prompt, chunk)
     vlm = CONFIG["vlm"]
     rendered = json.loads(Path(f"{CONFIG['outdir']}/prompts/{dataset}.json").read_text())
@@ -301,6 +310,7 @@ def features(dataset: str, out: str, arrays: str) -> None:
     because 5 MB per dataset of float features is an input to the classifier rather than a result.
     Nothing is trained and nothing is random, so the result carries no seed.
     """
+    from . import features as pixels
     spec = CONFIG["features"]
     sample_arrays = np.load(f"{CONFIG['cachedir']}/{dataset}.npz")
     threads = int(os.environ.get("OMP_NUM_THREADS", "1"))
@@ -333,6 +343,7 @@ def classify(dataset: str, out: str, arrays: str) -> None:
     AUCs, because the paired bootstrap has to resample the test images once for every arm at the
     same time. The scores ride in an .npz beside the JSON, which is small enough to be a result.
     """
+    from . import classify as arms
     spec, sample_spec = CONFIG["classify"], CONFIG["sample"]
     curve = CONFIG["curve"]
     rendered = json.loads(Path(f"{CONFIG['outdir']}/prompts/{dataset}.json").read_text())
@@ -439,6 +450,7 @@ def evaluate(dataset: str, out: str) -> None:
     columns of the same matrix and its interval is a percentile of that. The absolute AUCs carry
     the thin-class caveat of WORKFLOW.md section 3; the differences are what the hypotheses read.
     """
+    from . import evaluate as metrics
     spec, curve = CONFIG["evaluate"], CONFIG["curve"]
     release = data.load_release(CONFIG["release"])
     task = release.dataset(dataset)["medmnist_task"]
@@ -537,6 +549,7 @@ def evaluate_across(out: str) -> None:
     and 5 of 6 is p = 0.11 - so a hypothesis is supported only when it wins everywhere, and the
     per-dataset differences are what carries the reading.
     """
+    from . import evaluate as metrics
     spec, curve = CONFIG["evaluate"], CONFIG["curve"]
     datasets = CONFIG["datasets"]
     models = CONFIG["vlm"]["models"]
@@ -604,6 +617,7 @@ def evaluate_across(out: str) -> None:
 
 def tables(dest: str) -> None:
     """Every table and every number macro the report states, from results/ alone."""
+    from . import report as reporting
     datasets, curve = CONFIG["datasets"], CONFIG["curve"]["n"]
     primary = CONFIG["vlm"]["primary"]
     per, across = reporting.load(CONFIG["outdir"], datasets)
@@ -619,6 +633,7 @@ def tables(dest: str) -> None:
 
 def figures(dest: str) -> None:
     """The three figures, one per hypothesis."""
+    from . import report as reporting
     datasets, curve = CONFIG["datasets"], CONFIG["curve"]["n"]
     per, across = reporting.load(CONFIG["outdir"], datasets)
     Path(dest).mkdir(parents=True, exist_ok=True)
