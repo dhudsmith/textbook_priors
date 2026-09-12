@@ -10,5 +10,6 @@ logs/
 report/tables/
 report/figs/
 scratch/
+.scratch
 __pycache__/
 *.pyc
