@@ -118,8 +118,12 @@ resources:
   # minutes, gemma-4-31b under a cap of 12 took 5.0 s and 8 to 11 minutes, while the primary model
   # under a cap of 48 ran past 30 minutes for a hundred images. A chunk that times out throws away
   # every call it made, which is the expensive failure here, so the request is now four times the
-  # worst chunk seen rather than twice the best.
-  score:  {cpus: 1, mem_mb: 2000, runtime: 120}
+  # worst chunk seen rather than twice the best. Then 120 was not enough either: measured at 00:15
+  # on 2026-09-12, a single call to the primary model while 48 of our own jobs were in flight took
+  # 89 s, against 4.5 s to the same model with nothing else running. Per-call latency on that model
+  # is dominated by contention, ours and other users', so a chunk of 100 can need two and a half
+  # hours. 240 minutes is what a chunk costs at the worst rate observed, plus room.
+  score:  {cpus: 1, mem_mb: 2000, runtime: 240}
   # Guess. ResNet-18 over 2500 images is small, but torch's matmuls do use the cores they are
   # given, so four; memory is the float NCHW batch (64 x 3 x 224 x 224 is 38 MB) plus the split's
   # images and the 5 MB of features, so 8 GB is generous and will be cut from the benchmarks.
