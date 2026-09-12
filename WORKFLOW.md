@@ -104,6 +104,18 @@ subsets as arm C, so features are the only difference.
 - *Evaluation*: `medmnist.evaluator.getAUC`, the package's own convention, on the 500-image sample.
   An image with any missing concept answer counts as incomplete; a dataset-model cell more than 5%
   incomplete is flagged in the report and excluded from the headline.
+- *The test sample is drawn at random, not stratified, and a rare class is thin.* Measured on the
+  drawn samples (2026-09-11): dermamnist holds 6 dermatofibromas and 5 vascular lesions of its 500,
+  organamnist 21 femur-left, pathmnist 24 debris. Since the AUC is the unweighted mean of
+  one-vs-rest columns, a column built on five positives counts as much as one built on 337, and the
+  paired bootstrap will show that as a wide interval on every arm at once. Equal-as-possible
+  stratification was considered and rejected: it would raise those columns only to 23, 46 and 56 -
+  the splits themselves hold little more - while making each column's negatives a uniform mixture
+  rather than the dataset's own, and the study's three hypotheses are paired differences on the
+  same images, where the thin columns are common mode. Matching the split's proportions, the other
+  reading of "stratify", reproduces what the seed already drew and buys nothing. So the sample
+  stays as §4 fixes it, the absolute per-dataset AUCs are read with this in mind, and the report
+  states it as a limit.
 
 ## 4. Scope, and the call budget
 

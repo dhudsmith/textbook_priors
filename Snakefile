@@ -39,7 +39,7 @@ configfile: "config/config.yaml"
 # Seconds-long bookkeeping runs in the submitting process rather than paying a SLURM round-trip.
 # Anything with a real toolchain or a real cost is submitted so it runs with declared resources.
 localrules:
-    all, sample, prompts, smoke, render_prompts,
+    all, sample, prompts, score, smoke, render_prompts, collect_scores,
 
 
 OUT = config["outdir"]
@@ -83,6 +83,41 @@ SAMPLES = expand(f"{OUT}/sample/{{dataset}}.json", dataset=DATASETS)
 PROMPTS = expand(f"{OUT}/prompts/{{dataset}}.json", dataset=DATASETS)
 
 MODELS = list(config["vlm"]["models"])
+PRIMARY = config["vlm"]["primary"]
+CHUNK = config["vlm"]["chunk"]
+
+
+def slug(model):
+    """A model name as a rule name and a resource name: `qwen3.8-27b-fp8` is neither."""
+    return re.sub(r"[^a-z0-9]+", "_", model.lower())
+
+
+def chunk_ids(split):
+    """The chunk numbers one split is cut into, zero-padded so they sort."""
+    n = config["sample"]["test_n" if split == "test" else "pool_n"]
+    return [f"{k:02d}" for k in range((n + CHUNK - 1) // CHUNK)]
+
+
+def score_cells(model=None):
+    """Every (dataset, model, split, prompt, chunk) the fan-out covers.
+
+    `splits` per model comes from config, because arm B is training-free and only the primary model
+    ever needs the labelled pool. The zero-shot prompt is the primary model's alone: arm A is one
+    baseline for H2, not a fifth arm per model."""
+    cells = []
+    for name in ([model] if model else MODELS):
+        for split in config["vlm"]["models"][name]["splits"]:
+            prompts = ["concept"] + (["zero_shot"] if name == PRIMARY and split == "test" else [])
+            for prompt in prompts:
+                for dataset in DATASETS:
+                    for chunk in chunk_ids(split):
+                        cells.append(f"{OUT}/score/{dataset}__{name}__{split}__{prompt}"
+                                     f"__chunk{chunk}.json")
+    return cells
+
+
+SCORES = score_cells()
+SCORE_TABLES = expand(f"{OUT}/scores/{{dataset}}.json", dataset=DATASETS)
 
 wildcard_constraints:
     dataset="|".join(DATASETS),
@@ -98,6 +133,9 @@ rule sample:
 
 rule prompts:
     input: PROMPTS
+
+rule score:
+    input: SCORE_TABLES
 
 
 # =====================================================================================
@@ -258,14 +296,65 @@ rule probe:
     shell: STAGE + "probe {wildcards.dataset} {wildcards.model} --out {output} > {log} 2>&1"
 
 
+# One rule per model rather than one rule with a model wildcard, because each model gets its own
+# `llm_<model>` resource and Snakemake resource names are fixed per rule. The cap for each lives in
+# profiles/palmetto/config.yaml, below the concurrency the service publishes; a job holds one unit
+# for as long as it runs, so the number of jobs in flight for a model is the number of calls in
+# flight for it. The smoke tier checks the profile's caps against config's.
+for _model in MODELS:
+    # The command is built here rather than inline: Snakemake's parser rejects a `shell:` whose
+    # expression spans lines inside a rule generated in a loop, though it accepts one in a rule
+    # declared with a name.
+    _cmd = (STAGE + "score {wildcards.dataset} " + _model +
+            " {wildcards.split} {wildcards.prompt} {wildcards.chunk} --out {output} > {log} 2>&1")
+    # x30 for the primary model (test concept, test zero-shot, pool concept, six datasets each)
+    # and x30 for each ladder model; 270 jobs of a hundred images in all.
+    rule:
+        name: f"score_{slug(_model)}"
+        input:
+            prompts=f"{OUT}/prompts/{{dataset}}.json",
+            sample=f"{OUT}/sample/{{dataset}}.json",
+            arrays=f"{config['cachedir']}/{{dataset}}.npz",
+            smoke=SMOKE,
+            code=CODE_SCORE,
+        params:
+            chunk_size=CHUNK,
+            temperature=config["vlm"]["temperature"],
+            reasoning=config["vlm"]["reasoning"],
+            max_tokens=config["vlm"]["max_tokens"],
+            retries=config["vlm"]["retries"],
+        # protected(): Snakemake makes the file read-only once written, which is principle 7 with
+        # teeth. Re-scoring then costs an explicit chmod, so 27,000 calls cannot be spent again by
+        # a stray rerun.
+        output: protected(f"{OUT}/score/{{dataset}}__{_model}__{{split}}__{{prompt}}__chunk{{chunk}}.json")
+        log: f"logs/score/{{dataset}}__{_model}__{{split}}__{{prompt}}__chunk{{chunk}}.log"
+        benchmark: f"benchmarks/score/{{dataset}}__{_model}__{{split}}__{{prompt}}__chunk{{chunk}}.tsv"
+        conda: "envs/priors.yml"
+        threads: RES["score"]["cpus"]
+        resources: **res("score"), **{f"llm_{slug(_model)}": 1}
+        shell: _cmd
+
+
+rule collect_scores:
+    """One dataset's chunks gathered into the table the classify stage reads. x6, local."""
+    input:
+        chunks=lambda w: [f for f in SCORES if f.startswith(f"{OUT}/score/{w.dataset}__")],
+        prompts=f"{OUT}/prompts/{{dataset}}.json",
+        code=code("stages"),
+    params:
+        missing_max_frac=config["classify"]["missing_max_frac"],
+    output: f"{OUT}/scores/{{dataset}}.json"
+    log: "logs/collect_scores/{dataset}.log"
+    conda: "envs/priors.yml"
+    shell: STAGE + "collect-scores {wildcards.dataset} --out {output} > {log} 2>&1"
+
+
 # =====================================================================================
 # STILL TO COME, in this order, each one tested before the next is written:
 #
 #   0  smoke              two tiers of it are still missing, and arrive with the code they test:
 #                         the arm-B estimator on a fixture (with priors/classify.py) and the LLM
 #                         client's retry on a malformed answer (with priors/llm.py)
-#   2  score_<model>      one rule per model, throttled by an llm_<model> resource; 270 jobs
-#   2  collect_scores     x6, local: the chunk archive gathered into one table per dataset
 #   3  pixel_features     x6, submitted, the torch environment: ResNet-18 penultimate features
 #   4  classify_dataset   x6: arms A, B, C, P over the curve and the permutation controls
 #   5  evaluate_dataset   x6: AUC per arm, the paired bootstrap, n_B

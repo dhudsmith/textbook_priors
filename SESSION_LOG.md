@@ -92,3 +92,31 @@ archive, and the decision about where `results/score/` lives is the owner's.
 The probe also contradicted a measured number in the plan (0.1 to 0.4 s per call, measured without
 an image). WORKFLOW.md §4 now carries both measurements with their dates rather than the older one
 alone; the hypotheses and the scope were not touched.
+
+## 2026-09-11 21:20 — Runs move to the owner's checkout
+
+Asked to make sure the workflow runs from the persistent filesystem. It was worth checking what
+that meant: every path involved is on the same `/project/dane2` mount, so nothing here is about
+disks. What is ephemeral is the agent session's *worktree* under the runner's `_sessions/` tree,
+which is recreated without warning and takes every gitignored path with it — as happened earlier in
+this session.
+
+So runs move to `~/Code/textbook_priors`, the owner's own checkout, which was three commits behind
+and carried one local `.gitignore` edit (`.snakemake/`, already committed here, and `.scratch`,
+which was not). Rather than discard their edit to make the fast-forward possible, `.scratch` was
+committed on the branch, which made their local change redundant and the fast-forward clean. The
+session worktree stays the place to edit, commit and push.
+
+Two consequences worth knowing. Manifests written from that checkout record `git_dirty: false`,
+because it runs what was pushed rather than what is being typed. And since `data/raw` and
+`data/cache` are shared symlinks, only one checkout may run the workflow at a time; the README
+says so under "Where the workflow runs".
+
+## 2026-09-11 21:45 — Thin classes: keep the sample, document the limit
+
+The user asked whether stratifying was not simply cheap and analysis-neutral. It is cheap; it is
+not neutral, and it is not one thing. The reply carried the measured allocations for both readings
+of "stratify", which showed that the proportional one changes nothing and the equal-as-possible one
+gains a factor of two to four while changing what each one-vs-rest column is measured against. On
+that evidence the user chose to keep the sample as drawn and document the limit, which is now in
+WORKFLOW.md §3 and CHANGELOG.md. Work continues on the scoring rules.

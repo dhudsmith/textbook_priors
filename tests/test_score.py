@@ -257,3 +257,71 @@ def test_the_key_is_read_from_the_file_and_a_blank_one_is_refused(tmp_path):
     key.write_text("\n")
     with pytest.raises(ValueError):
         llm.load_key(key)
+
+
+# ---- the fan-out: how the work is cut up, and what holds the caps together ---------------------
+
+@pytest.mark.parametrize("n, size", [(500, 100), (2000, 100), (10, 3), (1, 1), (7, 100)])
+def test_chunks_cover_the_split_exactly_once(n, size):
+    """One chunk is one job and one archive file, so a gap would leave images unscored and an
+    overlap would score them twice at full price."""
+    spans = score.chunks(n, size)
+    assert spans[0][0] == 0 and spans[-1][1] == n
+    assert all(b == c for (_, b), (c, _) in zip(spans, spans[1:]))
+    assert sum(b - a for a, b in spans) == n
+    assert all(0 < b - a <= size for a, b in spans)
+
+
+def test_a_chunk_size_of_zero_is_refused():
+    with pytest.raises(ValueError):
+        score.chunks(100, 0)
+
+
+def test_the_profile_caps_match_the_models_config(config):
+    """`vlm.models.*.cap` says what we decided; the profile's `llm_*` resources are what Snakemake
+    enforces. They are two files, so they can drift, and a drift upwards means asking the service
+    for more concurrency than it published."""
+    import re
+
+    import yaml
+
+    from .conftest import ROOT
+
+    profile = yaml.safe_load((ROOT / "profiles/palmetto/config.yaml").read_text())
+    declared = profile.get("resources", {})
+    for model, spec in config["vlm"]["models"].items():
+        key = "llm_" + re.sub(r"[^a-z0-9]+", "_", model.lower())
+        assert key in declared, f"{model}: no {key} in the palmetto profile"
+        assert declared[key] == spec["cap"], f"{model}: profile {declared[key]} != config {spec['cap']}"
+        assert spec["cap"] <= spec["concurrency"], f"{model}: cap above the published concurrency"
+    assert sorted(k for k in declared if k.startswith("llm_")) == sorted(
+        "llm_" + re.sub(r"[^a-z0-9]+", "_", m.lower()) for m in config["vlm"]["models"]), \
+        "the profile caps a model the config does not have"
+
+
+def test_only_the_primary_model_scores_the_labelled_pool(config):
+    """Arm B needs no labels, so the ladder models need the 500 test images and nothing else. That
+    one observation is what keeps the budget at 27,000 calls instead of 120,000."""
+    models = config["vlm"]["models"]
+    primary = config["vlm"]["primary"]
+    assert primary in models
+    assert models[primary]["splits"] == ["test", "pool"]
+    for name, spec in models.items():
+        if name != primary:
+            assert spec["splits"] == ["test"], name
+
+
+def test_the_call_budget_is_what_the_plan_says(config):
+    """27,000 calls in 270 chunks (WORKFLOW.md section 4). If a grid moves, this is where the new
+    number shows up, rather than in a service bill."""
+    sample, models = config["sample"], config["vlm"]["models"]
+    chunk, primary, datasets = config["vlm"]["chunk"], config["vlm"]["primary"], config["datasets"]
+    calls = jobs = 0
+    for name, spec in models.items():
+        for split in spec["splits"]:
+            n = sample["test_n" if split == "test" else "pool_n"]
+            prompts = 2 if (name == primary and split == "test") else 1
+            calls += n * len(datasets) * prompts
+            jobs += len(score.chunks(n, chunk)) * len(datasets) * prompts
+    assert calls == 27_000
+    assert jobs == 270

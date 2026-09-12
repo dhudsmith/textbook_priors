@@ -70,6 +70,10 @@ vlm:
   # missing rather than guessed. Outside `rule all`.
   probe: {n: 10, malformed_max_tokens: 1}
 
+# The classifier grid is stage 4's; `missing_max_frac` is read one stage earlier, by the gather
+# that flags a dataset-model cell too incomplete for the headline (WORKFLOW.md section 3).
+classify: {l2_grid: [0.01, 0.1, 1, 10, 100], cv_folds: 5, missing_max_frac: 0.05, permute: {seeds: [0, 1, 2]}}
+
 # Resources per rule. cpus is also `threads`; mem_mb per job; runtime in minutes.
 #
 # First guesses until benchmarks/ exists, then set from the measured peaks with the reasoning in a
@@ -88,3 +92,8 @@ resources:
   # memory is one dataset's test array held while the images are encoded (376 MB at the widest).
   # Thirty minutes is for the service being slow, not for the work.
   probe:  {cpus: 1, mem_mb: 2000, runtime: 30}
+  # From the probe (2026-09-11): a call with an image takes a median 3.6 s and at most 5.2 s, so a
+  # chunk of 100 is about six minutes and 30 covers a slow service plus the content retries. One
+  # core: the job is waiting on the network, not computing. Memory is the split's image array held
+  # while each image is encoded, 376 MB at the widest, so 2 GB.
+  score:  {cpus: 1, mem_mb: 2000, runtime: 30}

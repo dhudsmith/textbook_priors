@@ -108,6 +108,23 @@ by hand. Every result carries a manifest — parameters, seeds, commit, package 
 time — and every VLM response is archived raw with its served model name and prompt hash, so
 everything downstream of the model is a deterministic function of the archive.
 
+## Where the workflow runs
+
+**From `~/Code/textbook_priors`, the owner's checkout.** Everything a run produces that is not
+committed — `results/`, `benchmarks/`, `logs/` and Snakemake's own `.snakemake/` metadata — lives
+in the checkout it ran from, and only that one persists. An agent session works in a throwaway
+worktree under the runner's `_sessions/` tree which is recreated without warning, taking every
+gitignored path with it; that is the place to edit, commit and push, not to run.
+
+The two heavy directories are shared by every checkout, because `data/raw` and `data/cache` are
+symlinks onto `/project/dane2/wficai/textbook_priors` (`scripts/link_storage.sh`). That is why a
+lost workspace costs seconds rather than the sampled arrays — and it is also why **only one
+checkout runs the workflow at a time**: two Snakemake instances would write the same cached npz.
+
+It matters most for `results/score/`, the VLM response archive: 27,000 calls the plan treats as
+fixed from the moment they are written (`WORKFLOW.md` §5, principle 7). A run from a throwaway
+worktree would put that archive somewhere that disappears.
+
 ## Setup
 
 Snakemake on `PATH` (`conda activate snakemake`); the workflow builds its own environments from

@@ -141,6 +141,18 @@ def is_complete(parsed: dict, key: str = "answers") -> bool:
     return all(v is not None for v in parsed[key].values())
 
 
+def chunks(n: int, size: int) -> list[tuple[int, int]]:
+    """The (start, stop) of each chunk of work, covering 0..n exactly once.
+
+    One chunk is one job and one archive file, so this partition is what the fan-out is counted in
+    and what a rerun is scoped to: a chunk that fails costs its own hundred calls again and nothing
+    else. The last chunk is short when the split does not divide evenly.
+    """
+    if size <= 0:
+        raise ValueError(f"chunk size {size}")
+    return [(start, min(start + size, n)) for start in range(0, n, size)]
+
+
 def ask_one(client, prompt: dict, image_url: str, kind: str, schema, max_tokens: int,
             content_retries: int = 1) -> dict:
     """One image, one prompt, up to `content_retries` extra attempts on a malformed answer.

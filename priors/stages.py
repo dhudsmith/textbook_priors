@@ -7,6 +7,8 @@ a table; tables and figures are drawn from those files by the report stages.
     sample DATASET --out FILE --arrays FILE     the test sample and the labelled pool (stage 1)
     render-prompts DATASET --out FILE            the two prompt strings for one dataset (stage 2)
     probe DATASET MODEL --out FILE               ten images through the service (stage 2, opt-in)
+    score DATASET MODEL SPLIT PROMPT CHUNK --out FILE   one chunk of the fan-out (stage 2)
+    collect-scores DATASET --out FILE            one dataset's chunks, gathered (stage 2)
 
 Run with  python -m priors.stages <stage> [args]
 """
@@ -163,6 +165,111 @@ def probe(dataset: str, model: str, out: str) -> None:
         ))
 
 
+def score_chunk(dataset: str, model: str, split: str, prompt: str, chunk: int, out: str) -> None:
+    """One unit of the scoring fan-out: one dataset, one model, one split, one prompt, one chunk.
+
+    The archive this writes is the study's raw material (WORKFLOW.md section 7). Every image gets
+    its parsed answer and every raw reply, including the attempts that failed to parse, and the
+    manifest records what produced them: the served model name, the hash of the prompt string that
+    was sent, the hash of the bank behind it, the temperature and the reasoning setting. Everything
+    downstream is a deterministic function of these files, so nothing below this rule ever needs to
+    ask the model again.
+    """
+    vlm = CONFIG["vlm"]
+    rendered = json.loads(Path(f"{CONFIG['outdir']}/prompts/{dataset}.json").read_text())
+    arrays = np.load(f"{CONFIG['cachedir']}/{dataset}.npz")
+    images, labels = arrays[f"{split}_images"], arrays[f"{split}_labels"]
+    indices = arrays[f"{split}_indices"]
+
+    spans = score.chunks(len(images), vlm["chunk"])
+    if not 0 <= chunk < len(spans):
+        raise ValueError(f"chunk {chunk} of {len(spans)} for {dataset}/{split}")
+    start, stop = spans[chunk]
+
+    schema = rendered["concepts"] if prompt == "concept" else rendered["classes"]
+    client = llm.Client(model=model, base_url=vlm["base_url"], key_file=vlm["key_file"],
+                        temperature=vlm["temperature"], reasoning=vlm["reasoning"],
+                        retries=vlm["transport_retries"], timeout=vlm["timeout"])
+
+    params = dict(dataset=dataset, model=model, split=split, prompt=prompt, chunk=chunk,
+                  images=stop - start, temperature=vlm["temperature"], reasoning=vlm["reasoning"],
+                  max_tokens=vlm["max_tokens"], retries=vlm["retries"],
+                  prompt_sha256=rendered["prompts"][prompt]["sha256"],
+                  bank_sha256=rendered["bank_sha256"], key_file=vlm["key_file"])
+
+    with Run("score", params) as run:
+        records = []
+        for position in range(start, stop):
+            answer = score.ask_one(client, rendered["prompts"][prompt],
+                                   score.png_data_url(images[position]), prompt, schema,
+                                   vlm["max_tokens"], vlm["retries"])
+            records.append({"position": int(position), "index": int(indices[position]),
+                            "label": int(labels[position]), **answer})
+
+        latencies = sorted(reply["elapsed_s"] for r in records for reply in r["replies"])
+        run.write(out, dict(
+            dataset=dataset, model=model, split=split, prompt=prompt, chunk=chunk,
+            served_model=records[0]["replies"][0]["served_model"],
+            span=[start, stop],
+            complete=sum(r["complete"] for r in records),
+            incomplete=sum(not r["complete"] for r in records),
+            retried=sum(r["content_attempts"] > 1 for r in records),
+            calls=len(latencies),
+            seconds_per_call={"median": latencies[len(latencies) // 2],
+                              "min": latencies[0], "max": latencies[-1],
+                              "total": round(sum(latencies), 2)},
+            records=records,
+        ))
+
+
+def collect_scores(dataset: str, out: str) -> None:
+    """One dataset's chunks, gathered into the table the classify stage reads.
+
+    A gather and nothing else: the answers are carried across as the level tokens the model gave,
+    with `null` where it gave none. Turning a level into a number is the estimator's job
+    (WORKFLOW.md section 3) and belongs to the stage that also decides what to do about the
+    missing ones, not to a rule whose only purpose is to put 45 files into one.
+    """
+    vlm = CONFIG["vlm"]
+    rendered = json.loads(Path(f"{CONFIG['outdir']}/prompts/{dataset}.json").read_text())
+    cells, sources = {}, []
+
+    for path in sorted(Path(f"{CONFIG['outdir']}/score").glob(f"{dataset}__*.json")):
+        chunk = json.loads(path.read_text())
+        key = f"{chunk['model']}__{chunk['split']}__{chunk['prompt']}"
+        cell = cells.setdefault(key, {"model": chunk["model"], "split": chunk["split"],
+                                      "prompt": chunk["prompt"],
+                                      "served_model": chunk["served_model"],
+                                      "prompt_sha256": chunk["manifest"]["params"]["prompt_sha256"],
+                                      "rows": []})
+        field = "answers" if chunk["prompt"] == "concept" else "scores"
+        for record in chunk["records"]:
+            cell["rows"].append({"position": record["position"], "index": record["index"],
+                                 "label": record["label"], "complete": record["complete"],
+                                 field: record[field]})
+        sources.append(path.name)
+
+    for cell in cells.values():
+        cell["rows"].sort(key=lambda r: r["position"])
+        cell["n"] = len(cell["rows"])
+        cell["incomplete_frac"] = round(sum(not r["complete"] for r in cell["rows"]) / cell["n"], 4)
+
+    with Run("collect_scores", dict(dataset=dataset, cells=len(cells), chunks=len(sources))) as run:
+        run.write(out, dict(
+            dataset=dataset,
+            concepts=[c["id"] for c in rendered["concepts"]],
+            classes=rendered["classes"],
+            missing_max_frac=CONFIG["classify"]["missing_max_frac"],
+            # The gate of WORKFLOW.md section 3: a cell more than 5% incomplete is flagged in the
+            # report and kept out of the headline. Recorded per cell here so the report reads it
+            # rather than recomputing it.
+            cells={key: {**cell, "over_missing_cap":
+                         cell["incomplete_frac"] > CONFIG["classify"]["missing_max_frac"]}
+                   for key, cell in cells.items()},
+            chunk_files=sources,
+        ))
+
+
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="stage", required=True)
@@ -171,6 +278,10 @@ def main(argv=None) -> None:
     p = sub.add_parser("render-prompts"); p.add_argument("dataset"); p.add_argument("--out", required=True)
     p = sub.add_parser("probe"); p.add_argument("dataset"); p.add_argument("model")
     p.add_argument("--out", required=True)
+    p = sub.add_parser("score"); p.add_argument("dataset"); p.add_argument("model")
+    p.add_argument("split"); p.add_argument("prompt"); p.add_argument("chunk", type=int)
+    p.add_argument("--out", required=True)
+    p = sub.add_parser("collect-scores"); p.add_argument("dataset"); p.add_argument("--out", required=True)
     a = ap.parse_args(argv)
     if a.stage == "sample":
         sample(a.dataset, a.out, a.arrays)
@@ -178,6 +289,10 @@ def main(argv=None) -> None:
         render_prompts(a.dataset, a.out)
     elif a.stage == "probe":
         probe(a.dataset, a.model, a.out)
+    elif a.stage == "score":
+        score_chunk(a.dataset, a.model, a.split, a.prompt, a.chunk, a.out)
+    elif a.stage == "collect-scores":
+        collect_scores(a.dataset, a.out)
     else:
         raise SystemExit(f"stage {a.stage} not implemented yet")
 

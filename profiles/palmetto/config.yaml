@@ -20,6 +20,17 @@ default-resources:
 # as one wave.
 jobs: 300
 cores: 800
+
+# Per-model concurrency for the scoring fan-out. Each score job holds one unit of its model's
+# resource for as long as it runs, and each job places its hundred calls one after another, so
+# these numbers are the calls in flight per model. They sit below the concurrency the service
+# publishes (config/config.yaml `vlm.models.*.concurrency`), and the smoke tier checks that this
+# file and that one still agree.
+resources:
+  llm_qwen3_5_9b: 96
+  llm_gemma_4_12b: 24
+  llm_qwen3_8_27b_fp8: 48
+  llm_gemma_4_31b: 12
 latency-wait: 60
 keep-going: True
 rerun-incomplete: True

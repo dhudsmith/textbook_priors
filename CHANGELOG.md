@@ -360,3 +360,28 @@ seconds. That is fine for JSON a rule can rebuild, and it is not fine for `resul
 the plan treats as fixed from the moment it is written. Before the 27,000-call fan-out is launched,
 the archive has to sit on the project filesystem — either by running from a persistent checkout or
 by giving `results/` (or `results/score/`) the same symlink treatment as `data/cache`.
+
+## 2026-09-11 — The thin-class question, settled: the sample stays random
+
+Resolved the question left open by the stage-1 entry, in favour of leaving the sample alone and
+documenting the limit (WORKFLOW.md §3 now carries it).
+
+What decided it was that the obvious fix is two different things and neither is what it looks like.
+*Proportional* stratification — matching the split's class shares — reproduces almost exactly what
+the random seed already drew (dermamnist's rarest class: 6 images either way; organamnist's: 21
+against 22; pathmnist's: 24 against 24), because the thin columns are thin from real rarity, not
+from sampling noise. *Equal-as-possible* stratification does help, but is capped by the splits
+themselves: dermatofibroma would go from 6 to 23 and stop there, because the dermamnist test split
+holds only about 23 of them; organamnist femur-left 21 to 46; pathmnist debris 24 to 56. A two-to
+four-fold gain on the worst columns, roughly halving their standard error — real, but not a fix.
+
+Against that: equal allocation makes each one-vs-rest column's negatives a near-uniform mixture of
+the other classes instead of the dataset's own, so per-class AUC would be measured against a
+different "rest" and the absolute numbers would stop meaning what a MedMNIST AUC means. And the
+gain lands where it is least needed: all three hypotheses are paired differences between arms on
+the same images, where a thin column is common mode and largely cancels.
+
+So: the 500-image test sample stays as WORKFLOW.md §4 fixes it, random with seed 0, shared by every
+arm. The per-dataset paired differences with their intervals stay what a reader should look at, and
+the absolute AUCs carry the stated caveat. Nothing had been spent against the current sample when
+this was decided — the calls start with the scoring fan-out.
