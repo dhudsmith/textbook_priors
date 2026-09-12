@@ -39,7 +39,7 @@ configfile: "config/config.yaml"
 # Seconds-long bookkeeping runs in the submitting process rather than paying a SLURM round-trip.
 # Anything with a real toolchain or a real cost is submitted so it runs with declared resources.
 localrules:
-    all, sample, prompts, score, smoke, render_prompts, collect_scores,
+    all, sample, prompts, score, features, smoke, render_prompts, collect_scores,
 
 
 OUT = config["outdir"]
@@ -75,6 +75,7 @@ def res(name):
 CODE_SAMPLE = code("data", "sample", "stages")
 CODE_PROMPTS = code("data", "prompts", "stages")
 CODE_SCORE = code("llm", "score", "stages")     # the prompts arrive as a file, not as a module
+CODE_FEATURES = code("features", "stages")
 
 TEST_FILES = sorted(str(p) for p in Path("tests").glob("*.py"))
 
@@ -118,6 +119,7 @@ def score_cells(model=None):
 
 SCORES = score_cells()
 SCORE_TABLES = expand(f"{OUT}/scores/{{dataset}}.json", dataset=DATASETS)
+FEATURES = expand(f"{OUT}/features/{{dataset}}.json", dataset=DATASETS)
 
 wildcard_constraints:
     dataset="|".join(DATASETS),
@@ -136,6 +138,9 @@ rule prompts:
 
 rule score:
     input: SCORE_TABLES
+
+rule features:
+    input: FEATURES
 
 
 # =====================================================================================
@@ -438,12 +443,48 @@ rule collect_scores:
 
 
 # =====================================================================================
+# 3  FEATURES
+#
+# Arm P's half of the H1 comparison. A vision-language model is an enormous pretrained model, so
+# the fair pixel baseline is pretrained too: frozen ImageNet ResNet-18 features under the same
+# classifier, the same regularisation search and the same labelled subsets as arm C, so that the
+# features are the only difference between the two curves.
+#
+# Nothing is trained here and nothing is random. The weights are a fixed input like the releases:
+# they live under storage_root/torch_home, which the rule passes as TORCH_HOME, so no job needs the
+# internet and every run uses the same bytes. Torch enters in its own environment and nowhere else.
+# =====================================================================================
+
+rule pixel_features:
+    """Frozen ImageNet features of one dataset's sampled images. x6."""
+    input:
+        sample=f"{OUT}/sample/{{dataset}}.json",
+        arrays=f"{config['cachedir']}/{{dataset}}.npz",
+        smoke=SMOKE,
+        code=CODE_FEATURES,
+    params:
+        arch=config["features"]["arch"],
+        weights=config["features"]["weights"],
+        batch=config["features"]["batch"],
+    output:
+        json=f"{OUT}/features/{{dataset}}.json",
+        arrays=f"{config['featuredir']}/{{dataset}}.npz",
+    log: "logs/features/{dataset}.log"
+    benchmark: "benchmarks/features/{dataset}.tsv"
+    conda: "envs/priors_torch.yml"
+    threads: RES["features"]["cpus"]
+    resources: **res("features")
+    shell:
+        "export TORCH_HOME=" + config["torch_home"] + "; " + STAGE +
+        "features {wildcards.dataset} --out {output.json} --arrays {output.arrays} > {log} 2>&1"
+
+
+# =====================================================================================
 # STILL TO COME, in this order, each one tested before the next is written:
 #
 #   0  smoke              two tiers of it are still missing, and arrive with the code they test:
 #                         the arm-B estimator on a fixture (with priors/classify.py) and the LLM
 #                         client's retry on a malformed answer (with priors/llm.py)
-#   3  pixel_features     x6, submitted, the torch environment: ResNet-18 penultimate features
 #   4  classify_dataset   x6: arms A, B, C, P over the curve and the permutation controls
 #   5  evaluate_dataset   x6: AUC per arm, the paired bootstrap, n_B
 #   5  evaluate_across    x1: the sign tests, the ladder, the Friedman test

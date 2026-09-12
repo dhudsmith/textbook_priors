@@ -1,0 +1,21 @@
+# The features stage, and nothing else. Torch enters here so that adding it never marks a result
+# from envs/priors.yml as stale (software-env is a rerun trigger).
+#
+# CPU-only wheels on purpose: the talk version has no GPU stage - the from-scratch CNN was cut
+# (WORKFLOW.md section 10) - and ResNet-18 over 2500 images is a couple of minutes on a few cores.
+# The CUDA build would be a gigabyte of wheel for nothing. The ImageNet weights are not downloaded
+# by the job either: they sit under <storage_root>/torch_home, which the rule passes as TORCH_HOME,
+# so a compute node needs no internet and every run uses the same bytes.
+name: priors_torch
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - numpy>=2
+  - pyyaml
+  - pillow>=10
+  - pip
+  - pip:
+      - --index-url https://download.pytorch.org/whl/cpu
+      - torch>=2.4
+      - torchvision>=0.19

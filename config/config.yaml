@@ -70,6 +70,13 @@ vlm:
   # missing rather than guessed. Outside `rule all`.
   probe: {n: 10, malformed_max_tokens: 1}
 
+# Arm P's encoder. Frozen, never trained, and its weights are a fixed input like every other: they
+# sit under <storage_root>/torch_home so a compute node needs no internet and every run uses the
+# same bytes. The batch is a memory knob, not a result.
+features: {arch: resnet18, weights: imagenet1k_v1, batch: 64}
+featuredir: data/cache/features
+torch_home: /project/dane2/wficai/textbook_priors/torch_home
+
 # The classifier grid is stage 4's; `missing_max_frac` is read one stage earlier, by the gather
 # that flags a dataset-model cell too incomplete for the headline (WORKFLOW.md section 3).
 classify: {l2_grid: [0.01, 0.1, 1, 10, 100], cv_folds: 5, missing_max_frac: 0.05, permute: {seeds: [0, 1, 2]}}
@@ -103,3 +110,7 @@ resources:
   # every call it made, which is the expensive failure here, so the request is now four times the
   # worst chunk seen rather than twice the best.
   score:  {cpus: 1, mem_mb: 2000, runtime: 120}
+  # Guess. ResNet-18 over 2500 images is small, but torch's matmuls do use the cores they are
+  # given, so four; memory is the float NCHW batch (64 x 3 x 224 x 224 is 38 MB) plus the split's
+  # images and the 5 MB of features, so 8 GB is generous and will be cut from the benchmarks.
+  features: {cpus: 4, mem_mb: 8000, runtime: 60}

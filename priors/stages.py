@@ -9,6 +9,7 @@ a table; tables and figures are drawn from those files by the report stages.
     probe DATASET MODEL --out FILE               ten images through the service (stage 2, opt-in)
     score DATASET MODEL SPLIT PROMPT CHUNK --out FILE   one chunk of the fan-out (stage 2)
     collect-scores DATASET --out FILE            one dataset's chunks, gathered (stage 2)
+    features DATASET --out FILE --arrays FILE    ImageNet features of the sampled images (stage 3)
 
 Run with  python -m priors.stages <stage> [args]
 """
@@ -22,7 +23,7 @@ from pathlib import Path
 import numpy as np
 import yaml
 
-from . import data, llm, prompts, sample as sampling, score
+from . import data, features as pixels, llm, prompts, sample as sampling, score
 from .manifest import Run
 
 CONFIG = yaml.safe_load(Path(os.environ.get("PRIORS_CONFIG", "config/config.yaml")).read_text())
@@ -287,6 +288,38 @@ def collect_scores(dataset: str, out: str) -> None:
         ))
 
 
+def features(dataset: str, out: str, arrays: str) -> None:
+    """Frozen ImageNet features of one dataset's sampled images: arm P's half of the comparison.
+
+    Same shape as the sample stage: the JSON is the unit of work and the arrays ride in the cache,
+    because 5 MB per dataset of float features is an input to the classifier rather than a result.
+    Nothing is trained and nothing is random, so the result carries no seed.
+    """
+    spec = CONFIG["features"]
+    sample_arrays = np.load(f"{CONFIG['cachedir']}/{dataset}.npz")
+    threads = int(os.environ.get("OMP_NUM_THREADS", "1"))
+
+    with Run("features", dict(dataset=dataset, **spec, threads=threads)) as run:
+        out_arrays, num_params, url = {}, None, None
+        for split in ("test", "pool"):
+            vectors, num_params, url = pixels.extract(
+                sample_arrays[f"{split}_images"], spec["arch"], spec["weights"],
+                batch=spec["batch"], threads=threads)
+            out_arrays[f"{split}_features"] = vectors
+
+        Path(arrays).parent.mkdir(parents=True, exist_ok=True)
+        np.savez(arrays, **out_arrays)
+        run.write(out, dict(
+            dataset=dataset, arch=spec["arch"], weights=spec["weights"], weights_url=url,
+            arrays={"file": arrays,
+                    **{k: {"shape": list(v.shape), "dtype": str(v.dtype),
+                           # A constant feature column carries no information and would be dropped
+                           # by standardisation anyway; counted here so the report can say so.
+                           "constant_columns": int((v.std(axis=0) == 0).sum())}
+                       for k, v in out_arrays.items()}},
+        ))
+
+
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="stage", required=True)
@@ -299,6 +332,8 @@ def main(argv=None) -> None:
     p.add_argument("split"); p.add_argument("prompt"); p.add_argument("chunk", type=int)
     p.add_argument("--out", required=True)
     p = sub.add_parser("collect-scores"); p.add_argument("dataset"); p.add_argument("--out", required=True)
+    p = sub.add_parser("features"); p.add_argument("dataset")
+    p.add_argument("--out", required=True); p.add_argument("--arrays", required=True)
     a = ap.parse_args(argv)
     if a.stage == "sample":
         sample(a.dataset, a.out, a.arrays)
@@ -310,6 +345,8 @@ def main(argv=None) -> None:
         score_chunk(a.dataset, a.model, a.split, a.prompt, a.chunk, a.out)
     elif a.stage == "collect-scores":
         collect_scores(a.dataset, a.out)
+    elif a.stage == "features":
+        features(a.dataset, a.out, a.arrays)
     else:
         raise SystemExit(f"stage {a.stage} not implemented yet")
 

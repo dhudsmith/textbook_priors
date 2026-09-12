@@ -363,3 +363,49 @@ def test_a_job_refuses_to_write_a_file_named_for_another_cell(tmp_path):
                 "prompt": "concept", "chunk": 0, **wrong}
         with pytest.raises(ValueError, match="refusing"):
             stages.check_output_name(good, **cell)
+
+
+# ---- arm P's preprocessing, which is numpy so the light environment can check it ---------------
+
+def test_greyscale_images_are_repeated_to_three_channels():
+    """The encoder has three channels; summing its first-layer filters instead would change the
+    features to save nothing."""
+    from priors import features
+
+    rng = np.random.default_rng(0)
+    grey = rng.integers(0, 256, size=(2, 224, 224), dtype=np.uint8)
+    batch = features.preprocess(grey)
+    assert batch.shape == (2, 3, 224, 224)
+    # The three channels carry the same pixels; they differ after normalisation only because
+    # ImageNet's mean and standard deviation are per channel, so undo that before comparing.
+    undone = batch * features.STD[None, :, None, None] + features.MEAN[None, :, None, None]
+    assert np.allclose(undone[:, 0], undone[:, 1], atol=1e-6)
+    assert np.allclose(undone[:, 1], undone[:, 2], atol=1e-6)
+    assert np.allclose(undone[0, 0], grey[0] / 255.0, atol=1e-6)
+
+
+def test_colour_images_keep_their_channels_and_are_normalised_imagenet_style():
+    from priors import features
+
+    rng = np.random.default_rng(0)
+    colour = rng.integers(0, 256, size=(3, 224, 224, 3), dtype=np.uint8)
+    batch = features.preprocess(colour)
+    assert batch.shape == (3, 3, 224, 224) and batch.dtype == np.float32
+    # channel-first, and the same pixel maps through (x/255 - mean) / std
+    expected = (colour[0, 5, 7, 1] / 255.0 - features.MEAN[1]) / features.STD[1]
+    assert np.isclose(batch[0, 1, 5, 7], expected, atol=1e-6)
+
+
+def test_the_release_is_not_resized_before_the_encoder():
+    """The weights' own transform resizes to 256 and crops back to 224, which would throw away the
+    frame edge an organ crop is defined by. The release is already the size the encoder wants."""
+    from priors import features
+
+    assert features.preprocess(np.zeros((1, 224, 224, 3), dtype=np.uint8)).shape[-2:] == (224, 224)
+
+
+def test_an_image_stack_of_the_wrong_shape_is_refused():
+    from priors import features
+
+    with pytest.raises(ValueError):
+        features.preprocess(np.zeros((2, 224, 224, 4), dtype=np.uint8))
