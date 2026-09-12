@@ -195,3 +195,21 @@ The arm the user asked for works and says something specific, also in CHANGELOG.
 was lossy (D beats B on 4 of 6, recovering nearly all of pneumoniamnist's deficit), and the bank is
 not information the model lacked (D loses to A on 4 of 6). It is reported post-hoc throughout, and
 the three hypothesis verdicts were computed without it and did not move.
+
+## 2026-09-12 14:40 — Analysis stops here; attention turns to the talk
+
+"I think we have sufficient results for the talk. I will stop here on the analysis itself and
+turn attention to structuring the talk itself."
+
+The user attached the HPC Day 2026 agenda: the talk is the 1:15–1:45 keynote on Friday
+2026-09-18 in McKissick Theater, directly after lunch, with a second keynote following and the
+same speaker on the 3:35 generative-AI workshop panel. Asked for a review of everything in the
+repository and an initial plan for a 30-minute talk, with scoping questions first rather than a
+finished outline. Stated preferences, recorded because they shape every later draft: highly
+visual; casual, simple, direct; deliberate repetition to tie ideas together; a story rather than a
+data dump; this project as a running example for the principles, not as the subject.
+
+Nothing in the workflow changes. Reviewed for the talk: WORKFLOW.md, TALK.md, CHANGELOG.md (every
+entry), this log, README, CONCEPT_BANK.md, the Snakefile banners, the config, the three generated
+figures and the report structure in the owner's checkout. The draft skeleton and the questions went
+to the user in the session; the plan lands in TALK.md once the answers narrow it.
