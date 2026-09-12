@@ -626,3 +626,68 @@ One latent bug found on the way: `sums_to_one`, the diagnostic recording whether
 "make the probabilities sum to 1", was gated on `kind == "zero_shot"` and would have been silently
 absent from every arm D answer. It is now gated on the answer's shape (`kind != "concept"`), which
 is what it was always a property of.
+
+## 2026-09-12 — Arm D's result: the readout was lossy, but the bank is not news to the model
+
+3,000 calls, 30 chunks, 500 of 500 images complete on every dataset and not one content retry —
+the cleanest cell in the archive. Arm D splits the H2 post-mortem in half, and confirms only one
+side of it.
+
+| dataset | AUC(D) | AUC(A) | AUC(B) | D − A | D − B |
+|---|---|---|---|---|---|
+| pathmnist | 0.890 | 0.927 | 0.924 | −0.038 [−0.058, −0.017] | −0.035 [−0.053, −0.017] |
+| dermamnist | 0.790 | 0.770 | 0.671 | +0.018 [−0.040, +0.088] | +0.117 [+0.061, +0.181] |
+| octmnist | 0.886 | 0.941 | 0.894 | −0.055 [−0.074, −0.036] | −0.008 [−0.031, +0.014] |
+| pneumoniamnist | 0.906 | 0.918 | 0.727 | −0.012 [−0.032, +0.009] | +0.179 [+0.148, +0.210] |
+| bloodmnist | 0.827 | 0.883 | 0.775 | −0.056 [−0.081, −0.031] | +0.052 [+0.026, +0.078] |
+| organamnist | 0.766 | 0.710 | 0.685 | +0.056 [+0.031, +0.081] | +0.082 [+0.046, +0.119] |
+
+**The nearest-fingerprint readout really was lossy: D beats B on 4 of 6.** Where arm B fell
+furthest behind, arm D recovers most of the gap — pneumoniamnist 0.727 to 0.906, against arm A's
+0.918, so essentially all of the deficit was the estimator rather than the bank. dermamnist
++0.117 and bloodmnist +0.052 say the same thing more mildly. That was the reading the permutation
+controls pointed at, and it survives.
+
+**But the bank is not information the model lacked: D loses to A on 4 of 6.** Being handed the
+concepts, the anchors and every class's fingerprint made the model *worse* at naming the class than
+being asked cold — clearly so on pathmnist, octmnist and bloodmnist, whose intervals exclude zero.
+Given the image, the model's own diagnosis beats being told what to look for. The bank constrains
+rather than informs.
+
+Both readings together: arm B measured the bank through a bad estimator *and* the bank was never
+going to add much on top of what the model already does with the image. H2's premise — that
+directing the model at cited features beats asking it for the diagnosis — fails at both levels, and
+arm D is what separates them. One dataset dissents: organamnist beats both A (+0.056) and B (+0.082)
+with intervals excluding zero, which is the one place the textbook demonstrably helped.
+
+None of this is a test. Arm D was designed after H2 failed; the counts above are descriptive, the
+sign-test p values (0.89 against A, 0.34 against B) are reported only as a compact way of saying how
+many datasets moved together, and no `supported` verdict reads them. H1, H2 and H3 remain
+unsupported on exactly the evidence recorded in the entries above.
+
+## 2026-09-12 — The service serialises us: concurrency buys no throughput
+
+Measured while arm D's 24-job wave ran, because the wave was far slower than predicted and the
+cause mattered more than the delay. One call through the same code path from the login node took
+**42.8 s**, against **1.49 s** for the identical call when a single chunk ran alone that morning.
+It succeeded on the first transport attempt — no 429, no backoff — so nothing was failing; the
+requests were queued at the service.
+
+| concurrent jobs | s/call | aggregate calls/s |
+|---|---|---|
+| 1 | 1.5 | 0.67 |
+| 24 | 42.8 | 0.56 |
+
+Latency scales almost exactly linearly with our own concurrency, which means aggregate throughput
+is flat — 24-way concurrency delivered slightly *less* total throughput than one job would. The
+same shape appeared last night on the concept prompt (4.5 s at one job, 89 s at 48), so this is a
+property of the service and not of a prompt. The practical consequence is that the `llm_<model>`
+caps do not buy wall-clock: killing a wave and resubmitting at a lower cap would finish at the same
+time, which is why arm D's wave was left alone. The caps still earn their place as a politeness
+limit on a shared service, not as a throughput knob.
+
+Two cautions on reading this. The service is shared, so some of the 1.5 s to 42.8 s change may be
+other users' load rather than ours, and this is two points rather than a curve. And a diagnostic
+that cost one call and five minutes replaced an estimate that had already been wrong twice: the job
+CPU counters could not settle it, because at 43 s per call four minutes of work rounds to under one
+second of CPU and looks identical to a hang.

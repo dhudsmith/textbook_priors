@@ -153,3 +153,19 @@ flags are computed from H1, H2 and H3 alone and were not touched.
 
 Cost: 3,000 calls on the primary model, 30 chunks, the budget from 27,000 to 30,000. The existing
 archive is untouched — arm D is 30 new files beside it, not a re-score.
+
+## 2026-09-12 09:35 — Arm D landed, and two estimates that were wrong
+
+The run finished at 09:34, exit 0. Asked mid-run to estimate the total time, I gave 08:45–08:55 and
+it took until 09:34. The first estimate assumed contention would cost a factor of three or four on
+the per-call latency; it cost a factor of thirty. The second, made after the first had visibly
+failed, misread the job CPU counters — at 43 s per call, four minutes of real work rounds to under
+one second of CPU, which is indistinguishable from a stalled process — and briefly concluded the
+jobs were doing almost nothing. What settled it was one timed call through the same code path,
+costing one call and five minutes, and it is recorded in CHANGELOG.md as a finding about the
+service rather than here as an anecdote about the delay.
+
+The arm the user asked for works and says something specific, also in CHANGELOG.md: arm B's readout
+was lossy (D beats B on 4 of 6, recovering nearly all of pneumoniamnist's deficit), and the bank is
+not information the model lacked (D loses to A on 4 of 6). It is reported post-hoc throughout, and
+the three hypothesis verdicts were computed without it and did not move.
