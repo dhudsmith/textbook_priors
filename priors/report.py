@@ -58,6 +58,19 @@ def tex_escape(text: str) -> str:
     return str(text).replace("_", r"\_").replace("&", r"\&").replace("%", r"\%")
 
 
+def median(values) -> float:
+    """The middle of an even-length list is the mean of the two middle values, not the upper one.
+
+    Spelled out because the first version of the literature macros took `sorted(v)[len(v) // 2]`
+    and called it a median: with six datasets that is the fourth smallest, which put 0.115 in a
+    sentence whose real answer was 0.094. numpy is not imported here and one line is cheaper than
+    the import.
+    """
+    ordered = sorted(values)
+    mid = len(ordered) // 2
+    return ordered[mid] if len(ordered) % 2 else (ordered[mid - 1] + ordered[mid]) / 2
+
+
 def fmt(value, places=3) -> str:
     """A number as the report prints it, or a dash where there is nothing to print."""
     if value is None:
@@ -343,10 +356,14 @@ def numbers(per, across, datasets, curve_n, primary, dest, literature=None):
             gaps["Concept"].append(top - per[d]["curve"][f"C__n{largest}"]["point"])
             gaps["Pixel"].append(top - per[d]["curve"][f"P__n{largest}"]["point"])
         for name, values in gaps.items():
-            lines[f"litGap{name}Median"] = fmt(sorted(values)[len(values) // 2])
+            lines[f"litGap{name}Median"] = fmt(median(values))
         lines["litLargestN"] = largest
-        lines["litPixelWithinTwoPoints"] = sum(1 for g in gaps["Pixel"] if g <= 0.02)
-        lines["litZeroWithinFivePoints"] = sum(1 for g in gaps["Zero"] if g <= 0.05)
+        # Counted on the printed value, not the float: pneumoniamnist's pixel gap is
+        # 0.020000000000000018, and a prose sentence that said "within two points on 5 of 6" while
+        # the table beside it printed 0.971 against 0.991 would be reporting a rounding artefact.
+        lines["litPixelWithinTwoPoints"] = sum(1 for g in gaps["Pixel"] if round(g, 3) <= 0.02)
+        lines["litZeroWithinFivePoints"] = sum(1 for g in gaps["Zero"] if round(g, 3) <= 0.05)
+        lines["litPixelAtOrAboveCeiling"] = sum(1 for g in gaps["Pixel"] if round(g, 3) <= 0.0)
 
     for d in datasets:
         key = "".join(part.capitalize() for part in d.replace("mnist", "").split("_")) or d

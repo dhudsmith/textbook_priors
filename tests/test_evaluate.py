@@ -169,3 +169,18 @@ def test_a_decision_threshold_need_not_be_a_grid_point():
     assert metrics.rank_at_least(10, [50, 100]) == 1
     with pytest.raises(ValueError):
         metrics.rank_of(75.0, [50, 100])
+
+
+# ---- the report's own median, which is not the estimators' -----------------------------------
+
+def test_the_reports_median_is_the_mean_of_the_two_middle_values():
+    """An even-length median is the mean of the middle pair.
+
+    Stated as a test because the first version of the literature macros used
+    `sorted(v)[len(v) // 2]`, which on six datasets is the fourth smallest: it put 0.115 into a
+    sentence whose answer was 0.094, and nothing in the report would have contradicted it."""
+    from priors import report
+    assert report.median([1, 2, 3, 4]) == 2.5
+    assert report.median([3, 1, 4, 2]) == 2.5, "it sorts first"
+    assert report.median([1, 2, 3]) == 2
+    assert report.median([0.022, 0.062, 0.073, 0.115, 0.130, 0.232]) == (0.073 + 0.115) / 2
