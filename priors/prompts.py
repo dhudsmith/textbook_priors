@@ -154,3 +154,32 @@ def render(bank: Bank, classes: list[str], size: int, anchors: bool) -> dict:
             "zero_shot": render_zero_shot_prompt(bank, classes, size=size),
         },
     }
+
+
+# Which arms read each rendered prompt, for the human-readable render below: concept is one
+# prompt shared by two arms - C only differs from B in what happens to the scores after the call
+# - so it is one block, not two, and says so.
+_ARMS = {"concept": "B, C", "zero_shot": "A"}
+
+
+def render_txt(dataset: str, rendered: dict) -> str:
+    """`rendered` (what `render_prompts` wrote) as plain text, one block per prompt, for a human
+    reader rather than a score job.
+
+    Reads straight from the same dict every score manifest hashes and every score call sends, so
+    this is a second view of one artifact and not a third rendering of the prompt logic
+    (WORKFLOW.md section 7). Decides no hypothesis: a convenience, not a result."""
+    blocks = [f"{dataset}", "=" * len(dataset), ""]
+    for key in ("zero_shot", "concept"):
+        msg = rendered["prompts"][key]
+        blocks += [
+            f"--- arm {_ARMS[key]}: {key} prompt (sha256 {msg['sha256']}) ---",
+            "",
+            "[system]",
+            msg["system"],
+            "",
+            "[user]",
+            msg["user"],
+            "",
+        ]
+    return "\n".join(blocks)

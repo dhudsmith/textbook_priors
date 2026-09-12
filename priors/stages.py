@@ -6,6 +6,7 @@ a table; tables and figures are drawn from those files by the report stages.
 
     sample DATASET --out FILE --arrays FILE     the test sample and the labelled pool (stage 1)
     render-prompts DATASET --out FILE            the three prompt strings for one dataset (stage 2)
+    prompts-txt DATASET --out FILE                a human-readable txt render of them (stage 2, opt-in)
     probe DATASET MODEL --out FILE               ten images through the service (stage 2, opt-in)
     score DATASET MODEL SPLIT PROMPT CHUNK --out FILE   one chunk of the fan-out (stage 2)
     collect-scores DATASET --out FILE            one dataset's chunks, gathered (stage 2)
@@ -102,6 +103,19 @@ def render_prompts(dataset: str, out: str) -> None:
                 **payload,
             ),
         )
+
+
+def render_prompts_txt(dataset: str, out: str) -> None:
+    """A plain-text render of one dataset's prompts, for a human reader.
+
+    Reads the JSON `render_prompts` already wrote rather than re-rendering: the text a person reads
+    here is the same artifact that is hashed into every score manifest and sent to the model
+    (WORKFLOW.md section 7), not a second copy of a format the other could drift from. No
+    manifest: nothing here is computed, so there is no run to record."""
+    from . import prompts
+    rendered = json.loads(Path(f"{CONFIG['outdir']}/prompts/{dataset}.json").read_text())
+    Path(out).parent.mkdir(parents=True, exist_ok=True)
+    Path(out).write_text(prompts.render_txt(dataset, rendered))
 
 
 def probe(dataset: str, model: str, out: str) -> None:
@@ -673,6 +687,7 @@ def main(argv=None) -> None:
     p = sub.add_parser("sample"); p.add_argument("dataset")
     p.add_argument("--out", required=True); p.add_argument("--arrays", required=True)
     p = sub.add_parser("render-prompts"); p.add_argument("dataset"); p.add_argument("--out", required=True)
+    p = sub.add_parser("prompts-txt"); p.add_argument("dataset"); p.add_argument("--out", required=True)
     p = sub.add_parser("probe"); p.add_argument("dataset"); p.add_argument("model")
     p.add_argument("--out", required=True)
     p = sub.add_parser("score"); p.add_argument("dataset"); p.add_argument("model")
@@ -692,6 +707,8 @@ def main(argv=None) -> None:
         sample(a.dataset, a.out, a.arrays)
     elif a.stage == "render-prompts":
         render_prompts(a.dataset, a.out)
+    elif a.stage == "prompts-txt":
+        render_prompts_txt(a.dataset, a.out)
     elif a.stage == "probe":
         probe(a.dataset, a.model, a.out)
     elif a.stage == "score":

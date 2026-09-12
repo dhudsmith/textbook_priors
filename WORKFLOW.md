@@ -233,6 +233,9 @@ The one stage type not seen in earlier projects, and the one that tests principl
   anchors, the rendered zero-shot prompt, the bank-file hash). Every `score_*` rule takes that file
   as an input instead of re-deriving the prompt, so the string sent to the model, the one hashed
   into the manifest, and the one the report or the demo shows are the same artifact.
+  `render_prompts_txt` (target `prompts_txt`, opt-in, outside `all`, no LLM calls) formats that
+  same file into `results/prompts_txt/<dataset>.txt`, one block per arm, for a person to read
+  rather than parse; it decides no hypothesis and no rule below it reads its output.
 - **Per call**: the 224-pixel PNG; JSON requested and validated against the scales; one retry with
   a doubled token budget on a malformed answer, then recorded as missing, never guessed.
 - **Thinking off**, and for a reason that turned out to be ours rather than the service's.
@@ -365,7 +368,8 @@ priors/                   data sample prompts llm score features classify evalua
 data/concepts/            the concept-bank files and their README, committed
 data/literature/          the pinned published-benchmark table and its README, committed
 data/raw, data/cache      symlinks into storage_root on the project filesystem; gitignored
-results/                  one JSON per unit of work; results/score/ is the response archive
+results/                  one JSON per unit of work; results/score/ is the response archive;
+                          results/prompts_txt/ a human-readable txt render, opt-in, no manifest
 benchmarks/  logs/        per job
 report/                   report.tex, references.bib; tables/ and figs/ generated
 README.md  CHANGELOG.md  SESSION_LOG.md  CLAUDE.md  CONCEPT_BANK.md  WORKFLOW.md  TALK.md

@@ -16,6 +16,9 @@ snakemake --profile profiles/local -j 2 -F smoke  # re-run the tests after editi
 
 # opt-in, outside `rule all`: ten images through the service on a compute node
 snakemake --profile profiles/palmetto results/probe/pneumoniamnist__qwen3.8-27b-fp8.json
+
+# opt-in, outside `rule all`, no LLM calls: a human-readable txt render of every prompt
+snakemake --profile profiles/local -j 2 prompts_txt
 ```
 
 Every rule takes the `smoke` marker as an input, so nothing is computed on code that fails its
@@ -56,6 +59,7 @@ data/cache/sample/     symlink target: the sampled image arrays, one npz per dat
 scripts/link_storage.sh  one-time setup: make those two symlinks
 results/               one JSON per unit of work, each with a manifest
 results/score/         the raw VLM response archive, write-protected once written
+results/prompts_txt/   opt-in: a plain-text render of each prompt, for a human reader; no manifest
 benchmarks/            wall time and peak memory per job
 report/                report.tex, references.bib, generated tables/ and figs/
 logs/                  one log per job
