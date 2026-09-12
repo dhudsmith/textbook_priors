@@ -36,6 +36,11 @@ size: 224                          # what the VLM sees and what the ImageNet enc
 # images, which the smoke tier checks against the pinned split sizes.
 sample: {test_n: 500, pool_n: 2000, seed: 0}
 
+# The learning curve: how many labelled images arms C and P get, and at how many draws of them.
+# The resolution of n_B - the headline number, the smallest n at which the pixel probe reaches the
+# zero-label textbook arm - is this grid and nothing finer.
+curve:  {n: [50, 100, 200, 500, 1000, 2000], seeds: [0, 1, 2]}
+
 vlm:
   # Both prompts are pure functions of the concept bank and the label map, rendered by their own
   # rule (stage 2) rather than inline in the scoring loop.
@@ -114,3 +119,7 @@ resources:
   # given, so four; memory is the float NCHW batch (64 x 3 x 224 x 224 is 38 MB) plus the split's
   # images and the 5 MB of features, so 8 GB is generous and will be cut from the benchmarks.
   features: {cpus: 4, mem_mb: 8000, runtime: 60}
+  # Guess. The work is 36 logistic-regression fits per arm per dataset plus their cross-validation,
+  # the widest at 2000 images by 512 features; sklearn's lbfgs uses the cores it is given, so four.
+  # Memory is those matrices and the fifty score matrices, all small, so 8 GB is generous.
+  classify: {cpus: 4, mem_mb: 8000, runtime: 120}

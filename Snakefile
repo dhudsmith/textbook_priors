@@ -39,7 +39,7 @@ configfile: "config/config.yaml"
 # Seconds-long bookkeeping runs in the submitting process rather than paying a SLURM round-trip.
 # Anything with a real toolchain or a real cost is submitted so it runs with declared resources.
 localrules:
-    all, sample, prompts, score, features, smoke, render_prompts, collect_scores,
+    all, sample, prompts, score, features, classify, smoke, render_prompts, collect_scores,
 
 
 OUT = config["outdir"]
@@ -76,6 +76,7 @@ CODE_SAMPLE = code("data", "sample", "stages")
 CODE_PROMPTS = code("data", "prompts", "stages")
 CODE_SCORE = code("llm", "score", "stages")     # the prompts arrive as a file, not as a module
 CODE_FEATURES = code("features", "stages")
+CODE_CLASSIFY = code("classify", "data", "stages")
 
 TEST_FILES = sorted(str(p) for p in Path("tests").glob("*.py"))
 
@@ -120,6 +121,7 @@ def score_cells(model=None):
 SCORES = score_cells()
 SCORE_TABLES = expand(f"{OUT}/scores/{{dataset}}.json", dataset=DATASETS)
 FEATURES = expand(f"{OUT}/features/{{dataset}}.json", dataset=DATASETS)
+CLASSIFIED = expand(f"{OUT}/classify/{{dataset}}.json", dataset=DATASETS)
 
 wildcard_constraints:
     dataset="|".join(DATASETS),
@@ -141,6 +143,9 @@ rule score:
 
 rule features:
     input: FEATURES
+
+rule classify:
+    input: CLASSIFIED
 
 
 # =====================================================================================
@@ -480,12 +485,55 @@ rule pixel_features:
 
 
 # =====================================================================================
+# 4  CLASSIFY
+#
+# The four arms, on the same 500 test images, so that every comparison the study makes is paired.
+# Arms A and B use no labels; C and P are the same regularised logistic regression on different
+# features, over class-stratified nested subsets of the labelled pool at six sizes and three seeds.
+#
+# The permutation controls live here too, because they are re-analyses of the archive and cost no
+# calls: arm B's fingerprints attached to the wrong classes, and arm C's concept columns shuffled
+# across images. If either arm survives its control, it was not reading what it claims to read.
+#
+# Nothing is measured in this stage. It writes scores and the evaluate stage turns them into AUCs,
+# because the paired bootstrap has to resample the test images once for every arm at the same time.
+# =====================================================================================
+
+rule classify_dataset:
+    """Every arm's scores on the test sample, for one dataset. x6."""
+    input:
+        scores=f"{OUT}/scores/{{dataset}}.json",
+        features=f"{OUT}/features/{{dataset}}.json",
+        feature_arrays=f"{config['featuredir']}/{{dataset}}.npz",
+        sample=f"{OUT}/sample/{{dataset}}.json",
+        arrays=f"{config['cachedir']}/{{dataset}}.npz",
+        prompts=f"{OUT}/prompts/{{dataset}}.json",
+        bank=lambda w: f"{config['conceptdir']}/{w.dataset}.yaml",
+        smoke=SMOKE,
+        code=CODE_CLASSIFY,
+    params:
+        curve_n=",".join(str(n) for n in config["curve"]["n"]),
+        curve_seeds=",".join(str(s) for s in config["curve"]["seeds"]),
+        l2_grid=",".join(str(c) for c in config["classify"]["l2_grid"]),
+        cv_folds=config["classify"]["cv_folds"],
+        permute_seeds=",".join(str(s) for s in config["classify"]["permute"]["seeds"]),
+    output:
+        json=f"{OUT}/classify/{{dataset}}.json",
+        arrays=f"{OUT}/classify/{{dataset}}.npz",
+    log: "logs/classify/{dataset}.log"
+    benchmark: "benchmarks/classify/{dataset}.tsv"
+    conda: "envs/priors.yml"
+    threads: RES["classify"]["cpus"]
+    resources: **res("classify")
+    shell: STAGE + "classify {wildcards.dataset} --out {output.json} --arrays {output.arrays} > {log} 2>&1"
+
+
+# =====================================================================================
 # STILL TO COME, in this order, each one tested before the next is written:
 #
 #   0  smoke              two tiers of it are still missing, and arrive with the code they test:
 #                         the arm-B estimator on a fixture (with priors/classify.py) and the LLM
 #                         client's retry on a malformed answer (with priors/llm.py)
-#   4  classify_dataset   x6: arms A, B, C, P over the curve and the permutation controls
 #   5  evaluate_dataset   x6: AUC per arm, the paired bootstrap, n_B
 #   5  evaluate_across    x1: the sign tests, the ladder, the Friedman test
 #   6  figures, tables, technical_report

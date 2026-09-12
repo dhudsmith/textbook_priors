@@ -10,6 +10,7 @@ a table; tables and figures are drawn from those files by the report stages.
     score DATASET MODEL SPLIT PROMPT CHUNK --out FILE   one chunk of the fan-out (stage 2)
     collect-scores DATASET --out FILE            one dataset's chunks, gathered (stage 2)
     features DATASET --out FILE --arrays FILE    ImageNet features of the sampled images (stage 3)
+    classify DATASET --out FILE --arrays FILE    arms A, B, C, P and the controls (stage 4)
 
 Run with  python -m priors.stages <stage> [args]
 """
@@ -23,7 +24,7 @@ from pathlib import Path
 import numpy as np
 import yaml
 
-from . import data, features as pixels, llm, prompts, sample as sampling, score
+from . import classify as arms, data, features as pixels, llm, prompts, sample as sampling, score
 from .manifest import Run
 
 CONFIG = yaml.safe_load(Path(os.environ.get("PRIORS_CONFIG", "config/config.yaml")).read_text())
@@ -320,6 +321,111 @@ def features(dataset: str, out: str, arrays: str) -> None:
         ))
 
 
+def classify(dataset: str, out: str, arrays: str) -> None:
+    """Every arm's class scores on the shared test sample, for one dataset.
+
+    Nothing is measured here: this stage produces the scores and the evaluate stage turns them into
+    AUCs, because the paired bootstrap has to resample the test images once for every arm at the
+    same time. The scores ride in an .npz beside the JSON, which is small enough to be a result.
+    """
+    spec, sample_spec = CONFIG["classify"], CONFIG["sample"]
+    curve = CONFIG["curve"]
+    rendered = json.loads(Path(f"{CONFIG['outdir']}/prompts/{dataset}.json").read_text())
+    gathered = json.loads(Path(f"{CONFIG['outdir']}/scores/{dataset}.json").read_text())
+    bank = data.load_bank(dataset, CONFIG["conceptdir"])
+    concepts, classes = rendered["concepts"], rendered["classes"]
+    primary = CONFIG["vlm"]["primary"]
+
+    sample_arrays = np.load(f"{CONFIG['cachedir']}/{dataset}.npz")
+    y_test = np.asarray(sample_arrays["test_labels"]).reshape(-1).astype(int)
+    y_pool = np.asarray(sample_arrays["pool_labels"]).reshape(-1).astype(int)
+    pixel_arrays = np.load(f"{CONFIG['featuredir']}/{dataset}.npz")
+
+    def cell(model, split, prompt):
+        key = f"{model}__{split}__{prompt}"
+        if key not in gathered["cells"]:
+            raise KeyError(f"{dataset}: {key} is not in the gathered scores")
+        return gathered["cells"][key]["rows"]
+
+    out_arrays, index = {}, []
+    fingerprints = arms.fingerprint_matrix(classes, bank.classes, concepts)
+
+    with Run("classify", dict(dataset=dataset, **spec, curve_n=curve["n"], seeds=curve["seeds"],
+                              primary=primary), seeds=curve["seeds"]) as run:
+        # ---- arm A: the zero-shot distribution, read straight out of the archive ----------------
+        zero_shot = cell(primary, "test", "zero_shot")
+        a_scores = np.array([[row["scores"].get(name) if row["scores"].get(name) is not None else 0.0
+                              for name in classes] for row in zero_shot])
+        out_arrays["A"] = a_scores
+        index.append({"arm": "A", "key": "A", "model": primary, "labels": "none"})
+
+        # ---- arm B: nearest fingerprint, for every model, plus the permutation control ----------
+        b_complete = {}
+        for model in CONFIG["vlm"]["models"]:
+            test_concepts = arms.concept_matrix(cell(model, "test", "concept"), concepts)
+            b_complete[model] = float(np.mean(~np.isnan(test_concepts).any(axis=1)))
+            out_arrays[f"B__{model}"] = arms.arm_b_scores(test_concepts, fingerprints)
+            index.append({"arm": "B", "key": f"B__{model}", "model": model, "labels": "none"})
+            for seed in spec["permute"]["seeds"]:
+                out_arrays[f"Bperm__{model}__seed{seed}"] = arms.arm_b_scores(
+                    test_concepts, arms.permute_fingerprints(fingerprints, seed))
+                index.append({"arm": "B_permuted", "key": f"Bperm__{model}__seed{seed}",
+                              "model": model, "labels": "none", "permute_seed": seed})
+
+        # ---- arms C and P: the curve, at every n and every seed ---------------------------------
+        pool_concepts = arms.concept_matrix(cell(primary, "pool", "concept"), concepts)
+        test_concepts = arms.concept_matrix(cell(primary, "test", "concept"), concepts)
+        medians = arms.pool_medians(pool_concepts)
+        pool_c, pool_flags = arms.impute(pool_concepts, medians)
+        test_c, test_flags = arms.impute(test_concepts, medians)
+        # The indicator columns have to match between fit and predict, so keep the pool's choice.
+        keep = np.isnan(pool_concepts).any(axis=0)
+        x_pool_c = np.hstack([pool_c, np.isnan(pool_concepts)[:, keep].astype(float)])
+        x_test_c = np.hstack([test_c, np.isnan(test_concepts)[:, keep].astype(float)])
+        x_pool_p, x_test_p = pixel_arrays["pool_features"], pixel_arrays["test_features"]
+
+        fits = []
+        for seed in curve["seeds"]:
+            subsets = arms.nested_subsets(y_pool, curve["n"], len(classes), seed)
+            for n, idx in subsets.items():
+                for arm, x_pool, x_test in (("C", x_pool_c, x_test_c), ("P", x_pool_p, x_test_p)):
+                    got = arms.fit_predict(x_pool[idx], y_pool[idx], x_test, len(classes),
+                                           spec["l2_grid"], spec["cv_folds"], seed)
+                    key = f"{arm}__n{n}__seed{seed}"
+                    out_arrays[key] = got["scores"]
+                    index.append({"arm": arm, "key": key, "model": primary if arm == "C" else None,
+                                  "labels": int(len(idx)), "n": int(n), "seed": int(seed),
+                                  "C": got["C"], "folds": got["folds"]})
+                    fits.append({"key": key, "C": got["C"], "folds": got["folds"],
+                                 "classes_present": len(got["classes"])})
+
+        # ---- arm C's control: the concept columns shuffled across images ------------------------
+        for seed in spec["permute"]["seeds"]:
+            shuffled = arms.permute_columns(x_pool_c, seed)
+            subsets = arms.nested_subsets(y_pool, curve["n"], len(classes), curve["seeds"][0])
+            for n, idx in subsets.items():
+                got = arms.fit_predict(shuffled[idx], y_pool[idx], x_test_c, len(classes),
+                                       spec["l2_grid"], spec["cv_folds"], curve["seeds"][0])
+                key = f"Cperm__n{n}__seed{seed}"
+                out_arrays[key] = got["scores"]
+                index.append({"arm": "C_permuted", "key": key, "model": primary,
+                              "labels": int(len(idx)), "n": int(n), "permute_seed": int(seed)})
+
+        Path(arrays).parent.mkdir(parents=True, exist_ok=True)
+        np.savez(arrays, labels=y_test, **out_arrays)
+        run.write(out, dict(
+            dataset=dataset, classes=classes, n_classes=len(classes),
+            arrays={"file": arrays, "keys": sorted(out_arrays)},
+            index=index,
+            fits=fits,
+            complete_frac={model: b_complete[model] for model in b_complete},
+            incomplete_over_cap={key: cellspec["over_missing_cap"]
+                                 for key, cellspec in gathered["cells"].items()},
+            missing_indicator_columns=int(keep.sum()),
+            pool_medians={c["id"]: float(m) for c, m in zip(concepts, medians)},
+        ))
+
+
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="stage", required=True)
@@ -334,6 +440,8 @@ def main(argv=None) -> None:
     p = sub.add_parser("collect-scores"); p.add_argument("dataset"); p.add_argument("--out", required=True)
     p = sub.add_parser("features"); p.add_argument("dataset")
     p.add_argument("--out", required=True); p.add_argument("--arrays", required=True)
+    p = sub.add_parser("classify"); p.add_argument("dataset")
+    p.add_argument("--out", required=True); p.add_argument("--arrays", required=True)
     a = ap.parse_args(argv)
     if a.stage == "sample":
         sample(a.dataset, a.out, a.arrays)
@@ -347,6 +455,8 @@ def main(argv=None) -> None:
         collect_scores(a.dataset, a.out)
     elif a.stage == "features":
         features(a.dataset, a.out, a.arrays)
+    elif a.stage == "classify":
+        classify(a.dataset, a.out, a.arrays)
     else:
         raise SystemExit(f"stage {a.stage} not implemented yet")
 
