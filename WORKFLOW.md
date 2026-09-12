@@ -148,8 +148,15 @@ re-verified by any rule.
 | `gemma-4-12b` | gemma | ladder | 3,000 (test) | — |
 | `gemma-4-31b` | gemma | ladder | 3,000 (test) | — |
 
-**27,000 calls** in 270 chunk jobs of 100 images. Measured on 2026-09-09 with thinking off: 0.1 to
-0.4 s per call on every model, so under the caps the whole fan-out is minutes of wall clock.
+**27,000 calls** in 270 chunk jobs of 100 images. Two measurements, because they disagree and the
+second is the one to plan with. On 2026-09-09, with thinking off and no image attached, 0.1 to
+0.4 s per call on every model. On 2026-09-11 the `probe` rule measured the call this workflow
+actually makes - a 224-pixel PNG and a rendered prompt of about 1,300 tokens, on the primary model:
+median 3.6 s, range 1.2 to 5.2 s. A chunk of 100 images is therefore about six minutes, not twenty
+seconds, and a chunk rule's `runtime` has to say so. The conclusion survives the correction: each
+model's jobs run to its own cap, so the primary's 18,000 calls at 48 concurrent are about
+25 minutes and the ladder models are shorter still - the fan-out is tens of minutes of wall clock,
+not hours.
 
 ## 5. Principles
 

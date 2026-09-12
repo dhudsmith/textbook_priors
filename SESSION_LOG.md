@@ -74,3 +74,21 @@ The two symlinks (`data/raw`, `data/cache`) are made by `scripts/link_storage.sh
 A symlink is not a computation, the releases behind it are prior work no rule fetches, and a rule
 that created it would be a rule whose output is a promise about someone else's filesystem. It is
 the only setup step a fresh clone needs, and it is named in the README.
+
+## 2026-09-11 20:05 — The probe, and a workspace that disappeared underneath it
+
+Asked to continue, which the rule list puts at the `probe`. Wrote `priors/llm.py` (the boundary),
+`priors/score.py` (the deterministic half: image encoding, reply parsing, the retry policies), the
+`vlm:` config block, `rule probe` outside `rule all`, and 31 tests that hold all of it without
+calling the service.
+
+Mid-way through, the session's checkout was recreated and every gitignored path went with it —
+`results/`, `.snakemake/`, the storage symlinks. Committed work and the uncommitted new files
+survived. Recovery was `scripts/link_storage.sh` plus one workflow run; the 1.5 GB of sampled
+arrays never moved, because they live under `storage_root`. Recorded in CHANGELOG.md as an
+operational finding, because the same event during the scoring fan-out would destroy the response
+archive, and the decision about where `results/score/` lives is the owner's.
+
+The probe also contradicted a measured number in the plan (0.1 to 0.4 s per call, measured without
+an image). WORKFLOW.md §4 now carries both measurements with their dates rather than the older one
+alone; the hypotheses and the scope were not touched.

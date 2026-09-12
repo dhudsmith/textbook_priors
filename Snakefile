@@ -29,6 +29,7 @@
 # refetches or re-verifies them (WORKFLOW.md section 4).
 # =====================================================================================
 
+import re
 from pathlib import Path
 
 import yaml
@@ -73,6 +74,7 @@ def res(name):
 
 CODE_SAMPLE = code("data", "sample", "stages")
 CODE_PROMPTS = code("data", "prompts", "stages")
+CODE_SCORE = code("llm", "score", "stages")     # the prompts arrive as a file, not as a module
 
 TEST_FILES = sorted(str(p) for p in Path("tests").glob("*.py"))
 
@@ -80,8 +82,11 @@ SMOKE = f"{OUT}/smoke_ok.txt"
 SAMPLES = expand(f"{OUT}/sample/{{dataset}}.json", dataset=DATASETS)
 PROMPTS = expand(f"{OUT}/prompts/{{dataset}}.json", dataset=DATASETS)
 
+MODELS = list(config["vlm"]["models"])
+
 wildcard_constraints:
     dataset="|".join(DATASETS),
+    model="|".join(re.escape(m) for m in MODELS),
 
 
 # ---- targets: one phony target per stage; `all` becomes the technical report at stage 6 --------
@@ -218,14 +223,47 @@ rule render_prompts:
     shell: STAGE + "render-prompts {wildcards.dataset} --out {output} > {log} 2>&1"
 
 
+rule probe:
+    """Ten images of one dataset through one model, outside `rule all`. Build one by name:
+
+        snakemake --profile profiles/palmetto results/probe/pneumoniamnist__qwen3.8-27b-fp8.json
+
+    Why it is opt-in: it is the only rule that spends calls without producing a number the study
+    reports. What it is for (WORKFLOW.md section 9, step 3) is everything that cannot be tested
+    without the service - that a compute node reaches it, that the manifest carries the served
+    model name and the prompt hash, and that a malformed answer is recorded as missing rather than
+    guessed. The last one is not simulated: one extra call goes out with a token budget of one, so
+    the reply really is truncated and the content retry really fires.
+
+    It writes nothing into results/score/. That archive is written by the scoring rules alone and
+    is fixed from the moment it exists, so re-scoring stays a decision rather than an accident."""
+    input:
+        prompts=f"{OUT}/prompts/{{dataset}}.json",
+        sample=f"{OUT}/sample/{{dataset}}.json",
+        arrays=f"{config['cachedir']}/{{dataset}}.npz",
+        smoke=SMOKE,
+        code=CODE_SCORE,
+    params:
+        n=config["vlm"]["probe"]["n"],
+        temperature=config["vlm"]["temperature"],
+        reasoning=config["vlm"]["reasoning"],
+        max_tokens=config["vlm"]["max_tokens"],
+        retries=config["vlm"]["retries"],
+    output: f"{OUT}/probe/{{dataset}}__{{model}}.json"
+    log: "logs/probe/{dataset}__{model}.log"
+    benchmark: "benchmarks/probe/{dataset}__{model}.tsv"
+    conda: "envs/priors.yml"
+    threads: RES["probe"]["cpus"]
+    resources: **res("probe")
+    shell: STAGE + "probe {wildcards.dataset} {wildcards.model} --out {output} > {log} 2>&1"
+
+
 # =====================================================================================
 # STILL TO COME, in this order, each one tested before the next is written:
 #
 #   0  smoke              two tiers of it are still missing, and arrive with the code they test:
 #                         the arm-B estimator on a fixture (with priors/classify.py) and the LLM
 #                         client's retry on a malformed answer (with priors/llm.py)
-#   2  probe              opt-in, outside `all`: ten images on the primary model, to prove a
-#                         compute node reaches the service and the archive is right
 #   2  score_<model>      one rule per model, throttled by an llm_<model> resource; 270 jobs
 #   2  collect_scores     x6, local: the chunk archive gathered into one table per dataset
 #   3  pixel_features     x6, submitted, the torch environment: ResNet-18 penultimate features

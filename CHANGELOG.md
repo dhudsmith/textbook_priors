@@ -317,3 +317,46 @@ it as a limit and read the per-dataset differences rather than the absolute AUCs
 sample by class (changes every arm's definition, and the sample then no longer mirrors the split);
 or raise the sample above 500 (the test splits allow 624 at the smallest, so pneumoniamnist caps
 the shared size at 624). Left open for the owner; the numbers above are in every sample's JSON.
+
+## 2026-09-11 — The probe: the boundary works, and a call costs ten times what the plan assumed
+
+`rule probe` ran on a compute node against `qwen3.8-27b-fp8`, ten images of pneumoniamnist plus one
+deliberately truncated call: 21 calls, 58 seconds, `results/probe/pneumoniamnist__qwen3.8-27b-fp8.json`.
+
+**Everything the probe exists to check, checked.** A compute node reaches the service. The served
+model name is `Qwen/Qwen3.8-27B-FP8`, which is *not* the alias we ask for (`qwen3.8-27b-fp8`) —
+recording it was the right call, and a run that recorded only the requested name would not be able
+to say which weights answered. Ten of ten concept replies parsed complete against the scales; ten
+of ten zero-shot replies parsed and all ten summed to one. Thinking off behaved: every reply came
+back in `content`, none in `reasoning_content`.
+
+**The malformed path fires, and it is not simulated.** The extra call went out with a token budget
+of one; the reply was "```", the content retry doubled the budget to two, the reply was "```json",
+and the answer was recorded missing with both raw texts kept. `complete: false` there is the probe
+passing.
+
+**A call costs 3.6 s, not 0.1 to 0.4 s.** Median 3.6 s over the 20 scored calls, range 1.2 to 5.2 s.
+The earlier figure in WORKFLOW.md §4 was measured on 2026-09-09 without an image attached; the call
+this workflow actually makes carries a 224-pixel PNG and a prompt of about 1,300 tokens. A chunk of
+100 images is therefore about six minutes rather than twenty seconds, which is a `runtime` request,
+not a budget problem: with each model's jobs running to its own concurrency cap the primary's
+18,000 calls are about 25 minutes and the ladder models are shorter. §4 now carries both
+measurements with their dates. Per-call latency is recorded per attempt from here on, so the
+scoring rules' requests come from the archive rather than from arithmetic on a job's wall time.
+
+**What the answers look like, on ten images only and worth nothing statistically.** The concept
+answers vary across images and move with the label — the four images the model called
+`parenchymal_opacity: absent` include two of the three normals — and the zero-shot probabilities
+separate the classes on eight of ten. Two concepts came back constant across all ten images
+(`air_bronchogram`, and `peribronchial_thickening` on nine of ten). That is a thing to watch when
+the real cells land: a concept that never varies contributes nothing to arm C and nothing to arm B
+beyond a constant offset.
+
+**Operational note from a workspace that vanished mid-session.** This agent session's checkout is
+ephemeral: everything gitignored was wiped and recreated while stage 2 was being written. The
+sampled arrays survived untouched, because they live under `storage_root` and only the symlink was
+lost — which is the reason they are there. `results/` did not survive, and regenerating it cost
+seconds. That is fine for JSON a rule can rebuild, and it is not fine for `results/score/`, which
+the plan treats as fixed from the moment it is written. Before the 27,000-call fan-out is launched,
+the archive has to sit on the project filesystem — either by running from a persistent checkout or
+by giving `results/` (or `results/score/`) the same symlink treatment as `data/cache`.

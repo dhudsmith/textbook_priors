@@ -1,0 +1,259 @@
+"""The LLM boundary: what is sent, what is read back, and what is refused.
+
+No test here calls the service. Every one of them is about the code on this side of the boundary,
+which is where a silent error would be worst: a fabricated level enters arm C's design matrix as a
+real observation, and a reply read out of the wrong field disappears as a missing answer. The
+service itself is exercised by `rule probe` (WORKFLOW.md section 9, step 3), on a compute node,
+outside `rule all`.
+"""
+import base64
+import json
+from io import BytesIO
+
+import numpy as np
+import pytest
+from PIL import Image
+
+from priors import llm, score
+
+CONCEPTS = [
+    {"id": "opacity", "question": "?", "scale": ["absent", "mild", "marked"], "anchors": {}},
+    {"id": "edge", "question": "?", "scale": ["sharp", "blurred"], "anchors": {}},
+]
+CLASSES = ["normal", "pneumonia"]
+
+
+# ---- what the model is shown ----------------------------------------------------------------
+
+@pytest.mark.parametrize("shape", [(224, 224), (224, 224, 3)])
+def test_the_image_survives_the_encoding_exactly(shape):
+    """Greyscale and colour both go over the wire as lossless PNG. If this ever became JPEG, the
+    study would be asking what a model sees in a compressed medical image."""
+    rng = np.random.default_rng(0)
+    image = rng.integers(0, 256, size=shape, dtype=np.uint8)
+    url = score.png_data_url(image)
+    assert url.startswith("data:image/png;base64,")
+    decoded = np.array(Image.open(BytesIO(base64.b64decode(url.split(",", 1)[1]))))
+    assert np.array_equal(decoded, image)
+
+
+def test_an_image_of_the_wrong_shape_is_refused():
+    with pytest.raises(ValueError):
+        score.png_data_url(np.zeros((4, 224, 224), dtype=np.uint8))
+
+
+# ---- what can be read back -------------------------------------------------------------------
+
+@pytest.mark.parametrize("text", [
+    '{"opacity": "mild", "edge": "sharp"}',
+    '```json\n{"opacity": "mild", "edge": "sharp"}\n```',
+    'Here is the answer:\n{"opacity": "mild", "edge": "sharp"}\nHope that helps.',
+])
+def test_a_good_answer_is_read_through_the_usual_wrappers(text):
+    parsed = score.parse_concept_answer(text, CONCEPTS)
+    assert parsed["answers"] == {"opacity": "mild", "edge": "sharp"}
+    assert parsed["parsed"] and not parsed["invalid"]
+    assert score.is_complete(parsed)
+
+
+@pytest.mark.parametrize("text, reason", [
+    ('{"opacity": "severe", "edge": "sharp"}', "a level that is not on the scale"),
+    ('{"opacity": 2, "edge": "sharp"}', "an index instead of a level"),
+    ('{"opacity": null, "edge": "sharp"}', "an explicit null"),
+    ('{"edge": "sharp"}', "a missing question"),
+])
+def test_an_answer_that_is_not_a_level_becomes_missing_not_a_guess(text, reason):
+    """The nearest level, the level at that index, the modal level: every repair here would put a
+    number into arm C that the model never gave. None of them happens."""
+    parsed = score.parse_concept_answer(text, CONCEPTS)
+    assert parsed["answers"]["opacity"] is None, reason
+    assert parsed["answers"]["edge"] == "sharp"
+    assert "opacity" in parsed["invalid"]
+    assert not score.is_complete(parsed)
+
+
+@pytest.mark.parametrize("text", ["", "I cannot answer.", '{"opacity": "mild", "edge":', "[1, 2]"])
+def test_an_unreadable_reply_leaves_every_answer_missing(text):
+    parsed = score.parse_concept_answer(text, CONCEPTS)
+    assert parsed["answers"] == {"opacity": None, "edge": None}
+    assert not parsed["parsed"] or not score.is_complete(parsed)
+
+
+def test_keys_the_bank_never_asked_about_are_recorded_and_dropped():
+    parsed = score.parse_concept_answer('{"opacity": "mild", "edge": "sharp", "grade": "high"}',
+                                        CONCEPTS)
+    assert parsed["unknown_keys"] == ["grade"]
+    assert set(parsed["answers"]) == {"opacity", "edge"}
+
+
+def test_a_zero_shot_reply_keeps_the_numbers_the_model_gave():
+    parsed = score.parse_zero_shot_answer('{"normal": 0.25, "pneumonia": 0.75}', CLASSES)
+    assert parsed["scores"] == {"normal": 0.25, "pneumonia": 0.75}
+    assert parsed["sums_to_one"] is True
+    # Not rescaled: dividing each image's vector by its own sum would reorder images within a class
+    # column, which is exactly what the AUC reads.
+    loose = score.parse_zero_shot_answer('{"normal": 0.2, "pneumonia": 0.2}', CLASSES)
+    assert loose["scores"] == {"normal": 0.2, "pneumonia": 0.2}
+    assert loose["sums_to_one"] is False
+
+
+@pytest.mark.parametrize("text", ['{"normal": "high", "pneumonia": 0.75}',
+                                  '{"normal": true, "pneumonia": 0.75}',
+                                  '{"normal": NaN, "pneumonia": 0.75}',
+                                  '{"pneumonia": 0.75}'])
+def test_a_zero_shot_value_that_is_not_a_number_becomes_missing(text):
+    parsed = score.parse_zero_shot_answer(text, CLASSES)
+    assert parsed["scores"]["normal"] is None
+    assert parsed["scores"]["pneumonia"] == 0.75
+    assert not score.is_complete(parsed, "scores")
+
+
+# ---- the retry that repairs a truncated reply, and the one that does not ----------------------
+
+class FakeClient:
+    """A client that hands back scripted replies and records the budgets it was asked for."""
+
+    def __init__(self, texts):
+        self.texts, self.budgets = list(texts), []
+
+    def ask(self, system, user, image_url=None, max_tokens=512):
+        self.budgets.append(max_tokens)
+        text = self.texts[min(len(self.budgets) - 1, len(self.texts) - 1)]
+        return llm.Reply(text=text, served_model="served-name", finish_reason="length",
+                         from_reasoning=False, usage={"total_tokens": 7})
+
+
+def test_every_attempt_records_what_it_cost():
+    """The scoring rule's runtime request is 100 of these per chunk, so the latency is recorded
+    per call rather than divided out of a job's wall time afterwards."""
+    client = FakeClient(['{"opacity": "mild", "edge": "sharp"}'])
+    result = score.ask_one(client, {"system": "s", "user": "u"}, "url", "concept", CONCEPTS, 512)
+    assert result["replies"][0]["elapsed_s"] >= 0.0
+    assert result["replies"][0]["usage"] == {"total_tokens": 7}
+
+
+def test_a_complete_answer_is_not_retried():
+    client = FakeClient(['{"opacity": "mild", "edge": "sharp"}'])
+    result = score.ask_one(client, {"system": "s", "user": "u"}, "url", "concept", CONCEPTS, 512)
+    assert result["complete"] and result["content_attempts"] == 1
+    assert client.budgets == [512]
+
+
+def test_a_truncated_answer_is_retried_once_with_a_doubled_budget():
+    client = FakeClient(['{"opacity": "mild", "edge":', '{"opacity": "mild", "edge": "sharp"}'])
+    result = score.ask_one(client, {"system": "s", "user": "u"}, "url", "concept", CONCEPTS, 512)
+    assert client.budgets == [512, 1024], "the repair is a bigger budget, not a different prompt"
+    assert result["complete"] and result["content_attempts"] == 2
+    assert result["answers"] == {"opacity": "mild", "edge": "sharp"}
+    assert len(result["replies"]) == 2, "the failed attempt is archived too"
+    assert result["replies"][0]["text"].endswith('"edge":')
+
+
+def test_a_reply_that_stays_malformed_is_recorded_missing_with_its_raw_text():
+    client = FakeClient(["not json at all"])
+    result = score.ask_one(client, {"system": "s", "user": "u"}, "url", "concept", CONCEPTS, 64)
+    assert result["content_attempts"] == 2 and not result["complete"]
+    assert result["answers"] == {"opacity": None, "edge": None}
+    assert [r["text"] for r in result["replies"]] == ["not json at all"] * 2
+    assert [r["served_model"] for r in result["replies"]] == ["served-name"] * 2
+
+
+def test_retries_can_be_switched_off():
+    client = FakeClient(["nonsense"])
+    result = score.ask_one(client, {"system": "s", "user": "u"}, "url", "concept", CONCEPTS, 64,
+                           content_retries=0)
+    assert result["content_attempts"] == 1 and not result["complete"]
+
+
+# ---- the two things the served stack does that a plain client would get wrong -----------------
+
+class Message:
+    def __init__(self, content=None, reasoning_content=None):
+        self.content, self.reasoning_content = content, reasoning_content
+
+
+class Choice:
+    def __init__(self, message, finish_reason="stop"):
+        self.message, self.finish_reason = message, finish_reason
+
+
+class Completion:
+    def __init__(self, message, model="served-name"):
+        self.choices, self.model, self.usage = [Choice(message)], model, {"total_tokens": 3}
+
+
+def test_a_reply_filed_under_reasoning_content_is_still_read():
+    """One served model puts its answer in `reasoning_content` even with thinking switched off. A
+    client that read only `content` would record a whole model's scores as missing."""
+    plain = llm.read_reply(Completion(Message(content='{"a": 1}')))
+    assert plain.text == '{"a": 1}' and plain.from_reasoning is False
+
+    fallback = llm.read_reply(Completion(Message(content="", reasoning_content='{"a": 1}')))
+    assert fallback.text == '{"a": 1}' and fallback.from_reasoning is True, "and it is flagged"
+
+    empty = llm.read_reply(Completion(Message(content="", reasoning_content="")))
+    assert empty.text == "" and empty.from_reasoning is False
+
+
+def test_the_served_model_name_is_recorded_rather_than_the_requested_one():
+    reply = llm.read_reply(Completion(Message(content="x"), model="qwen3.8-27b-fp8-20260101"))
+    assert reply.served_model == "qwen3.8-27b-fp8-20260101"
+
+
+def test_thinking_is_switched_off_in_the_body_the_service_reads(monkeypatch, tmp_path):
+    """`enable_thinking` is not an OpenAI parameter, so it has to travel in `extra_body`; with
+    reasoning left on, the primary model spends its whole budget in reasoning_content."""
+    key = tmp_path / "key"
+    key.write_text("not-a-real-key\n")
+    monkeypatch.setattr(llm.openai, "OpenAI", lambda **kw: object())
+    off = llm.Client(model="m", base_url="http://x/v1", key_file=str(key), reasoning="none")
+    on = llm.Client(model="m", base_url="http://x/v1", key_file=str(key), reasoning="medium")
+    assert off.extra_body == {"chat_template_kwargs": {"enable_thinking": False}}
+    assert on.extra_body == {"chat_template_kwargs": {"enable_thinking": True}}
+
+
+# ---- transport backoff -------------------------------------------------------------------------
+
+class Busy(Exception):
+    pass
+
+
+def test_a_busy_service_is_retried_with_growing_delays():
+    calls, slept = [], []
+    def flaky():
+        calls.append(1)
+        if len(calls) < 3:
+            raise Busy()
+        return "answer"
+    value, attempts = llm.call_with_backoff(flaky, attempts=4, retryable=(Busy,),
+                                            sleep=slept.append)
+    assert value == "answer" and attempts == 3
+    assert slept == [1.0, 2.0], "exponential, so a throttled service is not hammered"
+
+
+def test_the_last_transport_failure_is_raised_rather_than_swallowed():
+    """A chunk that could not be placed must fail its job. Recording those images as missing would
+    put a service outage into the archive as if the model had declined to answer."""
+    def always_busy():
+        raise Busy()
+    with pytest.raises(Busy):
+        llm.call_with_backoff(always_busy, attempts=3, retryable=(Busy,), sleep=lambda s: None)
+
+
+def test_an_error_that_is_not_transport_is_not_retried():
+    calls = []
+    def bad_request():
+        calls.append(1)
+        raise ValueError("model not found")
+    with pytest.raises(ValueError):
+        llm.call_with_backoff(bad_request, attempts=4, retryable=(Busy,), sleep=lambda s: None)
+    assert len(calls) == 1
+
+
+def test_the_key_is_read_from_the_file_and_a_blank_one_is_refused(tmp_path):
+    key = tmp_path / "key"
+    key.write_text("  secret-value\n")
+    assert llm.load_key(key) == "secret-value"
+    key.write_text("\n")
+    with pytest.raises(ValueError):
+        llm.load_key(key)

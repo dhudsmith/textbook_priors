@@ -43,6 +43,33 @@ vlm:
     anchors: true                  # render each level's cited anchor text; false is the
                                    # `bare_levels` extension of WORKFLOW.md section 10
 
+  primary: qwen3.8-27b-fp8         # the only model that scores the labelled pool, and the only
+                                   # one asked the zero-shot prompt (arm A)
+  models:                          # concurrency as the service publishes it, cap ours below it;
+                                   # `splits` is what each model scores, since arm B needs no labels
+    qwen3.5-9b:      {family: qwen,  params_b: 9,  concurrency: 128, cap: 96, splits: [test]}
+    gemma-4-12b:     {family: gemma, params_b: 12, concurrency: 32,  cap: 24, splits: [test]}
+    qwen3.8-27b-fp8: {family: qwen,  params_b: 27, concurrency: 64,  cap: 48, splits: [test, pool]}
+    gemma-4-31b:     {family: gemma, params_b: 31, concurrency: 16,  cap: 12, splits: [test]}
+
+  base_url: https://llm.rcd.clemson.edu/v1
+  key_file: ~/.config/rcd_llm/key  # owner-only; read by priors/llm.py and nowhere else
+  temperature: 0.0
+  reasoning: none                  # sent as chat_template_kwargs.enable_thinking: false, because
+                                   # with reasoning on the primary model spends the whole budget in
+                                   # reasoning_content and returns nothing
+  max_tokens: 512                  # enough for twelve concepts of JSON; the one content retry
+                                   # doubles it, which is the repair for a truncated reply
+  retries: 1                       # content retries on a malformed answer, then recorded missing
+  transport_retries: 4             # separate: 429 and 5xx, with exponential backoff
+  timeout: 120                     # seconds per call
+  chunk: 100                       # images per scoring job
+
+  # The opt-in probe of WORKFLOW.md section 9, step 3: ten images through the whole path on a
+  # compute node, plus one deliberately truncated call to show a malformed answer is recorded
+  # missing rather than guessed. Outside `rule all`.
+  probe: {n: 10, malformed_max_tokens: 1}
+
 # Resources per rule. cpus is also `threads`; mem_mb per job; runtime in minutes.
 #
 # First guesses until benchmarks/ exists, then set from the measured peaks with the reasoning in a
@@ -57,3 +84,7 @@ resources:
   # packing for nothing. Wall time 19 s to 126 s - pathmnist inflates 13.5 GB in one pass at about
   # 100 MB/s - so 20 minutes is ten times the longest run and covers a contended filesystem.
   sample: {cpus: 1, mem_mb: 1500, runtime: 20}
+  # Guess. The probe is 21 calls placed one after another and a few PNG encodings: one core, and
+  # memory is one dataset's test array held while the images are encoded (376 MB at the widest).
+  # Thirty minutes is for the service being slow, not for the work.
+  probe:  {cpus: 1, mem_mb: 2000, runtime: 30}

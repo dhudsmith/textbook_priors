@@ -13,6 +13,9 @@ snakemake --profile profiles/palmetto -n          # dry run: inspect the DAG
 snakemake --profile profiles/local -j 2 smoke     # the tests, seconds
 snakemake --profile profiles/local -j 2 prompts   # one stage by name
 snakemake --profile profiles/local -j 2 -F smoke  # re-run the tests after editing a bank file
+
+# opt-in, outside `rule all`: ten images through the service on a compute node
+snakemake --profile profiles/palmetto results/probe/pneumoniamnist__qwen3.8-27b-fp8.json
 ```
 
 Every rule takes the `smoke` marker as an input, so nothing is computed on code that fails its
@@ -27,9 +30,9 @@ to come, and the table below marks what exists today.
 
 | # | Stage | What happens | Jobs | Built |
 |---|---|---|---|---|
-| 0 | **Smoke** | The tests: bank schema, label maps, prompts, the sampler, the arm-B estimator, the metric | 1 | all but the arm-B estimator and the client |
+| 0 | **Smoke** | The tests: bank schema, label maps, prompts, the sampler, the arm-B estimator, the metric | 1 | all but the arm-B estimator |
 | 1 | **Sample** | Per dataset: the seeded 500-image test sample and 2000-image labelled pool | 6 | yes |
-| 2 | **Score** | Per dataset: render both prompts; then the VLM calls, archived raw | 6 + 270 | prompts |
+| 2 | **Score** | Per dataset: render both prompts; then the VLM calls, archived raw | 6 + 270 | prompts, probe |
 | 3 | **Features** | Per dataset: ImageNet ResNet-18 penultimate features | 6 | |
 | 4 | **Classify** | Per dataset: arms A, B, C, P over the curve, and the permutation controls | 6 | |
 | 5 | **Evaluate** | AUC, the paired bootstrap, n_B; then the sign tests and the ladder | 6 + 1 | |
@@ -65,6 +68,8 @@ SESSION_LOG.md         timestamped record of how the work was directed
 |---|---|
 | `data.py` | The two fixed inputs — the concept bank and the pinned release — read and hashed in one place. |
 | `sample.py` | The seeded samples, and the streaming reader that takes their rows out of a deflated release file without materialising the split. |
+| `llm.py` | The boundary: one kind of call, the key read from an owner-only file, thinking switched off, transport backoff, and what came back recorded verbatim. |
+| `score.py` | The deterministic half of scoring: the image as a lossless PNG, and a reply parsed into a validated answer or a recorded absence. |
 | `prompts.py` | The concept and zero-shot prompt strings, rendered from the bank and the label map. |
 | `stages.py` | **The workflow driver.** One entry point per unit of parallel work. |
 | `manifest.py` | The run manifest every result carries. |
@@ -77,10 +82,10 @@ SESSION_LOG.md         timestamped record of how the work was directed
 | `test_release.py` | `config/medmnist.yaml` to the installed `medmnist` package | 20 |
 | `test_prompts.py` | both prompts to H2's separation, and the renderer to its switches | 40 |
 | `test_sample.py` | the streaming reader to a release-shaped fixture whose rows identify themselves | 14 |
+| `test_score.py` | the image encoding, the reply parser and the two retry policies, without calling the service | 31 |
 | `test_metrics.py` | the AUC convention to the package that defines it | 3 |
 
-Still to come, each with the code it tests: the arm-B estimator on a fixture (`priors/classify.py`)
-and the LLM client's retry on a malformed answer (`priors/llm.py`).
+Still to come with the code it tests: the arm-B estimator on a fixture (`priors/classify.py`).
 
 ## Where the data comes from
 
@@ -109,5 +114,5 @@ Snakemake on `PATH` (`conda activate snakemake`); the workflow builds its own en
 `envs/` on first use. `scripts/link_storage.sh` makes the two symlinks onto the project filesystem
 (`data/raw` for the releases, `data/cache` for the sampled arrays) and is the only setup step a
 fresh clone needs. `profiles/palmetto/config.yaml` carries the account and partition. The API
-key for the VLM service will be read from an owner-only file whose path enters
-`config/config.yaml` with the scoring rules, and appears nowhere else.
+key for the VLM service is read from the owner-only file named by `vlm.key_file`, by
+`priors/llm.py` and nowhere else: it never reaches a command line, a log or a manifest.
