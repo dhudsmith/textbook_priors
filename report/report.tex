@@ -44,14 +44,11 @@ regularisation search and the same labelled subsets. The three hypotheses and th
 were fixed in \texttt{WORKFLOW.md} before any number existed, and are reported here as they were
 written.
 
-Two further comparison points were added after those results were in hand, and neither decides
-anything. \textbf{Arm D} asks arm A's question with the whole concept bank in the prompt, so the
-textbook is integrated by the model rather than by a distance in concept space
-(Section~\ref{sec:armd}); it is post-hoc, and is reported as such. And the \textbf{published
-literature} for these same six tasks is read in as a fixed ceiling, so the arms can be placed
-against a benchmark trained on the full training split (Section~\ref{sec:literature}). Both are
-extensions in the sense of \texttt{WORKFLOW.md} section~10: no \emph{supported} verdict in this
-report reads either one.
+One further comparison point was added after those results were in hand, and it decides nothing.
+The \textbf{published literature} for these same six tasks is read in as a fixed ceiling, so the
+arms can be placed against a benchmark trained on the full training split
+(Section~\ref{sec:literature}). It is an extension in the sense of \texttt{WORKFLOW.md}
+section~10: no \emph{supported} verdict in this report reads it.
 
 \section{Data and provenance}
 
@@ -98,7 +95,7 @@ $p = \cBeatsPp$); the pixel probe never reached the textbook arm inside the curv
 \begin{figure}[htbp]\centering
   \includegraphics[width=\textwidth]{fig_curve.png}
   \caption{What labelled images buy (arms C and P, with 95\% intervals) against what the textbook
-  gives for nothing (arm B, dashed; arm A, dotted; the post-hoc arm D, dash-dotted). Where the
+  gives for nothing (arm B, dashed; arm A, dotted). Where the
   pixel probe crosses arm B's line is $n_B$. The finely dotted brown line is not an arm: the
   published, fully supervised ResNet-18 (224) AUC for the same task \cite{yang2023}, trained on
   the whole official training split rather than this study's labelled pool, read here as a ceiling
@@ -137,23 +134,6 @@ gemma family; a Friedman test over all \numModels\ models gives $p = \friedmanP$
 \end{figure}
 
 \input{tables/h3}
-
-\section{Post-hoc: arm D, the bank in the prompt}
-\label{sec:armd}
-
-Everything in this section was designed after the results above were in hand, and it decides
-nothing. H2 failed in a particular way: arm B lost to arm A, while both permutation controls bit
-hard on every dataset, which says the bank carries real class information and that the
-nearest-fingerprint rule is a lossy way to read it. Arm D is the obvious follow-up --- give the
-model the whole bank, concepts, anchors and per-class fingerprints, and then ask it the same
-question arm A is asked --- so that the integration happens inside the model rather than in a
-distance in concept space. It is the same 500 images, the same model and the same paired bootstrap
-as every other arm; only its status differs. Arm D beat arm A on \armDBeatsAWins\ of \numDatasets\
-datasets and arm B on \armDBeatsBWins\ of \numDatasets. Those counts are descriptive: a hypothesis
-formed after seeing the data cannot be tested on the same data, and no \emph{supported} verdict in
-this report reads arm D.
-
-\input{tables/arm_d}
 
 \section{Extension: reading the arms against the published literature}
 \label{sec:literature}

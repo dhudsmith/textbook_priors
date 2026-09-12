@@ -844,3 +844,39 @@ Nothing was bought toward a result. These were diagnostic calls, no archive was 
 whether a gateway model enters the study at all is undecided: it cannot join H3, since a closed
 model of unknown size has no place on a parameter axis, and it makes the contamination limit
 (§2) strictly worse.
+
+## 2026-09-12 — Arm D removed from the workflow; what it measured stays here
+
+The user asked for arm D to be scrubbed from the repository. Done, everywhere a rule, a test, a
+table, a figure or a plan sentence mentioned it: the directed prompt and its renderer, the fan-out
+cell, the classify and evaluate blocks, the `arm_d` table and its macros, the report section, the
+curve figure's third line, the literature table's D column, and the three test modules that held
+any of it. 291 tests pass, `rule all` is 312 jobs where it was 342, and the scoring fan-out is 270
+chunks where it was 300 — back to the pre-registered budget.
+
+**Why it went, stated plainly because the study is better for it.** Arm D was designed after seeing
+H2 fail, so it could decide nothing, and an arm that decides nothing has to be labelled post-hoc in
+every table, figure, macro and paragraph it touches. Two entries above record it doing exactly
+that. The cost was not the 3,000 calls; it was that every reader of the report met a number they
+had to be told twice not to believe, on every page it appeared. Four pre-registered arms and no
+asterisk is a clearer study than five arms and a standing caveat.
+
+**What it measured is not deleted, and this entry is why.** Arm D answered its question: the
+nearest-fingerprint readout really is lossy (D beat B on 4 of 6, recovering nearly all of
+pneumoniamnist's deficit), and the bank is not information the model lacked (D lost to A on 4 of 6).
+Those two readings are in the entry of 2026-09-12 above and remain the best evidence about what
+went wrong with H2. `CHANGELOG.md` and `SESSION_LOG.md` are appended and never rewritten, so
+neither was edited: the removal is a new fact about the workflow, not a revision of what was found.
+
+**The archive was not deleted either.** The 30 `__directed__` chunks sit in `results/score/`,
+write-protected, unread by any rule and no longer required by `rule all`. They were bought with
+3,000 calls, and nothing about removing an arm justifies destroying the record of it. Deleting them
+is a separate decision and would need to be a deliberate one.
+
+**What this costs to realise in the owner's checkout**: no LLM calls at all. The archive is
+untouched, so only the analysis chain reruns — classify, evaluate, evaluate_across, tables, figures
+and the report, about sixteen CPU jobs and a few minutes.
+
+**The lesson, and the rule any future arm obeys.** A decision rule before the calls. An arm worth
+adding is worth pre-registering; one that cannot be pre-registered is a separate study, not an
+extension inside `rule all`. WORKFLOW.md §10 now says so where arm D's description used to be.

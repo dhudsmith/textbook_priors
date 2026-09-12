@@ -2,8 +2,7 @@
 # TEXTBOOK PRIORS OVER VISUAL FEATURES
 #
 # Can a vision-language model's textbook knowledge of what pathology looks like stand in for
-# labelled data? Six MedMNIST benchmarks, four arms, three hypotheses (WORKFLOW.md sections 1-3),
-# and one post-hoc arm D that hands the model the bank and asks the zero-shot question anyway.
+# labelled data? Six MedMNIST benchmarks, four arms, three hypotheses (WORKFLOW.md sections 1-3).
 #
 #     snakemake --profile profiles/palmetto              # everything, on SLURM
 #     snakemake --profile profiles/palmetto -n           # dry run: inspect the DAG
@@ -15,10 +14,10 @@
 #   0  SMOKE      bank schema and anchors, label maps against the pinned release, all three
 #                 prompts, the arm-B estimator on a fixture, metric conventions, client retry
 #   1  SAMPLE     per dataset: the seeded 500-image test sample and 2000-image labelled pool
-#   2  SCORE      per dataset: render the concept, zero-shot and directed prompts from the bank;
+#   2  SCORE      per dataset: render the concept and zero-shot prompts from the bank;
 #                 then, per model x split x prompt x chunk of 100, the VLM calls, archived raw
 #   3  FEATURES   per dataset: ImageNet ResNet-18 penultimate features of the sampled images
-#   4  CLASSIFY   per dataset: arms A, B, C, D, P at every n and seed, and the permutation controls
+#   4  CLASSIFY   per dataset: arms A, B, C, P at every n and seed, and the permutation controls
 #   5  EVALUATE   AUC per arm; the paired bootstrap; n_B; the sign tests and the ladder
 #   6  REPORT     three figures, tables, number macros, the technical report PDF
 #
@@ -113,13 +112,12 @@ def score_cells(model=None):
     """Every (dataset, model, split, prompt, chunk) the fan-out covers.
 
     `splits` per model comes from config, because arm B is training-free and only the primary model
-    ever needs the labelled pool. The two distribution prompts are the primary model's alone and on
-    the test split alone: arm A is one baseline for H2 and arm D one post-hoc extension beside it,
-    not two more arms per model."""
+    ever needs the labelled pool. The zero-shot prompt is the primary model's alone and on the test
+    split alone: arm A is H2's baseline, not one more arm per model."""
     cells = []
     for name in ([model] if model else MODELS):
         for split in config["vlm"]["models"][name]["splits"]:
-            extra = ["zero_shot", "directed"] if name == PRIMARY and split == "test" else []
+            extra = ["zero_shot"] if name == PRIMARY and split == "test" else []
             prompts = ["concept"] + extra
             for prompt in prompts:
                 for dataset in DATASETS:
@@ -138,7 +136,7 @@ EVALUATION = f"{OUT}/evaluation.json"
 FIGS, TABS = config["figdir"], config["tabdir"]
 FIG_FILES = expand(f"{FIGS}/fig_{{f}}.png", f=["curve", "n_b", "ladder"])
 TABLE_TEX = expand(f"{TABS}/{{t}}.tex",
-                   t=["h1", "h2", "h3", "arm_d", "literature", "completeness", "numbers"])
+                   t=["h1", "h2", "h3", "literature", "completeness", "numbers"])
 
 wildcard_constraints:
     dataset="|".join(DATASETS),
@@ -366,7 +364,7 @@ rule score_qwen3_5_9b:
     wildcard_constraints:
         model="qwen3\.5\-9b",
     # protected(): the file is read-only once written, which is principle 7 with teeth. Re-scoring
-    # then costs an explicit chmod, so 30,000 calls cannot be spent again by a stray rerun.
+    # then costs an explicit chmod, so 27,000 calls cannot be spent again by a stray rerun.
     output: protected(f"{OUT}/score/{{dataset}}__{{model}}__{{split}}__{{prompt}}__chunk{{chunk}}.json")
     log: "logs/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.log"
     benchmark: "benchmarks/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.tsv"
@@ -393,7 +391,7 @@ rule score_gemma_4_12b:
     wildcard_constraints:
         model="gemma\-4\-12b",
     # protected(): the file is read-only once written, which is principle 7 with teeth. Re-scoring
-    # then costs an explicit chmod, so 30,000 calls cannot be spent again by a stray rerun.
+    # then costs an explicit chmod, so 27,000 calls cannot be spent again by a stray rerun.
     output: protected(f"{OUT}/score/{{dataset}}__{{model}}__{{split}}__{{prompt}}__chunk{{chunk}}.json")
     log: "logs/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.log"
     benchmark: "benchmarks/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.tsv"
@@ -404,8 +402,8 @@ rule score_gemma_4_12b:
 
 
 rule score_qwen3_8_27b_fp8:
-    """One chunk of qwen3.8-27b-fp8: a hundred images, one prompt. x210. The primary model: the only one that scores the labelled pool,
-    and the only one asked the two distribution prompts, zero-shot (arm A) and directed (arm D)."""
+    """One chunk of qwen3.8-27b-fp8: a hundred images, one prompt. x180. The primary model: the only one that scores the labelled pool,
+    and the only one asked the zero-shot prompt (arm A)."""
     input:
         prompts=f"{OUT}/prompts/{{dataset}}.json",
         sample=f"{OUT}/sample/{{dataset}}.json",
@@ -421,7 +419,7 @@ rule score_qwen3_8_27b_fp8:
     wildcard_constraints:
         model="qwen3\.8\-27b\-fp8",
     # protected(): the file is read-only once written, which is principle 7 with teeth. Re-scoring
-    # then costs an explicit chmod, so 30,000 calls cannot be spent again by a stray rerun.
+    # then costs an explicit chmod, so 27,000 calls cannot be spent again by a stray rerun.
     output: protected(f"{OUT}/score/{{dataset}}__{{model}}__{{split}}__{{prompt}}__chunk{{chunk}}.json")
     log: "logs/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.log"
     benchmark: "benchmarks/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.tsv"
@@ -448,7 +446,7 @@ rule score_gemma_4_31b:
     wildcard_constraints:
         model="gemma\-4\-31b",
     # protected(): the file is read-only once written, which is principle 7 with teeth. Re-scoring
-    # then costs an explicit chmod, so 30,000 calls cannot be spent again by a stray rerun.
+    # then costs an explicit chmod, so 27,000 calls cannot be spent again by a stray rerun.
     output: protected(f"{OUT}/score/{{dataset}}__{{model}}__{{split}}__{{prompt}}__chunk{{chunk}}.json")
     log: "logs/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.log"
     benchmark: "benchmarks/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.tsv"
@@ -616,7 +614,7 @@ rule evaluate_across:
 #
 # One table reads a fixed input rather than results/ alone: `literature`, this study's zero-label
 # and largest-labelled-subset arms against published, fully supervised numbers for the same six
-# tasks (data/literature/benchmarks.yaml, WORKFLOW.md section 10). It is an extension like arm D -
+# tasks (data/literature/benchmarks.yaml, WORKFLOW.md section 10). It is an extension -
 # cheap, decides no hypothesis - and sits in `rule all` for the same reason: nothing here is
 # recomputed, only read alongside numbers the workflow already produced.
 # =====================================================================================

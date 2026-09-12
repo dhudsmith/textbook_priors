@@ -12,7 +12,7 @@ common malformed answer - and doubling the budget is the one repair that can fix
 putting words in the model's mouth.
 
 There are two shapes of answer and three prompts. `concept` asks for a level per concept and
-is parsed against the scales; `zero_shot` (arm A) and `directed` (arm D) both ask for a
+is parsed against the scales; `zero_shot` (arm A) asks for a
 distribution over the class names and are parsed against the classes, which is why everything
 here switches on `kind == "concept"` rather than naming the three prompts one by one.
 """
@@ -203,7 +203,7 @@ def ask_one(client, prompt: dict, image_url: str, kind: str, schema, max_tokens:
         "complete": is_complete(parsed, field),
         "content_attempts": len(attempts),
         "replies": attempts,
-        # Every distribution prompt records it - arm A's and arm D's alike - because whether
+        # Every distribution prompt records it, because whether
         # the model obeyed "make them sum to 1" is a property of the answer, not of the arm.
         **({"sums_to_one": parsed["sums_to_one"]} if kind != "concept" else {}),
     }

@@ -158,14 +158,13 @@ def test_a_reply_that_stays_malformed_is_recorded_missing_with_its_raw_text():
     assert [r["served_model"] for r in result["replies"]] == ["served-name"] * 2
 
 
-def test_both_distribution_prompts_record_whether_the_model_obeyed_the_sum():
+def test_a_distribution_prompt_records_whether_the_model_obeyed_the_sum():
     """`sums_to_one` is a property of a distribution answer, not of an arm.
 
-    Arm A is asked with `kind="zero_shot"` and the post-hoc arm D with `kind="directed"`; both get
-    the same parser and both must carry the diagnostic, or arm D's compliance is invisible in the
-    archive while arm A's is recorded."""
+    Arm A is asked with `kind="zero_shot"`; the diagnostic is gated on the answer's shape rather
+    than on the prompt name, so any future distribution prompt carries it without a code change."""
     text = '{"normal": 0.25, "pneumonia": 0.75}'
-    for kind in ("zero_shot", "directed"):
+    for kind in ("zero_shot",):
         result = score.ask_one(FakeClient([text]), {"system": "s", "user": "u"}, "url", kind,
                                CLASSES, 512)
         assert result["complete"] and result["sums_to_one"] is True, kind

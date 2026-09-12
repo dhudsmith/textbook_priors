@@ -258,3 +258,26 @@ and is a `code()` input to all 300 protected score chunks, so correcting the com
 whole 30,000-call archive stale. It is left for a deliberate edit plus `snakemake --touch` from the
 owner's checkout, which CLAUDE.md's rule about the archive requires and a session that does not run
 the workflow should not do by itself.
+
+## 2026-09-12 15:45 — Scrub arm D, and propose a thinking arm and an OpenAI arm
+
+"Can you propose how we could integrate a thinking arm and an openai arm, on more limited cases to
+keep overall calls relatively low while still giving bite? Also, I want to scrub the confusing arm
+D afterall from the entire repo."
+
+The scrub was done in full and is recorded in CHANGELOG.md as a decision with its reason. Two
+boundaries were drawn rather than assumed, both of which the user can overrule:
+
+- `CHANGELOG.md` and `SESSION_LOG.md` say of themselves that they are appended and never
+  rewritten, so arm D was *not* edited out of either. The removal is a new entry. Rewriting the
+  record of what was found and how the work was directed would defeat the purpose both files
+  exist for, and it is the one reading of "the entire repo" that the repo's own conventions forbid.
+- The 30 `__directed__` chunks in `results/score/` were not deleted. They cost 3,000 calls, they
+  are write-protected as principle 7 requires, and nothing in `rule all` reads them any more.
+  Deleting an archive is deliberate, not incidental (CLAUDE.md), and removing an arm is not by
+  itself a reason to destroy the evidence it produced.
+
+The proposal for the two new readers went to the user in the session and is not yet written into
+WORKFLOW.md, because its whole point is that a decision rule is fixed before any call is bought -
+which means the user chooses the scope and the rule first. What arm D taught is the rule the
+proposal is built around.

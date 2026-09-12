@@ -6,8 +6,7 @@ asserting something a later run could contradict. If a figure and the prose ever
 because someone edited the prose.
 
 Three figures, one per hypothesis (WORKFLOW.md section 6): the learning curve with arm B's line,
-n_B per dataset, and the model ladder. Arm D rides along on the curve figure and gets one table of
-its own, always labelled post-hoc: it was designed after the first results and decides nothing.
+n_B per dataset, and the model ladder.
 
 One table, `literature`, and one line on the curve figure read a fixed input besides results/:
 `data/literature/benchmarks.yaml`, published fully supervised numbers for the same six tasks
@@ -26,9 +25,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 ARM_LABEL = {"C": "arm C: concept scores", "P": "arm P: ImageNet features",
-             "B": "arm B: textbook only (no labels)", "A": "arm A: zero-shot (no labels)",
-             "D": "arm D: bank in the prompt (post-hoc, no labels)"}
-ARM_COLOUR = {"C": "#1f77b4", "P": "#d62728", "B": "#2ca02c", "A": "#7f7f7f", "D": "#9467bd"}
+             "B": "arm B: textbook only (no labels)", "A": "arm A: zero-shot (no labels)"}
+ARM_COLOUR = {"C": "#1f77b4", "P": "#d62728", "B": "#2ca02c", "A": "#7f7f7f"}
 
 # Not an arm: the published, fully supervised ceiling (data/literature/benchmarks.yaml), read onto
 # the same axes as a fixed reference rather than a line that moves with n. One colour, used nowhere
@@ -104,11 +102,6 @@ def figure_curve(per, datasets, curve_n, dest, literature=None):
         b_key = next(k for k in got["auc"] if k.startswith("B__"))
         ax.axhline(got["auc"][b_key], color=ARM_COLOUR["B"], linestyle="--", label=ARM_LABEL["B"])
         ax.axhline(got["auc"]["A"], color=ARM_COLOUR["A"], linestyle=":", label=ARM_LABEL["A"])
-        # Arm D is a third horizontal line for the same reason as A and B: it uses no labels, so it
-        # does not move with n. It is drawn here because the question the figure already asks - how
-        # many labels is the textbook worth - is the one arm D gives a second answer to.
-        if "D" in got["auc"]:
-            ax.axhline(got["auc"]["D"], color=ARM_COLOUR["D"], linestyle="-.", label=ARM_LABEL["D"])
         if literature is not None:
             ax.axhline(literature.dataset(dataset)["resnet18_224"]["auc"], color=LIT_COLOUR,
                       linestyle=(0, (1, 1)), linewidth=1.5, label=LIT_LABEL)
@@ -235,30 +228,6 @@ def table_h3(across, datasets, dest):
            "quantisation.", "h3")
 
 
-def table_arm_d(per, across, datasets, primary, dest):
-    """The post-hoc arm, against the two arms it was built to sit between.
-
-    Arm A is the same question with no bank; arm B is the same bank with the arithmetic done
-    outside the model. D $-$ B is the number that says whether H2's failure was the readout rather
-    than the bank, and the caption says post-hoc because it is.
-    """
-    rows = []
-    for d in datasets:
-        got = per[d]
-        d_a, d_b = got["differences"]["D_minus_A"], got["differences"]["D_minus_B"]
-        rows.append([tex_escape(d), fmt(got["auc"]["D"]), fmt(got["auc"]["A"]),
-                     fmt(got["auc"][f"B__{primary}"]),
-                     f"{fmt(d_a['median'])} [{fmt(d_a['lo'])}, {fmt(d_a['hi'])}]",
-                     f"{fmt(d_b['median'])} [{fmt(d_b['lo'])}, {fmt(d_b['hi'])}]"])
-    arm_d = across["extensions"]["arm_d"]
-    _table(dest, "arm_d", ["dataset", "AUC(D)", "AUC(A)", "AUC(B)", "D $-$ A", "D $-$ B"], rows,
-           "Arm D (post-hoc). The zero-shot question asked with the whole concept bank in the "
-           "prompt, against the same question without it (A) and against the same bank read by the "
-           "nearest-fingerprint rule outside the model (B). Arm D was designed after the first "
-           f"results and tests nothing: D beats A on {arm_d['d_beats_a_wins']} of {len(datasets)} "
-           f"datasets and B on {arm_d['d_beats_b_wins']} of {len(datasets)}.", "armd")
-
-
 LIT_METHOD_LABEL = {"resnet18_224": "ResNet-18 (224)", "resnet50_224": "ResNet-50 (224)",
                     "auto_sklearn": "auto-sklearn", "autokeras": "AutoKeras",
                     "google_automl": "Google AutoML Vision"}
@@ -278,27 +247,26 @@ def table_literature(per, literature, datasets, curve_n, primary, dest):
         got = per[d]
         best_method, best = ceiling(literature, d)
         # Every arm, not only arm B: the ceiling is a reference point for the study, and the study
-        # has five arms. The three zero-label arms come first because they are the ones the ceiling
+        # has four arms. The two zero-label arms come first because they are the ones the ceiling
         # is most interesting against - what the model brings before any label is bought.
         rows.append([
             tex_escape(d),
             fmt(got["auc"]["A"]),
             fmt(got["auc"][f"B__{primary}"]),
-            fmt(got["auc"]["D"]) if "D" in got["auc"] else "--",
             fmt(got["curve"][f"C__n{largest}"]["point"]),
             fmt(got["curve"][f"P__n{largest}"]["point"]),
             fmt(best["auc"]),
             tex_escape(LIT_METHOD_LABEL[best_method]),
         ])
     _table(dest, "literature",
-           ["dataset", "A", "B", "D", f"C (n={largest})", f"P (n={largest})",
+           ["dataset", "A", "B", f"C (n={largest})", f"P (n={largest})",
             "published", "published method"],
            rows,
            "Literature reconciliation (extension, decides no hypothesis). Every arm of this study "
            "against the best of five fully supervised methods reported for the same task on the "
            r"same 224-pixel release \cite{yang2023}. The published methods are trained on the whole "
            "official training split, thousands to tens of thousands of images, not this study's "
-           "n$\\le$2000 pool; A, B and D see no labels at all. Read the last column as a ceiling for "
+           "n$\\le$2000 pool; A and B see no labels at all. Read the last column as a ceiling for "
            "the task, not as a same-conditions comparison. ACC is pinned beside AUC in "
            r"\texttt{data/literature/benchmarks.yaml} and not shown, because this study computes no "
            "ACC to set beside it.", "literature")
@@ -335,12 +303,6 @@ def numbers(per, across, datasets, curve_n, primary, dest, literature=None):
     for family, spec in h3["ladder"].items():
         lines[f"ladder{family.capitalize()}Wins"] = spec["wins"]
         lines[f"ladder{family.capitalize()}P"] = fmt(spec["sign_test_p"], 4)
-    arm_d = across.get("extensions", {}).get("arm_d")
-    if arm_d:
-        lines["armDBeatsAWins"] = arm_d["d_beats_a_wins"]
-        lines["armDBeatsBWins"] = arm_d["d_beats_b_wins"]
-        lines["armDBeatsAp"] = fmt(arm_d["sign_test_p_vs_a"], 4)
-        lines["armDBeatsBp"] = fmt(arm_d["sign_test_p_vs_b"], 4)
     if literature is not None:
         # The gap to the published ceiling, per label budget. Stated as a median over datasets
         # because an AUC on pathmnist and one on octmnist are not commensurable to average -
@@ -350,8 +312,6 @@ def numbers(per, across, datasets, curve_n, primary, dest, literature=None):
         for d in datasets:
             top = ceiling(literature, d)[1]["auc"]
             zero = [per[d]["auc"]["A"], per[d]["auc"][f"B__{primary}"]]
-            if "D" in per[d]["auc"]:
-                zero.append(per[d]["auc"]["D"])
             gaps["Zero"].append(top - max(zero))
             gaps["Concept"].append(top - per[d]["curve"][f"C__n{largest}"]["point"])
             gaps["Pixel"].append(top - per[d]["curve"][f"P__n{largest}"]["point"])
@@ -372,8 +332,6 @@ def numbers(per, across, datasets, curve_n, primary, dest, literature=None):
         lines[f"nB{key}"] = per[d]["n_b"]["point"].replace("<=", r"$\leq$").replace(">", "$>$")
         lines[f"aucB{key}"] = fmt(per[d]["auc"][f"B__{primary}"])
         lines[f"aucA{key}"] = fmt(per[d]["auc"]["A"])
-        if "D" in per[d]["auc"]:
-            lines[f"aucD{key}"] = fmt(per[d]["auc"]["D"])
     text = "\n".join(rf"\newcommand{{\{k}}}{{{v}}}" for k, v in lines.items()) + "\n"
     (Path(dest) / "numbers.tex").write_text(text)
     return lines

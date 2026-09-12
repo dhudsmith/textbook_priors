@@ -73,9 +73,9 @@ for a clinician, or that any arm is state of the art.
 
 ## 3. Arms
 
-Four pre-registered, all predicting on the shared test sample. A and B use no labels; C and P are
-the same regularised logistic regression on different features. A fifth, arm D, was added after the
-first results and is post-hoc: it is reported as an extension (§10) and decides no hypothesis.
+Four, all pre-registered and all predicting on the shared test sample. A and B use no labels; C
+and P are the same regularised logistic regression on different features. A fifth arm, D, existed
+between 2026-09-12 and 2026-09-12 and was removed; §10 records what it measured and why it went.
 
 | arm | labels | features | what it establishes |
 |---|---|---|---|
@@ -83,7 +83,6 @@ first results and is post-hoc: it is reported as an extension (§10) and decides
 | B textbook-only | 0 | concept scores | nearest class fingerprint from the bank; the zero-label prior, and the line that defines n_B |
 | C concept regression | n | concept scores | what the prior is worth once a few labels exist (H1) |
 | P pixel probe | n | ImageNet ResNet-18 penultimate features | the label-matched pixel baseline (H1): transfer learning without the textbook |
-| D bank-in-context *(post-hoc)* | 0 | — | arm A's question asked with the whole bank in the prompt: whether H2's loss was the readout rather than the bank (primary model) |
 
 A VLM is an enormous pretrained model, so the fair pixel baseline is also pretrained: frozen
 ImageNet features under the same classifier, the same regularisation search and the same nested
@@ -155,15 +154,15 @@ gitignored); the sample stage reads the six files straight from it. Provenance �
 Zenodo record (10519652) and the MD5 check above — is recorded here for the reader, not
 re-verified by any rule.
 
-| model | family | role | concept calls | zero-shot calls | directed calls |
-|---|---|---|---|---|---|
-| `qwen3.8-27b-fp8` | qwen | primary | 15,000 (test + pool) | 3,000 (test) | 3,000 (test) |
-| `qwen3.5-9b` | qwen | ladder | 3,000 (test) | — | — |
-| `gemma-4-12b` | gemma | ladder | 3,000 (test) | — | — |
-| `gemma-4-31b` | gemma | ladder | 3,000 (test) | — | — |
+| model | family | role | concept calls | zero-shot calls |
+|---|---|---|---|---|
+| `qwen3.8-27b-fp8` | qwen | primary | 15,000 (test + pool) | 3,000 (test) |
+| `qwen3.5-9b` | qwen | ladder | 3,000 (test) | — |
+| `gemma-4-12b` | gemma | ladder | 3,000 (test) | — |
+| `gemma-4-31b` | gemma | ladder | 3,000 (test) | — |
 
-**30,000 calls** in 300 chunk jobs of 100 images. The last 3,000 of those are arm D's, bought after
-the first 27,000 had been analysed; the pre-registered budget was 27,000. Two measurements, because they disagree and the
+**27,000 calls** in 270 chunk jobs of 100 images, which is the pre-registered budget. A further
+3,000 were bought for arm D and are archived but no longer read (§10). Two measurements, because they disagree and the
 second is the one to plan with. On 2026-09-09, with thinking off and no image attached, 0.1 to
 0.4 s per call on every model. On 2026-09-11 the `probe` rule measured the call this workflow
 actually makes - a 224-pixel PNG and a rendered prompt of about 1,300 tokens, on the primary model:
@@ -202,11 +201,11 @@ Each names the failure it prevents; `TALK.md` argues them.
 1  SAMPLE     per dataset: the seeded 500-image test sample and 2000-image labelled pool,
               streamed out of the compressed npz without loading it (the raw releases are
               prior work, §4 — no fetch rule)                                           6 CPU
-2  SCORE      per dataset: render the concept, zero-shot and directed prompts from the bank;
+2  SCORE      per dataset: render the concept and zero-shot prompts from the bank;
               then, per model x split x prompt x chunk of 100: concept levels, or a class
               distribution; every raw response archived and protected  6 local + 300 throttled
 3  FEATURES   per dataset: ImageNet ResNet-18 penultimate features of the sampled images  6 CPU
-4  CLASSIFY   per dataset: arms A, B, C, D, P at every n and seed, and the permutation controls 6 CPU
+4  CLASSIFY   per dataset: arms A, B, C, P at every n and seed, and the permutation controls 6 CPU
 5  EVALUATE   AUC per arm; the paired bootstrap; n_B; then the sign tests and the ladder
               across datasets                                                             6 + 1
 6  REPORT     three figures, tables, number macros, the technical report PDF              local
@@ -224,17 +223,14 @@ The one stage type not seen in earlier projects, and the one that tests principl
   `results/score/<dataset>__<model>__<split>__<prompt>__chunk<k>.json`: per image the parsed
   answer and every raw reply. The manifest adds the served model name, the prompt hash, the
   bank-file hash, temperature and reasoning setting.
-- **Three prompts, each a pure function of the bank and the label map, each tested in `smoke`**:
+- **Two prompts, each a pure function of the bank and the label map, each tested in `smoke`**:
   the concept prompt asks for a level per concept, renders every level's cited anchor text, and
   never names a class; the zero-shot prompt asks for a distribution over the class names and never
-  mentions a concept. Those two are held apart because H2 turns on it. The directed prompt (arm D,
-  post-hoc, §10) deliberately breaks the separation: it carries every concept with its anchors and
-  every class's fingerprint and then asks the zero-shot question, and the smoke tier holds it to
-  the inverse invariant — it must name every class *and* every concept.
+  mentions a concept. They are held apart because H2 turns on it.
 - **Rendering is its own rule, not inline in the score loop.** `render_prompts`, one per dataset
-  (6 local jobs, no LLM calls, no throttling), turns the bank and the label map into all three prompt
+  (6 local jobs, no LLM calls, no throttling), turns the bank and the label map into both prompt
   strings and writes `results/prompts/<dataset>.json` (the rendered concept prompt with its
-  anchors, the rendered zero-shot prompt, the rendered directed prompt, the bank-file hash). Every `score_*` rule takes that file
+  anchors, the rendered zero-shot prompt, the bank-file hash). Every `score_*` rule takes that file
   as an input instead of re-deriving the prompt, so the string sent to the model, the one hashed
   into the manifest, and the one the report or the demo shows are the same artifact.
 - **Per call**: the 224-pixel PNG; JSON requested and validated against the scales; one retry with
@@ -326,17 +322,22 @@ non-diagnostic question set), `primary_upgrade` (the pool on `gemma-4-31b`), and
 on the primary model - into a second archive; it was cut as impossible and is merely expensive,
 section 7 and `docs/rcd_llm_service.md`).
 
-**Arm D, the one extension that is inside `all`** (added 2026-09-12, after the first full run).
-H2 failed in a specific way: arm B lost to arm A on all six datasets, while both permutation
-controls bit hard on all six — the bank carries real class information, and the nearest-fingerprint
-rule is a lossy way to read it. Arm D tests the other half of that reading by moving the
-integration inside the model: the directed prompt carries every concept with its anchors and every
-class's fingerprint, and then asks arm A's question. It is scored on the same 500 test images, by
-the primary model, and enters the same paired bootstrap, which is why it lives in `rule all`
-rather than in a rule of its own — an arm outside the shared bootstrap could not be compared to the
-arms inside it. What that placement does **not** buy it is status: it was designed after seeing the
-numbers, so `D − A` and `D − B` are descriptive, no `supported` verdict reads them, and every table,
-figure and macro of it is labelled post-hoc.
+**Arm D, added 2026-09-12 and removed the same day.** It handed the model the whole bank — every
+concept with its anchors, every class's fingerprint — and then asked arm A's zero-shot question, so
+that the textbook was integrated inside the model rather than by a distance in concept space. It
+cost 3,000 calls and it measured something real: the nearest-fingerprint readout is lossy (D beat B
+on 4 of 6, recovering nearly all of pneumoniamnist's deficit), and the bank is not information the
+model lacked (D lost to A on 4 of 6). Both readings are in `CHANGELOG.md`, which keeps them.
+
+It was removed because it was designed after seeing the numbers and so could decide nothing, and an
+arm that decides nothing has to be labelled post-hoc in every table, figure, macro and paragraph it
+touches. That cost every reader of the report a second explanation of why a number was there and
+what it was not allowed to mean, on every page it appeared. The study is clearer with four
+pre-registered arms and no asterisk. The 30 archived chunks stay on disk unread: they were bought,
+and deleting an archive is not something a removal of this kind justifies.
+
+The lesson it leaves is the one any replacement has to obey: **a decision rule before the calls.**
+An arm worth adding is worth pre-registering, and anything that cannot be is a separate study.
 
 **Literature reconciliation, another extension inside `all`** (added 2026-09-12, no rerun). The
 user asked to pull published results for these six MedMNIST tasks and add them as benchmarks in
@@ -347,9 +348,9 @@ cross-checked against its own across-dataset average as a second read. It decide
 every value in it is trained on a dataset's whole official training split, not this study's
 $n \leq 2000$ pool, so it is a ceiling for the task, not a same-conditions arm — and it costs
 nothing to compute: the `tables` rule reads it beside results/ already on disk and writes one more
-table, `literature`, read in its own report section. It sits inside `rule all` for the same reason
-arm D does: it is cheap and decides nothing, so keeping it out would only cost the reader a second
-document.
+table, `literature`, read in its own report section. It sits inside `rule all` because it is cheap
+and costs the reader nothing: unlike arm D it needs no warning label, since a published benchmark
+trained on the full split is plainly a ceiling and not a competitor.
 
 ## 11. Layout
 

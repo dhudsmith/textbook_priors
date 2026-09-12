@@ -379,17 +379,6 @@ def classify(dataset: str, out: str, arrays: str) -> None:
         out_arrays["A"] = a_scores
         index.append({"arm": "A", "key": "A", "model": primary, "labels": "none"})
 
-        # ---- arm D: the same question, asked of a model that has just been handed the bank ------
-        # Post-hoc and exploratory (WORKFLOW.md section 10). It sits here rather than in an
-        # extension rule because it is scored on the same 500 images as every other arm, and the
-        # paired bootstrap is only paired if every arm is in the same matrix.
-        directed = cell(primary, "test", "directed")
-        d_scores = np.array([[row["scores"].get(name) if row["scores"].get(name) is not None else 0.0
-                              for name in classes] for row in directed])
-        out_arrays["D"] = d_scores
-        index.append({"arm": "D", "key": "D", "model": primary, "labels": "none",
-                      "post_hoc": True})
-
         # ---- arm B: nearest fingerprint, for every model, plus the permutation control ----------
         b_complete = {}
         for model in CONFIG["vlm"]["models"]:
@@ -502,12 +491,6 @@ def evaluate(dataset: str, out: str) -> None:
                 mean_over_seeds("C", n) - mean_over_seeds("P", n), spec["ci"])
         b_primary = replicates[:, column[f"B__{primary}"]]
         differences["B_minus_A"] = metrics.interval(b_primary - replicates[:, column["A"]], spec["ci"])
-        # Arm D, post-hoc: against arm A it asks whether the bank helps the model at all when the
-        # model does the integrating, and against arm B whether the loss in H2 was the readout
-        # rather than the bank. Neither difference decides a hypothesis (WORKFLOW.md section 10).
-        d_primary = replicates[:, column["D"]]
-        differences["D_minus_A"] = metrics.interval(d_primary - replicates[:, column["A"]], spec["ci"])
-        differences["D_minus_B"] = metrics.interval(d_primary - b_primary, spec["ci"])
         for n in curve["n"]:
             differences[f"C_minus_B__n{n}"] = metrics.interval(
                 mean_over_seeds("C", n) - b_primary, spec["ci"])
@@ -646,25 +629,7 @@ def evaluate_across(out: str) -> None:
             "supported": bool(all(f["wins"] >= spec["h3_min_wins"] for f in ladder.values())),
         }
 
-        # Arm D, reported as an extension and never as a test. It was designed after the first
-        # results, so its sign test is descriptive: the same p that would be evidence for a
-        # pre-registered hypothesis is, here, only a compact way of saying how many datasets moved
-        # in the same direction. The report labels every number of it post-hoc.
-        d_beats_a = {d: per[d]["differences"]["D_minus_A"]["median"] > 0 for d in datasets}
-        d_beats_b = {d: per[d]["differences"]["D_minus_B"]["median"] > 0 for d in datasets}
-        arm_d = {
-            "post_hoc": True,
-            "auc": {d: per[d]["auc"]["D"] for d in datasets},
-            "d_beats_a": d_beats_a, "d_beats_a_wins": sum(d_beats_a.values()),
-            "d_beats_b": d_beats_b, "d_beats_b_wins": sum(d_beats_b.values()),
-            "d_minus_a": {d: per[d]["differences"]["D_minus_A"] for d in datasets},
-            "d_minus_b": {d: per[d]["differences"]["D_minus_B"] for d in datasets},
-            "sign_test_p_vs_a": metrics.sign_test(sum(d_beats_a.values()), len(datasets)),
-            "sign_test_p_vs_b": metrics.sign_test(sum(d_beats_b.values()), len(datasets)),
-        }
-
         run.write(out, dict(datasets=datasets, h1=h1, h2=h2, h3=h3,
-                            extensions={"arm_d": arm_d},
                             flagged_cells={d: [k for k, over in per[d]["incomplete_over_cap"].items() if over]
                                            for d in datasets}))
 
@@ -681,7 +646,6 @@ def tables(dest: str) -> None:
         reporting.table_h1(per, datasets, curve, dest)
         reporting.table_h2(per, datasets, curve, primary, dest)
         reporting.table_h3(across, datasets, dest)
-        reporting.table_arm_d(per, across, datasets, primary, dest)
         reporting.table_literature(per, literature, datasets, curve, primary, dest)
         reporting.table_completeness(per, datasets, dest)
         macros = reporting.numbers(per, across, datasets, curve, primary, dest, literature)

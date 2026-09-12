@@ -92,8 +92,7 @@ def workspace(tmp_path):
     (results / "prompts").mkdir(parents=True, exist_ok=True)
     (results / "prompts" / "toymnist.json").write_text(json.dumps(
         {"dataset": "toymnist", "concepts": CONCEPTS, "classes": CLASSES, "bank_sha256": "x",
-         "prompts": {"concept": {"sha256": "c"}, "zero_shot": {"sha256": "z"},
-                     "directed": {"sha256": "d"}}}))
+         "prompts": {"concept": {"sha256": "c"}, "zero_shot": {"sha256": "z"}}}))
 
     # The gathered archive: both models on the test split, the primary also on the pool, and a
     # zero-shot cell whose numbers carry nothing.
@@ -112,15 +111,6 @@ def workspace(tmp_path):
         "prompt_sha256": "z", "n": n_test, "incomplete_frac": 0.0, "over_missing_cap": False,
         "rows": [{"position": i, "index": i, "label": int(y), "complete": True,
                   "scores": {"alpha": 0.5, "beta": 0.5}} for i, y in enumerate(y_test)]}
-    # Arm D, the post-hoc cell: the same shape of answer as arm A, but with numbers that lean the
-    # right way, so the fixture can tell a crossed arm from a working one here too.
-    directed = rng.uniform(0.0, 0.45, size=n_test) + 0.3 * y_test
-    cells["big-model__test__directed"] = {
-        "model": "big-model", "split": "test", "prompt": "directed", "served_model": "big-model",
-        "prompt_sha256": "d", "n": n_test, "incomplete_frac": 0.0, "over_missing_cap": False,
-        "rows": [{"position": i, "index": i, "label": int(y), "complete": True,
-                  "scores": {"alpha": float(1 - v), "beta": float(v)}}
-                 for i, (y, v) in enumerate(zip(y_test, directed))]}
     (results / "scores").mkdir(parents=True, exist_ok=True)
     (results / "scores" / "toymnist.json").write_text(json.dumps(
         {"dataset": "toymnist", "concepts": [c["id"] for c in CONCEPTS], "classes": CLASSES,
@@ -156,7 +146,7 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
                     str(results / "classify/toymnist.npz"))
     scores = np.load(results / "classify/toymnist.npz")
     assert np.array_equal(scores["labels"], y_test)
-    assert {"A", "D", "B__big-model", "B__tiny-model", "C__n20__seed0",
+    assert {"A", "B__big-model", "B__tiny-model", "C__n20__seed0",
             "P__n50__seed1"} <= set(scores.files)
 
     stages.evaluate("toymnist", str(results / "evaluate/toymnist.json"))
@@ -172,27 +162,15 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     # The permutation control must cost arm B almost everything it had.
     assert got["controls"]["B__big-model"]["drop"]["median"] > 0.2
 
-    # Arm D: informative in the fixture where arm A is not, so its post-hoc differences must be
-    # signed the way the fixture built them, and both must be present for the report to read.
-    assert got["auc"]["D"] > 0.6, "the fixture's directed answers lean with the label"
-    assert got["differences"]["D_minus_A"]["median"] > 0
-    assert got["differences"]["D_minus_B"]["median"] < 0, "arm B is near-perfect here"
-
     stages.evaluate_across(str(results / "evaluation.json"))
     across = json.loads((results / "evaluation.json").read_text())
     assert across["h2"]["b_beats_a"]["toymnist"] is True
     assert across["h3"]["ladder"]["t"]["larger"] == "big-model"
     assert across["h3"]["ladder"]["t"]["wins"] == 1
 
-    # Arm D is summarised as an extension and decides nothing: no `supported` flag may read it.
-    arm_d = across["extensions"]["arm_d"]
-    assert arm_d["post_hoc"] is True
-    assert arm_d["d_beats_a"]["toymnist"] is True and arm_d["d_beats_b"]["toymnist"] is False
-    assert "supported" not in arm_d
-
     stages.tables(config["tabdir"])
     stages.figures(config["figdir"])
-    for name in ("h1", "h2", "h3", "arm_d", "literature", "completeness", "numbers"):
+    for name in ("h1", "h2", "h3", "literature", "completeness", "numbers"):
         assert (Path(config["tabdir"]) / f"{name}.tex").stat().st_size > 0
     for name in ("curve", "n_b", "ladder"):
         assert (Path(config["figdir"]) / f"fig_{name}.png").stat().st_size > 0
@@ -202,15 +180,14 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     macros = (Path(config["tabdir"]) / "numbers.tex").read_text()
     for name in ("hOneSupported", "hTwoSupported", "hThreeSupported", "cBeatsPWins", "bBeatsAWins",
                  "friedmanP", "medianNB", "numDatasets", "numModels",
-                 "armDBeatsAWins", "armDBeatsBWins",
                  "litGapZeroMedian", "litGapConceptMedian", "litGapPixelMedian", "litLargestN",
                  "litPixelWithinTwoPoints", "litZeroWithinFivePoints", "aucLitToy"):
         assert f"\\newcommand{{\\{name}}}" in macros, name
 
     # The literature table reads the ceiling against every arm, not only against arm B: the study
-    # has five arms and a table that showed three would place the ceiling against a part of it.
+    # has four arms and a table that showed two would place the ceiling against a part of it.
     lit = (Path(config["tabdir"]) / "literature.tex").read_text()
-    assert "& A & B & D &" in lit, lit.split("hline")[1]
+    assert "& A & B &" in lit, lit.split("hline")[1]
 
 
 def test_n_b_is_reported_as_a_code_when_the_crossing_is_outside_the_grid(workspace, stages):
