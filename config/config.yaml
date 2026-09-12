@@ -86,6 +86,11 @@ torch_home: /project/dane2/wficai/textbook_priors/torch_home
 # that flags a dataset-model cell too incomplete for the headline (WORKFLOW.md section 3).
 classify: {l2_grid: [0.01, 0.1, 1, 10, 100], cv_folds: 5, missing_max_frac: 0.05, permute: {seeds: [0, 1, 2]}}
 
+# The bootstrap resamples the 500 test images, not the labelled subsets: it is the test sample's
+# sampling error that every arm shares, and sharing it is what makes the differences paired.
+# h3_min_wins is descriptive at 5 of 6 (p = 0.11), which six datasets cannot improve on.
+evaluate: {bootstrap: 10000, ci: 0.95, seed: 0, h3_min_wins: 5}
+
 # Resources per rule. cpus is also `threads`; mem_mb per job; runtime in minutes.
 #
 # First guesses until benchmarks/ exists, then set from the measured peaks with the reasoning in a
@@ -123,3 +128,6 @@ resources:
   # the widest at 2000 images by 512 features; sklearn's lbfgs uses the cores it is given, so four.
   # Memory is those matrices and the fifty score matrices, all small, so 8 GB is generous.
   classify: {cpus: 4, mem_mb: 8000, runtime: 120}
+  # Guess. The bootstrap is 10,000 ranked resamples of a 500-row matrix with a column per arm and
+  # class; one core, since it is one numpy loop, and the arrays are megabytes.
+  evaluate: {cpus: 2, mem_mb: 4000, runtime: 60}

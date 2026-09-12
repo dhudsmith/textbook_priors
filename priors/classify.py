@@ -116,8 +116,11 @@ def pool_medians(matrix: np.ndarray) -> np.ndarray:
     A concept the model never answered anywhere in the pool has no median; it takes 0.5, the middle
     of the scale, which is the least committal value the mapping allows.
     """
-    with np.errstate(all="ignore"):
-        medians = np.nanmedian(np.where(np.isnan(matrix), np.nan, matrix), axis=0)
+    import warnings
+
+    with warnings.catch_warnings():        # an all-missing concept is handled below, not a bug
+        warnings.simplefilter("ignore", RuntimeWarning)
+        medians = np.nanmedian(matrix, axis=0)
     return np.where(np.isnan(medians), 0.5, medians)
 
 

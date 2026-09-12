@@ -39,7 +39,8 @@ configfile: "config/config.yaml"
 # Seconds-long bookkeeping runs in the submitting process rather than paying a SLURM round-trip.
 # Anything with a real toolchain or a real cost is submitted so it runs with declared resources.
 localrules:
-    all, sample, prompts, score, features, classify, smoke, render_prompts, collect_scores,
+    all, sample, prompts, score, features, classify, evaluate, smoke, render_prompts,
+    collect_scores, evaluate_across,
 
 
 OUT = config["outdir"]
@@ -77,6 +78,7 @@ CODE_PROMPTS = code("data", "prompts", "stages")
 CODE_SCORE = code("llm", "score", "stages")     # the prompts arrive as a file, not as a module
 CODE_FEATURES = code("features", "stages")
 CODE_CLASSIFY = code("classify", "data", "stages")
+CODE_EVALUATE = code("evaluate", "data", "stages")
 
 TEST_FILES = sorted(str(p) for p in Path("tests").glob("*.py"))
 
@@ -122,6 +124,8 @@ SCORES = score_cells()
 SCORE_TABLES = expand(f"{OUT}/scores/{{dataset}}.json", dataset=DATASETS)
 FEATURES = expand(f"{OUT}/features/{{dataset}}.json", dataset=DATASETS)
 CLASSIFIED = expand(f"{OUT}/classify/{{dataset}}.json", dataset=DATASETS)
+EVALUATED = expand(f"{OUT}/evaluate/{{dataset}}.json", dataset=DATASETS)
+EVALUATION = f"{OUT}/evaluation.json"
 
 wildcard_constraints:
     dataset="|".join(DATASETS),
@@ -146,6 +150,9 @@ rule features:
 
 rule classify:
     input: CLASSIFIED
+
+rule evaluate:
+    input: EVALUATION
 
 
 # =====================================================================================
@@ -529,13 +536,63 @@ rule classify_dataset:
 
 
 # =====================================================================================
+# 5  EVALUATE
+#
+# Where the arms become numbers. One bootstrap per dataset, shared by every arm: a replicate
+# resamples the 500 test images once and every arm is recomputed on that same resample, so the
+# interval on a difference contains only the noise that does not cancel. That is the whole reason
+# the study fixes one test sample and makes every arm predict on it.
+#
+# n_B is computed here: the smallest grid n at which the pixel probe's seed-mean AUC reaches the
+# zero-label textbook arm, with `<=50` and `>2000` coded rather than clipped, because "already
+# above at the first point" and "never gets there" are different facts from a number.
+#
+# The across-dataset rule then applies the decision rules of WORKFLOW.md section 2 as written -
+# one-sided sign tests over six datasets, the within-family reading of the ladder - and says
+# supported or not, with the per-dataset differences beside it where the reading actually lives.
+# =====================================================================================
+
+rule evaluate_dataset:
+    """AUC per arm, the paired bootstrap, and n_B, for one dataset. x6."""
+    input:
+        classify=f"{OUT}/classify/{{dataset}}.json",
+        arrays=f"{OUT}/classify/{{dataset}}.npz",
+        release=config["release"],
+        smoke=SMOKE,
+        code=CODE_EVALUATE,
+    params:
+        bootstrap=config["evaluate"]["bootstrap"],
+        ci=config["evaluate"]["ci"],
+        seed=config["evaluate"]["seed"],
+        curve_n=",".join(str(n) for n in config["curve"]["n"]),
+    output: f"{OUT}/evaluate/{{dataset}}.json"
+    log: "logs/evaluate/{dataset}.log"
+    benchmark: "benchmarks/evaluate/{dataset}.tsv"
+    conda: "envs/priors.yml"
+    threads: RES["evaluate"]["cpus"]
+    resources: **res("evaluate")
+    shell: STAGE + "evaluate {wildcards.dataset} --out {output} > {log} 2>&1"
+
+rule evaluate_across:
+    """The three hypotheses, decided by the rules fixed before the numbers existed. x1, local."""
+    input:
+        per_dataset=EVALUATED,
+        code=CODE_EVALUATE,
+    params:
+        h3_min_wins=config["evaluate"]["h3_min_wins"],
+        datasets=",".join(DATASETS),
+    output: EVALUATION
+    log: "logs/evaluate_across.log"
+    conda: "envs/priors.yml"
+    shell: STAGE + "evaluate-across --out {output} > {log} 2>&1"
+
+
+# =====================================================================================
 # STILL TO COME, in this order, each one tested before the next is written:
 #
 #   0  smoke              two tiers of it are still missing, and arrive with the code they test:
 #                         the arm-B estimator on a fixture (with priors/classify.py) and the LLM
 #                         client's retry on a malformed answer (with priors/llm.py)
-#   5  evaluate_dataset   x6: AUC per arm, the paired bootstrap, n_B
-#   5  evaluate_across    x1: the sign tests, the ladder, the Friedman test
 #   6  figures, tables, technical_report
 #
 # Extensions (WORKFLOW.md section 10), each outside `all`: bare_levels, generic_prompt,

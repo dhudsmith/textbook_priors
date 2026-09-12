@@ -11,6 +11,8 @@ a table; tables and figures are drawn from those files by the report stages.
     collect-scores DATASET --out FILE            one dataset's chunks, gathered (stage 2)
     features DATASET --out FILE --arrays FILE    ImageNet features of the sampled images (stage 3)
     classify DATASET --out FILE --arrays FILE    arms A, B, C, P and the controls (stage 4)
+    evaluate DATASET --out FILE                  AUCs, the paired bootstrap and n_B (stage 5)
+    evaluate-across --out FILE                   the sign tests, the ladder, the verdicts (stage 5)
 
 Run with  python -m priors.stages <stage> [args]
 """
@@ -24,7 +26,7 @@ from pathlib import Path
 import numpy as np
 import yaml
 
-from . import classify as arms, data, features as pixels, llm, prompts, sample as sampling, score
+from . import classify as arms, data, evaluate as metrics, features as pixels, llm, prompts, sample as sampling, score
 from .manifest import Run
 
 CONFIG = yaml.safe_load(Path(os.environ.get("PRIORS_CONFIG", "config/config.yaml")).read_text())
@@ -426,6 +428,179 @@ def classify(dataset: str, out: str, arrays: str) -> None:
         ))
 
 
+def evaluate(dataset: str, out: str) -> None:
+    """Every arm's AUC on one dataset, with paired intervals on the differences, and n_B.
+
+    One bootstrap, shared: each replicate resamples the 500 test images once and every arm is
+    recomputed on that same resample, so a difference between two arms is a difference of two
+    columns of the same matrix and its interval is a percentile of that. The absolute AUCs carry
+    the thin-class caveat of WORKFLOW.md section 3; the differences are what the hypotheses read.
+    """
+    spec, curve = CONFIG["evaluate"], CONFIG["curve"]
+    release = data.load_release(CONFIG["release"])
+    task = release.dataset(dataset)["medmnist_task"]
+    summary = json.loads(Path(f"{CONFIG['outdir']}/classify/{dataset}.json").read_text())
+    arrays = np.load(f"{CONFIG['outdir']}/classify/{dataset}.npz")
+    labels = arrays["labels"].astype(int)
+    n_classes = summary["n_classes"]
+    primary = CONFIG["vlm"]["primary"]
+
+    arm_scores = {k: arrays[k] for k in arrays.files if k != "labels"}
+    with Run("evaluate", dict(dataset=dataset, task=task, bootstrap=spec["bootstrap"],
+                              ci=spec["ci"]), seeds=[spec.get("seed", 0)]) as run:
+        point = {k: metrics.auc(labels, v, task, n_classes) for k, v in arm_scores.items()}
+        keys, replicates = metrics.bootstrap_aucs(labels, arm_scores, task, n_classes,
+                                                  spec["bootstrap"], spec.get("seed", 0))
+        column = {k: i for i, k in enumerate(keys)}
+
+        def mean_over_seeds(arm, n):
+            cols = [column[f"{arm}__n{n}__seed{s}"] for s in curve["seeds"]]
+            return replicates[:, cols].mean(axis=1)
+
+        # ---- the curve, and the differences H1 turns on ----------------------------------------
+        curve_points = {}
+        for arm in ("C", "P"):
+            for n in curve["n"]:
+                draws = mean_over_seeds(arm, n)
+                curve_points[f"{arm}__n{n}"] = {
+                    "point": float(np.mean([point[f"{arm}__n{n}__seed{s}"] for s in curve["seeds"]])),
+                    **metrics.interval(draws, spec["ci"])}
+
+        differences = {}
+        for n in curve["n"]:
+            differences[f"C_minus_P__n{n}"] = metrics.interval(
+                mean_over_seeds("C", n) - mean_over_seeds("P", n), spec["ci"])
+        b_primary = replicates[:, column[f"B__{primary}"]]
+        differences["B_minus_A"] = metrics.interval(b_primary - replicates[:, column["A"]], spec["ci"])
+        for n in curve["n"]:
+            differences[f"C_minus_B__n{n}"] = metrics.interval(
+                mean_over_seeds("C", n) - b_primary, spec["ci"])
+
+        # ---- the permutation controls: how much each arm loses when its structure is destroyed --
+        controls = {}
+        for model in CONFIG["vlm"]["models"]:
+            drops = np.mean([replicates[:, column[f"Bperm__{model}__seed{s}"]]
+                             for s in CONFIG["classify"]["permute"]["seeds"]], axis=0)
+            controls[f"B__{model}"] = {
+                "permuted": float(np.mean([point[f"Bperm__{model}__seed{s}"]
+                                           for s in CONFIG["classify"]["permute"]["seeds"]])),
+                "drop": metrics.interval(replicates[:, column[f"B__{model}"]] - drops, spec["ci"])}
+        for n in curve["n"]:
+            permuted = np.mean([replicates[:, column[f"Cperm__n{n}__seed{s}"]]
+                                for s in CONFIG["classify"]["permute"]["seeds"]], axis=0)
+            controls[f"C__n{n}"] = {
+                "permuted": float(np.mean([point[f"Cperm__n{n}__seed{s}"]
+                                           for s in CONFIG["classify"]["permute"]["seeds"]])),
+                "drop": metrics.interval(mean_over_seeds("C", n) - permuted, spec["ci"])}
+
+        # ---- n_B: how many labelled images the pixel probe needs to reach the textbook ---------
+        point_curve = {n: curve_points[f"P__n{n}"]["point"] for n in curve["n"]}
+        n_b_point = metrics.crossing(point_curve, point[f"B__{primary}"], curve["n"])
+        draws = []
+        for b in range(replicates.shape[0]):
+            draws.append(metrics.crossing({n: float(np.mean([replicates[b, column[f"P__n{n}__seed{s}"]]
+                                                             for s in curve["seeds"]]))
+                                           for n in curve["n"]}, b_primary[b], curve["n"]))
+        draws = np.array(draws, dtype=float)
+        finite = np.isfinite(draws)
+        n_b = {
+            "point": metrics.code_crossing(n_b_point, curve["n"]),
+            "median": metrics.code_crossing(float(np.median(draws)) if finite.all()
+                                            else float(np.median(draws[finite])) if finite.any()
+                                            else np.inf, curve["n"]),
+            "lo": metrics.code_crossing(float(np.quantile(draws, 0.025)), curve["n"]),
+            "hi": metrics.code_crossing(float(np.quantile(draws, 0.975)), curve["n"]),
+            "already_above_frac": float(np.mean(draws == -np.inf)),
+            "never_reaches_frac": float(np.mean(draws == np.inf)),
+        }
+
+        run.write(out, dict(
+            dataset=dataset, task=task, n_classes=n_classes, classes=summary["classes"],
+            auc={k: point[k] for k in sorted(point)},
+            curve=curve_points,
+            differences=differences,
+            controls=controls,
+            n_b=n_b,
+            arm_b_by_model={m: point[f"B__{m}"] for m in CONFIG["vlm"]["models"]},
+            complete_frac=summary["complete_frac"],
+            incomplete_over_cap=summary["incomplete_over_cap"],
+            bootstrap=spec["bootstrap"],
+        ))
+
+
+def evaluate_across(out: str) -> None:
+    """The across-dataset tests: H1, H2 and H3 as WORKFLOW.md section 2 states their rules.
+
+    Sign tests rather than pooled AUCs, because an AUC on pathmnist and an AUC on octmnist are not
+    commensurable quantities to average. With six datasets the test is coarse - 6 of 6 is p = 0.016
+    and 5 of 6 is p = 0.11 - so a hypothesis is supported only when it wins everywhere, and the
+    per-dataset differences are what carries the reading.
+    """
+    spec, curve = CONFIG["evaluate"], CONFIG["curve"]
+    datasets = CONFIG["datasets"]
+    models = CONFIG["vlm"]["models"]
+    per = {d: json.loads(Path(f"{CONFIG['outdir']}/evaluate/{d}.json").read_text()) for d in datasets}
+
+    with Run("evaluate_across", dict(datasets=datasets, min_n_b=100, h3_min_wins=spec["h3_min_wins"])) as run:
+        smallest = min(curve["n"])
+        # H1: the textbook is worth a measurable number of labelled images.
+        c_beats_p = {d: per[d]["differences"][f"C_minus_P__n{smallest}"]["median"] > 0 for d in datasets}
+        n_b_values = {d: per[d]["n_b"]["point"] for d in datasets}
+        numeric = [float(v) for v in n_b_values.values() if v.isdigit()]
+        never = sum(1 for v in n_b_values.values() if v.startswith(">"))
+        already = sum(1 for v in n_b_values.values() if v.startswith("<="))
+        median_n_b = float(np.median(numeric)) if numeric else None
+        h1 = {
+            "n_b": n_b_values,
+            "median_n_b_over_numeric": median_n_b,
+            "datasets_where_the_probe_never_reaches_arm_b": never,
+            "datasets_where_the_probe_starts_above_arm_b": already,
+            "c_beats_p_at_smallest_n": c_beats_p,
+            "c_beats_p_wins": sum(c_beats_p.values()),
+            "c_beats_p_sign_test_p": metrics.sign_test(sum(c_beats_p.values()), len(datasets)),
+            "supported": bool(sum(c_beats_p.values()) == len(datasets)
+                              and (never > 0 or (median_n_b is not None and median_n_b >= 100))),
+        }
+
+        # H2: the bank, not just the model.
+        b_beats_a = {d: per[d]["differences"]["B_minus_A"]["median"] > 0 for d in datasets}
+        b_drops = {d: per[d]["controls"][f"B__{CONFIG['vlm']['primary']}"]["drop"]["median"] > 0
+                   for d in datasets}
+        c_drops = {d: per[d]["controls"][f"C__n{max(curve['n'])}"]["drop"]["median"] > 0
+                   for d in datasets}
+        h2 = {
+            "b_beats_a": b_beats_a, "b_beats_a_wins": sum(b_beats_a.values()),
+            "b_beats_a_sign_test_p": metrics.sign_test(sum(b_beats_a.values()), len(datasets)),
+            "b_loses_under_permutation": b_drops, "c_loses_under_permutation": c_drops,
+            "supported": bool(sum(b_beats_a.values()) == len(datasets)
+                              and all(b_drops.values()) and all(c_drops.values())),
+        }
+
+        # H3: scale, read within family because size and training data are confounded across them.
+        families = {}
+        for name, cfg in models.items():
+            families.setdefault(cfg["family"], []).append((cfg["params_b"], name))
+        ladder = {}
+        for family, members in families.items():
+            small, large = [name for _, name in sorted(members)][0], [name for _, name in sorted(members)][-1]
+            wins = {d: per[d]["arm_b_by_model"][large] > per[d]["arm_b_by_model"][small] for d in datasets}
+            ladder[family] = {"smaller": small, "larger": large, "wins": sum(wins.values()),
+                              "per_dataset": wins,
+                              "sign_test_p": metrics.sign_test(sum(wins.values()), len(datasets))}
+        order = [name for _, name in sorted((m["params_b"], n) for n, m in models.items())]
+        table = np.array([[per[d]["arm_b_by_model"][m] for m in order] for d in datasets])
+        h3 = {
+            "ladder": ladder, "model_order": order,
+            "arm_b_auc": {d: {m: per[d]["arm_b_by_model"][m] for m in order} for d in datasets},
+            "friedman": metrics.friedman(table),
+            "supported": bool(all(f["wins"] >= spec["h3_min_wins"] for f in ladder.values())),
+        }
+
+        run.write(out, dict(datasets=datasets, h1=h1, h2=h2, h3=h3,
+                            flagged_cells={d: [k for k, over in per[d]["incomplete_over_cap"].items() if over]
+                                           for d in datasets}))
+
+
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="stage", required=True)
@@ -442,6 +617,8 @@ def main(argv=None) -> None:
     p.add_argument("--out", required=True); p.add_argument("--arrays", required=True)
     p = sub.add_parser("classify"); p.add_argument("dataset")
     p.add_argument("--out", required=True); p.add_argument("--arrays", required=True)
+    p = sub.add_parser("evaluate"); p.add_argument("dataset"); p.add_argument("--out", required=True)
+    p = sub.add_parser("evaluate-across"); p.add_argument("--out", required=True)
     a = ap.parse_args(argv)
     if a.stage == "sample":
         sample(a.dataset, a.out, a.arrays)
@@ -457,6 +634,10 @@ def main(argv=None) -> None:
         features(a.dataset, a.out, a.arrays)
     elif a.stage == "classify":
         classify(a.dataset, a.out, a.arrays)
+    elif a.stage == "evaluate":
+        evaluate(a.dataset, a.out)
+    elif a.stage == "evaluate-across":
+        evaluate_across(a.out)
     else:
         raise SystemExit(f"stage {a.stage} not implemented yet")
 
