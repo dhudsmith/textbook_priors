@@ -281,3 +281,27 @@ The proposal for the two new readers went to the user in the session and is not 
 WORKFLOW.md, because its whole point is that a decision rule is fixed before any call is bought -
 which means the user chooses the scope and the rule first. What arm D taught is the rule the
 proposal is built around.
+
+## 2026-09-12 16:05 — H4 joins the hypotheses, at medium effort, and the build goes out
+
+"Join the hypotheses in workflow. Let's do medium. Let's go!"
+
+Both open questions from the proposal answered, so H4 is a hypothesis in WORKFLOW.md §2 and not an
+extension, and both new readers run at `medium` — which also makes H4b a comparison at matched
+effort rather than a comparison of models and effort together.
+
+What the implementation actually settled, beyond what the proposal said:
+
+- **A reader is a model plus an effort, and it reuses the arm vocabulary rather than adding to it.**
+  The four ladder models are readers at effort `none`, so they join H4 by being subset to the same
+  200-image prefix. No new arm letter exists, which was a deliberate reaction to arm D.
+- **`priors/llm.py` changed, which marks all 270 protected chunks stale.** Resolved the way the
+  conventions prescribe: `snakemake --touch` in the owner's checkout, not a re-score. Guarding that
+  is a new test which pins the thinking-off request body field by field, so the module that claims
+  to have produced the archive still sends exactly what bought it.
+- **Running one chunk before twenty-four earned its keep again.** The gateway's reasoning models
+  reject `temperature: 0` outright. The fix is to omit the field, and the consequence is a real
+  limit on H4b now stated in WORKFLOW.md §2 and in the report: the frontier reader is the only one
+  in the study whose answers are sampled rather than deterministic.
+
+Also removed the arm-D reference from `evaluate_across`'s docstring, which had survived the scrub.
