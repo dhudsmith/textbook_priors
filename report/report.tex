@@ -44,6 +44,15 @@ regularisation search and the same labelled subsets. The three hypotheses and th
 were fixed in \texttt{WORKFLOW.md} before any number existed, and are reported here as they were
 written.
 
+Two further comparison points were added after those results were in hand, and neither decides
+anything. \textbf{Arm D} asks arm A's question with the whole concept bank in the prompt, so the
+textbook is integrated by the model rather than by a distance in concept space
+(Section~\ref{sec:armd}); it is post-hoc, and is reported as such. And the \textbf{published
+literature} for these same six tasks is read in as a fixed ceiling, so the arms can be placed
+against a benchmark trained on the full training split (Section~\ref{sec:literature}). Both are
+extensions in the sense of \texttt{WORKFLOW.md} section~10: no \emph{supported} verdict in this
+report reads either one.
+
 \section{Data and provenance}
 
 Six MedMNIST v2 224-pixel benchmarks (Zenodo record 10519652), read from the pinned release files
@@ -130,6 +139,7 @@ gemma family; a Friedman test over all \numModels\ models gives $p = \friedmanP$
 \input{tables/h3}
 
 \section{Post-hoc: arm D, the bank in the prompt}
+\label{sec:armd}
 
 Everything in this section was designed after the results above were in hand, and it decides
 nothing. H2 failed in a particular way: arm B lost to arm A, while both permutation controls bit
@@ -153,12 +163,27 @@ hypothesis. \texttt{data/literature/benchmarks.yaml} pins the AUC and ACC that
 \cite{yang2023} report for five fully supervised methods on these same six MedMNIST v2 tasks at
 the same 224-pixel resolution --- trained on each dataset's whole official training split,
 thousands to tens of thousands of images, not this study's $n \leq 2000$ labelled pool. Table~%
-\ref{tab:literature} sets the zero-label textbook arm and this study's largest labelled subset
-beside the best of those five published numbers, so a reader can see how far a handful of labels
-and a textbook prior sit from a benchmark trained at full scale, without mistaking the gap for a
-finding about any arm here. The same ResNet-18 (224) row rides along on Figure~\ref{fig:curve} as a
-finely dotted line, so the ceiling is visible on the learning curve itself and not only in this
-table.
+\ref{tab:literature} sets every arm of this study beside the best of those five published numbers,
+so a reader can see how far a handful of labels and a textbook prior sit from a benchmark trained
+at full scale, without mistaking the gap for a finding about any arm here.
+
+Read that way, the gap tracks the label budget and little else. The best zero-label arm on each
+dataset --- whichever of A, B and D wins there --- sits a median \litGapZeroMedian\ AUC below the
+published best, and is within five points of it on \litZeroWithinFivePoints\ of \numDatasets\
+datasets. Buying \litLargestN\ labels closes most of what remains: the pixel probe's median gap is
+\litGapPixelMedian, within two points of the ceiling on \litPixelWithinTwoPoints\ of \numDatasets,
+while the concept probe at the same budget sits \litGapConceptMedian\ below it. The ordering is the
+same one H1 reports --- pixels with labels beat the textbook without them --- now with an external
+scale attached to it.
+
+Two cautions on reading the table. The published methods see each dataset's whole official training
+split, so none of this is a same-conditions comparison, and the gaps above are not differences any
+bootstrap here covers: they subtract a number from another paper, with no interval. And the last
+column is the best of five methods per dataset, which is not always the same method; the figure
+instead draws the ResNet-18 (224) row alone, the one backbone trained at this study's own input
+resolution, as a finely dotted line on Figure~\ref{fig:curve}. Table~3 of \cite{yang2023} reports
+ACC beside AUC and \texttt{benchmarks.yaml} pins both, but only AUC appears here: this study
+computes no ACC for any arm, and a published ACC with nothing to set beside it would be decoration.
 
 \input{tables/literature}
 

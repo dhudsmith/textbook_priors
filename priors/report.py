@@ -37,6 +37,17 @@ LIT_LABEL = "published ResNet-18 (224), fully supervised (Yang et al. 2023)"
 LIT_COLOUR = "#8c564b"
 
 
+def ceiling(literature, dataset) -> tuple[str, dict]:
+    """The published ceiling for one task: the best of the five methods, by AUC.
+
+    Defined once because the table and the number macros both read it, and a report whose table
+    said one thing and whose prose said another would be worse than either alone. The figure
+    deliberately does NOT use this - it draws the ResNet-18 (224) row, the one backbone trained at
+    this study's own input resolution - and the prose says which is which.
+    """
+    return max(literature.dataset(dataset).items(), key=lambda kv: kv[1]["auc"])
+
+
 def load(outdir, datasets) -> tuple[dict, dict]:
     per = {d: json.loads(Path(f"{outdir}/evaluate/{d}.json").read_text()) for d in datasets}
     across = json.loads(Path(f"{outdir}/evaluation.json").read_text())
@@ -252,26 +263,32 @@ def table_literature(per, literature, datasets, curve_n, primary, dest):
     rows = []
     for d in datasets:
         got = per[d]
-        lit = literature.dataset(d)
-        best_method, best_auc = max(lit.items(), key=lambda kv: kv[1]["auc"])
+        best_method, best = ceiling(literature, d)
+        # Every arm, not only arm B: the ceiling is a reference point for the study, and the study
+        # has five arms. The three zero-label arms come first because they are the ones the ceiling
+        # is most interesting against - what the model brings before any label is bought.
         rows.append([
             tex_escape(d),
+            fmt(got["auc"]["A"]),
             fmt(got["auc"][f"B__{primary}"]),
+            fmt(got["auc"]["D"]) if "D" in got["auc"] else "--",
             fmt(got["curve"][f"C__n{largest}"]["point"]),
             fmt(got["curve"][f"P__n{largest}"]["point"]),
-            fmt(best_auc["auc"]),
+            fmt(best["auc"]),
             tex_escape(LIT_METHOD_LABEL[best_method]),
         ])
     _table(dest, "literature",
-           ["dataset", "AUC(B)", f"AUC(C, n={largest})", f"AUC(P, n={largest})",
-            "published AUC", "published method"],
+           ["dataset", "A", "B", "D", f"C (n={largest})", f"P (n={largest})",
+            "published", "published method"],
            rows,
-           "Literature reconciliation (extension, decides no hypothesis). This study's zero-label "
-           "textbook arm and its largest labelled subset against the best of five fully supervised "
-           "methods reported for the same task on the same 224-pixel release "
-           r"\cite{yang2023}: trained on the whole official training split, thousands to tens of "
-           "thousands of images, not this study's n$\\le$2000 pool. Read as a ceiling for the "
-           "task, not a same-conditions comparison.", "literature")
+           "Literature reconciliation (extension, decides no hypothesis). Every arm of this study "
+           "against the best of five fully supervised methods reported for the same task on the "
+           r"same 224-pixel release \cite{yang2023}. The published methods are trained on the whole "
+           "official training split, thousands to tens of thousands of images, not this study's "
+           "n$\\le$2000 pool; A, B and D see no labels at all. Read the last column as a ceiling for "
+           "the task, not as a same-conditions comparison. ACC is pinned beside AUC in "
+           r"\texttt{data/literature/benchmarks.yaml} and not shown, because this study computes no "
+           "ACC to set beside it.", "literature")
 
 
 def table_completeness(per, datasets, dest):
@@ -284,7 +301,7 @@ def table_completeness(per, datasets, dest):
            "more than 5\\% incomplete is excluded from the headline.", "completeness")
 
 
-def numbers(per, across, datasets, curve_n, primary, dest):
+def numbers(per, across, datasets, curve_n, primary, dest, literature=None):
     """The macros the prose reads, so no sentence states a number the run did not produce."""
     h1, h2, h3 = across["h1"], across["h2"], across["h3"]
     lines = {
@@ -311,8 +328,30 @@ def numbers(per, across, datasets, curve_n, primary, dest):
         lines["armDBeatsBWins"] = arm_d["d_beats_b_wins"]
         lines["armDBeatsAp"] = fmt(arm_d["sign_test_p_vs_a"], 4)
         lines["armDBeatsBp"] = fmt(arm_d["sign_test_p_vs_b"], 4)
+    if literature is not None:
+        # The gap to the published ceiling, per label budget. Stated as a median over datasets
+        # because an AUC on pathmnist and one on octmnist are not commensurable to average -
+        # the same reason the hypotheses use sign tests rather than pooled AUCs.
+        largest = max(curve_n)
+        gaps = {"Zero": [], "Concept": [], "Pixel": []}
+        for d in datasets:
+            top = ceiling(literature, d)[1]["auc"]
+            zero = [per[d]["auc"]["A"], per[d]["auc"][f"B__{primary}"]]
+            if "D" in per[d]["auc"]:
+                zero.append(per[d]["auc"]["D"])
+            gaps["Zero"].append(top - max(zero))
+            gaps["Concept"].append(top - per[d]["curve"][f"C__n{largest}"]["point"])
+            gaps["Pixel"].append(top - per[d]["curve"][f"P__n{largest}"]["point"])
+        for name, values in gaps.items():
+            lines[f"litGap{name}Median"] = fmt(sorted(values)[len(values) // 2])
+        lines["litLargestN"] = largest
+        lines["litPixelWithinTwoPoints"] = sum(1 for g in gaps["Pixel"] if g <= 0.02)
+        lines["litZeroWithinFivePoints"] = sum(1 for g in gaps["Zero"] if g <= 0.05)
+
     for d in datasets:
         key = "".join(part.capitalize() for part in d.replace("mnist", "").split("_")) or d
+        if literature is not None:
+            lines[f"aucLit{key}"] = fmt(ceiling(literature, d)[1]["auc"])
         lines[f"nB{key}"] = per[d]["n_b"]["point"].replace("<=", r"$\leq$").replace(">", "$>$")
         lines[f"aucB{key}"] = fmt(per[d]["auc"][f"B__{primary}"])
         lines[f"aucA{key}"] = fmt(per[d]["auc"]["A"])

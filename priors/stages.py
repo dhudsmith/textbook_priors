@@ -684,7 +684,7 @@ def tables(dest: str) -> None:
         reporting.table_arm_d(per, across, datasets, primary, dest)
         reporting.table_literature(per, literature, datasets, curve, primary, dest)
         reporting.table_completeness(per, datasets, dest)
-        macros = reporting.numbers(per, across, datasets, curve, primary, dest)
+        macros = reporting.numbers(per, across, datasets, curve, primary, dest, literature)
         run.write(f"{CONFIG['outdir']}/tables.json", dict(dest=dest, macros=macros))
 
 

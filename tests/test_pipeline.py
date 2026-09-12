@@ -202,8 +202,15 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     macros = (Path(config["tabdir"]) / "numbers.tex").read_text()
     for name in ("hOneSupported", "hTwoSupported", "hThreeSupported", "cBeatsPWins", "bBeatsAWins",
                  "friedmanP", "medianNB", "numDatasets", "numModels",
-                 "armDBeatsAWins", "armDBeatsBWins"):
+                 "armDBeatsAWins", "armDBeatsBWins",
+                 "litGapZeroMedian", "litGapConceptMedian", "litGapPixelMedian", "litLargestN",
+                 "litPixelWithinTwoPoints", "litZeroWithinFivePoints", "aucLitToy"):
         assert f"\\newcommand{{\\{name}}}" in macros, name
+
+    # The literature table reads the ceiling against every arm, not only against arm B: the study
+    # has five arms and a table that showed three would place the ceiling against a part of it.
+    lit = (Path(config["tabdir"]) / "literature.tex").read_text()
+    assert "& A & B & D &" in lit, lit.split("hline")[1]
 
 
 def test_n_b_is_reported_as_a_code_when_the_crossing_is_outside_the_grid(workspace, stages):
