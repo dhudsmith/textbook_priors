@@ -9,6 +9,15 @@ benchmarks/
 logs/
 report/tables/
 report/figs/
+# Everything pdflatex leaves behind. The report is a generated artifact like any other: it is
+# rebuilt by `rule all` from results/, and a committed PDF is a number that can drift from the run
+# that produced it.
+report/report.pdf
+report/report.aux
+report/report.bbl
+report/report.blg
+report/report.log
+report/report.out
 scratch/
 .scratch
 __pycache__/
