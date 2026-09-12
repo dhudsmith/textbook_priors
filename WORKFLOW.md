@@ -26,8 +26,10 @@ a practitioner cares about: labelled images.
 
 ## 2. The hypotheses
 
-Three, each with a decision rule fixed before the numbers exist. Everything that serves none of
-them is an extension in §10, not part of `all`.
+Four, each with a decision rule fixed before the numbers exist. Everything that serves none of
+them is an extension in §10, not part of `all`. H4 was added on 2026-09-12, after H1 to H3 had been
+decided and before a single call of its own was bought — which is the distinction arm D could not
+make for itself, and the reason arm D is gone (§10).
 
 Primary metric throughout: **test AUC** from the `medmnist` evaluator (macro one-vs-rest). Every
 arm predicts on the **same seeded 500-image test sample** per dataset, so every comparison is
@@ -66,6 +68,47 @@ test over the four models are reported alongside. Both size steps also change qu
 (qwen 27B is fp8, gemma 31B is served as NVFP4) and the qwen step changes generation (3.5 → 3.8),
 so "larger" moves together with "newer" and "quantised"; stated as a limit, not analysed away.
 
+**H4 — Reading.** *A better reader gets more class information out of the same images.*
+
+H1 to H3 ask what the textbook is worth. H4 asks the question underneath them: **to what extent
+does a vision-language model actually see the visual features that medical image classification
+turns on?** The archive already holds the material — every test image scored concept by concept by
+four models — and H4 reads it along a chain of *readers*, a reader being a model plus a reasoning
+effort. Two steps, each changing exactly one thing:
+
+- **H4a, effort.** `qwen3.8-27b-fp8` at effort `none` (already archived) against the same model at
+  `medium`. The model is held fixed, so the step is thinking and nothing else.
+- **H4b, capability.** That thinking primary against `gpt-5.6-terra` at `medium`. The effort is
+  held fixed, so the step is the model and nothing else. It must be read this way round because the
+  frontier model cannot be asked for no reasoning at all (`docs/rcd_llm_service.md`).
+
+- Metric: the **cross-validated probe** (§3) — arm C's classifier fitted *inside* the scored images
+  by stratified k-fold, folds fixed by seed and identical across readers, every image scored by a
+  fit that never saw it. It measures what the concept answers carry. Arm B would measure it through
+  the nearest-fingerprint rule H2 showed to be lossy; arm C would need a labelled pool for every
+  reader, which this study does not buy. It is not a point on the learning curve and no n_B reads
+  it.
+- Every reader is read on the **same 200-image prefix** of the seeded test sample, so the four
+  existing models join by being subset rather than re-bought, and every difference is paired. 200
+  is measured, not round: below it organamnist's rarest class empties and its AUC column stops
+  existing (6 of 11 classes reach five images at 100, 10 at 150, all 11 at 200). dermamnist stays
+  thin either way and carries the caveat §3 already gives it.
+- Supported if each step wins on all six datasets, the rule H1 and H2 are held to. 5 of 6 is
+  reported and called suggestive, never supported.
+
+A null here is a result and not a failure: if thinking does not move the concept answers, the
+model's reading of the features is not attention-limited, which is a sharper statement than a rise
+would be.
+
+**Two limits on H4b, both stated rather than analysed away.** The frontier model is closed and of
+unknown size, so the step is *capability* and not parameters; it cannot join H3's ladder and does
+not. And it **refuses `temperature: 0`** — only its served default is allowed — so it is the one
+reader in this study whose answers are sampled rather than deterministic, where every other reader
+runs at temperature 0. Its concept answers would differ if re-bought. That widens H4b's step with
+sampling noise the paired bootstrap cannot see, because the bootstrap resamples images over answers
+that are fixed only in the archive. Read H4b as a difference between two readers as they were
+actually asked, not between two models at matched settings.
+
 What no arm here can separate: every source dataset is public and labelled, so "the model carries
 textbook knowledge" and "the model has seen this benchmark" are not distinguishable with these data.
 Not claimed: that the concept scores are clinically valid, that the simulated review substitutes
@@ -102,6 +145,15 @@ subsets as arm C, so features are the only difference.
   labelled images**, features standardised on those n. No validation set: n labels means n labels.
   Subsets are class-stratified nested prefixes of the labelled pool with a floor of one image per
   class; the fold count is `min(5, smallest class count)`; a class absent from a subset scores 0.
+- *The cross-validated probe* (H4): the same regularised logistic regression as arm C, on the same
+  concept vectors, fitted inside the scored images by stratified k-fold rather than on the labelled
+  pool. Each fold's held-out images are scored by a fit that never saw them, so every image gets
+  exactly one out-of-fold score and the result enters a paired bootstrap like any other arm.
+  Missing answers are imputed on **that reader's own** medians over its own images, not the pool's:
+  the pool's medians belong to one model at one effort, and using them everywhere would pull every
+  reader toward the baseline's habits on precisely the answers H4 compares. It estimates
+  information content and is not a learning-curve point — the same images are the training and the
+  evaluation material, and no labels were spent to make it.
 - *Evaluation*: `medmnist.evaluator.getAUC`, the package's own convention, on the 500-image sample.
   An image with any missing concept answer counts as incomplete; a dataset-model cell more than 5%
   incomplete is flagged in the report and excluded from the headline.

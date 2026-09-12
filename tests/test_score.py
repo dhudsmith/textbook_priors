@@ -293,6 +293,15 @@ def test_the_gateway_dialect_renames_the_budget_and_asks_for_the_discount(client
     assert body["reasoning_effort"] == "medium"
 
 
+def test_a_reader_that_refuses_a_temperature_sends_none_at_all(client):
+    """The gateway's reasoning models reject `temperature: 0.0` outright - only their default is
+    allowed - so the field is omitted rather than sent with a value the service will refuse. Found
+    by running one chunk before twenty-four, which is why one chunk runs first."""
+    body = client(reasoning="medium", api="gateway", temperature=None).request("s", "u", None, 512)
+    assert "temperature" not in body
+    assert client(reasoning="medium").request("s", "u", None, 512)["temperature"] == 0.0
+
+
 def test_an_unknown_dialect_is_refused_before_a_call_is_placed(client):
     with pytest.raises(ValueError):
         client(api="responses")

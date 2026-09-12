@@ -94,6 +94,10 @@ vlm:
       effort: medium
       api: gateway                          # max_completion_tokens, not max_tokens
       service_tier: flex                    # the documented 50% discount; accepted on chat calls
+      temperature: null                     # this model REFUSES temperature 0 - only its default
+                                            # is allowed - so it is the one reader in the study
+                                            # that is not deterministic. Stated as a limit on H4b
+                                            # in WORKFLOW.md section 2, not worked around.
       cap: 12
       max_tokens: 4096
       subsample: 200

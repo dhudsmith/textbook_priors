@@ -19,6 +19,12 @@ Three things here were learned from the service rather than designed:
     `max_completion_tokens` where the local stack takes `max_tokens`, and it accepts the `flex`
     service tier, which is the documented way to get the equivalent of batch pricing. `api`
     selects the dialect; nothing else in the workflow knows the difference.
+  * **Its reasoning models refuse a temperature.** `temperature: 0.0` is rejected outright - only
+    the default is allowed - so a reader on one of them cannot be made deterministic the way every
+    other reader in this study is. `temperature: None` omits the field, and the manifest records
+    that it was omitted rather than recording a number that was never sent. This is a limit on what
+    such a reader can be compared with, not a setting to work around, and WORKFLOW.md section 2
+    states it where H4b is decided.
   * **Served models put the answer in different fields.** `content` is the usual one; one build
     uses `reasoning_content`; `qwen3.5-9b` uses `reasoning`, and with thinking off it puts the
     finished JSON there rather than any chain of thought. A reader that knows only `content`
@@ -122,7 +128,7 @@ class Client:
     model: str
     base_url: str
     key_file: str
-    temperature: float = 0.0
+    temperature: float | None = 0.0       # None omits it: some served models refuse any value
     reasoning: str = "none"
     api: str = "local"
     service_tier: str | None = None
@@ -166,9 +172,10 @@ class Client:
             "model": self.model,
             "messages": [{"role": "system", "content": system},
                          {"role": "user", "content": content}],
-            "temperature": self.temperature,
             budget: max_tokens,
         }
+        if self.temperature is not None:
+            body["temperature"] = self.temperature
         if not self.thinking_off:
             body["reasoning_effort"] = self.reasoning
         if self.extra_body is not None:

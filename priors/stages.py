@@ -223,6 +223,10 @@ def score_chunk(dataset: str, model: str, split: str, prompt: str, chunk: int, o
     effort = reader["effort"] if reader else vlm["reasoning"]
     api = reader.get("api", "local") if reader else "local"
     tier = reader.get("service_tier") if reader else None
+    # A reader may have to run at the served default: the gateway's reasoning models reject any
+    # temperature at all. `temperature: null` in config means omit the field, and the manifest then
+    # records null rather than a number that was never sent.
+    temperature = reader.get("temperature", vlm["temperature"]) if reader else vlm["temperature"]
     budget = reader["max_tokens"] if reader else vlm["max_tokens"]
     # A reader reads a prefix of the split, not all of it: the images every other reader was already
     # scored on, so the comparison is paired and the existing archives are subset rather than bought
@@ -236,12 +240,12 @@ def score_chunk(dataset: str, model: str, split: str, prompt: str, chunk: int, o
 
     schema = rendered["concepts"] if prompt == "concept" else rendered["classes"]
     client = llm.Client(model=served, base_url=vlm["base_url"], key_file=vlm["key_file"],
-                        temperature=vlm["temperature"], reasoning=effort, api=api,
+                        temperature=temperature, reasoning=effort, api=api,
                         service_tier=tier,
                         retries=vlm["transport_retries"], timeout=vlm["timeout"])
 
     params = dict(dataset=dataset, model=model, split=split, prompt=prompt, chunk=chunk,
-                  images=stop - start, temperature=vlm["temperature"], reasoning=effort,
+                  images=stop - start, temperature=temperature, reasoning=effort,
                   served_name=served, api=api, service_tier=tier, subsample=scored,
                   max_tokens=budget, retries=vlm["retries"],
                   prompt_sha256=rendered["prompts"][prompt]["sha256"],

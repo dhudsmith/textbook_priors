@@ -153,6 +153,12 @@ C's classifier inside the scored images themselves by stratified cross-validatio
 fixed by seed and identical across readers, and every image is scored by a fit that never saw it.
 It measures what the answers carry. It is not a point on the learning curve, and no $n_B$ reads it.
 
+Two limits on H4b. The frontier model is closed and of unknown size, so the step is capability and
+not parameters. And it refuses \texttt{temperature: 0} --- only its served default is allowed ---
+so it is the one reader here whose answers are sampled rather than deterministic; they would differ
+if re-bought, and the paired bootstrap cannot see that, because it resamples images over answers
+that are fixed only in the archive.
+
 H4a won on \hFourAWins\ of \numDatasets\ datasets and H4b on \hFourBWins\ of \numDatasets;
 both are held to the 6-of-6 rule H1 and H2 are held to, since 5 of 6 is $p = 0.11$ and six
 datasets cannot do better. All \numReaders\ readers are reported in
