@@ -453,3 +453,41 @@ and are kept; so is the primary model's one validated chunk. qwen3.5-9b's 30 chu
 record of a reader bug and will be re-scored. Cost of the two failures: 3,000 calls for qwen3.5-9b
 and roughly 2,000 spent inside jobs that timed out — about 19% of the budget, all of it bought
 back by two code changes and a resource line.
+
+## 2026-09-12 — Stages 3 to 6 built: the pixel baseline, the arms, the metric and the report
+
+Written while the scoring fan-out ran, so that the analysis was waiting for the archive rather than
+the other way round. What is worth recording is the decisions, not the code.
+
+**Arm P does not resize.** The ImageNet weights carry their own transform, which resizes to 256 and
+centre-crops back to 224. Applied here it would throw away the frame edge, and an organ crop is
+*defined* by its frame: MedMNIST's organ images are bounding boxes, so the edge is the signal.
+The release is already 224, the size the encoder wants, so only the channel normalisation is
+applied and the images reach the encoder as they reach the model. Greyscale is repeated across
+three channels rather than summing the first-layer filters, which would change the features to save
+nothing.
+
+**The estimators are where the study's judgement lives, so each is stated as a decision.** Equal
+spacing of a concept's levels weights concepts by scale length — an adjacent miss costs 1.0 on a
+two-level scale and 0.25 on a five-level one — which is a consequence of the mapping and the reason
+no per-concept coefficient may be read as an importance. A missing answer is imputed with the
+labelled pool's median and flagged with an indicator column, so "the model would not say" enters the
+regression as information rather than as a value. Arm B scores over the concepts that both the
+fingerprint and the image commit to, and a class with no overlap at all takes the floor rather than
+a NaN, because an undefined AUC is worse than an uninformative one.
+
+**The metric is the package's, reached by a rank formula.** A 10,000-replicate paired bootstrap over
+fifty arms cannot call `getAUC` ten thousand times, so the AUC is computed from average ranks, and
+the smoke tier holds the two to equality on both task types — including the coarse, heavily tied
+scores arm B produces, which is exactly where a rank formula without tie handling would drift.
+
+**A class with no positives in a replicate is undefined, not 0.5.** With dermamnist's five vascular
+lesions this happens in a large share of replicates, and calling it a coin flip would drag that
+dataset's macro AUC toward chance in a way that looks like a result.
+
+**An end-to-end test of the analysis chain caught the expensive bug.** The estimators and the metric
+had tests; the glue did not. A miniature archive with a known answer now runs the whole chain, and
+on its first run it found that a bootstrap distribution of n_B mixing `<=50` with `>2000` produces a
+NaN quantile — the evaluate stage would have died on it after the entire night of calls. Quantiles
+of n_B are now taken on the ordinal ranks, since there is no crossing half way between 200 and 500
+labelled images.
