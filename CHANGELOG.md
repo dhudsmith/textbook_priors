@@ -553,3 +553,40 @@ datasets in any case.
 
 **The archive is clean.** Completeness is 99.8% to 100% on every dataset-model cell; no cell comes
 near the 5% incompleteness cap, and the retry path fired on well under 1% of images.
+
+## 2026-09-12 — The full run: all six datasets, all three hypotheses unsupported
+
+The archive completed at 07:02 and the analysis at 07:25. 270 chunks, 27,000 calls, no cell over
+the 5% incompleteness cap. The three-dataset reading of a few hours earlier holds on all six, and
+in two places it gets sharper.
+
+**H1 — not supported. n_B is `<=50` on five of six datasets.** Fifty labelled images and a frozen
+ImageNet ResNet-18 already beat the zero-label textbook arm everywhere except octmnist, where the
+crossing sits at 500 [100, 1000]. Arm C beat arm P at n = 50 on octmnist alone (1 of 6, p = 0.98
+against the hypothesis). The honest headline: **the textbook prior is worth fewer than fifty
+labelled images** on this benchmark suite.
+
+**H2 — not supported, 0 of 6, and the shape of the failure is the finding.** Asking the model for
+the diagnosis beat asking it for the textbook's features on every dataset. The gap is smallest
+where the classes are visually distinctive (pathmnist −0.003, inside its interval) and largest
+where the task is a single binary call (pneumoniamnist −0.191 [−0.221, −0.159]).
+
+And yet both permutation controls bite everywhere: permuting the fingerprints across classes costs
+arm B between 0.21 and 0.52 AUC, and permuting the concept columns costs arm C on all six. So the
+bank is not noise — the concept answers carry substantial class information. What fails is the
+*estimator*: arm B compresses eight to twelve concept answers into one nearest-fingerprint
+distance, and that compression throws away more than the zero-shot distribution does. Arm C, which
+learns weights over the same concept answers, reaches 0.93 on bloodmnist and 0.97 on pathmnist —
+the information is there; the fingerprint is the wrong way to read it out.
+
+**H3 — not supported.** The larger qwen won on 4 of 6, the larger gemma on 3 of 6, and Friedman
+over all four models gives p = 0.85. No scale effect is visible in arm B at these sizes. Note that
+arm B is the arm with the weakest estimator, so this tests scale through a lossy channel; the same
+comparison on arm C would need the ladder models to score the pool, which the plan deliberately
+does not buy.
+
+**What the study cannot say**, unchanged and worth repeating beside these numbers: every source
+dataset is public, so "the model carries textbook knowledge" and "the model has seen this
+benchmark" are not distinguishable here. The bank's expert review is simulated. And the test
+sample's rare classes are thin, which widens every absolute AUC — though not the paired
+differences the hypotheses are decided on.
