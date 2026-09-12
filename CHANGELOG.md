@@ -590,3 +590,39 @@ dataset is public, so "the model carries textbook knowledge" and "the model has 
 benchmark" are not distinguishable here. The bank's expert review is simulated. And the test
 sample's rare classes are thin, which widens every absolute AUC — though not the paired
 differences the hypotheses are decided on.
+
+## 2026-09-12 — Arm D added, post-hoc: the bank in the prompt, integrated by the model
+
+H2's failure has a specific shape (entry above): arm B loses to arm A on all six datasets, while
+both permutation controls bite on all six. Read together those say the bank carries real class
+information and that the nearest-fingerprint rule is a lossy way to read it out — a statement about
+the *estimator*, not about the bank. Arm C is one way to check that, but it needs labels. Arm D is
+the zero-label way: hand the model the whole bank — every concept with its anchors, and every
+class's textbook fingerprint — and then ask it arm A's question. The integration happens inside the
+model instead of in a distance in concept space.
+
+**It is post-hoc and it is labelled post-hoc everywhere.** It was designed after seeing H2 fail, so
+`D − A` and `D − B` are descriptive statistics, not tests: no `supported` verdict reads them, the
+report has its own section saying so, and `evaluate_across` files arm D under `extensions` rather
+than beside H1–H3. The sign tests reported for it are a compact way of saying how many datasets
+moved the same way, nothing more.
+
+**What it costs and where it lives.** One more prompt per dataset (`directed`), scored by the
+primary model on the 500-image test split alone: 30 chunks, 3,000 calls, taking the budget from
+27,000 to 30,000 and the clean-clone DAG from 312 jobs to 342. It sits *inside* `rule all` rather
+than in an extension rule of its own, which is the one place it departs from how WORKFLOW.md §10
+treats extensions: every arm has to be in the same paired bootstrap to be compared to the others,
+and an arm scored outside it could only be set beside the results, never differenced against them.
+
+Two invariants worth stating because they are the inverse of each other. The concept prompt names
+no class and the zero-shot prompt mentions no concept — that separation is what makes H2 a fair
+question, and the smoke tier checks it on the rendered strings. The directed prompt must name
+every class *and* every concept, and the smoke tier checks that too, because a directed prompt that
+had quietly dropped a fingerprint would be a weaker arm D reported as the real one. An `any` in a
+fingerprint is rendered as what it means in the bank ("the sources do not commit on: ...") rather
+than dropped: a class the literature is silent about on some feature is itself information.
+
+One latent bug found on the way: `sums_to_one`, the diagnostic recording whether the model obeyed
+"make the probabilities sum to 1", was gated on `kind == "zero_shot"` and would have been silently
+absent from every arm D answer. It is now gated on the answer's shape (`kind != "concept"`), which
+is what it was always a property of.

@@ -5,12 +5,12 @@ derives from them, and writes ONE JSON file: {"manifest": {...}, ...payload}. No
 a table; tables and figures are drawn from those files by the report stages.
 
     sample DATASET --out FILE --arrays FILE     the test sample and the labelled pool (stage 1)
-    render-prompts DATASET --out FILE            the two prompt strings for one dataset (stage 2)
+    render-prompts DATASET --out FILE            the three prompt strings for one dataset (stage 2)
     probe DATASET MODEL --out FILE               ten images through the service (stage 2, opt-in)
     score DATASET MODEL SPLIT PROMPT CHUNK --out FILE   one chunk of the fan-out (stage 2)
     collect-scores DATASET --out FILE            one dataset's chunks, gathered (stage 2)
     features DATASET --out FILE --arrays FILE    ImageNet features of the sampled images (stage 3)
-    classify DATASET --out FILE --arrays FILE    arms A, B, C, P and the controls (stage 4)
+    classify DATASET --out FILE --arrays FILE    arms A, B, C, D, P and the controls (stage 4)
     evaluate DATASET --out FILE                  AUCs, the paired bootstrap and n_B (stage 5)
     evaluate-across --out FILE                   the sign tests, the ladder, the verdicts (stage 5)
     tables --dest DIR                            every table and number macro the report states
@@ -77,7 +77,7 @@ def sample(dataset: str, out: str, arrays: str) -> None:
 
 
 def render_prompts(dataset: str, out: str) -> None:
-    """Turn one dataset's concept bank and label map into both prompt strings.
+    """Turn one dataset's concept bank and label map into all three prompt strings.
 
     No LLM call, no image, no randomness: the output is a deterministic function of the two fixed
     inputs and three config values, and it carries the hash of each input and of each rendered
@@ -342,6 +342,10 @@ def classify(dataset: str, out: str, arrays: str) -> None:
     Nothing is measured here: this stage produces the scores and the evaluate stage turns them into
     AUCs, because the paired bootstrap has to resample the test images once for every arm at the
     same time. The scores ride in an .npz beside the JSON, which is small enough to be a result.
+
+    Five arms: A zero-shot, B nearest fingerprint, C the concept probe, P the pixel probe, and the
+    post-hoc D, which is arm A's question asked with the whole bank in the prompt. D decides no
+    hypothesis; it is here so that it is bootstrapped against the others rather than beside them.
     """
     from . import classify as arms
     spec, sample_spec = CONFIG["classify"], CONFIG["sample"]
@@ -374,6 +378,17 @@ def classify(dataset: str, out: str, arrays: str) -> None:
                               for name in classes] for row in zero_shot])
         out_arrays["A"] = a_scores
         index.append({"arm": "A", "key": "A", "model": primary, "labels": "none"})
+
+        # ---- arm D: the same question, asked of a model that has just been handed the bank ------
+        # Post-hoc and exploratory (WORKFLOW.md section 10). It sits here rather than in an
+        # extension rule because it is scored on the same 500 images as every other arm, and the
+        # paired bootstrap is only paired if every arm is in the same matrix.
+        directed = cell(primary, "test", "directed")
+        d_scores = np.array([[row["scores"].get(name) if row["scores"].get(name) is not None else 0.0
+                              for name in classes] for row in directed])
+        out_arrays["D"] = d_scores
+        index.append({"arm": "D", "key": "D", "model": primary, "labels": "none",
+                      "post_hoc": True})
 
         # ---- arm B: nearest fingerprint, for every model, plus the permutation control ----------
         b_complete = {}
@@ -487,6 +502,12 @@ def evaluate(dataset: str, out: str) -> None:
                 mean_over_seeds("C", n) - mean_over_seeds("P", n), spec["ci"])
         b_primary = replicates[:, column[f"B__{primary}"]]
         differences["B_minus_A"] = metrics.interval(b_primary - replicates[:, column["A"]], spec["ci"])
+        # Arm D, post-hoc: against arm A it asks whether the bank helps the model at all when the
+        # model does the integrating, and against arm B whether the loss in H2 was the readout
+        # rather than the bank. Neither difference decides a hypothesis (WORKFLOW.md section 10).
+        d_primary = replicates[:, column["D"]]
+        differences["D_minus_A"] = metrics.interval(d_primary - replicates[:, column["A"]], spec["ci"])
+        differences["D_minus_B"] = metrics.interval(d_primary - b_primary, spec["ci"])
         for n in curve["n"]:
             differences[f"C_minus_B__n{n}"] = metrics.interval(
                 mean_over_seeds("C", n) - b_primary, spec["ci"])
@@ -548,6 +569,10 @@ def evaluate_across(out: str) -> None:
     commensurable quantities to average. With six datasets the test is coarse - 6 of 6 is p = 0.016
     and 5 of 6 is p = 0.11 - so a hypothesis is supported only when it wins everywhere, and the
     per-dataset differences are what carries the reading.
+
+    Arm D is summarised beside them, under `extensions`, and deliberately not among them: it was
+    designed after seeing H2 fail, so no outcome of it can be reported as a test (WORKFLOW.md
+    section 10). The three `supported` flags are computed from H1, H2 and H3 alone.
     """
     from . import evaluate as metrics
     spec, curve = CONFIG["evaluate"], CONFIG["curve"]
@@ -621,7 +646,25 @@ def evaluate_across(out: str) -> None:
             "supported": bool(all(f["wins"] >= spec["h3_min_wins"] for f in ladder.values())),
         }
 
+        # Arm D, reported as an extension and never as a test. It was designed after the first
+        # results, so its sign test is descriptive: the same p that would be evidence for a
+        # pre-registered hypothesis is, here, only a compact way of saying how many datasets moved
+        # in the same direction. The report labels every number of it post-hoc.
+        d_beats_a = {d: per[d]["differences"]["D_minus_A"]["median"] > 0 for d in datasets}
+        d_beats_b = {d: per[d]["differences"]["D_minus_B"]["median"] > 0 for d in datasets}
+        arm_d = {
+            "post_hoc": True,
+            "auc": {d: per[d]["auc"]["D"] for d in datasets},
+            "d_beats_a": d_beats_a, "d_beats_a_wins": sum(d_beats_a.values()),
+            "d_beats_b": d_beats_b, "d_beats_b_wins": sum(d_beats_b.values()),
+            "d_minus_a": {d: per[d]["differences"]["D_minus_A"] for d in datasets},
+            "d_minus_b": {d: per[d]["differences"]["D_minus_B"] for d in datasets},
+            "sign_test_p_vs_a": metrics.sign_test(sum(d_beats_a.values()), len(datasets)),
+            "sign_test_p_vs_b": metrics.sign_test(sum(d_beats_b.values()), len(datasets)),
+        }
+
         run.write(out, dict(datasets=datasets, h1=h1, h2=h2, h3=h3,
+                            extensions={"arm_d": arm_d},
                             flagged_cells={d: [k for k, over in per[d]["incomplete_over_cap"].items() if over]
                                            for d in datasets}))
 
@@ -637,6 +680,7 @@ def tables(dest: str) -> None:
         reporting.table_h1(per, datasets, curve, dest)
         reporting.table_h2(per, datasets, curve, primary, dest)
         reporting.table_h3(across, datasets, dest)
+        reporting.table_arm_d(per, across, datasets, primary, dest)
         reporting.table_completeness(per, datasets, dest)
         macros = reporting.numbers(per, across, datasets, curve, primary, dest)
         run.write(f"{CONFIG['outdir']}/tables.json", dict(dest=dest, macros=macros))

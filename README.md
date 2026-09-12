@@ -24,7 +24,7 @@ invalidates that dataset alone; the last invocation above is how the schema test
 such an edit, and the reasoning is in the Snakefile's stage-0 banner.
 
 All seven stages are built. `rule all` is the technical report, and a dry run from a clean clone is
-312 jobs: 270 of them the scoring fan-out.
+342 jobs: 300 of them the scoring fan-out.
 
 ## The stages
 
@@ -32,9 +32,9 @@ All seven stages are built. `rule all` is the technical report, and a dry run fr
 |---|---|---|---|---|
 | 0 | **Smoke** | The tests: bank schema, label maps, prompts, the sampler, the estimators, the metric | 1 | yes |
 | 1 | **Sample** | Per dataset: the seeded 500-image test sample and 2000-image labelled pool | 6 | yes |
-| 2 | **Score** | Per dataset: render both prompts; then the VLM calls, archived raw | 6 + 270 | prompts, probe |
+| 2 | **Score** | Per dataset: render all three prompts; then the VLM calls, archived raw | 6 + 300 | prompts, probe |
 | 3 | **Features** | Per dataset: ImageNet ResNet-18 penultimate features | 6 | yes |
-| 4 | **Classify** | Per dataset: arms A, B, C, P over the curve, and the permutation controls | 6 | yes |
+| 4 | **Classify** | Per dataset: arms A, B, C, D, P over the curve, and the permutation controls | 6 | yes |
 | 5 | **Evaluate** | AUC, the paired bootstrap, n_B; then the sign tests and the ladder | 6 + 1 | yes |
 | 6 | **Report** | Three figures, the tables, the technical report PDF | 3 | yes |
 
@@ -70,7 +70,7 @@ SESSION_LOG.md         timestamped record of how the work was directed
 | `sample.py` | The seeded samples, and the streaming reader that takes their rows out of a deflated release file without materialising the split. |
 | `llm.py` | The boundary: one kind of call, the key read from an owner-only file, thinking switched off, transport backoff, and what came back recorded verbatim. |
 | `score.py` | The deterministic half of scoring: the image as a lossless PNG, and a reply parsed into a validated answer or a recorded absence. |
-| `prompts.py` | The concept and zero-shot prompt strings, rendered from the bank and the label map. |
+| `prompts.py` | The concept, zero-shot and directed prompt strings, rendered from the bank and the label map. |
 | `features.py` | Arm P's frozen ImageNet encoder, and the preprocessing that does not resize. |
 | `classify.py` | Every estimator: the concept vectors, arm B's fingerprint match, the regression behind arms C and P, and the two permutation controls. |
 | `evaluate.py` | The AUC convention as a rank formula, the shared paired bootstrap, n_B, and the tests the hypotheses are decided by. |
@@ -84,11 +84,12 @@ SESSION_LOG.md         timestamped record of how the work was directed
 |---|---|---|
 | `test_bank.py` | the twelve committed bank files to the schema `CONCEPT_BANK.md` defines | 110 |
 | `test_release.py` | `config/medmnist.yaml` to the installed `medmnist` package | 20 |
-| `test_prompts.py` | both prompts to H2's separation, and the renderer to its switches | 40 |
+| `test_prompts.py` | the two pre-registered prompts to H2's separation, the directed prompt to its inverse, and the renderer to its switches | 58 |
 | `test_sample.py` | the streaming reader to a release-shaped fixture whose rows identify themselves | 14 |
-| `test_score.py` | the image encoding, the reply parser and the two retry policies, without calling the service | 31 |
-| `test_classify.py` | the estimators to fixtures small enough to check by hand, arm B included | 28 |
-| `test_evaluate.py` | the fast AUC to the package's evaluator, and the decision rules to the plan | 12 |
+| `test_score.py` | the image encoding, the reply parser and the two retry policies, without calling the service | 51 |
+| `test_classify.py` | the estimators to fixtures small enough to check by hand, arm B included | 19 |
+| `test_evaluate.py` | the fast AUC to the package's evaluator, and the decision rules to the plan | 19 |
+| `test_pipeline.py` | the analysis chain end to end, on an archive whose answer is known | 4 |
 | `test_metrics.py` | the AUC convention to the package that defines it | 3 |
 
 Every tier WORKFLOW.md section 6 asks for now exists, including the arm-B estimator on a fixture.

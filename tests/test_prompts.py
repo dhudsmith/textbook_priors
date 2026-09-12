@@ -1,10 +1,15 @@
-"""The two prompts, as properties of the rendered strings.
+"""The three prompts, as properties of the rendered strings.
 
 H2 asks whether directing the VLM at cited visual features beats asking it for the diagnosis, and
 it is only a fair question if the two prompts stay apart: the concept prompt must name no class and
 the zero-shot prompt must mention no concept (WORKFLOW.md sections 2 and 7). That is checked here
 on the strings themselves rather than promised in the prose, because it is the kind of property a
 later edit to a bank or a template breaks quietly.
+
+The directed prompt (arm D, post-hoc) is held to the deliberate inverse: it must name every class
+AND every concept, because carrying the whole bank into a zero-shot question is the entire point of
+it. A directed prompt that had quietly dropped a fingerprint would be a weaker arm D reported as
+the real one.
 
 The tests render from the bank and the release, not from results/prompts/, so they fail before a
 job runs rather than after the archive has been written.
@@ -82,6 +87,47 @@ def test_the_zero_shot_prompt_lists_the_classes_in_label_index_order(rendered, r
 
 
 @pytest.mark.parametrize("dataset", RUN_DATASETS)
+def test_the_directed_prompt_carries_the_whole_bank_and_asks_the_zero_shot_question(rendered, dataset):
+    """Arm D's prompt is the union the other two are the halves of."""
+    p = rendered[dataset]
+    user = p["prompts"]["directed"]["user"]
+    for c in p["concepts"]:
+        assert c["question"] in user, c["id"]
+        for level, text in c["anchors"].items():
+            assert text in user, f"{c['id']}/{level}"
+    for i, name in enumerate(p["classes"], start=1):
+        assert f"{i}. {name}" in user, name
+        assert f'"{name}": <probability>' in user, name
+    assert p["prompts"]["directed"]["keys"] == p["classes"]
+
+
+@pytest.mark.parametrize("dataset", RUN_DATASETS)
+def test_the_directed_prompt_states_every_class_fingerprint(rendered, banks, dataset):
+    """Every committed level appears against its class, and an `any` is rendered as the silence it
+    means rather than dropped: a class the sources do not commit on is itself information, and a
+    prompt that simply omitted the feature would look like a fingerprint that had been forgotten."""
+    p = rendered[dataset]
+    user = p["prompts"]["directed"]["user"]
+    for name, spec in banks[dataset].classes.items():
+        committed = spec["fingerprint"]
+        for cid, level in committed.items():
+            if level == "any":
+                assert "the sources do not commit on" in user
+                continue
+            assert f"{cid} = {level}" in user, f"{name}/{cid}"
+
+
+@pytest.mark.parametrize("dataset", RUN_DATASETS)
+def test_the_three_prompts_are_three_different_strings(rendered, dataset):
+    """Each prompt is hashed into the archive it produced, so two arms sharing a hash would make
+    their two archives indistinguishable after the fact."""
+    p = rendered[dataset]["prompts"]
+    hashes = {k: p[k]["sha256"] for k in ("concept", "zero_shot", "directed")}
+    assert len(set(hashes.values())) == 3, hashes
+    assert p["directed"]["user"] != p["zero_shot"]["user"]
+
+
+@pytest.mark.parametrize("dataset", RUN_DATASETS)
 def test_the_keys_a_reply_must_carry(rendered, banks, release, dataset):
     """What the score stage validates a response against: the concept ids in bank order, and the
     class names in label-index order."""
@@ -107,7 +153,8 @@ def test_the_prompt_hash_covers_both_messages():
 
 
 def test_every_rendered_prompt_has_its_own_hash(rendered):
-    hashes = [rendered[d]["prompts"][k]["sha256"] for d in RUN_DATASETS for k in ("concept", "zero_shot")]
+    hashes = [rendered[d]["prompts"][k]["sha256"]
+              for d in RUN_DATASETS for k in ("concept", "zero_shot", "directed")]
     assert len(set(hashes)) == len(hashes)
 
 

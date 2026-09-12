@@ -6,7 +6,8 @@ asserting something a later run could contradict. If a figure and the prose ever
 because someone edited the prose.
 
 Three figures, one per hypothesis (WORKFLOW.md section 6): the learning curve with arm B's line,
-n_B per dataset, and the model ladder.
+n_B per dataset, and the model ladder. Arm D rides along on the curve figure and gets one table of
+its own, always labelled post-hoc: it was designed after the first results and decides nothing.
 """
 from __future__ import annotations
 
@@ -19,8 +20,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 ARM_LABEL = {"C": "arm C: concept scores", "P": "arm P: ImageNet features",
-             "B": "arm B: textbook only (no labels)", "A": "arm A: zero-shot (no labels)"}
-ARM_COLOUR = {"C": "#1f77b4", "P": "#d62728", "B": "#2ca02c", "A": "#7f7f7f"}
+             "B": "arm B: textbook only (no labels)", "A": "arm A: zero-shot (no labels)",
+             "D": "arm D: bank in the prompt (post-hoc, no labels)"}
+ARM_COLOUR = {"C": "#1f77b4", "P": "#d62728", "B": "#2ca02c", "A": "#7f7f7f", "D": "#9467bd"}
 
 
 def load(outdir, datasets) -> tuple[dict, dict]:
@@ -61,6 +63,11 @@ def figure_curve(per, datasets, curve_n, dest):
         b_key = next(k for k in got["auc"] if k.startswith("B__"))
         ax.axhline(got["auc"][b_key], color=ARM_COLOUR["B"], linestyle="--", label=ARM_LABEL["B"])
         ax.axhline(got["auc"]["A"], color=ARM_COLOUR["A"], linestyle=":", label=ARM_LABEL["A"])
+        # Arm D is a third horizontal line for the same reason as A and B: it uses no labels, so it
+        # does not move with n. It is drawn here because the question the figure already asks - how
+        # many labels is the textbook worth - is the one arm D gives a second answer to.
+        if "D" in got["auc"]:
+            ax.axhline(got["auc"]["D"], color=ARM_COLOUR["D"], linestyle="-.", label=ARM_LABEL["D"])
         ax.set_xscale("log")
         ax.set_xticks(curve_n, [str(n) for n in curve_n])
         ax.set_title(f"{dataset}  (n$_B$ = {got['n_b']['point']})", fontsize=10)
@@ -184,6 +191,30 @@ def table_h3(across, datasets, dest):
            "quantisation.", "h3")
 
 
+def table_arm_d(per, across, datasets, primary, dest):
+    """The post-hoc arm, against the two arms it was built to sit between.
+
+    Arm A is the same question with no bank; arm B is the same bank with the arithmetic done
+    outside the model. D $-$ B is the number that says whether H2's failure was the readout rather
+    than the bank, and the caption says post-hoc because it is.
+    """
+    rows = []
+    for d in datasets:
+        got = per[d]
+        d_a, d_b = got["differences"]["D_minus_A"], got["differences"]["D_minus_B"]
+        rows.append([tex_escape(d), fmt(got["auc"]["D"]), fmt(got["auc"]["A"]),
+                     fmt(got["auc"][f"B__{primary}"]),
+                     f"{fmt(d_a['median'])} [{fmt(d_a['lo'])}, {fmt(d_a['hi'])}]",
+                     f"{fmt(d_b['median'])} [{fmt(d_b['lo'])}, {fmt(d_b['hi'])}]"])
+    arm_d = across["extensions"]["arm_d"]
+    _table(dest, "arm_d", ["dataset", "AUC(D)", "AUC(A)", "AUC(B)", "D $-$ A", "D $-$ B"], rows,
+           "Arm D (post-hoc). The zero-shot question asked with the whole concept bank in the "
+           "prompt, against the same question without it (A) and against the same bank read by the "
+           "nearest-fingerprint rule outside the model (B). Arm D was designed after the first "
+           f"results and tests nothing: D beats A on {arm_d['d_beats_a_wins']} of {len(datasets)} "
+           f"datasets and B on {arm_d['d_beats_b_wins']} of {len(datasets)}.", "armd")
+
+
 def table_completeness(per, datasets, dest):
     models = sorted(next(iter(per.values()))["complete_frac"])
     rows = [[tex_escape(d)] + [f"{100 * per[d]['complete_frac'][m]:.1f}" for m in models]
@@ -215,11 +246,19 @@ def numbers(per, across, datasets, curve_n, primary, dest):
     for family, spec in h3["ladder"].items():
         lines[f"ladder{family.capitalize()}Wins"] = spec["wins"]
         lines[f"ladder{family.capitalize()}P"] = fmt(spec["sign_test_p"], 4)
+    arm_d = across.get("extensions", {}).get("arm_d")
+    if arm_d:
+        lines["armDBeatsAWins"] = arm_d["d_beats_a_wins"]
+        lines["armDBeatsBWins"] = arm_d["d_beats_b_wins"]
+        lines["armDBeatsAp"] = fmt(arm_d["sign_test_p_vs_a"], 4)
+        lines["armDBeatsBp"] = fmt(arm_d["sign_test_p_vs_b"], 4)
     for d in datasets:
         key = "".join(part.capitalize() for part in d.replace("mnist", "").split("_")) or d
         lines[f"nB{key}"] = per[d]["n_b"]["point"].replace("<=", r"$\leq$").replace(">", "$>$")
         lines[f"aucB{key}"] = fmt(per[d]["auc"][f"B__{primary}"])
         lines[f"aucA{key}"] = fmt(per[d]["auc"]["A"])
+        if "D" in per[d]["auc"]:
+            lines[f"aucD{key}"] = fmt(per[d]["auc"]["D"])
     text = "\n".join(rf"\newcommand{{\{k}}}{{{v}}}" for k, v in lines.items()) + "\n"
     (Path(dest) / "numbers.tex").write_text(text)
     return lines

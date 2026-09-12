@@ -6,12 +6,24 @@ rule (WORKFLOW.md section 7) so that the string sent to the model, the string ha
 score manifest, and the string the report or the live demo prints are one artifact rather than
 three copies of a format that can drift apart.
 
-The two prompts are kept separable on purpose, because H2 turns on it:
+Three prompts. The first two are kept separable on purpose, because H2 turns on it:
 
   * the CONCEPT prompt (arms B and C) asks for one level per concept, renders every level's cited
     anchor text, and never names a class;
   * the ZERO-SHOT prompt (arm A) asks for a distribution over the class names and never mentions
     a concept.
+
+The third deliberately breaks that separation:
+
+  * the DIRECTED prompt (arm D) carries the whole bank - the concepts with their anchors AND each
+    class's textbook fingerprint - and then asks for a distribution over the classes. It is the
+    same question arm A is asked, by a model that has just been handed the textbook.
+
+Arm D was added after the first results, because H2 failed in a specific way: the permutation
+controls showed the bank carries real class information, while arm B's nearest-fingerprint readout
+lost to simply asking the model for the diagnosis. That says the estimator is lossy, not that the
+bank is empty - and the obvious test is to let the model do the integration instead. Being
+post-hoc, it decides nothing: it is reported as an extension, never as a pre-registered test.
 
 Their system messages differ only in the sentence each task requires - both cast the model as an
 expert reader - so the comparison is between what is asked for and not between two personas.
@@ -135,6 +147,51 @@ def render_zero_shot_prompt(bank: Bank, classes: list[str], size: int) -> dict:
     return _message(_ZERO_SHOT_SYSTEM, user, list(classes))
 
 
+def render_directed_prompt(bank: Bank, classes: list[str], rows: list[dict], size: int) -> dict:
+    """The whole bank in the prompt, and then the zero-shot question.
+
+    Everything the concept prompt says about what to look at, plus what the textbook expects of
+    each class, plus the class names - and the model is asked for the same distribution arm A is
+    asked for. `any` is rendered as what it means in the bank ("the sources do not commit"), not
+    dropped, because a class the literature is silent about on some feature is itself information.
+    """
+    blocks = []
+    for i, row in enumerate(rows, start=1):
+        block = [f"{i}. {row['id']}: {row['question']}"]
+        block += [f"     {level}: {row['anchors'][level]}" for level in row["scale"]
+                  if level in row["anchors"]]
+        blocks.append("\n".join(block))
+
+    fingerprints = []
+    for name in classes:
+        committed = bank.classes[name]["fingerprint"]
+        parts = [f"{row['id']} = {committed.get(row['id'])}" for row in rows
+                 if committed.get(row["id"]) not in (None, "any")]
+        silent = [row["id"] for row in rows if committed.get(row["id"]) == "any"]
+        line = f"  {name}: " + ("; ".join(parts) if parts else "no feature is committed")
+        if silent:
+            line += f"\n      (the sources do not commit on: {', '.join(silent)})"
+        fingerprints.append(line)
+
+    listing = "\n".join(f"  {i}. {name}" for i, name in enumerate(classes, start=1))
+    template = "\n".join(f'  "{name}": <probability>' + ("," if i < len(classes) else "")
+                         for i, name in enumerate(classes, start=1))
+    user = "\n\n".join([
+        _PREAMBLE.format(modality=bank.modality, size=size),
+        f"The image belongs to exactly one of these {len(classes)} categories:\n{listing}",
+        "Here is what an expert looks at in this modality, and what each level looks like:\n\n"
+        + "\n\n".join(blocks),
+        "Here is what the literature expects of each category on those features:\n"
+        + "\n".join(fingerprints),
+        f"Using that and the image, how likely is each category? Give every category a probability "
+        f"between 0 and 1, and make the {len(classes)} probabilities sum to 1.",
+        f"Reply with one JSON object and nothing else: exactly {len(classes)} keys, the category "
+        "names above copied exactly as written, each value a number.",
+        "{\n" + template + "\n}",
+    ])
+    return _message(_ZERO_SHOT_SYSTEM, user, list(classes))
+
+
 def render(bank: Bank, classes: list[str], size: int, anchors: bool) -> dict:
     """Everything a score job needs about a dataset's prompts: both rendered prompts with their
     hashes, and the concept scales the response parser validates answers against."""
@@ -147,5 +204,6 @@ def render(bank: Bank, classes: list[str], size: int, anchors: bool) -> dict:
         "prompts": {
             "concept": render_concept_prompt(bank, rows, size=size, anchors=anchors),
             "zero_shot": render_zero_shot_prompt(bank, classes, size=size),
+            "directed": render_directed_prompt(bank, classes, rows, size=size),
         },
     }

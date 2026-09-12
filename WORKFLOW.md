@@ -73,8 +73,9 @@ for a clinician, or that any arm is state of the art.
 
 ## 3. Arms
 
-Four, all predicting on the shared test sample. A and B use no labels; C and P are the same
-regularised logistic regression on different features.
+Four pre-registered, all predicting on the shared test sample. A and B use no labels; C and P are
+the same regularised logistic regression on different features. A fifth, arm D, was added after the
+first results and is post-hoc: it is reported as an extension (§10) and decides no hypothesis.
 
 | arm | labels | features | what it establishes |
 |---|---|---|---|
@@ -82,6 +83,7 @@ regularised logistic regression on different features.
 | B textbook-only | 0 | concept scores | nearest class fingerprint from the bank; the zero-label prior, and the line that defines n_B |
 | C concept regression | n | concept scores | what the prior is worth once a few labels exist (H1) |
 | P pixel probe | n | ImageNet ResNet-18 penultimate features | the label-matched pixel baseline (H1): transfer learning without the textbook |
+| D bank-in-context *(post-hoc)* | 0 | — | arm A's question asked with the whole bank in the prompt: whether H2's loss was the readout rather than the bank (primary model) |
 
 A VLM is an enormous pretrained model, so the fair pixel baseline is also pretrained: frozen
 ImageNet features under the same classifier, the same regularisation search and the same nested
@@ -153,14 +155,15 @@ gitignored); the sample stage reads the six files straight from it. Provenance �
 Zenodo record (10519652) and the MD5 check above — is recorded here for the reader, not
 re-verified by any rule.
 
-| model | family | role | concept calls | zero-shot calls |
-|---|---|---|---|---|
-| `qwen3.8-27b-fp8` | qwen | primary | 15,000 (test + pool) | 3,000 (test) |
-| `qwen3.5-9b` | qwen | ladder | 3,000 (test) | — |
-| `gemma-4-12b` | gemma | ladder | 3,000 (test) | — |
-| `gemma-4-31b` | gemma | ladder | 3,000 (test) | — |
+| model | family | role | concept calls | zero-shot calls | directed calls |
+|---|---|---|---|---|---|
+| `qwen3.8-27b-fp8` | qwen | primary | 15,000 (test + pool) | 3,000 (test) | 3,000 (test) |
+| `qwen3.5-9b` | qwen | ladder | 3,000 (test) | — | — |
+| `gemma-4-12b` | gemma | ladder | 3,000 (test) | — | — |
+| `gemma-4-31b` | gemma | ladder | 3,000 (test) | — | — |
 
-**27,000 calls** in 270 chunk jobs of 100 images. Two measurements, because they disagree and the
+**30,000 calls** in 300 chunk jobs of 100 images. The last 3,000 of those are arm D's, bought after
+the first 27,000 had been analysed; the pre-registered budget was 27,000. Two measurements, because they disagree and the
 second is the one to plan with. On 2026-09-09, with thinking off and no image attached, 0.1 to
 0.4 s per call on every model. On 2026-09-11 the `probe` rule measured the call this workflow
 actually makes - a 224-pixel PNG and a rendered prompt of about 1,300 tokens, on the primary model:
@@ -194,16 +197,16 @@ Each names the failure it prevents; `TALK.md` argues them.
 ## 6. Stages
 
 ```
-0  SMOKE      bank schema and anchors, label maps against the pinned release, both prompts,
+0  SMOKE      bank schema and anchors, label maps against the pinned release, all three prompts,
               the arm-B estimator on a fixture, metric conventions, client retry      seconds
 1  SAMPLE     per dataset: the seeded 500-image test sample and 2000-image labelled pool,
               streamed out of the compressed npz without loading it (the raw releases are
               prior work, §4 — no fetch rule)                                           6 CPU
-2  SCORE      per dataset: render the concept and zero-shot prompts from the bank; then,
-              per model x split x prompt x chunk of 100: concept levels, or the zero-shot
-              distribution; every raw response archived and protected  6 local + 270 throttled
+2  SCORE      per dataset: render the concept, zero-shot and directed prompts from the bank;
+              then, per model x split x prompt x chunk of 100: concept levels, or a class
+              distribution; every raw response archived and protected  6 local + 300 throttled
 3  FEATURES   per dataset: ImageNet ResNet-18 penultimate features of the sampled images  6 CPU
-4  CLASSIFY   per dataset: arms A, B, C, P at every n and seed, and the permutation controls 6 CPU
+4  CLASSIFY   per dataset: arms A, B, C, D, P at every n and seed, and the permutation controls 6 CPU
 5  EVALUATE   AUC per arm; the paired bootstrap; n_B; then the sign tests and the ladder
               across datasets                                                             6 + 1
 6  REPORT     three figures, tables, number macros, the technical report PDF              local
@@ -221,14 +224,17 @@ The one stage type not seen in earlier projects, and the one that tests principl
   `results/score/<dataset>__<model>__<split>__<prompt>__chunk<k>.json`: per image the parsed
   answer and every raw reply. The manifest adds the served model name, the prompt hash, the
   bank-file hash, temperature and reasoning setting.
-- **Two prompts, both pure functions of the bank and the label map, both tested in `smoke`**: the
-  concept prompt asks for a level per concept, renders every level's cited anchor text, and never
-  names a class; the zero-shot prompt asks for a distribution over the class names and never
-  mentions a concept.
+- **Three prompts, each a pure function of the bank and the label map, each tested in `smoke`**:
+  the concept prompt asks for a level per concept, renders every level's cited anchor text, and
+  never names a class; the zero-shot prompt asks for a distribution over the class names and never
+  mentions a concept. Those two are held apart because H2 turns on it. The directed prompt (arm D,
+  post-hoc, §10) deliberately breaks the separation: it carries every concept with its anchors and
+  every class's fingerprint and then asks the zero-shot question, and the smoke tier holds it to
+  the inverse invariant — it must name every class *and* every concept.
 - **Rendering is its own rule, not inline in the score loop.** `render_prompts`, one per dataset
-  (6 local jobs, no LLM calls, no throttling), turns the bank and the label map into both prompt
+  (6 local jobs, no LLM calls, no throttling), turns the bank and the label map into all three prompt
   strings and writes `results/prompts/<dataset>.json` (the rendered concept prompt with its
-  anchors, the rendered zero-shot prompt, the bank-file hash). Every `score_*` rule takes that file
+  anchors, the rendered zero-shot prompt, the rendered directed prompt, the bank-file hash). Every `score_*` rule takes that file
   as an input instead of re-deriving the prompt, so the string sent to the model, the one hashed
   into the manifest, and the one the report or the demo shows are the same artifact.
 - **Per call**: the 224-pixel PNG; JSON requested and validated against the scales; one retry with
@@ -310,6 +316,18 @@ Cut for the talk, each with what it supported, and all still built on the full b
 Extensions, outside `all`, each one rule and a config block when wanted: `bare_levels` (the
 concept prompt without anchors, a re-score into a second archive), `generic_prompt` (a
 non-diagnostic question set), `primary_upgrade` (the pool on `gemma-4-31b`).
+
+**Arm D, the one extension that is inside `all`** (added 2026-09-12, after the first full run).
+H2 failed in a specific way: arm B lost to arm A on all six datasets, while both permutation
+controls bit hard on all six — the bank carries real class information, and the nearest-fingerprint
+rule is a lossy way to read it. Arm D tests the other half of that reading by moving the
+integration inside the model: the directed prompt carries every concept with its anchors and every
+class's fingerprint, and then asks arm A's question. It is scored on the same 500 test images, by
+the primary model, and enters the same paired bootstrap, which is why it lives in `rule all`
+rather than in a rule of its own — an arm outside the shared bootstrap could not be compared to the
+arms inside it. What that placement does **not** buy it is status: it was designed after seeing the
+numbers, so `D − A` and `D − B` are descriptive, no `supported` verdict reads them, and every table,
+figure and macro of it is labelled post-hoc.
 
 ## 11. Layout
 

@@ -130,3 +130,26 @@ here, because it changes what the code has to look like and not merely what was 
 it cost four explicit rules in place of a loop, a model wildcard so the command cannot disagree
 with the file name, and a guard in the stage that refuses the mismatch before the first call. The
 fan-out goes out after the replacement chunk verifies.
+
+## 2026-09-12 09:05 — A fifth arm, asked for after the results: the bank in the prompt
+
+"I know it's not clean but I want to try an arm who we ask for a classification zero shot that we
+give all the concept information. Integrate this throughout."
+
+Not clean is the right description and worth recording as the user's own, because it is the only
+thing about arm D that needed a decision. The arm itself follows directly from the H2 result: the
+permutation controls say the bank carries class information while arm B loses to arm A, so the
+nearest-fingerprint readout is the suspect, and the cheapest way to test that without labels is to
+let the model do the integrating. What is not clean is the timing — the arm was designed after the
+numbers were in hand, so nothing it produces can be reported as a test of anything.
+
+So "integrate this throughout" was read as: everywhere a pre-registered arm appears (the prompt
+renderer and its tests, the fan-out, the classify and evaluate stages, the report's tables, figures
+and macros, WORKFLOW.md, README), and nowhere a *hypothesis* appears. It is in `rule all` and in
+the shared paired bootstrap, because an arm outside that bootstrap cannot be differenced against
+the arms inside it; it is under `extensions` in `evaluation.json`, in a report section that opens
+by saying it decides nothing, and in a table whose caption says post-hoc. The three `supported`
+flags are computed from H1, H2 and H3 alone and were not touched.
+
+Cost: 3,000 calls on the primary model, 30 chunks, the budget from 27,000 to 30,000. The existing
+archive is untouched — arm D is 30 new files beside it, not a re-score.

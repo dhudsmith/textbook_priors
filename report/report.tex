@@ -89,8 +89,8 @@ $p = \cBeatsPp$); the pixel probe never reached the textbook arm inside the curv
 \begin{figure}[htbp]\centering
   \includegraphics[width=\textwidth]{fig_curve.png}
   \caption{What labelled images buy (arms C and P, with 95\% intervals) against what the textbook
-  gives for nothing (arm B, dashed; arm A, dotted). Where the pixel probe crosses arm B's line is
-  $n_B$.}\label{fig:curve}
+  gives for nothing (arm B, dashed; arm A, dotted; the post-hoc arm D, dash-dotted). Where the
+  pixel probe crosses arm B's line is $n_B$.}\label{fig:curve}
 \end{figure}
 
 \input{tables/h1}
@@ -125,6 +125,22 @@ gemma family; a Friedman test over all \numModels\ models gives $p = \friedmanP$
 \end{figure}
 
 \input{tables/h3}
+
+\section{Post-hoc: arm D, the bank in the prompt}
+
+Everything in this section was designed after the results above were in hand, and it decides
+nothing. H2 failed in a particular way: arm B lost to arm A, while both permutation controls bit
+hard on every dataset, which says the bank carries real class information and that the
+nearest-fingerprint rule is a lossy way to read it. Arm D is the obvious follow-up --- give the
+model the whole bank, concepts, anchors and per-class fingerprints, and then ask it the same
+question arm A is asked --- so that the integration happens inside the model rather than in a
+distance in concept space. It is the same 500 images, the same model and the same paired bootstrap
+as every other arm; only its status differs. Arm D beat arm A on \armDBeatsAWins\ of \numDatasets\
+datasets and arm B on \armDBeatsBWins\ of \numDatasets. Those counts are descriptive: a hypothesis
+formed after seeing the data cannot be tested on the same data, and no \emph{supported} verdict in
+this report reads arm D.
+
+\input{tables/arm_d}
 
 \section{Diagnostics}
 

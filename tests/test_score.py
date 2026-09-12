@@ -158,6 +158,23 @@ def test_a_reply_that_stays_malformed_is_recorded_missing_with_its_raw_text():
     assert [r["served_model"] for r in result["replies"]] == ["served-name"] * 2
 
 
+def test_both_distribution_prompts_record_whether_the_model_obeyed_the_sum():
+    """`sums_to_one` is a property of a distribution answer, not of an arm.
+
+    Arm A is asked with `kind="zero_shot"` and the post-hoc arm D with `kind="directed"`; both get
+    the same parser and both must carry the diagnostic, or arm D's compliance is invisible in the
+    archive while arm A's is recorded."""
+    text = '{"normal": 0.25, "pneumonia": 0.75}'
+    for kind in ("zero_shot", "directed"):
+        result = score.ask_one(FakeClient([text]), {"system": "s", "user": "u"}, "url", kind,
+                               CLASSES, 512)
+        assert result["complete"] and result["sums_to_one"] is True, kind
+        assert result["scores"] == {"normal": 0.25, "pneumonia": 0.75}
+    concept = score.ask_one(FakeClient(['{"opacity": "mild", "edge": "sharp"}']),
+                            {"system": "s", "user": "u"}, "url", "concept", CONCEPTS, 512)
+    assert "sums_to_one" not in concept, "a concept answer is not a distribution"
+
+
 def test_retries_can_be_switched_off():
     client = FakeClient(["nonsense"])
     result = score.ask_one(client, {"system": "s", "user": "u"}, "url", "concept", CONCEPTS, 64,
