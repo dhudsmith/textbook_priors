@@ -305,3 +305,14 @@ What the implementation actually settled, beyond what the proposal said:
   in the study whose answers are sampled rather than deterministic.
 
 Also removed the arm-D reference from `evaluate_across`'s docstring, which had survived the scrub.
+
+## 2026-09-12 17:40 — "What's left to run?" — and what the answer turned up
+
+The user asked for a status. Answering it honestly meant measuring rather than reporting the job
+count, and the measurement found a real risk: eleven thinking chunks in flight at 134 s per call
+were on course to finish seventeen minutes inside a four-hour time limit, where overrunning writes
+nothing. Cancelled and resubmitted under a cap of four, at a cost of about 200 spent calls. The
+reasoning is in CHANGELOG.md; the numbers are in config and the profile beside the values they set.
+
+Nothing about H4's design changed. This was an operations decision, taken on a measurement, of
+exactly the kind the workflow exists to make visible.

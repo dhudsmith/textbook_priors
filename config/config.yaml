@@ -85,7 +85,12 @@ vlm:
       model: qwen3.8-27b-fp8
       effort: medium
       api: local
-      cap: 12                               # the endpoint saturates; this is politeness, not rate
+      cap: 4                                # NOT a throughput knob - aggregate throughput on this
+                                            # endpoint is flat, so four in flight and twelve finish
+                                            # the same wave at the same hour. What it buys is that
+                                            # each chunk takes about 80 minutes instead of 3.7
+                                            # hours, so none of them dies at its time limit having
+                                            # written nothing, and whole datasets land as they go.
       max_tokens: 2048                      # 512 is what made thinking look impossible: at medium
                                             # the answer costs about 986 completion tokens
       subsample: 200
@@ -165,12 +170,18 @@ resources:
   # packing for nothing. Wall time 19 s to 126 s - pathmnist inflates 13.5 GB in one pass at about
   # 100 MB/s - so 20 minutes is ten times the longest run and covers a contended filesystem.
   sample: {cpus: 1, mem_mb: 1500, runtime: 20}
-  # H4's two readers, 200 images each in two chunks of 100. The local one thinks, which costs about
-  # 986 completion tokens against 112 with thinking off; at the ~63 tokens/s aggregate this endpoint
-  # delivers, a chunk of 100 is a little over half an hour and 240 minutes is the same four-times
-  # headroom the thinking-off chunks get. The gateway one is somebody else's capacity and answered
-  # in 3 to 9 s a call when measured, so 60 minutes is generous. Memory is one dataset's test array.
-  score_reader: {cpus: 1, mem_mb: 2000, runtime: 240}
+  # H4's two readers, 200 images each in two chunks of 100. The gateway one is somebody else's
+  # capacity and answered in 2.4 to 6.5 s a call across all six datasets, so 60 minutes is generous.
+  #
+  # The local one thinks, and its runtime was wrong the first time in the way that costs everything.
+  # Measured 2026-09-12: one thinking chunk running alone took 16.7 s a call and 32 minutes; eleven
+  # running together took 134 s a call, because this endpoint's aggregate throughput is flat in our
+  # concurrency (CHANGELOG, 2026-09-12) and a chunk therefore stretches in proportion to how many
+  # of its siblings are in flight. Eleven chunks at 134 s a call is 3.7 hours each against a
+  # 240-minute limit - seventeen minutes of margin on a shared service, and a chunk that overruns
+  # writes nothing at all. 600 minutes is about 2.7 times the worst chunk that concurrency can
+  # produce, and the cap below is what stops it being produced.
+  score_reader: {cpus: 1, mem_mb: 2000, runtime: 600, cap: 4}
   score_reader_gateway: {cpus: 1, mem_mb: 2000, runtime: 60}
   # Guess. The probe is 21 calls placed one after another and a few PNG encodings: one core, and
   # memory is one dataset's test array held while the images are encoded (376 MB at the widest).

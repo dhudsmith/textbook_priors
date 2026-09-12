@@ -880,3 +880,36 @@ and the report, about sixteen CPU jobs and a few minutes.
 **The lesson, and the rule any future arm obeys.** A decision rule before the calls. An arm worth
 adding is worth pre-registering; one that cannot be pre-registered is a separate study, not an
 extension inside `rule all`. WORKFLOW.md §10 now says so where arm D's description used to be.
+
+## 2026-09-12 — H4's thinking wave, stopped before it could write nothing
+
+Eleven thinking chunks were submitted together and would have been the 2026-09-12 failure again —
+a wave that spends every call and writes no file — so they were cancelled forty minutes in and
+resubmitted under a cap. Recorded because the reasoning is the same one this project has now met
+three times and got wrong twice.
+
+**Measured while the eleven ran**, one timed call through the same code path: **134 s per call**,
+against 16.7 s for the single chunk that ran alone an hour earlier and 41 s at concurrency one this
+morning. That is the endpoint's flat-throughput behaviour again — latency rises in proportion to
+our own concurrency, aggregate stays put at about 0.08 calls per second — so eleven chunks in
+flight is not eleven times faster, it is eleven chunks each taking 3.7 hours. Against a 240-minute
+limit that left seventeen minutes of margin on a service shared with the rest of the university,
+and a chunk that overruns its limit writes nothing, losing every call it made.
+
+**The fix is a cap, and the cap is not a throughput knob.** Four in flight and twelve in flight
+finish the whole wave at the same hour, because the aggregate is flat. What four buys is that each
+chunk takes about eighty minutes rather than 3.7 hours, so no chunk is anywhere near its limit, and
+whole datasets land as the wave proceeds instead of all twelve arriving at the deadline together.
+`llm_reader_medium: 4` in the profile, `runtime: 600` in config, both with the measurement in a
+comment beside them. The thinking reader gets its own resource rather than sharing the primary
+model's: it is the same endpoint and the two caps have to be read together, but a thinking chunk is
+an order of magnitude longer than a thinking-off one and one shared cap cannot say that.
+
+**Cost of stopping: about 200 calls**, spent and unrecorded, which is what forty minutes at the
+observed aggregate rate buys. The thirteen chunks already written — one thinking, twelve gateway —
+were untouched and are kept.
+
+**Still missing, and it is the same gap recorded on 2026-09-12.** A scoring job writes its JSON at
+the end and logs nothing on the way, so a running chunk is indistinguishable from a hung one, and
+the only way to learn the rate was to spend a call on a diagnostic. That is now twice this has cost
+real time. A progress line every ten calls belongs in `priors/score.py` before the next re-score.

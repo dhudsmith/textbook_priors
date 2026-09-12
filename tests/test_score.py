@@ -393,6 +393,9 @@ def test_the_profile_caps_match_the_models_config(config):
     # in credits, not in published concurrency, so there is nothing in `vlm.models` to match it to.
     expected = {"llm_" + re.sub(r"[^a-z0-9]+", "_", m.lower()) for m in config["vlm"]["models"]}
     expected.add("llm_gateway")
+    expected.add("llm_reader_medium")
+    assert declared["llm_reader_medium"] == config["resources"]["score_reader"]["cap"], \
+        "the thinking reader's cap and its rule's resource have drifted apart"
     assert {k for k in declared if k.startswith("llm_")} == expected, \
         "the profile caps a model the config does not have"
 

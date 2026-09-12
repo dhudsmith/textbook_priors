@@ -35,6 +35,12 @@ resources:
   # concurrency, so this cap is not a politeness limit on a shared endpoint like the four above.
   # It exists so that a mistake costs twelve calls in flight and not twelve hundred.
   llm_gateway: 12
+  # H4's thinking reader on the primary model's endpoint. Four, not twelve: aggregate throughput
+  # here is flat in our concurrency, so twelve in flight finish the wave at the same hour as four
+  # and each chunk takes 3.7 hours instead of 80 minutes - against a time limit, with a chunk that
+  # overruns writing nothing. Read together with llm_qwen3_8_27b_fp8 as the promise about this one
+  # endpoint; nothing else is scheduled against it while the readers run.
+  llm_reader_medium: 4
 latency-wait: 60
 keep-going: True
 rerun-incomplete: True

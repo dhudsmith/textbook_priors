@@ -514,7 +514,12 @@ rule score_reader:
     benchmark: "benchmarks/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.tsv"
     conda: "envs/priors.yml"
     threads: RES["score_reader"]["cpus"]
-    resources: **res("score_reader"), **{"llm_qwen3_8_27b_fp8": 1}
+    # Its own resource rather than the primary model's, capped at 4 in the profile. It is the same
+    # endpoint, so the two caps have to be read together as a promise about total concurrency; it
+    # gets its own because a thinking chunk is an order of magnitude longer than a thinking-off one
+    # and needs to be throttled harder to finish inside its time limit, which one shared cap cannot
+    # express. Nothing else is scheduled against this model while H4's readers run.
+    resources: **res("score_reader"), **{"llm_reader_medium": 1}
     shell: SCORE_CMD
 
 
