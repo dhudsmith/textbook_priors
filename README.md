@@ -59,6 +59,7 @@ results/score/         the raw VLM response archive, write-protected once writte
 benchmarks/            wall time and peak memory per job
 report/                report.tex, references.bib, generated tables/ and figs/
 logs/                  one log per job
+docs/                  reference notes on the LLM service: models, reasoning levels, throughput
 CONCEPT_BANK.md        how the bank was built, and the rules the smoke tier enforces
 SESSION_LOG.md         timestamped record of how the work was directed
 ```

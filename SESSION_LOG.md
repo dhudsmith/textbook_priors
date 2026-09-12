@@ -231,3 +231,30 @@ vision-capable model larger than gemma-4-31b is served (glm-5.3, deepseek-v4-pro
 qwen3-30b instruct reject images; qwen3.6-27b, qwen3.6-35b-a3b and qwen3-omni-30b-a3b accept
 them; the gpt-5 family is served but is closed and needs a different token parameter). The
 assessment went to the user in the session; the decision is theirs.
+
+## 2026-09-12 15:20 — Does thinking work, can we try an OpenAI model, and the service docs
+
+Three directions in one turn. "Were we able to get thinking to work? Looking at the rcd docs, most
+of these models should support thinking. Can you perform a simple test?", then "And does this allow
+me to try openai model? Should we do that?" with a screenshot of the OpenAI credits page (10.00
+project allocation, 648.79 in the shared pool), then the RCD *Available Models* page attached with
+"Add it to the repo context".
+
+The test was worth running and the answer changed a standing conclusion: thinking works, and the
+reason it appeared not to was `max_tokens: 512` in this workflow's own config. Recorded in
+CHANGELOG.md as a correction, with the per-model budgets. The user's reading of the documentation
+was right and this project's inference was wrong.
+
+Reading the documentation also replaced this session's earlier probe with the service's own
+metadata endpoint (`/v1/models?full=true`), which reports per model the `images` feature, the
+lifecycle tier and the `reasoning_effort` levels accepted. That is now `docs/rcd_llm_service.md`,
+written as a reference with documented and measured claims separated, and pointed at from
+CLAUDE.md, README.md and WORKFLOW.md §7. The OpenAI question is answered there and in the session:
+the gateway models work with this key and this prompt, and the decision about whether to spend on
+them is the user's, not taken here.
+
+One thing deliberately not done. `priors/llm.py` carries the old thinking claim in its docstring
+and is a `code()` input to all 300 protected score chunks, so correcting the comment marks the
+whole 30,000-call archive stale. It is left for a deliberate edit plus `snakemake --touch` from the
+owner's checkout, which CLAUDE.md's rule about the archive requires and a session that does not run
+the workflow should not do by itself.

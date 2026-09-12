@@ -239,10 +239,16 @@ The one stage type not seen in earlier projects, and the one that tests principl
   into the manifest, and the one the report or the demo shows are the same artifact.
 - **Per call**: the 224-pixel PNG; JSON requested and validated against the scales; one retry with
   a doubled token budget on a malformed answer, then recorded as missing, never guessed.
-- **Thinking off.** With reasoning left on, the primary model spends its whole token budget in
-  `reasoning_content` and returns nothing; `chat_template_kwargs.enable_thinking: false` is in
-  config and recorded in every manifest. One served model files its answer under
-  `reasoning_content` even so; the client reads `content` and falls back to it.
+- **Thinking off**, and for a reason that turned out to be ours rather than the service's.
+  `chat_template_kwargs.enable_thinking: false` is in config and recorded in every manifest. The
+  original justification here - that with reasoning on the primary model spends its whole token
+  budget in `reasoning_content` and returns nothing - was measured against this workflow's own
+  `max_tokens: 512`. At 2048 the primary model, gemma-4-12b and gemma-4-31b all answer with
+  thinking on, at ten to sixteen times the wall clock; qwen3.5-9b does not finish within 8192
+  (measured 2026-09-12, `docs/rcd_llm_service.md`). The archive stays thinking-off, because that is
+  what it was bought as and re-scoring is deliberate (section 5, principle 7); a reasoning sweep is
+  an extension in section 10, not a correction to this line. One served model files its answer
+  under `reasoning` even with thinking off; the client reads `content` and falls back.
 - **Throttling**: one rule per model, each holding one unit of an `llm_<model>` resource capped in
   the profile below the service's published concurrency.
 - **Client**: the `openai` package against `https://llm.rcd.clemson.edu/v1`; backoff on 429 and
@@ -315,7 +321,10 @@ Cut for the talk, each with what it supported, and all still built on the full b
 
 Extensions, outside `all`, each one rule and a config block when wanted: `bare_levels` (the
 concept prompt without anchors, a re-score into a second archive), `generic_prompt` (a
-non-diagnostic question set), `primary_upgrade` (the pool on `gemma-4-31b`).
+non-diagnostic question set), `primary_upgrade` (the pool on `gemma-4-31b`), and `reasoning_sweep`
+(the concept prompt re-scored at each `reasoning_effort` the model's own metadata advertises - four
+on the primary model - into a second archive; it was cut as impossible and is merely expensive,
+section 7 and `docs/rcd_llm_service.md`).
 
 **Arm D, the one extension that is inside `all`** (added 2026-09-12, after the first full run).
 H2 failed in a specific way: arm B lost to arm A on all six datasets, while both permutation

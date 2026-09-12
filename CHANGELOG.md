@@ -739,3 +739,79 @@ said five of six while the table beside it printed 0.971 against 0.991. Both are
 tests. The lesson is the one the workflow is built around: a number that reaches the prose through a
 macro is still only as good as the function behind it, and the check that caught these was reading
 the generated table against the generated sentence.
+
+## 2026-09-12 — Thinking works; the reason it did not was our own token budget
+
+Tested because the user asked whether reasoning had ever been made to work, having read in the RCD
+documentation that most of these models support it. It does, and the conclusion this project has
+carried since 2026-09-09 was wrong in its cause, though not in what was observed.
+
+**What the old claim said.** `WORKFLOW.md` §7 and `priors/llm.py` both stated that with reasoning
+left on, the primary model spends its whole token budget in `reasoning_content` and returns
+nothing. True as observed, and the inference drawn from it — that the served stack cannot do this —
+was not. The budget was `max_tokens: 512`, which is this workflow's own config line, sized for
+twelve concepts of JSON and nothing else. A model that thinks for 1,578 tokens and then answers
+hits that ceiling mid-thought, and what the reader sees is a truncated chain of thought in a
+reasoning field and an empty `content`. The diagnosis stopped one step short of the cause.
+
+**Measured today**, one call per cell through `priors/llm.py` on the real concept prompt with a
+real 224-pixel image (pneumoniamnist, image 0):
+
+| model | thinking on, 512 | 2048 | 4096 | 8192 |
+|---|---|---|---|---|
+| qwen3.8-27b-fp8 | truncated | parses, 1578 tok, 62 s | parses | — |
+| gemma-4-12b | truncated | parses, 1447 tok, 10 s | — | — |
+| gemma-4-31b | truncated | parses, 1171 tok, 30 s | — | — |
+| qwen3.5-9b | truncated | truncated | truncated | truncated |
+
+With thinking off the same call costs 112 completion tokens and 3.8 s on the primary model, so
+reasoning is a factor of ten to sixteen in wall clock and about fourteen in completion tokens.
+qwen3.5-9b — the same model that answers in the `reasoning` field with thinking off — did not
+finish a chain of thought within 8192 tokens and would need its own budget.
+
+**And `reasoning_effort` is a first-class parameter**, which is the part with consequences beyond
+this correction. The service's `/v1/models?full=true` endpoint reports, per model, the effort
+levels it accepts. The primary model advertises four and all four work: `none` (112 tokens,
+4.9 s), `low` (982, 39.4 s), `medium` (986, 41.3 s), `xhigh` (1578, 68.0 s). That is a cleaner
+control than the `chat_template_kwargs.enable_thinking` boolean this workflow sends, and it is
+also a warning: the service's **default** for this model is `xhigh`, so a caller who sets nothing
+gets the slowest setting. This workflow has always set the switch explicitly, which is the only
+reason its archive is uniform.
+
+**Nothing was re-scored and nothing will be by this entry.** The archive was bought thinking-off
+and is a fixed input (§5, principle 7); the correction is to the *stated reason* for that setting,
+not to the setting. `WORKFLOW.md` §7 now carries both the measurement and the date, and §10 lists
+`reasoning_sweep` as an extension that was cut as impossible and is merely expensive. The
+docstring in `priors/llm.py` still carries the old claim deliberately: that module is a `code()`
+input to all 300 protected score chunks, so correcting a comment in it marks the whole archive
+stale, and the honest repair is an edit plus `snakemake --touch` from the owner's checkout rather
+than an edit made casually from a session that does not run the workflow.
+
+## 2026-09-12 — What the service actually offers: no bigger open-weight eyes, and two aliases that would break an archive
+
+The same session read the service's `/v1/models?full=true` metadata rather than probing, which is
+what the RCD documentation points at and what this project should have used from the start. Kept
+as `docs/rcd_llm_service.md`, with every claim marked as documented or measured.
+
+**The H3 ladder cannot be extended upward in open weights.** Nine locally hosted models declare
+the `images` feature, and the largest is `gemma-4-31b`, which this study already scores. The big
+models on the service are text-only and reject an image outright with `400 ... is not a multimodal
+model`: `glm-5.3` (753B, the largest thing RCD hosts), `deepseek-v4-pro`, `gptoss-120b`, the GLM
+5.x builds. What is available instead is *sideways*: `qwen3.6-27b-fp8` and `qwen3.6-35b-a3b-fp8`,
+a newer generation at the primary model's size, both `experimental` rather than `active`. And the
+OpenAI gateway models are reachable with this same key — `gpt-5.5` and `gpt-5.6-terra` both
+answered this workflow's concept prompt with an image attached, parsed complete, at about 1,226
+prompt tokens and 291–428 completion tokens per call — but they are closed, of unknown size, and
+cannot sit on a parameter axis.
+
+**Two aliases on the service would silently destroy an archive's meaning.** `cub` and `tiger`
+point at "a smaller agentic capable model" and "the most powerful model we are currently hosting";
+`cub` resolves today to this study's own primary model, and `tiger` to `glm-5.3`. An alias is a
+promise that the weights behind a name may change without notice, which is the same failure as the
+generated-rule bug of 2026-09-11 with nobody to blame for it. Recording `served_model` in every
+manifest is what makes it survivable; naming the target rather than the alias is what avoids it.
+
+**A lifecycle field exists and this study's four models are all `active`.** `experimental` models
+may be removed without notice and their engines updated underneath a run; `active-lts` models are
+promised not to retire mid-semester. A study that spans weeks should read that field before
+choosing, and this one did not know it existed.
