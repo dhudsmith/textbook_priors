@@ -9,9 +9,11 @@ Three figures, one per hypothesis (WORKFLOW.md section 6): the learning curve wi
 n_B per dataset, and the model ladder. Arm D rides along on the curve figure and gets one table of
 its own, always labelled post-hoc: it was designed after the first results and decides nothing.
 
-One table, `literature`, reads a fixed input besides results/: `data/literature/benchmarks.yaml`,
-published fully supervised numbers for the same six tasks (WORKFLOW.md section 10). It is another
-extension that decides nothing — a reconciliation point, not a comparison arm.
+One table, `literature`, and one line on the curve figure read a fixed input besides results/:
+`data/literature/benchmarks.yaml`, published fully supervised numbers for the same six tasks
+(WORKFLOW.md section 10). Both are another extension that decides nothing — a reconciliation
+point, not a comparison arm — so the line is drawn distinctly from the four arms and carries no
+interval.
 """
 from __future__ import annotations
 
@@ -27,6 +29,12 @@ ARM_LABEL = {"C": "arm C: concept scores", "P": "arm P: ImageNet features",
              "B": "arm B: textbook only (no labels)", "A": "arm A: zero-shot (no labels)",
              "D": "arm D: bank in the prompt (post-hoc, no labels)"}
 ARM_COLOUR = {"C": "#1f77b4", "P": "#d62728", "B": "#2ca02c", "A": "#7f7f7f", "D": "#9467bd"}
+
+# Not an arm: the published, fully supervised ceiling (data/literature/benchmarks.yaml), read onto
+# the same axes as a fixed reference rather than a line that moves with n. One colour, used nowhere
+# else, so it cannot be mistaken for a fifth arm.
+LIT_LABEL = "published ResNet-18 (224), fully supervised (Yang et al. 2023)"
+LIT_COLOUR = "#8c564b"
 
 
 def load(outdir, datasets) -> tuple[dict, dict]:
@@ -48,12 +56,17 @@ def fmt(value, places=3) -> str:
 
 # ---- figures -------------------------------------------------------------------------------------
 
-def figure_curve(per, datasets, curve_n, dest):
+def figure_curve(per, datasets, curve_n, dest, literature=None):
     """H1: what the labels buy, against what the textbook gives for nothing.
 
     One panel per dataset. Arms C and P are the same classifier on different features, so the gap
     between the curves is the features; arm B is a horizontal line because it uses no labels at all,
     and where the red curve crosses it is n_B.
+
+    `literature`, if given, adds one more horizontal line: the published, fully supervised
+    ResNet-18 (224) AUC for the same task (data/literature/benchmarks.yaml). It is drawn distinctly
+    from the four arms - a different colour, a sparser dash, no fill - because it is not one: it
+    was not computed by this study, does not share the paired bootstrap, and carries no interval.
     """
     fig, axes = plt.subplots(2, 3, figsize=(13, 7.5), sharex=True)
     for ax, dataset in zip(axes.flat, datasets):
@@ -72,6 +85,9 @@ def figure_curve(per, datasets, curve_n, dest):
         # many labels is the textbook worth - is the one arm D gives a second answer to.
         if "D" in got["auc"]:
             ax.axhline(got["auc"]["D"], color=ARM_COLOUR["D"], linestyle="-.", label=ARM_LABEL["D"])
+        if literature is not None:
+            ax.axhline(literature.dataset(dataset)["resnet18_224"]["auc"], color=LIT_COLOUR,
+                      linestyle=(0, (1, 1)), linewidth=1.5, label=LIT_LABEL)
         ax.set_xscale("log")
         ax.set_xticks(curve_n, [str(n) for n in curve_n])
         ax.set_title(f"{dataset}  (n$_B$ = {got['n_b']['point']})", fontsize=10)

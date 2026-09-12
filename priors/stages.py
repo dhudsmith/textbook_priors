@@ -693,9 +693,10 @@ def figures(dest: str) -> None:
     from . import report as reporting
     datasets, curve = CONFIG["datasets"], CONFIG["curve"]["n"]
     per, across = reporting.load(CONFIG["outdir"], datasets)
+    literature = data.load_literature(CONFIG["literature"])
     Path(dest).mkdir(parents=True, exist_ok=True)
-    with Run("figures", dict(datasets=datasets)) as run:
-        reporting.figure_curve(per, datasets, curve, dest)
+    with Run("figures", dict(datasets=datasets, literature_sha256=literature.sha256)) as run:
+        reporting.figure_curve(per, datasets, curve, dest, literature=literature)
         reporting.figure_n_b(per, datasets, curve, dest)
         reporting.figure_ladder(across, datasets, dest)
         run.write(f"{CONFIG['outdir']}/figures.json", dict(dest=dest,

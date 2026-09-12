@@ -633,7 +633,9 @@ rule tables:
 
 rule figures:
     """The three figures, one per hypothesis. x1."""
-    input: evaluation=EVALUATION, per_dataset=EVALUATED, code=CODE_REPORT
+    input:
+        evaluation=EVALUATION, per_dataset=EVALUATED, code=CODE_REPORT,
+        literature=config["literature"],
     output: FIG_FILES
     log: "logs/figures.log"
     benchmark: "benchmarks/figures.tsv"
