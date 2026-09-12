@@ -691,3 +691,51 @@ other users' load rather than ours, and this is two points rather than a curve. 
 that cost one call and five minutes replaced an estimate that had already been wrong twice: the job
 CPU counters could not settle it, because at 43 s per call four minutes of work rounds to under one
 second of CPU and looks identical to a hang.
+
+## 2026-09-12 — The published ceiling, read against every arm: 2,000 labels is the benchmark
+
+The literature extension is finished: `data/literature/benchmarks.yaml` now reads into a table that
+sets every arm of this study against the best of the five fully supervised methods Yang et al.
+(2023) report for the same six tasks at the same 224 pixels, and the report's prose states its
+numbers from macros rather than leaving the comparison qualitative.
+
+| dataset | A | B | D | C (n=2000) | P (n=2000) | published | method |
+|---|---|---|---|---|---|---|---|
+| pathmnist | 0.927 | 0.924 | 0.890 | 0.965 | 0.986 | 0.989 | ResNet-18 (224) |
+| dermamnist | 0.770 | 0.671 | 0.790 | 0.799 | 0.921 | 0.920 | ResNet-18 (224) |
+| octmnist | 0.941 | 0.894 | 0.886 | 0.933 | 0.947 | 0.963 | Google AutoML Vision |
+| pneumoniamnist | 0.918 | 0.727 | 0.906 | 0.728 | 0.971 | 0.991 | Google AutoML Vision |
+| bloodmnist | 0.883 | 0.775 | 0.827 | 0.930 | 0.990 | 0.998 | ResNet-18 (224) |
+| organamnist | 0.710 | 0.685 | 0.766 | 0.887 | 0.991 | 0.998 | ResNet-18 (224) |
+
+**The pixel probe at 2,000 labels is the published benchmark, to within a rounding error.** Its
+median gap to the ceiling is 0.007; it is within two points on all six datasets, and on dermamnist
+it is at or above it (0.921 against 0.920). The published numbers are trained on each dataset's
+entire official training split — thousands to tens of thousands of images — so 2,000 labels and a
+frozen ImageNet ResNet-18 recover essentially all of what full supervision buys on these tasks.
+
+**That reframes H1's negative result rather than merely restating it.** The earlier entry recorded
+that the textbook prior is worth fewer than fifty labelled images. Set against the ceiling, the
+reason is visible: the whole interval the prior was competing for is narrow. The best zero-label arm
+per dataset — whichever of A, B and D wins there — sits a median 0.094 below the ceiling and is
+within five points of it on one dataset of six, while the labelled probe closes that to 0.007. There
+was never much headroom between "a few labels" and "all of them" for a zero-label prior to claim.
+
+Two limits on reading any of this, both now in the report's prose. These gaps subtract a number
+from another paper: no bootstrap here covers them, unlike every other interval in the report, which
+is a paired percentile interval on the same 500 images. And the table's last column is the best of
+five methods, which is not always the same method across datasets, while Figure 1 draws the
+ResNet-18 (224) row alone — the one backbone trained at this study's own input resolution.
+`ceiling()` is defined once in `priors/report.py` and read by both the table and the macros, so the
+prose and the table cannot disagree about which method won a dataset. ACC is pinned beside AUC in
+the source file and deliberately not shown: this study computes no ACC to set beside it.
+
+**Two of my own numbers were wrong in the first build of this table, and are recorded here because
+the report would not have contradicted either.** `sorted(values)[len(values) // 2]` is not a median
+on an even-length list — it is the upper of the two middle values — so the zero-label gap printed
+0.115 when the answer is 0.094 and the concept gap 0.111 when it is 0.089. And the "within two
+points" count compared raw floats, where pneumoniamnist's gap is 0.020000000000000018, so the prose
+said five of six while the table beside it printed 0.971 against 0.991. Both are fixed and pinned by
+tests. The lesson is the one the workflow is built around: a number that reaches the prose through a
+macro is still only as good as the function behind it, and the check that caught these was reading
+the generated table against the generated sentence.
