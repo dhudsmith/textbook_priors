@@ -12,11 +12,12 @@ outdir: results
 figdir: report/figs
 tabdir: report/tables
 
-# The fixed inputs of WORKFLOW.md section 4, both completed before the workflow and never
-# refetched: the concept bank (committed) and the pinned release description (read as an input
-# file by the rules that need a label map, not as a configfile).
+# The fixed inputs of WORKFLOW.md section 4, all completed before the workflow and never
+# refetched: the concept bank (committed), the pinned release description, and the published
+# literature benchmarks (read as input files by the rules that need them, not as configfiles).
 conceptdir: data/concepts
 release: config/medmnist.yaml
+literature: data/literature/benchmarks.yaml
 
 # The project filesystem, which is not purged: the raw releases sit under <storage_root>/raw and
 # the sampled arrays under <storage_root>/cache. `data/raw` and `data/cache` are symlinks onto it,

@@ -675,12 +675,14 @@ def tables(dest: str) -> None:
     datasets, curve = CONFIG["datasets"], CONFIG["curve"]["n"]
     primary = CONFIG["vlm"]["primary"]
     per, across = reporting.load(CONFIG["outdir"], datasets)
+    literature = data.load_literature(CONFIG["literature"])
     Path(dest).mkdir(parents=True, exist_ok=True)
-    with Run("tables", dict(datasets=datasets)) as run:
+    with Run("tables", dict(datasets=datasets, literature_sha256=literature.sha256)) as run:
         reporting.table_h1(per, datasets, curve, dest)
         reporting.table_h2(per, datasets, curve, primary, dest)
         reporting.table_h3(across, datasets, dest)
         reporting.table_arm_d(per, across, datasets, primary, dest)
+        reporting.table_literature(per, literature, datasets, curve, primary, dest)
         reporting.table_completeness(per, datasets, dest)
         macros = reporting.numbers(per, across, datasets, curve, primary, dest)
         run.write(f"{CONFIG['outdir']}/tables.json", dict(dest=dest, macros=macros))

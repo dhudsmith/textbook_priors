@@ -179,9 +179,9 @@ Each names the failure it prevents; `TALK.md` argues them.
 
 1. **The workflow is the documentation.** Numbered stages with prose; a dry run prints the plan.
 2. **Every number has a rule.** No ad hoc scripts; the report is built from generated tables.
-3. **Inputs are pinned.** The concept bank and the raw MedMNIST releases are fixed inputs
-   completed before the workflow runs, with recorded checksums; no rule re-fetches or
-   re-verifies them.
+3. **Inputs are pinned.** The concept bank, the raw MedMNIST releases and the published literature
+   benchmarks (§10) are fixed inputs completed before the workflow runs, with recorded checksums;
+   no rule re-fetches, re-derives or re-verifies them.
 4. **Dependencies are explicit.** Modules are inputs via `code()`, config values are `params`.
 5. **Every result carries a manifest.** Parameters, seeds, commit, versions, host, wall time.
 6. **Randomness is owned per cell.** No module-level RNG.
@@ -329,6 +329,19 @@ arms inside it. What that placement does **not** buy it is status: it was design
 numbers, so `D − A` and `D − B` are descriptive, no `supported` verdict reads them, and every table,
 figure and macro of it is labelled post-hoc.
 
+**Literature reconciliation, another extension inside `all`** (added 2026-09-12, no rerun). The
+user asked to pull published results for these six MedMNIST tasks and add them as benchmarks in
+the report — verified, not rerun. `data/literature/benchmarks.yaml` pins the AUC and ACC that
+Yang et al. 2023 (the same paper the concept bank already cites as its anchor) report for five
+fully supervised methods on these six tasks at 224 pixels, transcribed from the published table and
+cross-checked against its own across-dataset average as a second read. It decides no hypothesis —
+every value in it is trained on a dataset's whole official training split, not this study's
+$n \leq 2000$ pool, so it is a ceiling for the task, not a same-conditions arm — and it costs
+nothing to compute: the `tables` rule reads it beside results/ already on disk and writes one more
+table, `literature`, read in its own report section. It sits inside `rule all` for the same reason
+arm D does: it is cheap and decides nothing, so keeping it out would only cost the reader a second
+document.
+
 ## 11. Layout
 
 ```
@@ -340,6 +353,7 @@ profiles/local/           dry runs, smoke, touch
 envs/                     priors.yml  priors_torch.yml
 priors/                   data sample prompts llm score features classify evaluate report stages manifest
 data/concepts/            the concept-bank files and their README, committed
+data/literature/          the pinned published-benchmark table and its README, committed
 data/raw, data/cache      symlinks into storage_root on the project filesystem; gitignored
 results/                  one JSON per unit of work; results/score/ is the response archive
 benchmarks/  logs/        per job

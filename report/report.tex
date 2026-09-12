@@ -142,6 +142,20 @@ this report reads arm D.
 
 \input{tables/arm_d}
 
+\section{Extension: reading the arms against the published literature}
+
+Everything in this section is a fixed comparison point, not a computation, and it decides no
+hypothesis. \texttt{data/literature/benchmarks.yaml} pins the AUC and ACC that
+\cite{yang2023} report for five fully supervised methods on these same six MedMNIST v2 tasks at
+the same 224-pixel resolution --- trained on each dataset's whole official training split,
+thousands to tens of thousands of images, not this study's $n \leq 2000$ labelled pool. Table~%
+\ref{tab:literature} sets the zero-label textbook arm and this study's largest labelled subset
+beside the best of those five published numbers, so a reader can see how far a handful of labels
+and a textbook prior sit from a benchmark trained at full scale, without mistaking the gap for a
+finding about any arm here.
+
+\input{tables/literature}
+
 \section{Diagnostics}
 
 \input{tables/completeness}

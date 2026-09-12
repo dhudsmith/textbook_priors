@@ -1,11 +1,12 @@
 """data: the workflow's fixed inputs, read and hashed in one place.
 
-Two inputs were completed before the workflow runs and no rule refetches or re-verifies them
-(WORKFLOW.md section 4): the concept bank under `data/concepts/`, and the pinned MedMNIST v2
-release, whose file names, checksums, split sizes and label maps are described by
-`config/medmnist.yaml`. Both are read here so that every rule depending on one records the same
-hash for the same bytes, and so the smoke tier validates the object the rules actually use rather
-than its own second reading of the file.
+Three inputs were completed before the workflow runs and no rule refetches or re-verifies them
+(WORKFLOW.md section 4): the concept bank under `data/concepts/`, the pinned MedMNIST v2 release,
+whose file names, checksums, split sizes and label maps are described by `config/medmnist.yaml`,
+and the published literature benchmarks under `data/literature/benchmarks.yaml`. All three are
+read here so that every rule depending on one records the same hash for the same bytes, and so the
+smoke tier validates the object the rules actually use rather than its own second reading of the
+file.
 
 Nothing here validates the bank's schema. That is the smoke tier's job (CONCEPT_BANK.md lists the
 rules); a loader that silently repaired a bank would hide exactly what the tests exist to catch.
@@ -90,6 +91,26 @@ def load_bank(dataset: str, conceptdir) -> Bank:
 def load_release(path) -> Release:
     path = Path(path)
     return Release(file=str(path), sha256=sha256_file(path), doc=yaml.safe_load(path.read_text()))
+
+
+@dataclass(frozen=True)
+class Literature:
+    """The pinned literature-benchmark table, `data/literature/benchmarks.yaml`, with its hash.
+
+    Read like the bank and the release: a fixed input, hashed so a table generated from it can be
+    traced to the exact bytes, and never re-derived by any rule (WORKFLOW.md section 4)."""
+
+    file: str
+    sha256: str
+    doc: dict
+
+    def dataset(self, name: str) -> dict:
+        return self.doc["datasets"][name]
+
+
+def load_literature(path) -> Literature:
+    path = Path(path)
+    return Literature(file=str(path), sha256=sha256_file(path), doc=yaml.safe_load(path.read_text()))
 
 
 def check_classes(bank: Bank, classes: list[str]) -> None:

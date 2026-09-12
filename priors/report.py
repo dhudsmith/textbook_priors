@@ -8,6 +8,10 @@ because someone edited the prose.
 Three figures, one per hypothesis (WORKFLOW.md section 6): the learning curve with arm B's line,
 n_B per dataset, and the model ladder. Arm D rides along on the curve figure and gets one table of
 its own, always labelled post-hoc: it was designed after the first results and decides nothing.
+
+One table, `literature`, reads a fixed input besides results/: `data/literature/benchmarks.yaml`,
+published fully supervised numbers for the same six tasks (WORKFLOW.md section 10). It is another
+extension that decides nothing — a reconciliation point, not a comparison arm.
 """
 from __future__ import annotations
 
@@ -213,6 +217,45 @@ def table_arm_d(per, across, datasets, primary, dest):
            "nearest-fingerprint rule outside the model (B). Arm D was designed after the first "
            f"results and tests nothing: D beats A on {arm_d['d_beats_a_wins']} of {len(datasets)} "
            f"datasets and B on {arm_d['d_beats_b_wins']} of {len(datasets)}.", "armd")
+
+
+LIT_METHOD_LABEL = {"resnet18_224": "ResNet-18 (224)", "resnet50_224": "ResNet-50 (224)",
+                    "auto_sklearn": "auto-sklearn", "autokeras": "AutoKeras",
+                    "google_automl": "Google AutoML Vision"}
+
+
+def table_literature(per, literature, datasets, curve_n, primary, dest):
+    """This study's arms against the published literature (extension, decides no hypothesis).
+
+    Every value in `literature` is fully supervised, trained on a dataset's whole official training
+    split (thousands to tens of thousands of images), against this study's zero-label arm B and its
+    largest labelled subset (n = max(curve_n), at most 2,000 images) — a ceiling for the task, not a
+    same-conditions baseline. `data/literature/README.md` says so and the caption repeats it.
+    """
+    largest = max(curve_n)
+    rows = []
+    for d in datasets:
+        got = per[d]
+        lit = literature.dataset(d)
+        best_method, best_auc = max(lit.items(), key=lambda kv: kv[1]["auc"])
+        rows.append([
+            tex_escape(d),
+            fmt(got["auc"][f"B__{primary}"]),
+            fmt(got["curve"][f"C__n{largest}"]["point"]),
+            fmt(got["curve"][f"P__n{largest}"]["point"]),
+            fmt(best_auc["auc"]),
+            tex_escape(LIT_METHOD_LABEL[best_method]),
+        ])
+    _table(dest, "literature",
+           ["dataset", "AUC(B)", f"AUC(C, n={largest})", f"AUC(P, n={largest})",
+            "published AUC", "published method"],
+           rows,
+           "Literature reconciliation (extension, decides no hypothesis). This study's zero-label "
+           "textbook arm and its largest labelled subset against the best of five fully supervised "
+           "methods reported for the same task on the same 224-pixel release "
+           r"\cite{yang2023}: trained on the whole official training split, thousands to tens of "
+           "thousands of images, not this study's n$\\le$2000 pool. Read as a ceiling for the "
+           "task, not a same-conditions comparison.", "literature")
 
 
 def table_completeness(per, datasets, dest):
