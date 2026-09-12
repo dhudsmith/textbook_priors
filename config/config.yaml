@@ -52,9 +52,18 @@ vlm:
                                    # one asked the zero-shot prompt (arm A)
   models:                          # concurrency as the service publishes it, cap ours below it;
                                    # `splits` is what each model scores, since arm B needs no labels
+                                   #
+                                   # The primary model's cap came down from 48 to 24 on 2026-09-12.
+                                   # Measured: one stream costs 4.5 s per call and 48 streams cost
+                                   # 89 s each, so aggregate throughput rose only 2.5-fold for 48
+                                   # times the concurrency - a nearly saturated endpoint. On such an
+                                   # endpoint halving the streams costs little throughput and halves
+                                   # how long a chunk takes, and a chunk that overruns its time limit
+                                   # loses every call it made. Reliability is worth more here than
+                                   # the last few percent of rate.
     qwen3.5-9b:      {family: qwen,  params_b: 9,  concurrency: 128, cap: 96, splits: [test]}
     gemma-4-12b:     {family: gemma, params_b: 12, concurrency: 32,  cap: 24, splits: [test]}
-    qwen3.8-27b-fp8: {family: qwen,  params_b: 27, concurrency: 64,  cap: 48, splits: [test, pool]}
+    qwen3.8-27b-fp8: {family: qwen,  params_b: 27, concurrency: 64,  cap: 24, splits: [test, pool]}
     gemma-4-31b:     {family: gemma, params_b: 31, concurrency: 16,  cap: 12, splits: [test]}
 
   base_url: https://llm.rcd.clemson.edu/v1

@@ -29,7 +29,7 @@ cores: 800
 resources:
   llm_qwen3_5_9b: 96
   llm_gemma_4_12b: 24
-  llm_qwen3_8_27b_fp8: 48
+  llm_qwen3_8_27b_fp8: 24
   llm_gemma_4_31b: 12
 latency-wait: 60
 keep-going: True
