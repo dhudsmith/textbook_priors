@@ -1,0 +1,649 @@
+\begin{thebibliography}{10}
+
+\bibitem{abbasi2004}
+Naheed~R. Abbasi, Helen~M. Shaw, Darrell~S. Rigel, Robert~J. Friedman,
+  William~H. McCarthy, Iman Osman, Alfred~W. Kopf, and David Polsky.
+\newblock Early diagnosis of cutaneous melanoma: revisiting the {ABCD}
+  criteria.
+\newblock {\em JAMA}, 292(22):2771--2776, 2004.
+
+\bibitem{acevedo2019}
+Andrea Acevedo, Santiago Alf\'{e}rez, Anna Merino, Laura Puigv\'{i}, and
+  Jos\'{e} Rodellar.
+\newblock Recognition of peripheral blood cell images using convolutional
+  neural networks.
+\newblock {\em Computer Methods and Programs in Biomedicine}, 180:105020, 2019.
+
+\bibitem{acevedo2020}
+Andrea Acevedo, Anna Merino, Santiago Alf\'{e}rez, \'{A}ngel Molina, Laura
+  Bold\'{u}, and Jos\'{e} Rodellar.
+\newblock A dataset of microscopic peripheral blood cell images for development
+  of automatic recognition systems.
+\newblock {\em Data in Brief}, 30:105474, 2020.
+
+\bibitem{aldhabyani2020}
+Walid Al-Dhabyani, Mohammed Gomaa, Hussien Khaled, and Aly Fahmy.
+\newblock Dataset of breast ultrasound images.
+\newblock {\em Data in Brief}, 28:104863, 2020.
+
+\bibitem{altamura2010}
+Davide Altamura, Scott~W. Menzies, Giuseppe Argenziano, Iris Zalaudek, H.~Peter
+  Soyer, Francesco Sera, Michelle Avramidis, Kathryn DeAmbrosis, Maria~Concetta
+  Fargnoli, and Ketty Peris.
+\newblock Dermatoscopy of basal cell carcinoma: morphologic variability of
+  global and local features and accuracy of diagnosis.
+\newblock {\em Journal of the American Academy of Dermatology}, 62(1):67--75,
+  2010.
+
+\bibitem{andronikou2017}
+Savvas Andronikou, Elena Lambert, Jarred Halton, Lucy Hilder, Iona Crumley,
+  Mark~D. Lyttle, and Cara Kosack.
+\newblock Guidelines for the use of chest radiographs in community-acquired
+  pneumonia in children and adolescents.
+\newblock {\em Pediatric Radiology}, 47(11):1405--1411, 2017.
+
+\bibitem{argenziano1998}
+Giuseppe Argenziano, Gabriella Fabbrocini, Paolo Carli, Vincenzo De~Giorgi,
+  Elena Sammarco, and Mario Delfino.
+\newblock Epiluminescence microscopy for the diagnosis of doubtful melanocytic
+  skin lesions. comparison of the {ABCD} rule of dermatoscopy and a new 7-point
+  checklist based on pattern analysis.
+\newblock {\em Archives of Dermatology}, 134(12):1563--1570, 1998.
+
+\bibitem{argenziano2003}
+Giuseppe Argenziano, H.~Peter Soyer, Sergio Chimenti, Renato Talamini,
+  Rosamaria Corona, Francesco Sera, Michael Binder, Lorenzo Cerroni, Gaetano
+  De~Rosa, Gerardo Ferrara, Rainer Hofmann-Wellenhof, Michael Landthaler,
+  et~al.
+\newblock Dermoscopy of pigmented skin lesions: results of a consensus meeting
+  via the {Internet}.
+\newblock {\em Journal of the American Academy of Dermatology}, 48(5):679--693,
+  2003.
+
+\bibitem{arman2026}
+M.~Arman, M.~M.~A. Rahat, M.~A. Thithi, J.~U. Khan, S.~M. Kabir, M.~I. Islam,
+  M.~Hasan, M.~N. Shakib, and H.~S. Lim.
+\newblock A lightweight deep learning model with channel attention for kidney
+  cell classification from microscopy images.
+\newblock {\em Scientific Reports}, 16:24754, 2026.
+
+\bibitem{bae2010}
+Kyongtae~T. Bae.
+\newblock Intravenous contrast medium administration and scan timing at {CT}:
+  considerations and approaches.
+\newblock {\em Radiology}, 256(1):32--61, 2010.
+
+\bibitem{bankier2024}
+Alexander~A. Bankier, Heber MacMahon, Thomas Colby, Pierre~Alain Gevenois,
+  Jin~Mo Goo, Ann N.~C. Leung, David~A. Lynch, Cornelia~M. Schaefer-Prokop,
+  Noriyuki Tomiyama, William~D. Travis, Johny~A. Verschakelen, Charles~S.
+  White, and David~P. Naidich.
+\newblock {Fleischner Society}: Glossary of terms for thoracic imaging.
+\newblock {\em Radiology}, 310(2):e232558, 2024.
+
+\bibitem{bilic2023}
+Patrick Bilic, Patrick Christ, Hongwei~Bran Li, Eugene Vorontsov, Avi
+  Ben-Cohen, Georgios Kaissis, Adi Szeskin, Colin Jacobs, et~al.
+\newblock The liver tumor segmentation benchmark ({LiTS}).
+\newblock {\em Medical Image Analysis}, 84:102680, 2023.
+
+\bibitem{bolz2009}
+Matthias Bolz, Ursula Schmidt-Erfurth, Gabor Deak, Georgios Mylonas, Katharina
+  Kriechbaum, and Christoph Scholda.
+\newblock Optical coherence tomographic hyperreflective foci: A morphologic
+  sign of lipid extravasation in diabetic macular edema.
+\newblock {\em Ophthalmology}, 116(5):914--920, 2009.
+
+\bibitem{borghei2013}
+Peyman Borghei, Farnoosh Sokhandon, Ali Shirkhoda, and Desiree~E. Morgan.
+\newblock Anomalies, anatomic variants, and sources of diagnostic pitfalls in
+  pancreatic imaging.
+\newblock {\em Radiology}, 266(1):28--36, 2013.
+
+\bibitem{bradley2011}
+John~S. Bradley, Carrie~L. Byington, Samir~S. Shah, Brian Alverson, Edward~R.
+  Carter, Christopher Harrison, Sheldon~L. Kaplan, Sharon~E. Mace, George~H.
+  McCracken, Jr., Matthew~R. Moore, Shawn~D. St~Peter, Jana~A. Stockwell, and
+  Jack~T. Swanson.
+\newblock The management of community-acquired pneumonia in infants and
+  children older than 3 months of age: clinical practice guidelines by the
+  {Pediatric Infectious Diseases Society} and the {Infectious Diseases Society
+  of America}.
+\newblock {\em Clinical Infectious Diseases}, 53(7):e25--e76, 2011.
+
+\bibitem{braun2002}
+Ralph~P. Braun, Harold~S. Rabinovitz, Jean Krischer, J{\"u}rgen Kreusch,
+  Margaret Oliviero, Luigi Naldi, Alfred~W. Kopf, and Jean-Hilaire Saurat.
+\newblock Dermoscopy of pigmented seborrheic keratosis: a morphological study.
+\newblock {\em Archives of Dermatology}, 138(12):1556--1560, 2002.
+
+\bibitem{brelje2026}
+T.~Clark Brelje and Robert~L. Sorenson.
+\newblock Urinary system: Nephrons and renal corpuscle.
+\newblock {HistologyGuide}, Department of Genetics, Cell Biology and
+  Development, University of Minnesota, 2026.
+\newblock Copyright 2005--2026.
+
+\bibitem{bugatti2007}
+L.~Bugatti and G.~Filosa.
+\newblock Dermoscopy of lichen planus-like keratosis: a model of inflammatory
+  regression.
+\newblock {\em Journal of the European Academy of Dermatology and Venereology},
+  21(10):1392--1397, 2007.
+
+\bibitem{chapman2023}
+Joseph Chapman and Yaoping Zhang.
+\newblock Histology, hematopoiesis.
+\newblock In: {StatPearls}. Treasure Island (FL): {StatPearls} Publishing,
+  2023.
+\newblock Bookshelf {ID} {NBK534246}; updated 1 May 2023.
+
+\bibitem{cherian2005}
+Thomas Cherian, E.~Kim Mulholland, John~B. Carlin, Harald Ostensen, Ruhul Amin,
+  Margaret de~Campo, David Greenberg, Rosanna Lagos, Marilla Lucero, Shabir~A.
+  Madhi, Katherine~L. O'Brien, Steven Obaro, and Mark~C. Steinhoff.
+\newblock Standardized interpretation of paediatric chest radiographs for the
+  diagnosis of pneumonia in epidemiological studies.
+\newblock {\em Bulletin of the World Health Organization}, 83(5):353--359,
+  2005.
+
+\bibitem{constantino2000}
+Benie~T. Constantino and Bessie Cogionis.
+\newblock Nucleated {RBCs} --- significance in the peripheral blood film.
+\newblock {\em Laboratory Medicine}, 31(4):223--229, 2000.
+
+\bibitem{denotter2023}
+Tami~D. DenOtter and Johanna Schubert.
+\newblock {H}ounsfield unit.
+\newblock In {\em {StatPearls}}. StatPearls Publishing, Treasure Island, FL,
+  2023.
+\newblock Updated 2023 Mar 6.
+
+\bibitem{dorsi2013}
+Carl~J. D'Orsi, Edward~A. Sickles, Ellen~B. Mendelson, and Elizabeth~A. Morris.
+\newblock {\em {ACR} {BI-RADS} Atlas, Breast Imaging Reporting and Data
+  System}.
+\newblock American College of Radiology, Reston, VA, 5 edition, 2013.
+
+\bibitem{etdrs1991}
+{Early Treatment Diabetic Retinopathy Study Research Group}.
+\newblock Grading diabetic retinopathy from stereoscopic color fundus
+  photographs --- an extension of the modified {Airlie House} classification.
+  {ETDRS} report number 10.
+\newblock {\em Ophthalmology}, 98(5):786--806, 1991.
+
+\bibitem{elgart2001}
+George~W. Elgart.
+\newblock Seborrheic keratoses, solar lentigines, and lichenoid keratoses.
+  dermatoscopic features and correlation to histology and clinical signs.
+\newblock {\em Dermatologic Clinics}, 19(2):347--357, 2001.
+
+\bibitem{espinoza2023}
+Valerie~E. Espinoza and Prabhu~D. Emmady.
+\newblock Histology, monocytes.
+\newblock In: {StatPearls}. Treasure Island (FL): {StatPearls} Publishing,
+  2023.
+\newblock Bookshelf {ID} {NBK557618}; updated 24 April 2023.
+
+\bibitem{fancourt2017}
+Nicholas Fancourt, Maria Deloria~Knoll, Breanna Barger-Kamate, John de~Campo,
+  Margaret de~Campo, Mahamadou Diallo, Bernard~E. Ebruke, Daniel~R. Feikin,
+  Fergus Gleeson, Wenfeng Gong, Laura~L. Hammitt, Rasa Izadnegahdar, Anchalee
+  Kruatrachue, Shabir~A. Madhi, Veronica Manduku, Fariha~Bushra Matin, Nasreen
+  Mahomed, David~P. Moore, Musaku Mwenechanya, Kamrun Nahar, Claire Oluwalana,
+  Micah~Silaba Ominde, Christine Prosperi, Joyce Sande, Piyarat Suntarattiwong,
+  and Katherine~L. O'Brien.
+\newblock Standardized interpretation of chest radiographs in cases of
+  pediatric pneumonia from the {PERCH} study.
+\newblock {\em Clinical Infectious Diseases}, 64(suppl\_3):S253--S261, 2017.
+
+\bibitem{ferris2013}
+Frederick~L. Ferris, C.~P. Wilkinson, Alan Bird, Usha Chakravarthy, Emily Chew,
+  Karl Csaky, and Srinivas~R. Sadda.
+\newblock Clinical classification of age-related macular degeneration.
+\newblock {\em Ophthalmology}, 120(4):844--851, 2013.
+
+\bibitem{flaherty1972}
+J.~T. Flaherty, J.~E. Pierce, V.~J. Ferrans, D.~J. Patel, W.~K. Tucker, and
+  D.~L. Fry.
+\newblock Endothelial nuclear patterns in the canine arterial tree with
+  particular reference to hemodynamic events.
+\newblock {\em Circulation Research}, 30(1):23--33, 1972.
+
+\bibitem{flaxel2020}
+Christina~J. Flaxel, Ron~A. Adelman, Steven~T. Bailey, Amani Fawzi, Jennifer~I.
+  Lim, G.~Atma Vemulakonda, and Gui-shuang Ying.
+\newblock Diabetic retinopathy preferred practice pattern.
+\newblock {\em Ophthalmology}, 127(1):P66--P145, 2020.
+
+\bibitem{fleming2012}
+Matthew Fleming, Sreelakshmi Ravula, Sergei~F. Tatishchev, and Hanlin~L. Wang.
+\newblock Colorectal carcinoma: Pathologic aspects.
+\newblock {\em Journal of Gastrointestinal Oncology}, 3(3):153--173, 2012.
+
+\bibitem{gluecker1999}
+Thomas Gluecker, Patrizio Capasso, Pierre Schnyder, Fran{\c{c}}ois Gudinchet,
+  Marie-Denise Schaller, Jean-Pierre Revelly, Ren{\'e} Chiolero, Peter Vock,
+  and Stephan Wicky.
+\newblock Clinical and radiologic features of pulmonary edema.
+\newblock {\em RadioGraphics}, 19(6):1507--1531, 1999.
+
+\bibitem{hansell2008}
+David~M. Hansell, Alexander~A. Bankier, Heber MacMahon, Theresa~C. McLoud,
+  Nestor~L. M{\"u}ller, and Jacques Remy.
+\newblock {Fleischner Society}: Glossary of terms for thoracic imaging.
+\newblock {\em Radiology}, 246(3):697--722, 2008.
+
+\bibitem{hassan2024}
+Maged Hassan, Abdelfattah~A. Touman, El{\.z}bieta~M. Grabczak, S{\o}ren~H.
+  Skaarup, Katarzyna Faber, Kevin~G. Blyth, and Svitlana Pochepnia.
+\newblock Imaging of pleural disease.
+\newblock {\em Breathe}, 20(1):230172, 2024.
+
+\bibitem{hong2005}
+Andrea~S. Hong, Eric~L. Rosen, Mary~S. Soo, and Jay~A. Baker.
+\newblock {BI-RADS} for sonography: positive and negative predictive values of
+  sonographic features.
+\newblock {\em American Journal of Roentgenology}, 184(4):1260--1265, 2005.
+
+\bibitem{kaissling2008}
+Brigitte Kaissling and Michel Le~Hir.
+\newblock The renal cortical interstitium: Morphological and functional
+  aspects.
+\newblock {\em Histochemistry and Cell Biology}, 130(2):247--262, 2008.
+
+\bibitem{kather2019}
+Jakob~Nikolas Kather, Johannes Krisam, Pornpimol Charoentong, Tom Luedde,
+  Esther Herpel, Cleo-Aron Weis, Timo Gaiser, Alexander Marx, Nektarios~A.
+  Valous, Dyke Ferber, Lina Jansen, Constantino~Carlos Reyes-Aldasoro, Inka
+  Z{\"o}rnig, Dirk J{\"a}ger, Hermann Brenner, Jenny Chang-Claude, Michael
+  Hoffmeister, and Niels Halama.
+\newblock Predicting survival from colorectal cancer histology slides using
+  deep learning: A retrospective multicenter study.
+\newblock {\em {PLOS} Medicine}, 16(1):e1002730, 2019.
+
+\bibitem{kather2016}
+Jakob~Nikolas Kather, Cleo-Aron Weis, Francesco Bianconi, Susanne~M. Melchers,
+  Lothar~R. Schad, Timo Gaiser, Alexander Marx, and Frank~Gerrit Z{\"o}llner.
+\newblock Multi-class texture analysis in colorectal cancer histology.
+\newblock {\em Scientific Reports}, 6:27988, 2016.
+
+\bibitem{kawasaki2021}
+Yusuke Kawasaki, Yoshihiro Hosoyamada, Takayuki Miyaki, Junji Yamaguchi,
+  Soichiro Kakuta, Tatsuo Sakai, and Koichiro Ichimura.
+\newblock Three-dimensional architecture of glomerular endothelial cells
+  revealed by {FIB-SEM} tomography.
+\newblock {\em Frontiers in Cell and Developmental Biology}, 9:653472, 2021.
+
+\bibitem{keane2012}
+Pearse~A. Keane, Praveen~J. Patel, Sandra Liakopoulos, Florian~M. Heussen,
+  Srinivas~R. Sadda, and Adnan Tufail.
+\newblock Evaluation of age-related macular degeneration with optical coherence
+  tomography.
+\newblock {\em Survey of Ophthalmology}, 57(5):389--414, 2012.
+
+\bibitem{kermany2018}
+Daniel~S. Kermany, Michael Goldbaum, Wenjia Cai, Carolina C.~S. Valentim,
+  Huiying Liang, Sally~L. Baxter, Alex McKeown, Ge~Yang, Xiaokang Wu, Fangbing
+  Yan, Justin Dong, Made~K. Prasadha, Jacqueline Pei, Magdalene Y.~L. Ting, Jie
+  Zhu, Christina Li, Sierra Hewett, Jason Dong, Ian Ziyar, Alexander Shi, Runze
+  Zhang, Lianghong Zheng, Rui Hou, William Shi, Xin Fu, Yaou Duan, Viet A.~N.
+  Huu, Cindy Wen, Edward~D. Zhang, Charlotte~L. Zhang, Oulan Li, Xiaobo Wang,
+  Michael~A. Singer, Xiaodong Sun, Jie Xu, Ali Tafreshi, M.~Anthony Lewis,
+  Huimin Xia, and Kang Zhang.
+\newblock Identifying medical diagnoses and treatable diseases by image-based
+  deep learning.
+\newblock {\em Cell}, 172(5):1122--1131.e9, 2018.
+
+\bibitem{khanifar2008}
+Aziz~A. Khanifar, Anjum~F. Koreishi, Joseph~A. Izatt, and Cynthia~A. Toth.
+\newblock Drusen ultrastructure imaging with spectral domain optical coherence
+  tomography in age-related macular degeneration.
+\newblock {\em Ophthalmology}, 115(11):1883--1890.e1, 2008.
+
+\bibitem{king2022}
+David~W. King.
+\newblock Kidney: Epithelium and connective tissue; renal cortex: Proximal and
+  distal tubules.
+\newblock Histology at {SIU}, Southern Illinois University School of Medicine,
+  2022.
+\newblock Pages {RN006c} (updated 8 June 2022) and {RN008b} (updated 30 May
+  2022).
+
+\bibitem{king2025}
+David~W. King.
+\newblock Renal system: Guide to the identification of renal tubules.
+\newblock Histology at {SIU}, Southern Illinois University School of Medicine,
+  2025.
+\newblock Updated 12 November 2025.
+
+\bibitem{kirkwood2017}
+Lucy Kirkwood.
+\newblock Kidney: Normal renal histology.
+\newblock Pathologia, University of Edinburgh, 2017.
+\newblock Undated page; image credits dated 2017.
+
+\bibitem{kittler2016}
+Harald Kittler, Ashfaq~A. Marghoob, Giuseppe Argenziano, Cristina Carrera,
+  Clara Curiel-Lewandrowski, Rainer Hofmann-Wellenhof, Josep Malvehy, Scott
+  Menzies, Susana Puig, Harold Rabinovitz, Wilhelm Stolz, Toshiaki Saida,
+  et~al.
+\newblock Standardization of terminology in dermoscopy/dermatoscopy: results of
+  the third consensus conference of the {International Society of Dermoscopy}.
+\newblock {\em Journal of the American Academy of Dermatology},
+  74(6):1093--1106, 2016.
+
+\bibitem{klintrup2005}
+Kai Klintrup, Johanna~M. M{\"a}kinen, Saila Kauppila, P{\"a}ivi~O. V{\"a}re,
+  Jukka Melkko, Hannu Tuominen, Karoliina Tuppurainen, Jyrki M{\"a}kel{\"a},
+  Tuomo~J. Karttunen, and Markus~J. M{\"a}kinen.
+\newblock Inflammation and prognosis in colorectal cancer.
+\newblock {\em European Journal of Cancer}, 41(17):2645--2654, 2005.
+
+\bibitem{lee2017}
+Jiyon Lee.
+\newblock Practical and illustrated summary of updated {BI-RADS} for
+  ultrasonography.
+\newblock {\em Ultrasonography}, 36(1):71--81, 2017.
+
+\bibitem{liu2022}
+Ruhan Liu, Xiangning Wang, Qiang Wu, Ling Dai, Xi~Fang, Tao Yan, Jaemin Son,
+  Shiqi Tang, Jiang Li, Zijian Gao, Adrian Galdran, J.~M. Poorneshwaran, Hao
+  Liu, Jie Wang, Yerui Chen, Prasanna Porwal, Gavin Siew~Wei Tan, Xiaokang
+  Yang, Chao Dai, Haitao Song, Mingang Chen, Huating Li, Weiping Jia, Dinggang
+  Shen, Bin Sheng, and Ping Zhang.
+\newblock {DeepDRiD}: Diabetic retinopathy --- grading and image quality
+  estimation challenge.
+\newblock {\em Patterns}, 3(6):100512, 2022.
+
+\bibitem{ljosa2012}
+Vebjorn Ljosa, Katherine~L. Sokolnicki, and Anne~E. Carpenter.
+\newblock Annotated high-throughput microscopy image sets for validation.
+\newblock {\em Nature Methods}, 9(7):637, 2012.
+
+\bibitem{madrazoibarra2023}
+Antonio Madrazo-Ibarra and Pradeep Vaitla.
+\newblock Histology, nephron.
+\newblock {StatPearls} [Internet], {StatPearls} Publishing, Treasure Island
+  (FL). Bookshelf {ID} {NBK554411}, 2023.
+\newblock Updated 17 February 2023.
+
+\bibitem{manley2018}
+Harriet~R. Manley, Maria~C. Keightley, and Graham~J. Lieschke.
+\newblock The neutrophil nucleus: An important influence on neutrophil
+  migration and function.
+\newblock {\em Frontiers in Immunology}, 9:2867, 2018.
+
+\bibitem{mendelson2013}
+Ellen~B. Mendelson, Marcela B{\"o}hm-V{\'e}lez, Wendie~A. Berg, et~al.
+\newblock {ACR} {BI-RADS} ultrasound.
+\newblock In {\em {ACR} {BI-RADS} Atlas, Breast Imaging Reporting and Data
+  System}. American College of Radiology, Reston, VA, 5 edition, 2013.
+
+\bibitem{menzies2000}
+Scott~W. Menzies, Karin Westerhoff, Harold Rabinovitz, Alfred~W. Kopf,
+  William~H. McCarthy, and Brian Katz.
+\newblock Surface microscopy of pigmented basal cell carcinoma.
+\newblock {\em Archives of Dermatology}, 136(8):1012--1016, 2000.
+
+\bibitem{mescher2021}
+Anthony~L. Mescher.
+\newblock {\em {Junqueira's} Basic Histology: Text and Atlas}.
+\newblock McGraw Hill, New York, 16 edition, 2021.
+
+\bibitem{migliaccio2010}
+Anna~Rita Migliaccio.
+\newblock Erythroblast enucleation.
+\newblock {\em Haematologica}, 95(12):1985--1988, 2010.
+
+\bibitem{moeller2013}
+Torsten~B. Moeller and Emil Reif.
+\newblock {\em Pocket Atlas of Sectional Anatomy: Computed Tomography and
+  Magnetic Resonance Imaging. Volume {II}: Thorax, Heart, Abdomen and Pelvis}.
+\newblock Thieme, Stuttgart, 4 edition, 2013.
+
+\bibitem{murray2023}
+Ian~V. Murray and Michael~A. Paolini.
+\newblock Histology, kidney and glomerulus.
+\newblock {StatPearls} [Internet], {StatPearls} Publishing, Treasure Island
+  (FL). Bookshelf {ID} {NBK554544}, 2023.
+\newblock Updated 17 April 2023.
+
+\bibitem{nachbar1994}
+Franz Nachbar, Wilhelm Stolz, Tanja Merkle, Armand~B. Cognetta, Thomas Vogt,
+  Michael Landthaler, Peter Bilek, Otto Braun-Falco, and Gerd Plewig.
+\newblock The {ABCD} rule of dermatoscopy. high prospective value in the
+  diagnosis of doubtful melanocytic skin lesions.
+\newblock {\em Journal of the American Academy of Dermatology}, 30(4):551--559,
+  1994.
+
+\bibitem{nason2012}
+Laura~K. Nason, Christopher~M. Walker, Michael~F. McNeeley, Wanaporn Burivong,
+  Corinne~L. Fligner, and J.~David Godwin.
+\newblock Imaging of the diaphragm: Anatomy and function.
+\newblock {\em RadioGraphics}, 32(2):E51--E70, 2012.
+
+\bibitem{otani1999}
+Tomohiro Otani, Shoji Kishi, and Yasuhiro Maruyama.
+\newblock Patterns of diabetic macular edema with optical coherence tomography.
+\newblock {\em American Journal of Ophthalmology}, 127(6):688--693, 1999.
+
+\bibitem{palmer2015}
+L.~Palmer, C.~Briggs, S.~McFadden, G.~Zini, J.~Burthem, G.~Rozenberg,
+  M.~Proytcheva, and S.~J. Machin.
+\newblock {ICSH} recommendations for the standardization of nomenclature and
+  grading of peripheral blood cell morphological features.
+\newblock {\em International Journal of Laboratory Hematology}, 37(3):287--303,
+  2015.
+
+\bibitem{pavenstadt2003}
+Hermann Pavenst{\"a}dt, Wilhelm Kriz, and Matthias Kretzler.
+\newblock Cell biology of the glomerular podocyte.
+\newblock {\em Physiological Reviews}, 83(1):253--307, 2003.
+
+\bibitem{pollheimer2010}
+Marion~J. Pollheimer, Peter Kornprat, Richard~A. Lindtner, Lars Harbaum, Andrea
+  Schlemmer, Peter Rehak, and Cord Langner.
+\newblock Tumor necrosis is a new promising prognostic factor in colorectal
+  cancer.
+\newblock {\em Human Pathology}, 41(12):1749--1757, 2010.
+
+\bibitem{rao2016}
+Ajay~Aroor Rao, Jennifer Feneis, Chloe Lalonde, and Haydee Ojeda-Fournier.
+\newblock A pictorial review of changes in the {BI-RADS} fifth edition.
+\newblock {\em RadioGraphics}, 36(3):623--639, 2016.
+
+\bibitem{rodellar2018}
+J.~Rodellar, S.~Alf\'{e}rez, A.~Acevedo, A.~Molina, and A.~Merino.
+\newblock Image processing and machine learning in the morphological analysis
+  of blood cells.
+\newblock {\em International Journal of Laboratory Hematology}, 40(S1):46--53,
+  2018.
+
+\bibitem{sahin2004}
+Mustafa~Turhan {\c{S}}ahin, Serap {\"O}zt{\"u}rkcan, Aylin~T{\"u}rel Ermertcan,
+  and Ali~Tahsin G{\"u}ne{\c{s}}.
+\newblock A comparison of dermoscopic features among lentigo senilis/initial
+  seborrheic keratosis, seborrheic keratosis, lentigo maligna and lentigo
+  maligna melanoma on the face.
+\newblock {\em The Journal of Dermatology}, 31(11):884--889, 2004.
+
+\bibitem{sheth2004}
+Sheila Sheth and Elliot~K. Fishman.
+\newblock Multi-detector row {CT} of the kidneys and urinary tract: techniques
+  and applications in the diagnosis of benign diseases.
+\newblock {\em RadioGraphics}, 24(2):e20, 2004.
+
+\bibitem{spaide2020}
+Richard~F. Spaide, Glenn~J. Jaffe, David Sarraf, K.~Bailey Freund, Srinivas~R.
+  Sadda, Giovanni Staurenghi, Nadia~K. Waheed, Usha Chakravarthy, Philip~J.
+  Rosenfeld, Frank~G. Holz, Eric~H. Souied, Salomon~Y. Cohen, Giuseppe
+  Querques, Kyoko Ohno-Matsui, David Boyer, Alain Gaudric, Barbara Blodi,
+  Caroline~R. Baumal, Xiaoxin Li, Gabriel~J. Coscas, Alexander Brucker,
+  Lawrence Singerman, Philip Luthert, Steffen Schmitz-Valckenberg, Ursula
+  Schmidt-Erfurth, Hans~E. Grossniklaus, David~J. Wilson, Robyn Guymer,
+  Lawrence~A. Yannuzzi, Emily~Y. Chew, Karl Csaky, Jordi~M. Mones, Daniel
+  Pauleikhoff, Ramin Tadayoni, and James Fujimoto.
+\newblock Consensus nomenclature for reporting neovascular age-related macular
+  degeneration data: Consensus on neovascular age-related macular degeneration
+  nomenclature study group.
+\newblock {\em Ophthalmology}, 127(5):616--636, 2020.
+
+\bibitem{spratt2016}
+Jonathan~D. Spratt, Lonie~R. Salkowski, Marios Loukas, Tom Turmezei, Jamie
+  Weir, and Peter~H. Abrahams.
+\newblock {\em {W}eir \& {A}brahams' Imaging Atlas of Human Anatomy}.
+\newblock Elsevier, Edinburgh, 5 edition, 2016.
+
+\bibitem{staurenghi2014}
+Giovanni Staurenghi, Srinivas Sadda, Usha Chakravarthy, and Richard~F. Spaide.
+\newblock Proposed lexicon for anatomic landmarks in normal posterior segment
+  spectral-domain optical coherence tomography: The {IN$\bullet$OCT} consensus.
+\newblock {\em Ophthalmology}, 121(8):1572--1578, 2014.
+
+\bibitem{stavros1995}
+A.~Thomas Stavros, David Thickman, Cynthia~L. Rapp, Mark~A. Dennis, Steve~H.
+  Parker, and Gale~A. Sisney.
+\newblock Solid breast nodules: use of sonography to distinguish between benign
+  and malignant lesions.
+\newblock {\em Radiology}, 196(1):123--134, 1995.
+
+\bibitem{thurlbeck1978}
+William~M. Thurlbeck and George Simon.
+\newblock Radiographic appearance of the chest in emphysema.
+\newblock {\em American Journal of Roentgenology}, 130(3):429--440, 1978.
+
+\bibitem{tigner2026}
+Alyssa Tigner, Sherif~A. Ibrahim, and Ian~V. Murray.
+\newblock Histology, white blood cell.
+\newblock In: {StatPearls}. Treasure Island (FL): {StatPearls} Publishing,
+  2026.
+\newblock Bookshelf {ID} {NBK563148}; updated 14 February 2026.
+
+\bibitem{truszkiewicz2021}
+Krystian Truszkiewicz, Rafa{\l} Por{\k{e}}ba, and Pawe{\l} Ga{\'c}.
+\newblock Radiological cardiothoracic ratio in evidence-based medicine.
+\newblock {\em Journal of Clinical Medicine}, 10(9):2016, 2021.
+
+\bibitem{tschandl2018}
+Philipp Tschandl, Cliff Rosendahl, and Harald Kittler.
+\newblock The {HAM10000} dataset, a large collection of multi-source
+  dermatoscopic images of common pigmented skin lesions.
+\newblock {\em Scientific Data}, 5(1):180161, 2018.
+
+\bibitem{ueno2021}
+Hideki Ueno, Yoshiki Kajiwara, Yoichi Ajioka, Tamotsu Sugai, Shigeki Sekine,
+  Megumi Ishiguro, Atsuo Takashima, and Yukihide Kanemitsu.
+\newblock Histopathological atlas of desmoplastic reaction characterization in
+  colorectal cancer.
+\newblock {\em Japanese Journal of Clinical Oncology}, 51(6):1004--1012, 2021.
+
+\bibitem{walavalkar2019}
+Vighnesh Walavalkar.
+\newblock Kidney biopsy of the month --- the tubulointerstitium part 1: The
+  cortex.
+\newblock Renal Fellow Network, 2019.
+\newblock Posted 11 February 2019.
+
+\bibitem{wang2017}
+Xiaosong Wang, Yifan Peng, Le~Lu, Zhiyong Lu, Mohammadhadi Bagheri, and
+  Ronald~M. Summers.
+\newblock {ChestX-ray8}: Hospital-scale chest {X-Ray} database and benchmarks
+  on weakly-supervised classification and localization of common thorax
+  diseases.
+\newblock In {\em Proceedings of the {IEEE} Conference on Computer Vision and
+  Pattern Recognition ({CVPR})}, pages 3462--3471. {IEEE}, 2017.
+
+\bibitem{wilkinson2003}
+C.~P. Wilkinson, Frederick~L. Ferris, III, Ronald~E. Klein, Paul~P. Lee,
+  Carl~David Agardh, Matthew Davis, Diana Dills, Anselm Kampik,
+  R.~Pararajasegaram, and Juan~T. Verdaguer.
+\newblock Proposed international clinical diabetic retinopathy and diabetic
+  macular edema disease severity scales.
+\newblock {\em Ophthalmology}, 110(9):1677--1682, 2003.
+
+\bibitem{williams2022}
+Olivia Williams and Shane~R. Sergent.
+\newblock Histology, platelets.
+\newblock In: {StatPearls}. Treasure Island (FL): {StatPearls} Publishing,
+  2022.
+\newblock Bookshelf {ID} {NBK557800}; updated 14 November 2022.
+
+\bibitem{woloshuk2021}
+A.~Woloshuk, S.~Khochare, A.~F. Almulhim, A.~T. McNutt, D.~Dean, D.~Barwinska,
+  M.~J. Ferkowicz, M.~T. Eadon, K.~J. Kelly, K.~W. Dunn, M.~A. Hasan, T.~M.
+  El-Achkar, and S.~Winfree.
+\newblock In situ classification of cell types in human kidney tissue using
+  {3D} nuclear staining.
+\newblock {\em Cytometry Part A}, 99(7):707--721, 2021.
+
+\bibitem{wong2016}
+Tien~Y. Wong, Chui Ming~Gemmy Cheung, Michael Larsen, Sanjay Sharma, and Rafael
+  Sim{\'o}.
+\newblock Diabetic retinopathy.
+\newblock {\em Nature Reviews Disease Primers}, 2:16012, 2016.
+
+\bibitem{wong2018}
+Tien~Y. Wong, Jennifer Sun, Ryo Kawasaki, Paisan Ruamviboonsuk, Neeru Gupta,
+  Van~Charles Lansingh, Mauricio Maia, Wanjiku Mathenge, Sunil Moreker, Mahi
+  M.~K. Muqit, Serge Resnikoff, Juan Verdaguer, Peiquan Zhao, Frederick Ferris,
+  Lloyd~Paul Aiello, and Hugh~R. Taylor.
+\newblock Guidelines on diabetic eye care: The {International Council of
+  Ophthalmology} recommendations for screening, follow-up, referral, and
+  treatment based on resource settings.
+\newblock {\em Ophthalmology}, 125(10):1608--1622, 2018.
+
+\bibitem{woodring1996}
+John~H. Woodring and James~C. Reed.
+\newblock Radiographic manifestations of lobar atelectasis.
+\newblock {\em Journal of Thoracic Imaging}, 11(2):109--144, 1996.
+
+\bibitem{who2001}
+{World Health Organization Pneumonia Vaccine Trial Investigators' Group}.
+\newblock Standardization of interpretation of chest radiographs for the
+  diagnosis of pneumonia in children.
+\newblock Report {WHO}/{V\&B}/01.35, 2001.
+
+\bibitem{xu2019}
+Xuanang Xu, Fugen Zhou, Bo~Liu, Dongshan Fu, and Xiangzhi Bai.
+\newblock Efficient multiple organ localization in {CT} image using {3D} region
+  proposal network.
+\newblock {\em {IEEE} Transactions on Medical Imaging}, 38(8):1885--1898, 2019.
+
+\bibitem{yang2023}
+Jiancheng Yang, Rui Shi, Donglai Wei, Zequan Liu, Lin Zhao, Bilian Ke,
+  Hanspeter Pfister, and Bingbing Ni.
+\newblock {MedMNIST} v2 -- a large-scale lightweight benchmark for {2D} and
+  {3D} biomedical image classification.
+\newblock {\em Scientific Data}, 10(1):41, 2023.
+
+\bibitem{zaballos2007b}
+Pedro Zaballos, S.~Blazquez, Susana Puig, E.~Salsench, J.~Rodero, J.~M. Vives,
+  and Josep Malvehy.
+\newblock Dermoscopic pattern of intermediate stage in seborrhoeic keratosis
+  regressing to lichenoid keratosis: report of 24 cases.
+\newblock {\em British Journal of Dermatology}, 157(2):266--272, 2007.
+
+\bibitem{zaballos2007a}
+Pedro Zaballos, Cinta Dauf{\'{i}}, Susana Puig, Giuseppe Argenziano, David
+  Moreno-Ram{\'{i}}rez, Horacio Cabo, Ashfaq~A. Marghoob, {\`{A}}lex Llambrich,
+  Iris Zalaudek, and Josep Malvehy.
+\newblock Dermoscopy of solitary angiokeratomas: a morphological study.
+\newblock {\em Archives of Dermatology}, 143(3):318--325, 2007.
+
+\bibitem{zaballos2008}
+Pedro Zaballos, Susana Puig, Alex Llambrich, and Josep Malvehy.
+\newblock Dermoscopy of dermatofibromas: a prospective morphological study of
+  412 cases.
+\newblock {\em Archives of Dermatology}, 144(1):75--83, 2008.
+
+\bibitem{zalaudek2012}
+Iris Zalaudek, Jason Giacomel, Karin Schmid, Silvia Bondino, Cliff Rosendahl,
+  Stefano Cavicchini, Athanasia Tourlaki, Saturnino Gasparini, Peter Bourne,
+  Jeff Keir, Harald Kittler, Laura Eibenschutz, et~al.
+\newblock Dermatoscopy of facial actinic keratosis, intraepidermal carcinoma,
+  and invasive squamous cell carcinoma: a progression model.
+\newblock {\em Journal of the American Academy of Dermatology}, 66(4):589--597,
+  2012.
+
+\end{thebibliography}
