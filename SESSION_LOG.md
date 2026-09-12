@@ -213,3 +213,21 @@ Nothing in the workflow changes. Reviewed for the talk: WORKFLOW.md, TALK.md, CH
 entry), this log, README, CONCEPT_BANK.md, the Snakefile banners, the config, the three generated
 figures and the report structure in the owner's checkout. The draft skeleton and the questions went
 to the user in the session; the plan lands in TALK.md once the answers narrow it.
+
+## 2026-09-12 15:05 — Stepping back: the question was about understanding, not substitution
+
+"I think I was more interested in the question, 'to what extent do VLMs understand visual
+features needed for medical image classification?' This is partly motivated by replacing labeled
+data, but also simply out of curiosity on its own. It also leans toward interpretable machine
+learning rather than merely classification performance."
+
+Asked whether that needs a return to the workflow design or can be served by what exists, and
+whether the scale ladder can be pushed higher. No rule changed. Two throwaway checks, neither
+citable: a per-concept reading of the existing archive for three datasets (agreement of each
+model's answer with the textbook's expected level, four-model agreement, single-concept AUC),
+which showed the archive already holds the data for the reframed question at zero new calls; and
+one tiny image call to each newer model on the service, which showed no open-weight
+vision-capable model larger than gemma-4-31b is served (glm-5.3, deepseek-v4-pro and the
+qwen3-30b instruct reject images; qwen3.6-27b, qwen3.6-35b-a3b and qwen3-omni-30b-a3b accept
+them; the gpt-5 family is served but is closed and needs a different token parameter). The
+assessment went to the user in the session; the decision is theirs.
