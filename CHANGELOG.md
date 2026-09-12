@@ -519,3 +519,37 @@ turned two hours of silence into a measurement, and would have let this be diagn
 minutes rather than at the deadline. Not changed now: `priors/score.py` is an input to every
 protected chunk already written, and re-scoring 91 chunks to add a log line would cost more than
 the line is worth tonight. It belongs in the next re-score.
+
+## 2026-09-12 — First real results, on three of six datasets: all three hypotheses fail so far
+
+pathmnist, dermamnist and octmnist completed their archive overnight and the whole analysis ran
+over them. These are three of six, so the sign tests are weak by construction (3 of 3 would be
+p = 0.125), but the per-dataset numbers are what the plan says to read, and they are consistent.
+
+**H1 — not supported (1 of 3).** n_B is `<=50` on pathmnist and on dermamnist: the ImageNet pixel
+probe with fifty labelled images is already better than the zero-label textbook arm. Only octmnist
+put the crossing inside the curve, at 500 labels [100, 1000]. Arm C beat arm P at n = 50 on
+octmnist alone. The concept scores are not worthless — they are simply worth less than fifty
+labelled images and an ImageNet encoder, on two of these three datasets.
+
+**H2 — not supported (0 of 3), and this is the interesting one.** Asking the model for the
+diagnosis beat asking it for the textbook's features every time: pathmnist 0.927 against 0.924
+(a tie inside its interval, B − A = −0.003 [−0.019, +0.014]), dermamnist 0.770 against 0.671
+(−0.099 [−0.168, −0.029]), octmnist 0.941 against 0.894 (−0.046 [−0.064, −0.028]).
+
+But the permutation controls say the bank is doing real work: permuting the fingerprints across
+classes costs arm B 0.43 AUC on pathmnist, 0.52 on octmnist and 0.21 on dermamnist, and permuting
+the concept columns costs arm C on every dataset. So the concept scores carry genuine class
+information — the model's direct answer simply carries more. That is a finding about the *bank as
+an estimator*, not about whether the model can read the features: arm B compresses twelve concept
+answers into one nearest-fingerprint distance, and that compression is lossy in a way the zero-shot
+distribution is not.
+
+**H3 — not supported (2 of 3 in each family).** Within qwen, the 27B model beat the 9B on
+pathmnist and dermamnist and lost on octmnist; within gemma, the 31B beat the 12B on dermamnist and
+octmnist and lost on pathmnist. Friedman over all four models gives p = 0.61. No scale effect is
+visible at this size, and the plan's own threshold (5 of 6) could not have been met by three
+datasets in any case.
+
+**The archive is clean.** Completeness is 99.8% to 100% on every dataset-model cell; no cell comes
+near the 5% incompleteness cap, and the retry path fired on well under 1% of images.
