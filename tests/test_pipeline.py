@@ -6,9 +6,13 @@ bootstrap, decide the hypotheses and draw the figures. That glue is where a wron
 transposed matrix hides, and it is the one part that cannot be checked by reading it.
 
 The fixture is built so the answer is known: the concept answers are a clean function of the label,
-so arms B and C should be near-perfect, the zero-shot distribution is deliberately useless, so arm A
-should be near chance, and the post-hoc arm D leans with the label, so it should land between them.
-A run that gets those backwards has its arms crossed somewhere.
+so arms B and C should be near-perfect, and the zero-shot distribution is deliberately useless, so
+arm A should be near chance. A run that gets those backwards has its arms crossed somewhere.
+
+H4's readers are built the same way. The thinking reader answers a little better than the baseline
+and the frontier reader better again, so both steps of the chain must come out positive; a chain
+that read its readers in the wrong order, or that compared a reader with itself, would show up as a
+step of zero or a step with the wrong sign.
 """
 import importlib
 import json
@@ -28,14 +32,31 @@ CLASSES = ["alpha", "beta"]
 MODELS = {"tiny-model": {"family": "t", "params_b": 1, "concurrency": 8, "cap": 4, "splits": ["test"]},
           "big-model": {"family": "t", "params_b": 9, "concurrency": 8, "cap": 4,
                         "splits": ["test", "pool"]}}
+# H4's readers: the same model asked to think, and a different model asked to think as hard.
+# The chain is anchored on `tiny-model`, whose answers are noise, so that the fixture can make each
+# step of the chain legibly better without touching `big-model` - the cell arms B and C read, which
+# has to stay a clean function of the label for the assertions below it to mean anything.
+SUBSAMPLE = 80
+READERS = {"tiny-model-medium": {"model": "tiny-model", "effort": "medium", "api": "local",
+                                 "cap": 4, "max_tokens": 2048, "subsample": SUBSAMPLE},
+           "frontier-medium": {"model": "frontier", "effort": "medium", "api": "gateway",
+                               "service_tier": "flex", "cap": 4, "max_tokens": 4096,
+                               "subsample": SUBSAMPLE}}
 
 
-def rows_for(labels, rng, signal=True):
-    """A concept answer per image. With `signal`, the answers follow the label exactly."""
+def rows_for(labels, rng, signal=True, noise=0.0):
+    """A concept answer per image. With `signal`, the answers follow the label exactly.
+
+    `noise` flips that fraction of answers away from the label, which is how the fixture makes one
+    reader legibly worse than another: the probe should recover less from the noisier answers, and
+    by a margin the bootstrap can see.
+    """
     out = []
     for i, y in enumerate(labels):
         if signal:
-            answers = {"one": ["low", "high"][y], "two": ["small", "large"][y]}
+            flip = rng.random() < noise
+            v = 1 - y if flip else y
+            answers = {"one": ["low", "high"][v], "two": ["small", "large"][v]}
         else:
             answers = {"one": rng.choice(["low", "high"]), "two": rng.choice(["small", "large"])}
         if i % 37 == 0:                                  # a few unanswered concepts, as in the real run
@@ -61,14 +82,17 @@ def workspace(tmp_path):
         "tabdir": str(tmp_path / "tabs"), "datasets": ["toymnist"], "size": 224,
         "sample": {"test_n": n_test, "pool_n": n_pool, "seed": 0},
         "curve": {"n": [20, 50], "seeds": [0, 1]},
-        "vlm": {"primary": "big-model", "models": MODELS, "prompt": {"anchors": True},
+        "vlm": {"primary": "big-model", "models": MODELS, "readers": READERS,
+                "prompt": {"anchors": True},
                 "chunk": 50, "max_tokens": 512, "retries": 1, "transport_retries": 2,
                 "timeout": 30, "temperature": 0.0, "reasoning": "none",
                 "base_url": "http://example", "key_file": str(tmp_path / "key")},
         "features": {"arch": "resnet18", "weights": "imagenet1k_v1", "batch": 8},
         "classify": {"l2_grid": [0.1, 1.0], "cv_folds": 5, "missing_max_frac": 0.05,
-                     "permute": {"seeds": [0, 1]}},
+                     "permute": {"seeds": [0, 1]}, "probe": {"folds": 4, "seed": 0}},
         "evaluate": {"bootstrap": 200, "ci": 0.95, "seed": 0, "h3_min_wins": 1},
+        "h4": {"baseline": "tiny-model", "thinking": "tiny-model-medium",
+               "frontier": "frontier-medium", "subsample": SUBSAMPLE, "min_wins": 1},
         "resources": {},
     }
     for key in ("outdir", "conceptdir", "cachedir", "featuredir", "figdir", "tabdir"):
@@ -102,6 +126,15 @@ def workspace(tmp_path):
             "model": model, "split": "test", "prompt": "concept", "served_model": model,
             "prompt_sha256": "c", "n": n_test, "incomplete_frac": 0.0, "over_missing_cap": False,
             "rows": rows_for(y_test, rng, signal=(model == "big-model"))}
+    # H4's readers, on the prefix only. The baseline (tiny-model) is pure noise, the thinking
+    # reader is mostly right, the frontier reader almost always right, so both steps of the chain
+    # must come out positive and the figure must rise from left to right.
+    for reader, noise in (("tiny-model-medium", 0.25), ("frontier-medium", 0.05)):
+        cells[f"{reader}__test__concept"] = {
+            "model": reader, "split": "test", "prompt": "concept", "served_model": reader,
+            "prompt_sha256": "c", "n": SUBSAMPLE, "incomplete_frac": 0.0,
+            "over_missing_cap": False,
+            "rows": rows_for(y_test[:SUBSAMPLE], np.random.default_rng(7), noise=noise)}
     cells["big-model__pool__concept"] = {
         "model": "big-model", "split": "pool", "prompt": "concept", "served_model": "big-model",
         "prompt_sha256": "c", "n": n_pool, "incomplete_frac": 0.0, "over_missing_cap": False,
@@ -168,11 +201,29 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     assert across["h3"]["ladder"]["t"]["larger"] == "big-model"
     assert across["h3"]["ladder"]["t"]["wins"] == 1
 
+    # H4: the chain must be read in the order config fixes it, and each step must recover the sign
+    # the fixture built in. A chain that compared a reader with itself, or that took the readers in
+    # dictionary order rather than chain order, would show a step of zero or the wrong sign here.
+    h4 = across["h4"]
+    assert h4["h4a"]["from"] == "tiny-model" and h4["h4a"]["to"] == "tiny-model-medium"
+    assert h4["h4b"]["from"] == "tiny-model-medium" and h4["h4b"]["to"] == "frontier-medium"
+    assert h4["h4a"]["differences"]["toymnist"]["median"] > 0, "thinking beats noise in the fixture"
+    assert h4["h4b"]["differences"]["toymnist"]["median"] > 0, "the frontier reader is cleanest"
+    assert h4["h4a"]["supported"] and h4["h4b"]["supported"] and h4["supported"]
+    # Every reader is reported, not only the three in the chain: a reader hidden from the table is
+    # one the reader of the table cannot check.
+    assert set(h4["readers"]) == {"big-model", "tiny-model", "tiny-model-medium", "frontier-medium"}
+    assert h4["probe_auc"]["toymnist"]["frontier-medium"] > h4["probe_auc"]["toymnist"]["tiny-model"]
+
+    # The probe is fitted inside the images it scores, so it covers the prefix and not the sample.
+    got_h4 = json.loads((results / "evaluate/toymnist.json").read_text())["h4"]
+    assert got_h4["subsample"] == SUBSAMPLE
+
     stages.tables(config["tabdir"])
     stages.figures(config["figdir"])
-    for name in ("h1", "h2", "h3", "literature", "completeness", "numbers"):
+    for name in ("h1", "h2", "h3", "h4", "literature", "completeness", "numbers"):
         assert (Path(config["tabdir"]) / f"{name}.tex").stat().st_size > 0
-    for name in ("curve", "n_b", "ladder"):
+    for name in ("curve", "n_b", "ladder", "readers"):
         assert (Path(config["figdir"]) / f"fig_{name}.png").stat().st_size > 0
 
     # Every macro the report's prose reads has to exist, or pdflatex fails on an undefined control

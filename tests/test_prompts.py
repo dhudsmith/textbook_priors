@@ -139,23 +139,6 @@ def test_the_bare_levels_switch_drops_the_anchor_text(banks, release, config):
             assert text not in bare["user"]
 
 
-@pytest.mark.parametrize("dataset", RUN_DATASETS)
-def test_the_txt_render_carries_every_prompt_string_once(rendered, dataset):
-    """`render_txt` is a second view of the same dict, not a second rendering of the prompt logic
-    (WORKFLOW.md section 7): every user string - the part that differs between the two prompts -
-    must appear in it verbatim and exactly once, since arm B and arm C read the same concept
-    prompt and it should not be printed twice under two different arm labels."""
-    p = rendered[dataset]
-    text = prompts.render_txt(dataset, p)
-    assert text.startswith(dataset)
-    for key, arms in (("concept", "B, C"), ("zero_shot", "A")):
-        msg = p["prompts"][key]
-        assert f"arm {arms}: {key} prompt" in text
-        assert msg["sha256"] in text
-        assert msg["system"] in text
-        assert text.count(msg["user"]) == 1
-
-
 def test_a_level_without_an_anchor_is_refused(banks, release, config):
     """CONCEPT_BANK.md requires one anchor per level and the bank tests hold the files to it; this
     is the renderer refusing to ask about a level it cannot describe, so the failure lands on the

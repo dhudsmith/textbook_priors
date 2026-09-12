@@ -281,26 +281,3 @@ The proposal for the two new readers went to the user in the session and is not 
 WORKFLOW.md, because its whole point is that a decision rule is fixed before any call is bought -
 which means the user chooses the scope and the rule first. What arm D taught is the rule the
 proposal is built around.
-
-## 2026-09-12 15:41 — A human-readable txt render of each prompt
-
-A separate session, asked in parallel: add a rule that saves a txt file of the prompt render for
-each dataset and arm, for a person to read rather than parse. Added `render_prompts_txt` (target
-`prompts_txt`, opt-in, outside `all`): it formats the JSON `render_prompts` already wrote - one
-block per arm, each with its sha256 - rather than re-rendering from the bank, so the text is the
-same artifact hashed into every score manifest and not a second copy of the prompt logic
-(WORKFLOW.md §7). No manifest: nothing is computed here, so there is no run to record, and no rule
-below it reads the output. Decides no hypothesis, so it stays out of `rule all` per CLAUDE.md's
-rule about §2.
-
-Built on 6186c16, this session's edit landed just as the arm-D scrub above was pushed to this same
-branch from elsewhere - the working tree still carried the directed prompt and arm D's fingerprint
-block when the local ref moved to that commit. `git status` showed it as a pending revert of every
-file the scrub had touched; the fix was a `git stash push -u` (tagged, never a bare stash) to bank
-the in-progress edit safely, landing cleanly on the real HEAD, then reapplying only the new rule -
-one prompt fewer than first written, since arm D's `directed` prompt no longer exists to render.
-
-This rule needs no shared state - only the committed bank files and `config/medmnist.yaml`, not
-`data/raw` or `data/cache` - so it was safe to dry-run, lint and actually run from this worktree
-without touching the owner's checkout; the six `results/prompts_txt/*.txt` files it produced here
-are gitignored and do not persist, only the rule itself is committed.

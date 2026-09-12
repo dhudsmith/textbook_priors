@@ -6,7 +6,6 @@ a table; tables and figures are drawn from those files by the report stages.
 
     sample DATASET --out FILE --arrays FILE     the test sample and the labelled pool (stage 1)
     render-prompts DATASET --out FILE            the three prompt strings for one dataset (stage 2)
-    prompts-txt DATASET --out FILE                a human-readable txt render of them (stage 2, opt-in)
     probe DATASET MODEL --out FILE               ten images through the service (stage 2, opt-in)
     score DATASET MODEL SPLIT PROMPT CHUNK --out FILE   one chunk of the fan-out (stage 2)
     collect-scores DATASET --out FILE            one dataset's chunks, gathered (stage 2)
@@ -103,19 +102,6 @@ def render_prompts(dataset: str, out: str) -> None:
                 **payload,
             ),
         )
-
-
-def render_prompts_txt(dataset: str, out: str) -> None:
-    """A plain-text render of one dataset's prompts, for a human reader.
-
-    Reads the JSON `render_prompts` already wrote rather than re-rendering: the text a person reads
-    here is the same artifact that is hashed into every score manifest and sent to the model
-    (WORKFLOW.md section 7), not a second copy of a format the other could drift from. No
-    manifest: nothing here is computed, so there is no run to record."""
-    from . import prompts
-    rendered = json.loads(Path(f"{CONFIG['outdir']}/prompts/{dataset}.json").read_text())
-    Path(out).parent.mkdir(parents=True, exist_ok=True)
-    Path(out).write_text(prompts.render_txt(dataset, rendered))
 
 
 def probe(dataset: str, model: str, out: str) -> None:
@@ -228,19 +214,36 @@ def score_chunk(dataset: str, model: str, split: str, prompt: str, chunk: int, o
     images, labels = arrays[f"{split}_images"], arrays[f"{split}_labels"]
     indices = arrays[f"{split}_indices"]
 
-    spans = score.chunks(len(images), vlm["chunk"])
+    # `model` is the name in the output path, which for H4 is a *reader*: a model plus a reasoning
+    # effort (WORKFLOW.md section 2). Resolving it here rather than in the rule keeps the archive's
+    # file name and the call that filled it the same decision - the lesson of the generated-rule
+    # bug, applied to a second thing a rule can disagree with its own output about.
+    reader = vlm.get("readers", {}).get(model)
+    served = reader["model"] if reader else model
+    effort = reader["effort"] if reader else vlm["reasoning"]
+    api = reader.get("api", "local") if reader else "local"
+    tier = reader.get("service_tier") if reader else None
+    budget = reader["max_tokens"] if reader else vlm["max_tokens"]
+    # A reader reads a prefix of the split, not all of it: the images every other reader was already
+    # scored on, so the comparison is paired and the existing archives are subset rather than bought
+    # again. `min` because a subsample longer than the split would silently score fewer.
+    scored = min(reader["subsample"], len(images)) if reader else len(images)
+
+    spans = score.chunks(scored, vlm["chunk"])
     if not 0 <= chunk < len(spans):
         raise ValueError(f"chunk {chunk} of {len(spans)} for {dataset}/{split}")
     start, stop = spans[chunk]
 
     schema = rendered["concepts"] if prompt == "concept" else rendered["classes"]
-    client = llm.Client(model=model, base_url=vlm["base_url"], key_file=vlm["key_file"],
-                        temperature=vlm["temperature"], reasoning=vlm["reasoning"],
+    client = llm.Client(model=served, base_url=vlm["base_url"], key_file=vlm["key_file"],
+                        temperature=vlm["temperature"], reasoning=effort, api=api,
+                        service_tier=tier,
                         retries=vlm["transport_retries"], timeout=vlm["timeout"])
 
     params = dict(dataset=dataset, model=model, split=split, prompt=prompt, chunk=chunk,
-                  images=stop - start, temperature=vlm["temperature"], reasoning=vlm["reasoning"],
-                  max_tokens=vlm["max_tokens"], retries=vlm["retries"],
+                  images=stop - start, temperature=vlm["temperature"], reasoning=effort,
+                  served_name=served, api=api, service_tier=tier, subsample=scored,
+                  max_tokens=budget, retries=vlm["retries"],
                   prompt_sha256=rendered["prompts"][prompt]["sha256"],
                   bank_sha256=rendered["bank_sha256"], key_file=vlm["key_file"])
 
@@ -249,7 +252,7 @@ def score_chunk(dataset: str, model: str, split: str, prompt: str, chunk: int, o
         for position in range(start, stop):
             answer = score.ask_one(client, rendered["prompts"][prompt],
                                    score.png_data_url(images[position]), prompt, schema,
-                                   vlm["max_tokens"], vlm["retries"])
+                                   budget, vlm["retries"])
             records.append({"position": int(position), "index": int(indices[position]),
                             "label": int(labels[position]), **answer})
 
@@ -406,6 +409,42 @@ def classify(dataset: str, out: str, arrays: str) -> None:
                 index.append({"arm": "B_permuted", "key": f"Bperm__{model}__seed{seed}",
                               "model": model, "labels": "none", "permute_seed": seed})
 
+        # ---- H4: every reader's concept answers, read by a cross-validated probe ----------------
+        # A reader is a model plus an effort. The four models above are readers at effort `none`
+        # and are subset to the same prefix the new readers were scored on, so they join H4 for
+        # nothing. The probe needs no labelled pool, which is the only reason six readers can be
+        # compared at all (WORKFLOW.md section 2); what it measures is how much class information
+        # the answers carry, not a point on any learning curve.
+        h4 = CONFIG["h4"]
+        sub = int(h4["subsample"])
+        probe_spec = spec["probe"]
+        y_sub = y_test[:sub]
+        readers = list(CONFIG["vlm"]["models"]) + list(CONFIG["vlm"].get("readers", {}))
+        reader_report = {}
+        for reader in readers:
+            rows = cell(reader, "test", "concept")[:sub]
+            if len(rows) < sub:
+                raise ValueError(f"{dataset}: {reader} has {len(rows)} rows, H4 needs {sub}")
+            raw = arms.concept_matrix(rows, concepts)
+            # Imputed on this reader's own medians over its own images: the pool's medians belong to
+            # one model at one effort, and using them here would push every reader toward the
+            # baseline's habits on exactly the answers H4 is comparing.
+            filled, _ = arms.impute(raw, arms.pool_medians(raw))
+            missing = np.isnan(raw)
+            columns = missing.any(axis=0)
+            x = np.hstack([filled, missing[:, columns].astype(float)])
+            got = arms.cv_probe(x, y_sub, len(classes), spec["l2_grid"],
+                                probe_spec["folds"], probe_spec["seed"])
+            out_arrays[f"CV__{reader}"] = got["scores"]
+            index.append({"arm": "CV", "key": f"CV__{reader}", "model": reader, "labels": "cv",
+                          "images": sub, "folds": got["folds"]})
+            reader_report[reader] = {
+                "complete_frac": float(np.mean(~np.isnan(raw).any(axis=1))),
+                "answered_frac": float(np.mean(~np.isnan(raw))),
+                "folds": got["folds"], "thin_classes": got["thin_classes"],
+                "missing_indicator_columns": int(columns.sum()),
+            }
+
         # ---- arms C and P: the curve, at every n and every seed ---------------------------------
         pool_concepts = arms.concept_matrix(cell(primary, "pool", "concept"), concepts)
         test_concepts = arms.concept_matrix(cell(primary, "test", "concept"), concepts)
@@ -449,6 +488,7 @@ def classify(dataset: str, out: str, arrays: str) -> None:
         np.savez(arrays, labels=y_test, **out_arrays)
         run.write(out, dict(
             dataset=dataset, classes=classes, n_classes=len(classes),
+            h4={"subsample": sub, "readers": reader_report},
             arrays={"file": arrays, "keys": sorted(out_arrays)},
             index=index,
             fits=fits,
@@ -478,7 +518,12 @@ def evaluate(dataset: str, out: str) -> None:
     n_classes = summary["n_classes"]
     primary = CONFIG["vlm"]["primary"]
 
-    arm_scores = {k: arrays[k] for k in arrays.files if k != "labels"}
+    # H4's arrays cover a prefix of the test sample, not all of it, so they cannot ride in the same
+    # bootstrap as the arms: one replicate resamples one set of images, and two sets of images are
+    # two bootstraps. They get their own below, over the prefix the readers share.
+    arm_scores = {k: arrays[k] for k in arrays.files
+                  if k != "labels" and not k.startswith("CV__")}
+    cv_scores = {k[4:]: arrays[k] for k in arrays.files if k.startswith("CV__")}
     with Run("evaluate", dict(dataset=dataset, task=task, bootstrap=spec["bootstrap"],
                               ci=spec["ci"]), seeds=[spec.get("seed", 0)]) as run:
         point = {k: metrics.auc(labels, v, task, n_classes) for k, v in arm_scores.items()}
@@ -545,6 +590,26 @@ def evaluate(dataset: str, out: str) -> None:
             "never_reaches_frac": float(np.mean(draws == np.inf)),
         }
 
+        # ---- H4: the reader chain, on the prefix every reader shares --------------------------
+        # Its own bootstrap, over the same 200 images for every reader, so `thinking - baseline`
+        # and `frontier - thinking` are differences of two columns of one matrix exactly as every
+        # other paired difference in this study is. The decision rule is in config and was fixed
+        # before the first of these calls was bought (WORKFLOW.md section 2).
+        h4_spec = CONFIG["h4"]
+        sub = int(h4_spec["subsample"])
+        y_sub = labels[:sub]
+        cv_point = {k: metrics.auc(y_sub, v, task, n_classes) for k, v in cv_scores.items()}
+        cv_keys, cv_reps = metrics.bootstrap_aucs(y_sub, cv_scores, task, n_classes,
+                                                  spec["bootstrap"], spec.get("seed", 0))
+        cv_column = {k: i for i, k in enumerate(cv_keys)}
+        steps = {}
+        for name, (lo, hi) in {"thinking_minus_baseline": (h4_spec["baseline"], h4_spec["thinking"]),
+                               "frontier_minus_thinking": (h4_spec["thinking"], h4_spec["frontier"])}.items():
+            steps[name] = {"from": lo, "to": hi,
+                           **metrics.interval(cv_reps[:, cv_column[hi]] - cv_reps[:, cv_column[lo]],
+                                              spec["ci"])}
+        h4 = {"subsample": sub, "probe_auc": cv_point, "steps": steps}
+
         run.write(out, dict(
             dataset=dataset, task=task, n_classes=n_classes, classes=summary["classes"],
             auc={k: point[k] for k in sorted(point)},
@@ -553,6 +618,7 @@ def evaluate(dataset: str, out: str) -> None:
             controls=controls,
             n_b=n_b,
             arm_b_by_model={m: point[f"B__{m}"] for m in CONFIG["vlm"]["models"]},
+            h4=h4,
             complete_frac=summary["complete_frac"],
             incomplete_over_cap=summary["incomplete_over_cap"],
             bootstrap=spec["bootstrap"],
@@ -560,16 +626,16 @@ def evaluate(dataset: str, out: str) -> None:
 
 
 def evaluate_across(out: str) -> None:
-    """The across-dataset tests: H1, H2 and H3 as WORKFLOW.md section 2 states their rules.
+    """The across-dataset tests: H1, H2, H3 and H4 as WORKFLOW.md section 2 states their rules.
 
     Sign tests rather than pooled AUCs, because an AUC on pathmnist and an AUC on octmnist are not
     commensurable quantities to average. With six datasets the test is coarse - 6 of 6 is p = 0.016
     and 5 of 6 is p = 0.11 - so a hypothesis is supported only when it wins everywhere, and the
     per-dataset differences are what carries the reading.
 
-    Arm D is summarised beside them, under `extensions`, and deliberately not among them: it was
-    designed after seeing H2 fail, so no outcome of it can be reported as a test (WORKFLOW.md
-    section 10). The three `supported` flags are computed from H1, H2 and H3 alone.
+    H4 is a hypothesis and not an extension, which is the one thing about it worth stating here.
+    Its decision rule was written into config and WORKFLOW.md before any call of its readers was
+    bought, which is what arm D could not say for itself and why arm D is gone.
     """
     from . import evaluate as metrics
     spec, curve = CONFIG["evaluate"], CONFIG["curve"]
@@ -643,7 +709,29 @@ def evaluate_across(out: str) -> None:
             "supported": bool(all(f["wins"] >= spec["h3_min_wins"] for f in ladder.values())),
         }
 
-        run.write(out, dict(datasets=datasets, h1=h1, h2=h2, h3=h3,
+        # H4: a better reader gets more class information out of the same images. Two steps, each
+        # changing one thing: effort (H4a) then model (H4b). Supported on 6 of 6, the rule H1 and
+        # H2 are held to, because 5 of 6 is p = 0.11 and this study cannot do better with six
+        # datasets. The `probe_auc` per reader is reported whatever the verdict: which concepts a
+        # reader can answer is the question the study is really asking now.
+        h4_spec, h4 = CONFIG["h4"], {}
+        for part, step in (("h4a", "thinking_minus_baseline"), ("h4b", "frontier_minus_thinking")):
+            wins = {d: per[d]["h4"]["steps"][step]["median"] > 0 for d in datasets}
+            first = per[datasets[0]]["h4"]["steps"][step]
+            h4[part] = {
+                "step": step, "from": first["from"], "to": first["to"],
+                "per_dataset": wins, "wins": sum(wins.values()),
+                "differences": {d: per[d]["h4"]["steps"][step] for d in datasets},
+                "sign_test_p": metrics.sign_test(sum(wins.values()), len(datasets)),
+                "supported": bool(sum(wins.values()) >= h4_spec["min_wins"]),
+            }
+        readers = sorted(per[datasets[0]]["h4"]["probe_auc"])
+        h4["probe_auc"] = {d: {r: per[d]["h4"]["probe_auc"][r] for r in readers} for d in datasets}
+        h4["readers"] = readers
+        h4["subsample"] = h4_spec["subsample"]
+        h4["supported"] = bool(h4["h4a"]["supported"] and h4["h4b"]["supported"])
+
+        run.write(out, dict(datasets=datasets, h1=h1, h2=h2, h3=h3, h4=h4,
                             flagged_cells={d: [k for k, over in per[d]["incomplete_over_cap"].items() if over]
                                            for d in datasets}))
 
@@ -660,6 +748,7 @@ def tables(dest: str) -> None:
         reporting.table_h1(per, datasets, curve, dest)
         reporting.table_h2(per, datasets, curve, primary, dest)
         reporting.table_h3(across, datasets, dest)
+        reporting.table_h4(across, datasets, dest)
         reporting.table_literature(per, literature, datasets, curve, primary, dest)
         reporting.table_completeness(per, datasets, dest)
         macros = reporting.numbers(per, across, datasets, curve, primary, dest, literature)
@@ -667,7 +756,7 @@ def tables(dest: str) -> None:
 
 
 def figures(dest: str) -> None:
-    """The three figures, one per hypothesis."""
+    """The four figures, one per hypothesis."""
     from . import report as reporting
     datasets, curve = CONFIG["datasets"], CONFIG["curve"]["n"]
     per, across = reporting.load(CONFIG["outdir"], datasets)
@@ -677,8 +766,9 @@ def figures(dest: str) -> None:
         reporting.figure_curve(per, datasets, curve, dest, literature=literature)
         reporting.figure_n_b(per, datasets, curve, dest)
         reporting.figure_ladder(across, datasets, dest)
+        reporting.figure_readers(across, datasets, dest)
         run.write(f"{CONFIG['outdir']}/figures.json", dict(dest=dest,
-                  files=["fig_curve.png", "fig_n_b.png", "fig_ladder.png"]))
+                  files=["fig_curve.png", "fig_n_b.png", "fig_ladder.png", "fig_readers.png"]))
 
 
 def main(argv=None) -> None:
@@ -687,7 +777,6 @@ def main(argv=None) -> None:
     p = sub.add_parser("sample"); p.add_argument("dataset")
     p.add_argument("--out", required=True); p.add_argument("--arrays", required=True)
     p = sub.add_parser("render-prompts"); p.add_argument("dataset"); p.add_argument("--out", required=True)
-    p = sub.add_parser("prompts-txt"); p.add_argument("dataset"); p.add_argument("--out", required=True)
     p = sub.add_parser("probe"); p.add_argument("dataset"); p.add_argument("model")
     p.add_argument("--out", required=True)
     p = sub.add_parser("score"); p.add_argument("dataset"); p.add_argument("model")
@@ -707,8 +796,6 @@ def main(argv=None) -> None:
         sample(a.dataset, a.out, a.arrays)
     elif a.stage == "render-prompts":
         render_prompts(a.dataset, a.out)
-    elif a.stage == "prompts-txt":
-        render_prompts_txt(a.dataset, a.out)
     elif a.stage == "probe":
         probe(a.dataset, a.model, a.out)
     elif a.stage == "score":

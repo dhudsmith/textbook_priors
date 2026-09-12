@@ -67,6 +67,37 @@ vlm:
     qwen3.8-27b-fp8: {family: qwen,  params_b: 27, concurrency: 64,  cap: 24, splits: [test, pool]}
     gemma-4-31b:     {family: gemma, params_b: 31, concurrency: 16,  cap: 12, splits: [test]}
 
+  # H4's readers (WORKFLOW.md section 2). A *reader* is a model plus a reasoning effort, and the
+  # four models above are readers at effort `none`. These two are the new ones. Each scores the
+  # concept prompt on a 200-image prefix of the same seeded test sample, which is why every
+  # existing reader joins the comparison for nothing: a prefix of a random sample is a random
+  # sample, so the four archives above are subset rather than re-bought.
+  #
+  # 200 is measured, not chosen for roundness: below it organamnist's rarest class empties and its
+  # AUC column stops existing (6 of 11 classes reach five images at 100, 10 at 150, all 11 at 200).
+  # dermamnist stays thin either way and carries the caveat it already carries at 500.
+  #
+  # Both run at `medium`, the same effort, so H4b compares capability and not how hard each model
+  # was asked to think. `medium` is what both advertise and costs the primary model the same
+  # completion tokens as `low` (986 against 982, measured 2026-09-12).
+  readers:
+    qwen3.8-27b-fp8-medium:                 # H4a: the primary model, asked to think
+      model: qwen3.8-27b-fp8
+      effort: medium
+      api: local
+      cap: 12                               # the endpoint saturates; this is politeness, not rate
+      max_tokens: 2048                      # 512 is what made thinking look impossible: at medium
+                                            # the answer costs about 986 completion tokens
+      subsample: 200
+    gpt-5.6-terra-medium:                   # H4b: a frontier closed model, asked to think as hard
+      model: gpt-5.6-terra
+      effort: medium
+      api: gateway                          # max_completion_tokens, not max_tokens
+      service_tier: flex                    # the documented 50% discount; accepted on chat calls
+      cap: 12
+      max_tokens: 4096
+      subsample: 200
+
   base_url: https://llm.rcd.clemson.edu/v1
   key_file: ~/.config/rcd_llm/key  # owner-only; read by priors/llm.py and nowhere else
   temperature: 0.0
@@ -94,12 +125,27 @@ torch_home: /project/dane2/wficai/textbook_priors/torch_home
 
 # The classifier grid is stage 4's; `missing_max_frac` is read one stage earlier, by the gather
 # that flags a dataset-model cell too incomplete for the headline (WORKFLOW.md section 3).
-classify: {l2_grid: [0.01, 0.1, 1, 10, 100], cv_folds: 5, missing_max_frac: 0.05, permute: {seeds: [0, 1, 2]}}
+classify: {l2_grid: [0.01, 0.1, 1, 10, 100], cv_folds: 5, missing_max_frac: 0.05, permute: {seeds: [0, 1, 2]},
+           probe: {folds: 5, seed: 0}}    # H4's readout-free measure: arm C's classifier fitted by
+                                          # cross-validation inside the scored images themselves, so
+                                          # it needs no labelled pool and every reader can have one
 
 # The bootstrap resamples the 500 test images, not the labelled subsets: it is the test sample's
 # sampling error that every arm shares, and sharing it is what makes the differences paired.
 # h3_min_wins is descriptive at 5 of 6 (p = 0.11), which six datasets cannot improve on.
 evaluate: {bootstrap: 10000, ci: 0.95, seed: 0, h3_min_wins: 5}
+
+# H4's chain, fixed here before a single call of it was bought (WORKFLOW.md section 2). Each step
+# changes exactly one thing: baseline to thinking holds the model and changes the effort; thinking
+# to frontier holds the effort and changes the model. `gpt-5.6-terra` cannot be asked for no
+# reasoning at all, which is why the frontier reader is compared against a thinking primary rather
+# than against the archive's thinking-off one.
+h4:
+  baseline: qwen3.8-27b-fp8               # already in the archive, at effort none
+  thinking: qwen3.8-27b-fp8-medium
+  frontier: gpt-5.6-terra-medium
+  subsample: 200                          # the shared prefix every reader in the chain is read on
+  min_wins: 6                             # supported on 6 of 6 (p = 0.016), as H1 and H2 are
 
 # Resources per rule. cpus is also `threads`; mem_mb per job; runtime in minutes.
 #
@@ -115,6 +161,13 @@ resources:
   # packing for nothing. Wall time 19 s to 126 s - pathmnist inflates 13.5 GB in one pass at about
   # 100 MB/s - so 20 minutes is ten times the longest run and covers a contended filesystem.
   sample: {cpus: 1, mem_mb: 1500, runtime: 20}
+  # H4's two readers, 200 images each in two chunks of 100. The local one thinks, which costs about
+  # 986 completion tokens against 112 with thinking off; at the ~63 tokens/s aggregate this endpoint
+  # delivers, a chunk of 100 is a little over half an hour and 240 minutes is the same four-times
+  # headroom the thinking-off chunks get. The gateway one is somebody else's capacity and answered
+  # in 3 to 9 s a call when measured, so 60 minutes is generous. Memory is one dataset's test array.
+  score_reader: {cpus: 1, mem_mb: 2000, runtime: 240}
+  score_reader_gateway: {cpus: 1, mem_mb: 2000, runtime: 60}
   # Guess. The probe is 21 calls placed one after another and a few PNG encodings: one core, and
   # memory is one dataset's test array held while the images are encoded (376 MB at the widest).
   # Thirty minutes is for the service being slow, not for the work.

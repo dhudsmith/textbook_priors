@@ -236,16 +236,66 @@ def test_the_served_model_name_is_recorded_rather_than_the_requested_one():
     assert reply.served_model == "qwen3.8-27b-fp8-20260101"
 
 
-def test_thinking_is_switched_off_in_the_body_the_service_reads(monkeypatch, tmp_path):
-    """`enable_thinking` is not an OpenAI parameter, so it has to travel in `extra_body`; with
-    reasoning left on, the primary model spends its whole budget in reasoning_content."""
+@pytest.fixture
+def client(monkeypatch, tmp_path):
     key = tmp_path / "key"
     key.write_text("not-a-real-key\n")
     monkeypatch.setattr(llm.openai, "OpenAI", lambda **kw: object())
-    off = llm.Client(model="m", base_url="http://x/v1", key_file=str(key), reasoning="none")
-    on = llm.Client(model="m", base_url="http://x/v1", key_file=str(key), reasoning="medium")
-    assert off.extra_body == {"chat_template_kwargs": {"enable_thinking": False}}
-    assert on.extra_body == {"chat_template_kwargs": {"enable_thinking": True}}
+
+    def make(**kw):
+        return llm.Client(model="m", base_url="http://x/v1", key_file=str(key), **kw)
+    return make
+
+
+def test_the_thinking_off_request_is_exactly_what_the_archive_was_bought_with(client):
+    """The one test that guards 27,000 calls.
+
+    Adding H4's readers changed this module, and the whole existing archive was produced by it.
+    Nothing about that archive is re-bought, but a future rerun of any chunk in it must send the
+    same bytes as the run that wrote it, or the file and the code that claims to produce it have
+    quietly parted company. So the thinking-off body is pinned here in full, literally: `max_tokens`
+    and not `max_completion_tokens`, `enable_thinking: false` in `extra_body` where it has always
+    travelled, and no `reasoning_effort` and no `service_tier` at all.
+    """
+    body = client(reasoning="none").request("sys", "usr", "data:image/png;base64,AA", 512)
+    assert body == {
+        "model": "m",
+        "messages": [{"role": "system", "content": "sys"},
+                     {"role": "user", "content": [
+                         {"type": "text", "text": "usr"},
+                         {"type": "image_url",
+                          "image_url": {"url": "data:image/png;base64,AA"}}]}],
+        "temperature": 0.0,
+        "max_tokens": 512,
+        "extra_body": {"chat_template_kwargs": {"enable_thinking": False}},
+    }
+
+
+def test_an_effort_level_travels_as_reasoning_effort_and_drops_the_off_switch(client):
+    """`reasoning_effort` is the service's own parameter (docs/rcd_llm_service.md).
+
+    The off switch is not sent alongside it. Sending both would be two ways of saying one thing to
+    a stack that need not agree with itself, and if it disagreed the archive would record a setting
+    that is not the one that produced the answers.
+    """
+    body = client(reasoning="medium").request("sys", "usr", None, 2048)
+    assert body["reasoning_effort"] == "medium"
+    assert "extra_body" not in body
+    assert body["max_tokens"] == 2048
+
+
+def test_the_gateway_dialect_renames_the_budget_and_asks_for_the_discount(client):
+    """The OpenAI gateway takes `max_completion_tokens` and accepts the `flex` tier; a call that
+    sent `max_tokens` is rejected outright, which is how this was found."""
+    body = client(reasoning="medium", api="gateway", service_tier="flex").request("s", "u", None, 4096)
+    assert body["max_completion_tokens"] == 4096 and "max_tokens" not in body
+    assert body["service_tier"] == "flex"
+    assert body["reasoning_effort"] == "medium"
+
+
+def test_an_unknown_dialect_is_refused_before_a_call_is_placed(client):
+    with pytest.raises(ValueError):
+        client(api="responses")
 
 
 # ---- transport backoff -------------------------------------------------------------------------
@@ -330,9 +380,53 @@ def test_the_profile_caps_match_the_models_config(config):
         assert key in declared, f"{model}: no {key} in the palmetto profile"
         assert declared[key] == spec["cap"], f"{model}: profile {declared[key]} != config {spec['cap']}"
         assert spec["cap"] <= spec["concurrency"], f"{model}: cap above the published concurrency"
-    assert sorted(k for k in declared if k.startswith("llm_")) == sorted(
-        "llm_" + re.sub(r"[^a-z0-9]+", "_", m.lower()) for m in config["vlm"]["models"]), \
+    # `llm_gateway` caps H4's gateway reader and belongs to no model: the OpenAI gateway is metered
+    # in credits, not in published concurrency, so there is nothing in `vlm.models` to match it to.
+    expected = {"llm_" + re.sub(r"[^a-z0-9]+", "_", m.lower()) for m in config["vlm"]["models"]}
+    expected.add("llm_gateway")
+    assert {k for k in declared if k.startswith("llm_")} == expected, \
         "the profile caps a model the config does not have"
+
+
+def test_every_h4_reader_names_a_model_and_an_effort_the_service_offers(config):
+    """A reader is a model plus an effort (WORKFLOW.md section 2), and both halves have to be real.
+
+    The effort cannot be checked against the service without a call, so what is checked here is
+    the part that would silently produce a wrong archive: a reader whose `model` is not a served
+    name, or whose dialect is not one `priors/llm.py` knows, or - the one that matters most - a
+    reader that shares a name with a ladder model, which would put two different reading conditions
+    under one key in every table downstream.
+    """
+    readers = config["vlm"].get("readers", {})
+    assert readers, "H4 has no readers"
+    for name, spec in readers.items():
+        assert name not in config["vlm"]["models"], f"{name}: a reader may not shadow a model"
+        assert spec["api"] in ("local", "gateway"), f"{name}: unknown api {spec['api']!r}"
+        assert spec["effort"] != "none", f"{name}: a reader at effort none is a model, not a reader"
+        assert spec["subsample"] <= config["sample"]["test_n"], f"{name}: subsample beyond the sample"
+        assert spec["max_tokens"] > config["vlm"]["max_tokens"], \
+            f"{name}: thinking needs a bigger budget than 512, which is what hid it before"
+        if spec["api"] == "local":
+            assert spec["model"] in config["vlm"]["models"], \
+                f"{name}: a local reader must name a model the study already scores"
+
+
+def test_the_h4_chain_changes_one_thing_at_a_time(config):
+    """H4's whole design is that each step is a single change (WORKFLOW.md section 2).
+
+    baseline to thinking holds the model and changes the effort; thinking to frontier holds the
+    effort and changes the model. A chain that moved both at once would measure their sum and be
+    reported as though it had measured one of them.
+    """
+    h4 = config["h4"]
+    readers, models = config["vlm"]["readers"], config["vlm"]["models"]
+    assert h4["baseline"] in models, "the baseline is a model already in the archive"
+    thinking, frontier = readers[h4["thinking"]], readers[h4["frontier"]]
+    assert thinking["model"] == h4["baseline"], "H4a must hold the model fixed"
+    assert thinking["effort"] == frontier["effort"], "H4b must hold the effort fixed"
+    assert thinking["model"] != frontier["model"], "H4b must change the model"
+    assert thinking["subsample"] == frontier["subsample"] == h4["subsample"], \
+        "every reader in the chain is read on the same images or nothing is paired"
 
 
 def test_only_the_primary_model_scores_the_labelled_pool(config):

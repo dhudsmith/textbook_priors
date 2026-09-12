@@ -40,7 +40,7 @@ configfile: "config/config.yaml"
 # Anything with a real toolchain or a real cost is submitted so it runs with declared resources.
 localrules:
     all, sample, prompts, score, features, classify, evaluate, report, smoke, render_prompts,
-    collect_scores, evaluate_across, tables, prompts_txt, render_prompts_txt,
+    collect_scores, evaluate_across, tables,
 
 
 OUT = config["outdir"]
@@ -80,7 +80,6 @@ def res(name):
 
 CODE_SAMPLE = code("data", "sample", "stages")
 CODE_PROMPTS = code("data", "prompts", "stages")
-CODE_PROMPTS_TXT = code("prompts", "stages")    # formats the file render_prompts already wrote
 CODE_SCORE = code("llm", "score", "stages")     # the prompts arrive as a file, not as a module
 CODE_FEATURES = code("features", "stages")
 CODE_CLASSIFY = code("classify", "data", "stages")
@@ -92,9 +91,9 @@ TEST_FILES = sorted(str(p) for p in Path("tests").glob("*.py"))
 SMOKE = f"{OUT}/smoke_ok.txt"
 SAMPLES = expand(f"{OUT}/sample/{{dataset}}.json", dataset=DATASETS)
 PROMPTS = expand(f"{OUT}/prompts/{{dataset}}.json", dataset=DATASETS)
-PROMPTS_TXT = expand(f"{OUT}/prompts_txt/{{dataset}}.txt", dataset=DATASETS)
 
 MODELS = list(config["vlm"]["models"])
+READERS = list(config["vlm"].get("readers", {}))     # H4: model + effort, scored on a prefix
 PRIMARY = config["vlm"]["primary"]
 CHUNK = config["vlm"]["chunk"]
 
@@ -104,9 +103,12 @@ def slug(model):
     return re.sub(r"[^a-z0-9]+", "_", model.lower())
 
 
-def chunk_ids(split):
-    """The chunk numbers one split is cut into, zero-padded so they sort."""
-    n = config["sample"]["test_n" if split == "test" else "pool_n"]
+def chunk_ids(split, n=None):
+    """The chunk numbers one split is cut into, zero-padded so they sort.
+
+    `n` overrides the split's full size for a reader that scores only a prefix of it (H4)."""
+    if n is None:
+        n = config["sample"]["test_n" if split == "test" else "pool_n"]
     return [f"{k:02d}" for k in range((n + CHUNK - 1) // CHUNK)]
 
 
@@ -129,20 +131,39 @@ def score_cells(model=None):
     return cells
 
 
-SCORES = score_cells()
+def reader_cells(reader=None):
+    """Every chunk of H4's readers: the concept prompt on a prefix of the test split.
+
+    A reader scores no pool and asks no zero-shot question. It needs neither: H4 is read through
+    the concept answers alone (the cross-validated probe of WORKFLOW.md section 3), and arm A is
+    not a property of a reader but of the one model that was asked for a diagnosis.
+    """
+    cells = []
+    for name in ([reader] if reader else READERS):
+        spec = config["vlm"]["readers"][name]
+        for chunk in chunk_ids("test", spec["subsample"]):
+            for dataset in DATASETS:
+                cells.append(f"{OUT}/score/{dataset}__{name}__test__concept__chunk{chunk}.json")
+    return cells
+
+
+SCORES = score_cells() + reader_cells()
 SCORE_TABLES = expand(f"{OUT}/scores/{{dataset}}.json", dataset=DATASETS)
 FEATURES = expand(f"{OUT}/features/{{dataset}}.json", dataset=DATASETS)
 CLASSIFIED = expand(f"{OUT}/classify/{{dataset}}.json", dataset=DATASETS)
 EVALUATED = expand(f"{OUT}/evaluate/{{dataset}}.json", dataset=DATASETS)
 EVALUATION = f"{OUT}/evaluation.json"
 FIGS, TABS = config["figdir"], config["tabdir"]
-FIG_FILES = expand(f"{FIGS}/fig_{{f}}.png", f=["curve", "n_b", "ladder"])
+FIG_FILES = expand(f"{FIGS}/fig_{{f}}.png", f=["curve", "n_b", "ladder", "readers"])
 TABLE_TEX = expand(f"{TABS}/{{t}}.tex",
-                   t=["h1", "h2", "h3", "literature", "completeness", "numbers"])
+                   t=["h1", "h2", "h3", "h4", "literature", "completeness", "numbers"])
 
 wildcard_constraints:
     dataset="|".join(DATASETS),
-    model="|".join(re.escape(m) for m in MODELS),
+    # Readers are named `<model>-<effort>`, so the model alternatives have to be tried longest
+    # first or `qwen3.8-27b-fp8` would match the head of `qwen3.8-27b-fp8-medium` and two rules
+    # would claim one file.
+    model="|".join(re.escape(m) for m in sorted(MODELS + READERS, key=len, reverse=True)),
 
 
 # ---- targets: one phony target per stage; `all` becomes the technical report at stage 6 --------
@@ -154,11 +175,6 @@ rule sample:
 
 rule prompts:
     input: PROMPTS
-
-rule prompts_txt:
-    """Opt-in, outside `all`: a human-readable txt render of every dataset's prompts, decides no
-    hypothesis (WORKFLOW.md section 7)."""
-    input: PROMPTS_TXT
 
 rule score:
     input: SCORE_TABLES
@@ -299,21 +315,6 @@ rule render_prompts:
     log: "logs/render_prompts/{dataset}.log"
     conda: "envs/priors.yml"
     shell: STAGE + "render-prompts {wildcards.dataset} --out {output} > {log} 2>&1"
-
-
-rule render_prompts_txt:
-    """One dataset's rendered prompts as plain text, for a human reader. x6, local, opt-in (build
-    with `prompts_txt`, WORKFLOW.md section 7): formats the JSON `render_prompts` already wrote,
-    so the text a person reads is the same artifact hashed into every score manifest rather than a
-    second copy of the prompt logic. Decides no hypothesis and feeds no rule below it."""
-    input:
-        rendered=f"{OUT}/prompts/{{dataset}}.json",
-        code=CODE_PROMPTS_TXT,
-        smoke=SMOKE,
-    output: f"{OUT}/prompts_txt/{{dataset}}.txt"
-    log: "logs/render_prompts_txt/{dataset}.log"
-    conda: "envs/priors.yml"
-    shell: STAGE + "prompts-txt {wildcards.dataset} --out {output} > {log} 2>&1"
 
 
 rule probe:
@@ -475,6 +476,71 @@ rule score_gemma_4_31b:
     conda: "envs/priors.yml"
     threads: RES["score"]["cpus"]
     resources: **res("score"), **{"llm_gemma_4_31b": 1}
+    shell: SCORE_CMD
+
+
+# ---- H4's two readers: the same concept prompt, read differently ------------------------------
+#
+# A *reader* is a model plus a reasoning effort (WORKFLOW.md section 2). The four rules above are
+# readers at effort `none`, which is what the whole existing archive was bought under. These two
+# are the new ones, and each scores the concept prompt on the first 200 images of the same seeded
+# test sample - so the four archives above join H4 by being subset, not by being re-bought.
+#
+# Two rules rather than one because the dialects differ, and the difference is worth seeing in the
+# rule a reader is looking at: the local model takes `max_tokens` and holds a unit of the primary
+# model's own `llm_` resource, because it is the same endpoint under a different setting and two
+# rules pointed at one endpoint must share one cap. The gateway model is somebody else's capacity,
+# metered in credits rather than in concurrency, so it gets a resource of its own.
+
+rule score_reader:
+    """One chunk of a thinking reader on the local service: a hundred images, concept prompt. x12."""
+    input:
+        prompts=f"{OUT}/prompts/{{dataset}}.json",
+        sample=f"{OUT}/sample/{{dataset}}.json",
+        arrays=f"{config['cachedir']}/{{dataset}}.npz",
+        smoke=SMOKE,
+        code=CODE_SCORE,
+    params:
+        chunk_size=CHUNK,
+        temperature=config["vlm"]["temperature"],
+        reader=lambda w: config["vlm"]["readers"][w.model],
+        retries=config["vlm"]["retries"],
+    wildcard_constraints:
+        model="qwen3\.8\-27b\-fp8\-medium",
+        split="test",
+        prompt="concept",
+    output: protected(f"{OUT}/score/{{dataset}}__{{model}}__{{split}}__{{prompt}}__chunk{{chunk}}.json")
+    log: "logs/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.log"
+    benchmark: "benchmarks/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.tsv"
+    conda: "envs/priors.yml"
+    threads: RES["score_reader"]["cpus"]
+    resources: **res("score_reader"), **{"llm_qwen3_8_27b_fp8": 1}
+    shell: SCORE_CMD
+
+
+rule score_reader_gateway:
+    """One chunk of a gateway reader: a hundred images, concept prompt. x12."""
+    input:
+        prompts=f"{OUT}/prompts/{{dataset}}.json",
+        sample=f"{OUT}/sample/{{dataset}}.json",
+        arrays=f"{config['cachedir']}/{{dataset}}.npz",
+        smoke=SMOKE,
+        code=CODE_SCORE,
+    params:
+        chunk_size=CHUNK,
+        temperature=config["vlm"]["temperature"],
+        reader=lambda w: config["vlm"]["readers"][w.model],
+        retries=config["vlm"]["retries"],
+    wildcard_constraints:
+        model="gpt\-5\.6\-terra\-medium",
+        split="test",
+        prompt="concept",
+    output: protected(f"{OUT}/score/{{dataset}}__{{model}}__{{split}}__{{prompt}}__chunk{{chunk}}.json")
+    log: "logs/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.log"
+    benchmark: "benchmarks/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.tsv"
+    conda: "envs/priors.yml"
+    threads: RES["score_reader_gateway"]["cpus"]
+    resources: **res("score_reader_gateway"), **{"llm_gateway": 1}
     shell: SCORE_CMD
 
 

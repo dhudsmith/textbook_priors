@@ -161,8 +161,18 @@ re-verified by any rule.
 | `gemma-4-12b` | gemma | ladder | 3,000 (test) | — |
 | `gemma-4-31b` | gemma | ladder | 3,000 (test) | — |
 
-**27,000 calls** in 270 chunk jobs of 100 images, which is the pre-registered budget. A further
-3,000 were bought for arm D and are archived but no longer read (§10). Two measurements, because they disagree and the
+**27,000 calls** in 270 chunk jobs of 100 images, which is the pre-registered budget, plus
+**2,400 for H4's two readers** in 24 chunks — 200 images per dataset each, concept prompt only, no
+pool and no zero-shot, because H4 is read through the concept answers alone. **29,400 in total.**
+A further 3,000 were bought for arm D and are archived but no longer read (§10).
+
+H4's thinking reader is the expensive half in wall clock rather than in calls: at effort `medium`
+an answer costs about 986 completion tokens against 112 with thinking off, and this endpoint
+delivers roughly 63 tokens per second in aggregate however many streams it is given, so its 1,200
+calls are about five hours. The gateway reader is somebody else's capacity and answered in 3 to 9
+seconds a call, at about 1,684 prompt and 313 completion tokens of which 89% of the prompt comes
+back cached (`docs/rcd_llm_service.md`). Run one chunk before the other twenty-three, which is
+standing practice here since the generated-rule bug. Two measurements, because they disagree and the
 second is the one to plan with. On 2026-09-09, with thinking off and no image attached, 0.1 to
 0.4 s per call on every model. On 2026-09-11 the `probe` rule measured the call this workflow
 actually makes - a 224-pixel PNG and a rendered prompt of about 1,300 tokens, on the primary model:
@@ -196,24 +206,26 @@ Each names the failure it prevents; `TALK.md` argues them.
 ## 6. Stages
 
 ```
-0  SMOKE      bank schema and anchors, label maps against the pinned release, all three prompts,
+0  SMOKE      bank schema and anchors, label maps against the pinned release, both prompts,
               the arm-B estimator on a fixture, metric conventions, client retry      seconds
 1  SAMPLE     per dataset: the seeded 500-image test sample and 2000-image labelled pool,
               streamed out of the compressed npz without loading it (the raw releases are
               prior work, §4 — no fetch rule)                                           6 CPU
 2  SCORE      per dataset: render the concept and zero-shot prompts from the bank;
               then, per model x split x prompt x chunk of 100: concept levels, or a class
-              distribution; every raw response archived and protected  6 local + 300 throttled
+              distribution; every raw response archived and protected  6 local + 294 throttled
 3  FEATURES   per dataset: ImageNet ResNet-18 penultimate features of the sampled images  6 CPU
-4  CLASSIFY   per dataset: arms A, B, C, P at every n and seed, and the permutation controls 6 CPU
-5  EVALUATE   AUC per arm; the paired bootstrap; n_B; then the sign tests and the ladder
-              across datasets                                                             6 + 1
-6  REPORT     three figures, tables, number macros, the technical report PDF              local
+4  CLASSIFY   per dataset: arms A, B, C, P at every n and seed, the permutation controls, and
+              every reader's cross-validated probe on the shared prefix (H4)              6 CPU
+5  EVALUATE   AUC per arm; the paired bootstrap; n_B; a second bootstrap over the prefix for
+              H4's readers; then the sign tests, the ladder and the chain                 6 + 1
+6  REPORT     four figures, tables, number macros, the technical report PDF               local
 ```
 
 Targets: `all` (the report), `smoke`, `sample`, `score`, `features`, `classify`, `evaluate`,
-`report`. Three figures: the learning curve with arm B's line (H1), n_B per dataset (H1 detail),
-the model ladder (H3). H2 is a table of paired differences and permutation drops.
+`report`. Four figures: the learning curve with arm B's line (H1), n_B per dataset (H1 detail),
+the model ladder (H3), the reader chain (H4). H2 is a table of paired differences and permutation
+drops.
 
 ## 7. The scoring stage
 
@@ -233,9 +245,6 @@ The one stage type not seen in earlier projects, and the one that tests principl
   anchors, the rendered zero-shot prompt, the bank-file hash). Every `score_*` rule takes that file
   as an input instead of re-deriving the prompt, so the string sent to the model, the one hashed
   into the manifest, and the one the report or the demo shows are the same artifact.
-  `render_prompts_txt` (target `prompts_txt`, opt-in, outside `all`, no LLM calls) formats that
-  same file into `results/prompts_txt/<dataset>.txt`, one block per arm, for a person to read
-  rather than parse; it decides no hypothesis and no rule below it reads its output.
 - **Per call**: the 224-pixel PNG; JSON requested and validated against the scales; one retry with
   a doubled token budget on a malformed answer, then recorded as missing, never guessed.
 - **Thinking off**, and for a reason that turned out to be ours rather than the service's.
@@ -368,8 +377,7 @@ priors/                   data sample prompts llm score features classify evalua
 data/concepts/            the concept-bank files and their README, committed
 data/literature/          the pinned published-benchmark table and its README, committed
 data/raw, data/cache      symlinks into storage_root on the project filesystem; gitignored
-results/                  one JSON per unit of work; results/score/ is the response archive;
-                          results/prompts_txt/ a human-readable txt render, opt-in, no manifest
+results/                  one JSON per unit of work; results/score/ is the response archive
 benchmarks/  logs/        per job
 report/                   report.tex, references.bib; tables/ and figs/ generated
 README.md  CHANGELOG.md  SESSION_LOG.md  CLAUDE.md  CONCEPT_BANK.md  WORKFLOW.md  TALK.md

@@ -184,3 +184,25 @@ return 404). The balance is visible only on the OpenAI Credits page in the servi
 it, note that this session spent, on the gateway and nothing else: **33,540 prompt and 7,387
 completion tokens on `gpt-5.6-terra`**, plus 1,226 and 291 on `gpt-5.5`. The delta on that page is
 the exchange rate.
+
+## How this workflow uses the service
+
+Settled after the measurements above, and recorded here so the next change to a model or an effort
+starts from the decision rather than from the experiment.
+
+- **The archive is thinking-off and stays thinking-off.** 27,000 calls were bought at
+  `enable_thinking: false`, and `priors/llm.py` still sends exactly that body for `reasoning: none`
+  — pinned by a test that compares the whole request dict, field by field, so a refactor cannot
+  quietly change what a rerun of an archived chunk would send.
+- **H4's readers ask for `medium`**, on both the local primary and the gateway model, so that the
+  step between them is the model and not how hard each was asked to think. Effort travels as
+  `reasoning_effort` and the off switch is not sent alongside it.
+- **A reader's token budget is its own.** 512 is right for twelve concepts of JSON and is what made
+  thinking look impossible; 2048 on the local reader and 4096 on the gateway are sized from the
+  measured completion lengths plus room.
+- **Aliases are never named.** `cub` and `tiger` point at whatever the service currently prefers,
+  and `cub`'s target today is this study's own primary model. Config names targets.
+- **Caps are politeness, not throughput.** The local reader shares `llm_qwen3_8_27b_fp8` with the
+  four thinking-off rules, because it is the same endpoint under a different setting and two rules
+  pointed at one endpoint must share one cap. The gateway reader has `llm_gateway`, which exists so
+  that a mistake costs twelve calls in flight rather than twelve hundred.

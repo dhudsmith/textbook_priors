@@ -173,6 +173,42 @@ def figure_ladder(across, datasets, dest):
     plt.close(fig)
 
 
+def figure_readers(across, datasets, dest):
+    """H4: how much class information each reader's concept answers carry.
+
+    One line per dataset across the reader chain, drawn in the order the chain fixes: the baseline
+    at effort `none`, the same model asked to think, then a frontier model asked to think as hard.
+    Each step changes one thing, so a line that rises at the first step and falls at the second is
+    saying something specific and readable off the figure.
+
+    The y axis is the cross-validated probe, not arm B and not arm C: it is what a classifier can
+    recover from the concept answers on the images the readers share, and it exists because arm C
+    would have needed a labelled pool for every reader (WORKFLOW.md sections 2 and 3).
+    """
+    order = across["h4"]["readers"]
+    chain = [across["h4"]["h4a"]["from"], across["h4"]["h4a"]["to"], across["h4"]["h4b"]["to"]]
+    rest = [r for r in order if r not in chain]
+    columns = chain + rest
+    fig, ax = plt.subplots(figsize=(9.0, 4.8))
+    for dataset in datasets:
+        values = [across["h4"]["probe_auc"][dataset][r] for r in columns]
+        ax.plot(range(len(columns)), values, "o-", label=dataset, markersize=5, alpha=0.85)
+    # The chain is what the hypothesis reads; the other readers are context and are separated by a
+    # rule rather than by being left out, because a reader hidden from the figure is a reader the
+    # reader of the figure cannot check.
+    ax.axvline(len(chain) - 0.5, color="grey", linestyle="--", linewidth=1)
+    ax.text(len(chain) - 0.45, ax.get_ylim()[0], " not in the chain", fontsize=7,
+            color="grey", va="bottom")
+    ax.set_xticks(range(len(columns)), [r.replace("-", "\n") for r in columns], fontsize=7)
+    ax.set_ylabel(f"cross-validated probe AUC\n(concept answers, {across['h4']['subsample']} images)")
+    ax.grid(alpha=0.25)
+    ax.legend(fontsize=8, ncol=2)
+    ax.set_title("H4: what each reader's concept answers carry", fontsize=11)
+    fig.tight_layout()
+    fig.savefig(Path(dest) / "fig_readers.png", dpi=200)
+    plt.close(fig)
+
+
 # ---- tables ---------------------------------------------------------------------------------------
 
 def _table(dest, name, header, rows, caption, label):
@@ -226,6 +262,35 @@ def table_h3(across, datasets, dest):
            "H3. Arm B's AUC for every model, smallest to largest. Read within family: size and "
            "training data are confounded across families, and both size steps also change "
            "quantisation.", "h3")
+
+
+def table_h4(across, datasets, dest):
+    """H4: the two steps of the reader chain, each changing one thing.
+
+    The columns are AUCs of the cross-validated probe on the shared prefix, so they are not
+    comparable with the learning curve's arm C: no labels were spent to produce them. The last two
+    columns are the paired differences the hypothesis is decided on.
+    """
+    h4 = across["h4"]
+    base, think, front = h4["h4a"]["from"], h4["h4a"]["to"], h4["h4b"]["to"]
+    rows = []
+    for d in datasets:
+        got = h4["probe_auc"][d]
+        a, b = h4["h4a"]["differences"][d], h4["h4b"]["differences"][d]
+        rows.append([tex_escape(d), fmt(got[base]), fmt(got[think]), fmt(got[front]),
+                     f"{fmt(a['median'])} [{fmt(a['lo'])}, {fmt(a['hi'])}]",
+                     f"{fmt(b['median'])} [{fmt(b['lo'])}, {fmt(b['hi'])}]"])
+    _table(dest, "h4",
+           ["dataset", tex_escape(base), tex_escape(think), tex_escape(front),
+            "H4a: think $-$ base", "H4b: frontier $-$ think"],
+           rows,
+           f"H4. The cross-validated probe on each reader's concept answers, on the "
+           f"{h4['subsample']} images every reader was scored on. H4a holds the model and adds "
+           f"reasoning; H4b holds the reasoning effort and changes the model. Supported on "
+           f"{h4['h4a']['wins']} of {len(datasets)} and {h4['h4b']['wins']} of {len(datasets)} "
+           "respectively. These AUCs are not points on the learning curve: the probe is fitted "
+           "inside the same images it scores, so it measures what the answers carry rather than "
+           "what a labelled model would achieve.", "h4")
 
 
 LIT_METHOD_LABEL = {"resnet18_224": "ResNet-18 (224)", "resnet50_224": "ResNet-50 (224)",
@@ -300,6 +365,20 @@ def numbers(per, across, datasets, curve_n, primary, dest, literature=None):
         "startedAbove": h1["datasets_where_the_probe_starts_above_arm_b"],
         "friedmanP": fmt(h3["friedman"]["p"], 4),
     }
+    h4 = across.get("h4")
+    if h4:
+        lines["hFourSupported"] = "supported" if h4["supported"] else "not supported"
+        lines["hFourASupported"] = "supported" if h4["h4a"]["supported"] else "not supported"
+        lines["hFourBSupported"] = "supported" if h4["h4b"]["supported"] else "not supported"
+        lines["hFourAWins"] = h4["h4a"]["wins"]
+        lines["hFourBWins"] = h4["h4b"]["wins"]
+        lines["hFourAp"] = fmt(h4["h4a"]["sign_test_p"], 4)
+        lines["hFourBp"] = fmt(h4["h4b"]["sign_test_p"], 4)
+        lines["hFourSubsample"] = h4["subsample"]
+        lines["hFourBaseline"] = tex_escape(h4["h4a"]["from"])
+        lines["hFourThinking"] = tex_escape(h4["h4a"]["to"])
+        lines["hFourFrontier"] = tex_escape(h4["h4b"]["to"])
+        lines["numReaders"] = len(h4["readers"])
     for family, spec in h3["ladder"].items():
         lines[f"ladder{family.capitalize()}Wins"] = spec["wins"]
         lines[f"ladder{family.capitalize()}P"] = fmt(spec["sign_test_p"], 4)

@@ -31,6 +31,10 @@ resources:
   llm_gemma_4_12b: 24
   llm_qwen3_8_27b_fp8: 24
   llm_gemma_4_31b: 12
+  # The OpenAI gateway is somebody else's capacity and is metered in credits rather than in
+  # concurrency, so this cap is not a politeness limit on a shared endpoint like the four above.
+  # It exists so that a mistake costs twelve calls in flight and not twelve hundred.
+  llm_gateway: 12
 latency-wait: 60
 keep-going: True
 rerun-incomplete: True

@@ -16,9 +16,6 @@ snakemake --profile profiles/local -j 2 -F smoke  # re-run the tests after editi
 
 # opt-in, outside `rule all`: ten images through the service on a compute node
 snakemake --profile profiles/palmetto results/probe/pneumoniamnist__qwen3.8-27b-fp8.json
-
-# opt-in, outside `rule all`, no LLM calls: a human-readable txt render of every prompt
-snakemake --profile profiles/local -j 2 prompts_txt
 ```
 
 Every rule takes the `smoke` marker as an input, so nothing is computed on code that fails its
@@ -27,7 +24,7 @@ invalidates that dataset alone; the last invocation above is how the schema test
 such an edit, and the reasoning is in the Snakefile's stage-0 banner.
 
 All seven stages are built. `rule all` is the technical report, and a dry run from a clean clone is
-312 jobs: 270 of them the scoring fan-out.
+336 jobs: 294 of them the scoring fan-out.
 
 ## The stages
 
@@ -35,11 +32,11 @@ All seven stages are built. `rule all` is the technical report, and a dry run fr
 |---|---|---|---|---|
 | 0 | **Smoke** | The tests: bank schema, label maps, prompts, the sampler, the estimators, the metric | 1 | yes |
 | 1 | **Sample** | Per dataset: the seeded 500-image test sample and 2000-image labelled pool | 6 | yes |
-| 2 | **Score** | Per dataset: render both prompts; then the VLM calls, archived raw | 6 + 270 | prompts, probe |
+| 2 | **Score** | Per dataset: render both prompts; then the VLM calls, archived raw | 6 + 294 | prompts, probe |
 | 3 | **Features** | Per dataset: ImageNet ResNet-18 penultimate features | 6 | yes |
-| 4 | **Classify** | Per dataset: arms A, B, C, P over the curve, and the permutation controls | 6 | yes |
-| 5 | **Evaluate** | AUC, the paired bootstrap, n_B; then the sign tests and the ladder | 6 + 1 | yes |
-| 6 | **Report** | Three figures, the tables, the technical report PDF | 3 | yes |
+| 4 | **Classify** | Per dataset: arms A, B, C, P over the curve, the permutation controls, and every reader's probe | 6 | yes |
+| 5 | **Evaluate** | AUC, the paired bootstrap, n_B; then the sign tests, the ladder and the reader chain | 6 + 1 | yes |
+| 6 | **Report** | Four figures, the tables, the technical report PDF | 3 | yes |
 
 ## Layout
 
@@ -59,7 +56,6 @@ data/cache/sample/     symlink target: the sampled image arrays, one npz per dat
 scripts/link_storage.sh  one-time setup: make those two symlinks
 results/               one JSON per unit of work, each with a manifest
 results/score/         the raw VLM response archive, write-protected once written
-results/prompts_txt/   opt-in: a plain-text render of each prompt, for a human reader; no manifest
 benchmarks/            wall time and peak memory per job
 report/                report.tex, references.bib, generated tables/ and figs/
 logs/                  one log per job
@@ -74,11 +70,11 @@ SESSION_LOG.md         timestamped record of how the work was directed
 |---|---|
 | `data.py` | The three fixed inputs — the concept bank, the pinned release and the literature benchmarks — read and hashed in one place. |
 | `sample.py` | The seeded samples, and the streaming reader that takes their rows out of a deflated release file without materialising the split. |
-| `llm.py` | The boundary: one kind of call, the key read from an owner-only file, thinking switched off, transport backoff, and what came back recorded verbatim. |
+| `llm.py` | The boundary: one kind of call, the key read from an owner-only file, the reasoning effort and the API dialect, transport backoff, and what came back recorded verbatim. |
 | `score.py` | The deterministic half of scoring: the image as a lossless PNG, and a reply parsed into a validated answer or a recorded absence. |
 | `prompts.py` | The concept and zero-shot prompt strings, rendered from the bank and the label map. |
 | `features.py` | Arm P's frozen ImageNet encoder, and the preprocessing that does not resize. |
-| `classify.py` | Every estimator: the concept vectors, arm B's fingerprint match, the regression behind arms C and P, and the two permutation controls. |
+| `classify.py` | Every estimator: the concept vectors, arm B's fingerprint match, the regression behind arms C and P, H4's cross-validated probe, and the two permutation controls. |
 | `evaluate.py` | The AUC convention as a rank formula, the shared paired bootstrap, n_B, and the tests the hypotheses are decided by. |
 | `report.py` | Every figure, table and number macro, from results/ alone — plus one table that also reads the pinned literature benchmarks. |
 | `stages.py` | **The workflow driver.** One entry point per unit of parallel work. |
@@ -93,7 +89,7 @@ SESSION_LOG.md         timestamped record of how the work was directed
 | `test_literature.py` | the pinned literature-benchmark table to the datasets the workflow runs and to `references.bib` | 4 |
 | `test_prompts.py` | the two prompts to H2's separation, and the renderer to its switches | 48 |
 | `test_sample.py` | the streaming reader to a release-shaped fixture whose rows identify themselves | 14 |
-| `test_score.py` | the image encoding, the reply parser and the two retry policies, without calling the service | 51 |
+| `test_score.py` | the image encoding, the reply parser, the two retry policies and the exact request body each dialect sends, without calling the service | 56 |
 | `test_classify.py` | the estimators to fixtures small enough to check by hand, arm B included | 19 |
 | `test_evaluate.py` | the fast AUC to the package's evaluator, and the decision rules to the plan | 19 |
 | `test_pipeline.py` | the analysis chain end to end, on an archive whose answer is known | 4 |

@@ -198,6 +198,48 @@ def fit_predict(x_train, y_train, x_test, n_classes: int, l2_grid, cv_folds: int
     return {"scores": scores, "C": float(best), "folds": folds, "classes": present.tolist()}
 
 
+def cv_probe(x, y, n_classes: int, l2_grid, folds: int, seed: int) -> dict:
+    """How much class information is in these concept answers, without a labelled pool.
+
+    H4's measure (WORKFLOW.md sections 2 and 3). Arm C answers the same question but needs the
+    2,000-image pool, which only the primary model at effort `none` was ever asked to score; buying
+    it for every reader would cost twelve thousand calls to compare six readings of the same two
+    hundred images. So the classifier is fitted *inside* the scored images by stratified k-fold
+    cross-validation, and what comes back is the out-of-fold score for every image: each image is
+    predicted by a model that never saw it.
+
+    Three properties this has to have, because H4 is a comparison between readers and not a claim
+    about any one of them:
+
+      * **The folds are identical across readers.** They are built from the labels and the seed,
+        both of which are the same for every reader, so a difference between two readers is the
+        concept answers and nothing else.
+      * **Every image gets exactly one out-of-fold score**, so the result is one score matrix of
+        the same shape as every other arm's and goes into the same paired bootstrap. The bootstrap
+        then resamples images over fixed predictions, exactly as it does for arms B, C and P.
+      * **It is not arm C and must not be read as arm C.** A cross-validated fit on 200 images is
+        an estimate of information content, not a point on the learning curve: no `n` labels were
+        spent, because the same images are both the training and the evaluation material. The
+        report says so where it is read.
+
+    A class too rare to appear in every fold drops the fold count, the same rule arm C uses; a
+    class with fewer members than two cannot be cross-validated at all and its column stays zero,
+    which the AUC convention reads as an uninformative column rather than a missing one.
+    """
+    counts = np.bincount(y, minlength=n_classes)
+    usable = counts[counts > 0].min()
+    k = int(min(folds, usable))
+    scores = np.zeros((len(x), n_classes))
+    if k < 2 or len(np.unique(y)) < 2:
+        return {"scores": scores, "folds": 0, "thin_classes": int((counts < k).sum())}
+
+    splitter = StratifiedKFold(n_splits=k, shuffle=True, random_state=seed)
+    for fit_idx, held_idx in splitter.split(x, y):
+        got = fit_predict(x[fit_idx], y[fit_idx], x[held_idx], n_classes, l2_grid, folds, seed)
+        scores[held_idx] = got["scores"]
+    return {"scores": scores, "folds": k, "thin_classes": int((counts < k).sum())}
+
+
 def permute_fingerprints(fingerprints: np.ndarray, seed: int) -> np.ndarray:
     """Arm B's control: the same fingerprints, attached to the wrong classes.
 

@@ -135,6 +135,38 @@ gemma family; a Friedman test over all \numModels\ models gives $p = \friedmanP$
 
 \input{tables/h3}
 
+\subsection*{H4 --- Reading the features better: \hFourSupported}
+
+\emph{A better reader gets more class information out of the same images.} Two steps, each
+changing exactly one thing, on the \hFourSubsample\ images every reader was scored on:
+\hFourBaseline\ at no reasoning effort, the same model asked to think at \texttt{medium}
+(\textbf{H4a}), and \hFourFrontier, a frontier model asked to think as hard (\textbf{H4b}).
+The second step cannot be run against the no-reasoning baseline, because the frontier model cannot
+be asked to stop reasoning; holding the effort fixed instead is what makes it a comparison of
+models rather than of models and effort together.
+
+The measure is a cross-validated probe on the concept answers, not arm B and not arm C. Arm B
+reads the answers through the nearest-fingerprint rule, which H2 showed to be lossy, so a
+comparison of readers through it would be a comparison through a broken channel; arm C would need
+a labelled pool for every reader, which this study deliberately does not buy. The probe fits arm
+C's classifier inside the scored images themselves by stratified cross-validation, with folds
+fixed by seed and identical across readers, and every image is scored by a fit that never saw it.
+It measures what the answers carry. It is not a point on the learning curve, and no $n_B$ reads it.
+
+H4a won on \hFourAWins\ of \numDatasets\ datasets and H4b on \hFourBWins\ of \numDatasets;
+both are held to the 6-of-6 rule H1 and H2 are held to, since 5 of 6 is $p = 0.11$ and six
+datasets cannot do better. All \numReaders\ readers are reported in
+Table~\ref{tab:h4} and Figure~\ref{fig:readers}, not only the three the chain reads.
+
+\begin{figure}[htbp]\centering
+  \includegraphics[width=0.9\textwidth]{fig_readers.png}
+  \caption{What each reader's concept answers carry, by the cross-validated probe. The chain H4
+  is decided on sits left of the dashed rule; the remaining readers are the ladder models at no
+  reasoning effort, shown for context.}\label{fig:readers}
+\end{figure}
+
+\input{tables/h4}
+
 \section{Extension: reading the arms against the published literature}
 \label{sec:literature}
 
