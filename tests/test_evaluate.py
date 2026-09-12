@@ -146,3 +146,26 @@ def test_the_ordinal_positions_are_the_ones_the_codes_mean():
     assert metrics.rank_of(-np.inf, grid) == 0 and metrics.code_of_rank(0, grid) == "<=50"
     assert metrics.rank_of(100.0, grid) == 2 and metrics.code_of_rank(2, grid) == "100"
     assert metrics.rank_of(np.inf, grid) == 4 and metrics.code_of_rank(4, grid) == ">200"
+
+
+def test_the_h1_median_keeps_the_coded_datasets_in_the_ordering():
+    """WORKFLOW.md section 2 asks for the median n_B to be at least 100. Taken over the numeric
+    values alone that would silently drop every `<=50` and `>2000` - the two most informative
+    outcomes - and let a minority of datasets decide a six-dataset rule. On the ordinal scale a
+    `>2000` sits above every grid point and a `<=50` below every one, which is what they mean."""
+    grid = [50, 100, 200, 500, 1000, 2000]
+    codes = ["<=50", "100", ">2000", "500", ">2000", "50"]
+    ranks = [metrics.rank_of(-np.inf if c.startswith("<=") else np.inf if c.startswith(">")
+                             else float(c), grid) for c in codes]
+    assert ranks == [0, 2, 7, 4, 7, 1]
+    assert float(np.median(ranks)) >= metrics.rank_of(100.0, grid), "three of six are at or above 100"
+
+
+def test_a_decision_threshold_need_not_be_a_grid_point():
+    """"Median n_B at least 100" is a round number in a rule, not a crossing, so it cannot be
+    looked up like one. On a grid that cannot resolve it, only ">last" qualifies."""
+    assert metrics.rank_at_least(100, [50, 100, 200]) == 2
+    assert metrics.rank_at_least(100, [20, 50]) == 3, "no grid point reaches it"
+    assert metrics.rank_at_least(10, [50, 100]) == 1
+    with pytest.raises(ValueError):
+        metrics.rank_of(75.0, [50, 100])

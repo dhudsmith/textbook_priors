@@ -207,7 +207,7 @@ def numbers(per, across, datasets, curve_n, primary, dest):
         "cBeatsPp": fmt(h1["c_beats_p_sign_test_p"], 4),
         "bBeatsAWins": h2["b_beats_a_wins"],
         "bBeatsAp": fmt(h2["b_beats_a_sign_test_p"], 4),
-        "medianNB": fmt(h1["median_n_b_over_numeric"], 1) if h1["median_n_b_over_numeric"] else "--",
+        "medianNB": str(h1["median_n_b"]).replace("<=", r"$\leq$").replace(">", "$>$"),
         "neverReached": h1["datasets_where_the_probe_never_reaches_arm_b"],
         "startedAbove": h1["datasets_where_the_probe_starts_above_arm_b"],
         "friedmanP": fmt(h3["friedman"]["p"], 4),

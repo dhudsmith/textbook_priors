@@ -563,17 +563,28 @@ def evaluate_across(out: str) -> None:
         numeric = [float(v) for v in n_b_values.values() if v.isdigit()]
         never = sum(1 for v in n_b_values.values() if v.startswith(">"))
         already = sum(1 for v in n_b_values.values() if v.startswith("<="))
-        median_n_b = float(np.median(numeric)) if numeric else None
+
+        # "median n_B at least 100" has to be read on the ordinal scale, because n_B is ordinal and
+        # its values include `<=50` and `>2000`. A median over the numeric ones alone would drop
+        # exactly the datasets that carry the most information: a `>2000` is the strongest possible
+        # evidence for H1 and a `<=50` the strongest against, and discarding both would let three
+        # datasets decide a six-dataset rule. Ranks keep them in, in the right order.
+        ranks = [metrics.rank_of(-np.inf if v.startswith("<=") else np.inf if v.startswith(">")
+                                 else float(v), curve["n"]) for v in n_b_values.values()]
+        median_rank = float(np.median(ranks))
+        threshold_rank = metrics.rank_at_least(100.0, curve["n"])
         h1 = {
             "n_b": n_b_values,
-            "median_n_b_over_numeric": median_n_b,
+            "median_n_b": metrics.code_of_rank(int(np.ceil(median_rank)), curve["n"]),
+            "median_n_b_over_numeric": float(np.median(numeric)) if numeric else None,
+            "median_rank": median_rank, "threshold_rank": threshold_rank,
             "datasets_where_the_probe_never_reaches_arm_b": never,
             "datasets_where_the_probe_starts_above_arm_b": already,
             "c_beats_p_at_smallest_n": c_beats_p,
             "c_beats_p_wins": sum(c_beats_p.values()),
             "c_beats_p_sign_test_p": metrics.sign_test(sum(c_beats_p.values()), len(datasets)),
             "supported": bool(sum(c_beats_p.values()) == len(datasets)
-                              and (never > 0 or (median_n_b is not None and median_n_b >= 100))),
+                              and median_rank >= threshold_rank),
         }
 
         # H2: the bank, not just the model.

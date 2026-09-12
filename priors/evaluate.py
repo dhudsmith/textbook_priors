@@ -139,7 +139,24 @@ def rank_of(value: float, grid) -> int:
         return 0
     if value == np.inf:
         return len(ordered) + 1
-    return ordered.index(int(value)) + 1
+    if int(value) in ordered:
+        return ordered.index(int(value)) + 1
+    raise ValueError(f"{value} is not a grid point; a crossing is always one of {ordered}")
+
+
+def rank_at_least(threshold: float, grid) -> int:
+    """The smallest rank whose crossing is at least `threshold` labelled images.
+
+    A decision rule states a round number - "median n_B at least 100" - which need not be a grid
+    point at all, so it cannot be looked up like a crossing. With the grid [50, 100, 200, ...] the
+    answer is rank 2; with a coarser grid whose points are all below the threshold, only ">last"
+    qualifies, which is the honest reading of a rule the grid cannot resolve.
+    """
+    ordered = sorted(grid)
+    for i, n in enumerate(ordered):
+        if n >= threshold:
+            return i + 1
+    return len(ordered) + 1
 
 
 def code_of_rank(rank: int, grid) -> str:
