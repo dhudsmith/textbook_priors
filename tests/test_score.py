@@ -120,7 +120,7 @@ class FakeClient:
         self.budgets.append(max_tokens)
         text = self.texts[min(len(self.budgets) - 1, len(self.texts) - 1)]
         return llm.Reply(text=text, served_model="served-name", finish_reason="length",
-                         from_reasoning=False, usage={"total_tokens": 7})
+                         field="content", message={"content": text}, usage={"total_tokens": 7})
 
 
 def test_every_attempt_records_what_it_cost():
@@ -168,8 +168,14 @@ def test_retries_can_be_switched_off():
 # ---- the two things the served stack does that a plain client would get wrong -----------------
 
 class Message:
-    def __init__(self, content=None, reasoning_content=None):
-        self.content, self.reasoning_content = content, reasoning_content
+    """A served message. Different builds fill different fields; some fill none."""
+
+    def __init__(self, content=None, reasoning_content=None, reasoning=None):
+        self.content, self.reasoning_content, self.reasoning = content, reasoning_content, reasoning
+
+    def model_dump(self):
+        return {"role": "assistant", "content": self.content,
+                "reasoning_content": self.reasoning_content, "reasoning": self.reasoning}
 
 
 class Choice:
@@ -182,17 +188,31 @@ class Completion:
         self.choices, self.model, self.usage = [Choice(message)], model, {"total_tokens": 3}
 
 
-def test_a_reply_filed_under_reasoning_content_is_still_read():
-    """One served model puts its answer in `reasoning_content` even with thinking switched off. A
-    client that read only `content` would record a whole model's scores as missing."""
-    plain = llm.read_reply(Completion(Message(content='{"a": 1}')))
-    assert plain.text == '{"a": 1}' and plain.from_reasoning is False
+@pytest.mark.parametrize("kwargs, field", [
+    (dict(content='{"a": 1}'), "content"),
+    (dict(content="", reasoning_content='{"a": 1}'), "reasoning_content"),
+    (dict(content=None, reasoning='{"a": 1}'), "reasoning"),
+])
+def test_the_answer_is_found_whichever_field_the_build_uses(kwargs, field):
+    """This cost 3,000 calls. qwen3.5-9b returns its finished JSON in `reasoning` - not `content`,
+    not `reasoning_content` - and with thinking off that field holds the answer rather than any
+    chain of thought. A reader that knew two fields recorded a whole model as unanswerable."""
+    reply = llm.read_reply(Completion(Message(**kwargs)))
+    assert reply.text == '{"a": 1}'
+    assert reply.field == field, "and which field answered is recorded"
 
-    fallback = llm.read_reply(Completion(Message(content="", reasoning_content='{"a": 1}')))
-    assert fallback.text == '{"a": 1}' and fallback.from_reasoning is True, "and it is flagged"
 
+def test_a_message_with_nothing_in_it_is_empty_not_an_error():
     empty = llm.read_reply(Completion(Message(content="", reasoning_content="")))
-    assert empty.text == "" and empty.from_reasoning is False
+    assert empty.text == "" and empty.field is None
+
+
+def test_the_whole_message_is_kept_so_a_reader_bug_is_repairable():
+    """The archive holds the message, not the text pulled out of it. When the extraction was wrong,
+    the only way back was to buy the calls again; with the message kept, it is a re-parse."""
+    reply = llm.read_reply(Completion(Message(content=None, reasoning='{"a": 1}')))
+    assert reply.message["reasoning"] == '{"a": 1}'
+    assert set(reply.message) >= {"content", "reasoning_content", "reasoning"}
 
 
 def test_the_served_model_name_is_recorded_rather_than_the_requested_one():

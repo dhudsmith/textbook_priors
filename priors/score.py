@@ -179,7 +179,10 @@ def ask_one(client, prompt: dict, image_url: str, kind: str, schema, max_tokens:
             "text": reply.text,
             "served_model": reply.served_model,
             "finish_reason": reply.finish_reason,
-            "from_reasoning": reply.from_reasoning,
+            "field": reply.field,
+            # The whole message, not only the text read out of it: an extraction is a guess about
+            # another system's API, and a wrong guess must be repairable from the archive.
+            "message": reply.message,
             "transport_attempts": reply.transport_attempts,
             "usage": reply.usage,
         })

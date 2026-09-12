@@ -92,8 +92,14 @@ resources:
   # memory is one dataset's test array held while the images are encoded (376 MB at the widest).
   # Thirty minutes is for the service being slow, not for the work.
   probe:  {cpus: 1, mem_mb: 2000, runtime: 30}
-  # From the probe (2026-09-11): a call with an image takes a median 3.6 s and at most 5.2 s, so a
-  # chunk of 100 is about six minutes and 30 covers a slow service plus the content retries. One
-  # core: the job is waiting on the network, not computing. Memory is the split's image array held
-  # while each image is encoded, 376 MB at the widest, so 2 GB.
-  score:  {cpus: 1, mem_mb: 2000, runtime: 30}
+  # One core: the job waits on the network rather than computing. Memory is the split's image array
+  # held while each image is encoded, 376 MB at the widest, so 2 GB.
+  #
+  # Runtime was 30 minutes, from the probe's median of 3.6 s per call at concurrency ONE, and 29
+  # jobs of the first fan-out died on it. Per-call latency is not a property of the service alone:
+  # measured across that run, gemma-4-12b under a cap of 24 took 3.4 s and finished a chunk in 6
+  # minutes, gemma-4-31b under a cap of 12 took 5.0 s and 8 to 11 minutes, while the primary model
+  # under a cap of 48 ran past 30 minutes for a hundred images. A chunk that times out throws away
+  # every call it made, which is the expensive failure here, so the request is now four times the
+  # worst chunk seen rather than twice the best.
+  score:  {cpus: 1, mem_mb: 2000, runtime: 120}
