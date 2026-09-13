@@ -371,3 +371,17 @@ afternoon exactly (docs/rcd_llm_service.md).
 One thing done on purpose: the embedding client lives in `priors/embed.py`, reusing `llm.py`'s key
 loader and backoff, rather than in `llm.py` itself, so that adding an endpoint does not change the
 provenance of the 294 protected chunks behind it.
+
+## 2026-09-12 23:05 — "If the embed API can't take pixels my idea is a no go"
+
+Checked at the wire rather than from the model listing: the embedding model rejects an
+`image_url` input with a validation error, the three OpenAI embedding models are text-only, and
+the vision chat models are not available at `/v1/embeddings` at all. Nothing on the service embeds
+pixels. The user's idea as stated cannot be built on this service.
+
+What exists at this point is the reinterpretation built in its place - H5, the same concept answers
+and the same bank read by a learned text distance - pre-registered, committed as a plan and a data
+layer, and run on one dataset for the hand-check the plan requires. That hand-check is recorded in
+the session and not in CHANGELOG.md, because whether H5 continues is now the user's decision and
+the numbers are a preview from a scratch script, not a rule. Work stopped here pending that
+decision; nothing downstream of the embed stage was written.
