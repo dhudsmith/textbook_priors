@@ -10,7 +10,6 @@ a table; tables and figures are drawn from those files by the report stages.
     score DATASET MODEL SPLIT PROMPT CHUNK --out FILE   one chunk of the fan-out (stage 2)
     collect-scores DATASET --out FILE            one dataset's chunks, gathered (stage 2)
     features DATASET --out FILE --arrays FILE    ImageNet features of the sampled images (stage 3)
-    embed DATASET --out FILE --arrays FILE       the answers and the bank, as prose, embedded (stage 3)
     classify DATASET --out FILE --arrays FILE    arms A, B, C, D, P and the controls (stage 4)
     evaluate DATASET --out FILE                  AUCs, the paired bootstrap and n_B (stage 5)
     evaluate-across --out FILE                   the sign tests, the ladder, the verdicts (stage 5)
@@ -355,75 +354,6 @@ def features(dataset: str, out: str, arrays: str) -> None:
                            # by standardisation anyway; counted here so the report can say so.
                            "constant_columns": int((v.std(axis=0) == 0).sum())}
                        for k, v in out_arrays.items()}},
-        ))
-
-
-def embed(dataset: str, out: str, arrays: str) -> None:
-    """One dataset's concept answers, class names and fingerprints, rendered as prose and embedded.
-
-    H5's raw material (WORKFLOW.md section 2). Every concept cell in the gathered archive is
-    rendered row by row - the primary model's test and pool, the ladder models' test, the readers'
-    prefix - so that T can later be read for any of them; the class names and fingerprints are
-    rendered once each. The npz holds one unit-vector matrix per cell plus the two class matrices;
-    the JSON holds every rendered text's hash, the served model name, the dimension, and the
-    fingerprint similarity matrix, which is a property of the bank and is reported as one.
-
-    This is a second LLM boundary and is recorded like the first: the texts that went over the wire
-    are hashed here and the model that answered is named, so the vectors can be re-derived or
-    disputed later without guessing what was sent.
-    """
-    from . import embed as words
-    spec = CONFIG["embed"]
-    vlm = CONFIG["vlm"]
-    bank = data.load_bank(dataset, CONFIG["conceptdir"])
-    release = data.load_release(CONFIG["release"])
-    classes = release.class_names(dataset)
-    gathered = json.loads(Path(f"{CONFIG['outdir']}/scores/{dataset}.json").read_text())
-    template = spec["template"]
-
-    embedder = words.Embedder(spec["model"], vlm["base_url"], vlm["key_file"], batch=spec["batch"],
-                              retries=vlm["transport_retries"], timeout=vlm["timeout"])
-
-    with Run("embed", dict(dataset=dataset, model=spec["model"], template=template,
-                           batch=spec["batch"], bank_sha256=bank.sha256)) as run:
-        out_arrays, cells = {}, {}
-        for key, cell in sorted(gathered["cells"].items()):
-            if cell["prompt"] != "concept":
-                continue
-            rows = cell["rows"]
-            texts = [words.answer_text(bank, row, template) for row in rows]
-            vectors = embedder.embed(texts)
-            out_arrays[f"answers__{key}"] = vectors
-            out_arrays[f"positions__{key}"] = np.array([r["position"] for r in rows], dtype=np.int64)
-            committed = [words.committed_count(bank, r.get("answers") or {}) for r in rows]
-            cells[key] = {"n": len(rows), "texts_sha256": words.sha256(texts),
-                          "empty_descriptions": int(sum(1 for c in committed if c == 0)),
-                          "mean_committed": float(np.mean(committed)) if committed else 0.0,
-                          "example": texts[0] if texts else ""}
-
-        name_texts = [words.name_text(bank, c, template) for c in classes]
-        fingerprint_texts = [words.fingerprint_text(bank, c, template) for c in classes]
-        out_arrays["names"] = embedder.embed(name_texts)
-        out_arrays["fingerprints"] = embedder.embed(fingerprint_texts)
-        similarity = words.similarity_matrix(out_arrays["fingerprints"])
-        off_diagonal = similarity[~np.eye(len(classes), dtype=bool)]
-
-        Path(arrays).parent.mkdir(parents=True, exist_ok=True)
-        np.savez(arrays, **out_arrays)
-        run.write(out, dict(
-            dataset=dataset, classes=classes, model=spec["model"],
-            served_model=embedder.served_model, dimension=embedder.dimension,
-            calls=embedder.calls, prompt_tokens=embedder.prompt_tokens,
-            template=template,
-            arrays={"file": arrays, "keys": sorted(out_arrays)},
-            cells=cells,
-            class_texts={"names": name_texts, "fingerprints": fingerprint_texts,
-                         "names_sha256": words.sha256(name_texts),
-                         "fingerprints_sha256": words.sha256(fingerprint_texts)},
-            fingerprint_similarity={"matrix": similarity.round(4).tolist(),
-                                    "off_diagonal_min": float(off_diagonal.min()) if len(off_diagonal) else None,
-                                    "off_diagonal_max": float(off_diagonal.max()) if len(off_diagonal) else None,
-                                    "off_diagonal_mean": float(off_diagonal.mean()) if len(off_diagonal) else None},
         ))
 
 
@@ -861,8 +791,6 @@ def main(argv=None) -> None:
     p = sub.add_parser("collect-scores"); p.add_argument("dataset"); p.add_argument("--out", required=True)
     p = sub.add_parser("features"); p.add_argument("dataset")
     p.add_argument("--out", required=True); p.add_argument("--arrays", required=True)
-    p = sub.add_parser("embed"); p.add_argument("dataset")
-    p.add_argument("--out", required=True); p.add_argument("--arrays", required=True)
     p = sub.add_parser("classify"); p.add_argument("dataset")
     p.add_argument("--out", required=True); p.add_argument("--arrays", required=True)
     p = sub.add_parser("evaluate"); p.add_argument("dataset"); p.add_argument("--out", required=True)
@@ -882,8 +810,6 @@ def main(argv=None) -> None:
         collect_scores(a.dataset, a.out)
     elif a.stage == "features":
         features(a.dataset, a.out, a.arrays)
-    elif a.stage == "embed":
-        embed(a.dataset, a.out, a.arrays)
     elif a.stage == "classify":
         classify(a.dataset, a.out, a.arrays)
     elif a.stage == "evaluate":

@@ -132,24 +132,6 @@ features: {arch: resnet18, weights: imagenet1k_v1, batch: 64}
 featuredir: data/cache/features
 torch_home: /project/dane2/wficai/textbook_priors/torch_home
 
-# H5 (WORKFLOW.md section 2): the same concept answers and the same bank, read by a learned
-# semantic distance instead of ordinal arithmetic. Every image's answers and every class's
-# fingerprint are rendered as prose in the bank's own words and embedded by the service's text
-# embedding model; a class score is a cosine. No VLM is asked anything new - the archive is read,
-# not re-bought - and the only new traffic is text through /v1/embeddings, which is local, free of
-# credits, deterministic across calls, and answers 256 texts in a fifth of a second.
-embed:
-  model: qwen3-embedding-4b          # Qwen3-Embedding-4B: 2,560 dimensions, unit-normalised, no
-                                     # matryoshka truncation (measured 2026-09-12)
-  # One template for every text, fixed before any number existed and never tuned. {modality} is
-  # the bank's own modality string; {text} is the rendered anchors of an image's answers, of a
-  # class's fingerprint, or a class name with its underscores and hyphens as spaces.
-  template: "{modality}. {text}"
-  batch: 256                         # texts per call; the endpoint took 256 in 0.20 s
-  cap: 4                             # politeness on a shared endpoint; nothing here is slow
-  permute: {seeds: [0, 1, 2]}        # T's control: fingerprint vectors permuted across classes
-embeddir: data/cache/embed
-
 # The classifier grid is stage 4's; `missing_max_frac` is read one stage earlier, by the gather
 # that flags a dataset-model cell too incomplete for the headline (WORKFLOW.md section 3).
 classify: {l2_grid: [0.01, 0.1, 1, 10, 100], cv_folds: 5, missing_max_frac: 0.05, permute: {seeds: [0, 1, 2]},
@@ -200,9 +182,6 @@ resources:
   # writes nothing at all. 600 minutes is about 2.7 times the worst chunk that concurrency can
   # produce, and the cap below is what stops it being produced.
   score_reader: {cpus: 1, mem_mb: 2000, runtime: 600, cap: 4}
-  # Guess until benchmarks/embed/ exists. About 4,400 texts per dataset in batches of 256 is under
-  # twenty calls; memory is the gathered scores JSON and 4,400 x 2,560 floats, about 45 MB.
-  embed: {cpus: 1, mem_mb: 2000, runtime: 30}
   score_reader_gateway: {cpus: 1, mem_mb: 2000, runtime: 60}
   # Guess. The probe is 21 calls placed one after another and a few PNG encodings: one core, and
   # memory is one dataset's test array held while the images are encoded (376 MB at the widest).

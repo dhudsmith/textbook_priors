@@ -385,3 +385,20 @@ layer, and run on one dataset for the hand-check the plan requires. That hand-ch
 the session and not in CHANGELOG.md, because whether H5 continues is now the user's decision and
 the numbers are a preview from a scratch script, not a rule. Work stopped here pending that
 decision; nothing downstream of the embed stage was written.
+
+## 2026-09-12 23:15 — "Remove all the nonsense not using pixels. Just rewind."
+
+"This idea doesn't make any sense going through the fingerprints." Done. WORKFLOW.md,
+config/config.yaml, the Snakefile, priors/stages.py, tests/test_score.py and the palmetto profile
+are restored byte-for-byte to the commit before H5 existed; priors/embed.py and tests/test_embed.py
+are deleted; 297 tests pass, the count before any of it. The one embedded dataset's outputs in the
+run checkout are removed with the rule that made them: they cost nothing and nothing reads them.
+
+Kept on purpose: the session-log entries above, because a record of how the work was directed is
+worth most exactly where it records a dead end, and the service notes' two factual additions - the
+embeddings endpoint's behaviour and the gateway models' published pricing - which are true whether
+or not anything uses them.
+
+The study stands where it stood at 22:09: four hypotheses, four verdicts, the report built. The
+user's underlying idea - an image embedding from the same family of model that read the concepts -
+is not possible on this service, and that is the finding, not a redesign of it.

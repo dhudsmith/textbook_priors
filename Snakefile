@@ -82,7 +82,6 @@ CODE_SAMPLE = code("data", "sample", "stages")
 CODE_PROMPTS = code("data", "prompts", "stages")
 CODE_SCORE = code("llm", "score", "stages")     # the prompts arrive as a file, not as a module
 CODE_FEATURES = code("features", "stages")
-CODE_EMBED = code("embed", "data", "stages")    # the answers arrive as the gathered scores file
 CODE_CLASSIFY = code("classify", "data", "stages")
 CODE_EVALUATE = code("evaluate", "data", "stages")
 CODE_REPORT = code("report", "stages")          # figures never depend on the estimators
@@ -151,7 +150,6 @@ def reader_cells(reader=None):
 SCORES = score_cells() + reader_cells()
 SCORE_TABLES = expand(f"{OUT}/scores/{{dataset}}.json", dataset=DATASETS)
 FEATURES = expand(f"{OUT}/features/{{dataset}}.json", dataset=DATASETS)
-EMBEDS = expand(f"{OUT}/embed/{{dataset}}.json", dataset=DATASETS)
 CLASSIFIED = expand(f"{OUT}/classify/{{dataset}}.json", dataset=DATASETS)
 EVALUATED = expand(f"{OUT}/evaluate/{{dataset}}.json", dataset=DATASETS)
 EVALUATION = f"{OUT}/evaluation.json"
@@ -182,7 +180,7 @@ rule score:
     input: SCORE_TABLES
 
 rule features:
-    input: FEATURES, EMBEDS
+    input: FEATURES
 
 rule classify:
     input: CLASSIFIED
@@ -600,43 +598,6 @@ rule pixel_features:
     shell:
         "export TORCH_HOME=" + config["torch_home"] + "; " + STAGE +
         "features {wildcards.dataset} --out {output.json} --arrays {output.arrays} > {log} 2>&1"
-
-
-# ---- H5: the answers and the bank, as prose, embedded ------------------------------------------
-#
-# The same concept answers arm B reads, and the same bank, rendered in the bank's own words and
-# embedded by the service's text-embedding model (WORKFLOW.md section 2, H5). A class score is a
-# cosine, so arm B's ordinal arithmetic becomes a learned semantic distance over identical inputs.
-# No VLM is asked anything: the input is the gathered archive, the output is vectors. This is a
-# second LLM boundary and gets the first one's treatment - every text sent, the served model name
-# and the dimension are recorded - but it lives in priors/embed.py rather than priors/llm.py, so
-# that adding an endpoint does not change the provenance of the 294 protected chunks behind it.
-#
-# The endpoint is local, costs no credits, and answered 256 texts in a fifth of a second, so the cap
-# is politeness on a shared machine and the runtime is generous for a job that is under twenty calls.
-
-rule embed_answers:
-    """One dataset's concept answers, class names and fingerprints, rendered and embedded. x6."""
-    input:
-        scores=f"{OUT}/scores/{{dataset}}.json",
-        prompts=f"{OUT}/prompts/{{dataset}}.json",
-        release=config["release"],
-        smoke=SMOKE,
-        code=CODE_EMBED,
-    params:
-        model=config["embed"]["model"],
-        # A lambda, because the template's own braces would otherwise be read as wildcards.
-        template=lambda w: config["embed"]["template"],
-        batch=config["embed"]["batch"],
-    output:
-        json=f"{OUT}/embed/{{dataset}}.json",
-        arrays=f"{config['embeddir']}/{{dataset}}.npz",
-    log: "logs/embed/{dataset}.log"
-    benchmark: "benchmarks/embed/{dataset}.tsv"
-    conda: "envs/priors.yml"
-    threads: RES["embed"]["cpus"]
-    resources: **res("embed"), **{"llm_qwen3_embedding_4b": 1}
-    shell: STAGE + "embed {wildcards.dataset} --out {output.json} --arrays {output.arrays} > {log} 2>&1"
 
 
 # =====================================================================================
