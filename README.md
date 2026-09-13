@@ -36,7 +36,7 @@ All seven stages are built. `rule all` is the technical report, and a dry run fr
 | 3 | **Features** | Per dataset: ImageNet ResNet-18 penultimate features | 6 | yes |
 | 4 | **Classify** | Per dataset: arms A, B, C, P over the curve, the permutation controls, and every reader's probe | 6 | yes |
 | 5 | **Evaluate** | AUC, the paired bootstrap, n_B; then the sign tests, the ladder and the reader chain | 6 + 1 | yes |
-| 6 | **Report** | Four figures, the tables, the technical report PDF | 3 | yes |
+| 6 | **Report** | Five figures, the tables, the technical report PDF | 3 | yes |
 
 ## Layout
 

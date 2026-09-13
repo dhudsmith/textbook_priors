@@ -337,3 +337,11 @@ beat as the contrast: added after the numbers, removed the same day; H4 pre-regi
 The follow-on section is written on the assumption, stated by the user, that the evening's pattern
 holds — frontier no better, thinking conditional. The analysis chain was at 33 of 40 jobs when this
 was written; if the final numbers disagree, §5 scene 6 is what changes.
+
+## 2026-09-12 21:45 — The H4 chain lands; the talk's scene 6 stands
+
+No prompt. The run launched at 17:42 under the cap of four finished at 21:40, 40 of 40, with
+every thinking chunk complete and no cell flagged. The evening's pattern held under the real
+estimator on the full 200 images, so TALK.md §5 scene 6 is not rewritten. One number moved in the
+direction that justifies the preview having been marked uncitable: bloodmnist's thinking effect
+shrank from a clear loss on 100 images to noise on 200. The finding is in CHANGELOG.md.

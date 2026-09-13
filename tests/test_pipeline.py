@@ -223,7 +223,7 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     stages.figures(config["figdir"])
     for name in ("h1", "h2", "h3", "h4", "literature", "completeness", "numbers"):
         assert (Path(config["tabdir"]) / f"{name}.tex").stat().st_size > 0
-    for name in ("curve", "n_b", "ladder", "readers"):
+    for name in ("curve", "n_b", "ladder", "readers", "thinking"):
         assert (Path(config["figdir"]) / f"fig_{name}.png").stat().st_size > 0
 
     # Every macro the report's prose reads has to exist, or pdflatex fails on an undefined control

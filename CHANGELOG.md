@@ -913,3 +913,58 @@ were untouched and are kept.
 the end and logs nothing on the way, so a running chunk is indistinguishable from a hung one, and
 the only way to learn the rate was to spend a call on a diagnostic. That is now twice this has cost
 real time. A progress line every ten calls belongs in `priors/score.py` before the next re-score.
+
+## 2026-09-12 — H4 decided: thinking is conditional, and a frontier model reads no better
+
+The chain completed at 21:40, 40 of 40 jobs, every one of the 24 reader chunks 100 of 100
+complete, no cell flagged. H4 is **not supported** on either step, and the shape of the failure is
+the finding, as it was for H2.
+
+| dataset | baseline | + thinking | frontier, thinking | H4a: thinking − baseline | H4b: frontier − thinking |
+|---|---|---|---|---|---|
+| pathmnist | 0.963 | 0.935 | 0.941 | −0.028 [−0.056, −0.001] | +0.006 [−0.026, +0.037] |
+| dermamnist | 0.604 | 0.723 | 0.554 | **+0.116 [+0.048, +0.177]** | **−0.162 [−0.248, −0.053]** |
+| octmnist | 0.927 | 0.937 | 0.915 | +0.011 [−0.015, +0.037] | −0.022 [−0.057, +0.013] |
+| pneumoniamnist | 0.669 | 0.736 | 0.788 | **+0.067 [+0.013, +0.124]** | +0.052 [−0.022, +0.126] |
+| bloodmnist | 0.914 | 0.892 | 0.897 | −0.021 [−0.058, +0.010] | +0.004 [−0.032, +0.041] |
+| organamnist | 0.810 | 0.774 | 0.810 | −0.036 [−0.093, +0.020] | +0.036 [−0.023, +0.094] |
+
+Cross-validated probe AUC on the shared 200 images; intervals from the paired bootstrap over those
+images; bold where the interval excludes zero.
+
+**H4a, 3 of 6, not supported — and not "thinking does not help".** Three intervals exclude zero,
+in both directions. Thinking costs pathmnist 0.028, the dataset the model already read best
+(0.963). It gains dermamnist 0.116 and pneumoniamnist 0.067, the two datasets the model read
+worst (0.604 and 0.669). The three in between are noise. Read against the baseline, the effect of
+reasoning is monotone in how badly the model was already doing: the two lowest baselines take the
+two largest gains, the highest baseline takes the one clear loss. Six datasets is a pattern and not
+a test, and it is stated as one. What it suggests is that deliberation does not make the model see
+more; it changes what the model commits to, which helps where the immediate reading was poor and
+second-guesses where it was already good.
+
+**H4b, 4 of 6 nominally, not supported — and the one clear difference is a loss.** Five of six
+intervals straddle zero. The exception is dermamnist, where the frontier model is 0.162 *worse* than
+the thinking primary and, at 0.554, is the weakest reader of dermoscopy among all six. A frontier
+closed model asked to read cited visual features does not read them better than a 27B open model,
+and on the thinnest task reads them worse. Two limits stand beside that sentence, both in
+WORKFLOW.md §2: the model is closed and of unknown size, and it ran at its served default
+temperature because it refuses zero, so its answers are sampled where every other reader's are
+deterministic. The dermamnist loss in particular could carry sampling noise the paired bootstrap
+cannot see. Neither limit rescues the hypothesis.
+
+**Across all six readers, concept reading does not track size.** The 9B model is the best or
+tied-best reader on octmnist and pneumoniamnist; the 27B primary is best on pathmnist and
+bloodmnist by a hair; the two gemma models are best on dermamnist and organamnist. That is H3's
+null seen through a better estimator than arm B, and it is now the same story twice.
+
+**Against the afternoon's preview.** The preview on partial chunks had bloodmnist's thinking effect
+at −0.078 with the interval excluding zero on 100 images; at 200 it is −0.021 and does not. That
+is what half a sample does, and it is why the preview was labelled uncitable. Pathmnist and
+pneumoniamnist held. Dermamnist, which the probe refused to fit on the second hundred images alone,
+became the largest effect in the table once it had all 200.
+
+**What the four verdicts say together.** H1, H2, H3 and H4 are all unsupported. The textbook prior
+is worth fewer than fifty labels; the concept answers carry real class information that the
+textbook's own readout discards; neither a bigger open model, nor a frontier closed one, nor asking
+the model to think first, changes how much of that information is there in any uniform way. The
+binding constraint on these six tasks is not the reader. It is the bank and the way it is read.

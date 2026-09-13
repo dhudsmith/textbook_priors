@@ -202,10 +202,42 @@ def figure_readers(across, datasets, dest):
     ax.set_xticks(range(len(columns)), [r.replace("-", "\n") for r in columns], fontsize=7)
     ax.set_ylabel(f"cross-validated probe AUC\n(concept answers, {across['h4']['subsample']} images)")
     ax.grid(alpha=0.25)
-    ax.legend(fontsize=8, ncol=2)
+    # Under the axes, not inside them: inside, the legend sat on dermamnist's baseline point.
+    ax.legend(fontsize=8, ncol=3, loc="upper center", bbox_to_anchor=(0.5, -0.28), frameon=False)
     ax.set_title("H4: what each reader's concept answers carry", fontsize=11)
     fig.tight_layout()
-    fig.savefig(Path(dest) / "fig_readers.png", dpi=200)
+    fig.savefig(Path(dest) / "fig_readers.png", dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+
+def figure_thinking(across, datasets, dest):
+    """H4a read against the baseline: where did asking the model to think help?
+
+    One point per dataset. x is how well the model read the concepts with no reasoning; y is what
+    reasoning added, with its paired interval. The hypothesis asked for six points above zero and
+    got three, but the picture is not a null: the points fall from left to right, gains where the
+    immediate reading was poor and a loss where it was already good. Six points is a pattern to
+    state and not a slope to test, so no line is fitted through them.
+    """
+    h4 = across["h4"]
+    base = h4["h4a"]["from"]
+    fig, ax = plt.subplots(figsize=(7.5, 4.6))
+    for dataset in datasets:
+        x = h4["probe_auc"][dataset][base]
+        d = h4["h4a"]["differences"][dataset]
+        clear = d["lo"] > 0 or d["hi"] < 0
+        ax.errorbar(x, d["median"], yerr=[[d["median"] - d["lo"]], [d["hi"] - d["median"]]],
+                    fmt="o", color=ARM_COLOUR["C"], alpha=1.0 if clear else 0.45, capsize=3,
+                    markersize=6, linewidth=1.2)
+        ax.annotate(dataset, (x, d["median"]), textcoords="offset points", xytext=(6, 4),
+                    fontsize=8, alpha=1.0 if clear else 0.7)
+    ax.axhline(0, color="grey", linestyle=":", linewidth=1)
+    ax.set_xlabel(f"probe AUC with no reasoning ({base})")
+    ax.set_ylabel("what reasoning at medium added\n(probe AUC, paired 95% interval)")
+    ax.set_title("H4a: reasoning helped where the model was reading badly", fontsize=11)
+    ax.grid(alpha=0.25)
+    fig.tight_layout()
+    fig.savefig(Path(dest) / "fig_thinking.png", dpi=200)
     plt.close(fig)
 
 

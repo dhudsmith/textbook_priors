@@ -154,7 +154,7 @@ CLASSIFIED = expand(f"{OUT}/classify/{{dataset}}.json", dataset=DATASETS)
 EVALUATED = expand(f"{OUT}/evaluate/{{dataset}}.json", dataset=DATASETS)
 EVALUATION = f"{OUT}/evaluation.json"
 FIGS, TABS = config["figdir"], config["tabdir"]
-FIG_FILES = expand(f"{FIGS}/fig_{{f}}.png", f=["curve", "n_b", "ladder", "readers"])
+FIG_FILES = expand(f"{FIGS}/fig_{{f}}.png", f=["curve", "n_b", "ladder", "readers", "thinking"])
 TABLE_TEX = expand(f"{TABS}/{{t}}.tex",
                    t=["h1", "h2", "h3", "h4", "literature", "completeness", "numbers"])
 

@@ -760,7 +760,7 @@ def tables(dest: str) -> None:
 
 
 def figures(dest: str) -> None:
-    """The four figures, one per hypothesis."""
+    """The five figures: one per hypothesis, and H4a read against its baseline."""
     from . import report as reporting
     datasets, curve = CONFIG["datasets"], CONFIG["curve"]["n"]
     per, across = reporting.load(CONFIG["outdir"], datasets)
@@ -771,8 +771,10 @@ def figures(dest: str) -> None:
         reporting.figure_n_b(per, datasets, curve, dest)
         reporting.figure_ladder(across, datasets, dest)
         reporting.figure_readers(across, datasets, dest)
+        reporting.figure_thinking(across, datasets, dest)
         run.write(f"{CONFIG['outdir']}/figures.json", dict(dest=dest,
-                  files=["fig_curve.png", "fig_n_b.png", "fig_ladder.png", "fig_readers.png"]))
+                  files=["fig_curve.png", "fig_n_b.png", "fig_ladder.png", "fig_readers.png",
+                         "fig_thinking.png"]))
 
 
 def main(argv=None) -> None:
