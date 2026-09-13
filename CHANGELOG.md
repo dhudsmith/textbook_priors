@@ -1009,3 +1009,96 @@ tasks the model knows more about the images than its concept answers carry, and 
 on those answers recovers it. Mentioned in the talk as a reading of the figure, not as a verdict
 (`TALK.md`, scene 5). A pre-registered version for the full branch would define n_A the way n_B is
 defined.
+
+## 2026-09-13 — Twelve datasets: every verdict holds, and the textbook readout wins where the model cannot name the class
+
+The study went from the talk's six datasets to all twelve MedMNIST v2 2D benchmarks in one day, with
+the six verdicts already known (WORKFLOW.md §2 says what that does to the rules). The six
+reproduce exactly under the extended code — every arm's AUC to the last digit, every n_B — so
+nothing below is a re-analysis of what was already found.
+
+**The run.** Four release files that the earlier full plan had left as byte-range segments were
+completed and MD5-verified in under a minute each. The fan-out of 227 new chunks (22,318 calls) ran
+in 66 minutes, against the hours yesterday's waves took: the primary model answered in 3.1 s a call
+at 24 in flight (7 s median and 89 s at the worst on 2026-09-12) and the thinking reader in 10.5 s at
+four (41 s alone yesterday). A Sunday-morning service is a different service, and the caps and
+runtimes set from yesterday's contention were generous by an order of magnitude; they stay, because
+they are set for the worst rate observed and a chunk that overruns writes nothing. Every cell of
+every new dataset is at least 98% complete and none is flagged. The whole analysis chain reran for
+twelve datasets in 25 minutes.
+
+**Verdicts, at one level (p < 0.05: 10 of 12, or 9 of the 11 with an arm B).**
+
+| hypothesis | needs | got | verdict |
+|---|---|---|---|
+| H1 substitution: C > P at n = 50, and median n_B ≥ 100 | 10 of 12 | 2 of 12 (octmnist, breastmnist); median n_B ≤ 50, `≤50` on 9 of 11 | not supported |
+| H2 bank, not model: B > A | 9 of 11 | 3 of 11 (breastmnist, tissuemnist, organsmnist); both controls drop everywhere | not supported |
+| H3 scale: larger beats smaller within family | 9 of 11 in both | qwen 7, gemma 5; Friedman p = 0.90 | not supported |
+| H4a reading: thinking beats none | 9 of 11 | 4 of 11 | not supported |
+| H4b reading: frontier beats thinking | 9 of 11 | 5 of 11 | not supported |
+
+| dataset | A | B | C (50) | P (50) | C (max n) | P (max n) | n_B |
+|---|---|---|---|---|---|---|---|
+| pathmnist | 0.927 | 0.924 | 0.940 | 0.958 | 0.965 | 0.986 | ≤50 |
+| dermamnist | 0.770 | 0.671 | 0.675 | 0.749 | 0.799 | 0.921 | ≤50 |
+| octmnist | 0.941 | 0.894 | 0.917 | 0.871 | 0.933 | 0.947 | 500 |
+| pneumoniamnist | 0.918 | 0.727 | 0.728 | 0.935 | 0.728 | 0.971 | ≤50 |
+| bloodmnist | 0.883 | 0.775 | 0.886 | 0.906 | 0.930 | 0.990 | ≤50 |
+| organamnist | 0.710 | 0.685 | 0.804 | 0.946 | 0.887 | 0.991 | ≤50 |
+| breastmnist | 0.753 | 0.845 | 0.825 | 0.809 | 0.843 (500) | 0.908 (500) | 200 |
+| retinamnist | 0.639 | 0.548 | 0.552 | 0.748 | 0.614 (1000) | 0.846 (1000) | ≤50 |
+| tissuemnist | 0.499 | 0.642 | 0.656 | 0.698 | 0.762 | 0.849 | ≤50 |
+| organcmnist | 0.664 | 0.586 | 0.739 | 0.891 | 0.843 | 0.986 | ≤50 |
+| organsmnist | 0.606 | 0.617 | 0.712 | 0.847 | 0.832 | 0.959 | ≤50 |
+| chestmnist | — | — | 0.511 | 0.546 | 0.557 | 0.693 | — |
+
+Test AUC on the shared sample; the primary model's arm B; C and P are seed means.
+
+**H1: the textbook is worth fewer than fifty labels on nine tasks of eleven.** Frozen ImageNet
+features with fifty labels beat the zero-label fingerprint arm everywhere except octmnist (500
+labels) and breastmnist (200), and the concept regression beat the pixel probe at fifty on those
+same two alone. breastmnist is the one place the concept features are competitive at every n,
+inside a wide interval (156 test images); octmnist is where the concept regression starts ahead and
+the pixel probe passes it by 1000.
+
+**H2 flips on the tasks the model does not know.** Over the talk's six datasets zero-shot beat the
+fingerprint readout every time, and the reading was that the model's own diagnosis knows more than
+the textbook's checklist. The five new arm-B datasets split it: on tissuemnist the model's zero-shot
+distribution is at chance (AUC 0.499 - it cannot classify kidney cell types by name at all) while the
+fingerprint readout of its own concept answers reaches 0.642; breastmnist is +0.091 for the bank and
+organsmnist +0.011, organcmnist -0.077 and retinamnist -0.092 against it. So the six-dataset story
+was a property of six tasks the model already knew: where it can name the class, asking for the
+name beats the checklist; where it cannot, the checklist still ranks. Both permutation controls
+drop on every dataset, so the answers carry class information throughout.
+
+**H3: no size trend on eleven.** The larger qwen wins 7 of 11 and the larger gemma 5 of 11; the
+Friedman test over four models is p = 0.90. The 9B model is the best arm-B reader on octmnist,
+pneumoniamnist and retinamnist; the four models are within a few points of each other on most
+tasks and disagree on which is best.
+
+**H4a: the six-dataset pattern held on eleven.** The effect of thinking is monotone in how badly
+the model read the concepts without it. The three baselines below 0.70 all take clear gains -
+retinamnist +0.104 [+0.030, +0.181] from a baseline of 0.520, dermamnist +0.116, pneumoniamnist
++0.067 - and every baseline above 0.78 takes a loss or noise, two of them clear (pathmnist -0.028,
+organsmnist -0.068). Eleven points is still a pattern rather than a fitted slope, but it is now a
+pattern that survived five datasets it had not seen. **H4b: the frontier model never clearly
+reads better.** Five nominal wins, none with an interval clear of zero; one clear loss, dermamnist
+-0.162, where it is the weakest reader of dermoscopy among all six.
+
+**chestmnist: the concept answers carry little for fourteen findings.** The concept regression
+reaches 0.557 at 2,000 labels (0.511 at 50), the pixel probe 0.693, the published ceiling 0.778. The
+permutation control drops it by 0.062, so the answers are not empty, but a twelve-concept bank of
+radiographic signs read from a 224-pixel film does not separate fourteen co-occurring findings,
+several of which have under ten positives in the 500-image sample (hernia has one).
+
+**The reading the plan never named, on twelve.** The concept regression overtakes the model's own
+zero-shot guess by fifty labels on seven datasets, at a thousand on dermamnist, and never inside the
+grid on octmnist, pneumoniamnist and retinamnist - the three where the model knows the diagnosis far
+better than its concept answers convey. Read from the curve figure; no rule decides it.
+
+**Against the published ceiling.** The best zero-label arm sits a median 0.115 AUC below the best
+of five fully supervised methods and within five points of it on one dataset of eleven
+(pathmnist). The pixel probe at its largest subset sits a median 0.009 below, within two points on
+ten of twelve, and at or above it on two (dermamnist and retinamnist, where the published ResNets
+are weak). The concept probe at the same budget sits 0.129 below. Labels close the gap; the
+textbook does not.

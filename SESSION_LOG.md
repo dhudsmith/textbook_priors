@@ -496,3 +496,16 @@ report. What the build settled before a call was bought:
 
 378 tests pass, including an end-to-end run of the multi-label path on a toy dataset; the DAG from a
 clean clone is 616 jobs.
+
+## 2026-09-13 10:15 — Twelve datasets, start to finish, complete
+
+The expansion asked for at 08:20 ran to the report in under two hours of wall clock: four fetches
+in a minute each, six samples, 227 chunks in 66 minutes on an uncontended Sunday service, the
+analysis chain for twelve datasets in 25 minutes, and the owner's checkout back at "Nothing to be
+done". Mid-run the user asked for the hypothesis statements to be adjusted for the expansion;
+WORKFLOW.md §2 now states each rule over the datasets it covers at one level (10 of 12, 9 of 11),
+says which six verdicts were known when it was written, and the report reads those counts from
+macros. The six original datasets reproduce exactly under the extended code, checked against a copy
+of their evaluate outputs taken before the run. Findings are in CHANGELOG.md: all four hypotheses
+unsupported on twelve, H2 flipping on the tasks the model cannot name, H4a's pattern holding on
+eleven. TALK.md's scene 5 and scene 6 carry the two sentences that changed.
