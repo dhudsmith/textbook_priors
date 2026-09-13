@@ -426,7 +426,9 @@ shared the primary model's cap, and an H5 that had been rewound. TALK.md now sta
 chain landed and scene 6 is not provisional, moves the thinking-effect scatter from "to make" to
 "already generated" (`fig_thinking.png`), and holds the embedding dead end as a third alternate. Two
 sentences in `report/report.tex` were wrong — "three hypotheses", and a literature paragraph that
-still named arm D — so the PDF is the one output rebuilt, locally, with pdflatex and no calls.
+still named arm D — so the PDF is the one output left to rebuild: a single local pdflatex job with no
+calls, deliberately not run here because the instruction was that nothing should run. The owner's
+checkout is otherwise at "Nothing to be done", on this branch.
 
 Two things found and left for the owner. `results/prompts_txt/` holds six files from the
 `render_prompts_txt` rule of commit d43a4d3, which the H4 commit an hour later silently dropped along
