@@ -176,9 +176,10 @@ CLASSIFIED = expand(f"{OUT}/classify/{{dataset}}.json", dataset=DATASETS)
 EVALUATED = expand(f"{OUT}/evaluate/{{dataset}}.json", dataset=DATASETS)
 EVALUATION = f"{OUT}/evaluation.json"
 FIGS, TABS = config["figdir"], config["tabdir"]
-FIG_FILES = expand(f"{FIGS}/fig_{{f}}.png", f=["curve", "n_b", "ladder", "readers", "thinking"])
+FIG_FILES = expand(f"{FIGS}/fig_{{f}}.png",
+                   f=["curve", "n_b", "ladder", "readers", "thinking", "h5"])
 TABLE_TEX = expand(f"{TABS}/{{t}}.tex",
-                   t=["h1", "h2", "h3", "h4", "literature", "completeness", "numbers"])
+                   t=["h1", "h2", "h3", "h4", "h5", "literature", "completeness", "numbers"])
 
 wildcard_constraints:
     dataset="|".join(DATASETS),
@@ -769,7 +770,7 @@ rule evaluate_dataset:
     shell: STAGE + "evaluate {wildcards.dataset} --out {output} > {log} 2>&1"
 
 rule evaluate_across:
-    """The four hypotheses, decided by the rules fixed before the numbers existed. x1, local."""
+    """The five hypotheses, decided by the rules fixed before the numbers existed. x1, local."""
     input:
         per_dataset=EVALUATED,
         code=CODE_EVALUATE,
@@ -809,7 +810,7 @@ rule tables:
     shell: STAGE + "tables --dest " + TABS + " > {log} 2>&1"
 
 rule figures:
-    """The five figures: the curve, n_B, the ladder, the reader chain, thinking's effect. x1."""
+    """Six figures: the curve, n_B, the ladder, the reader chain, thinking's effect, H5. x1."""
     input:
         evaluation=EVALUATION, per_dataset=EVALUATED, code=CODE_REPORT,
         literature=config["literature"],

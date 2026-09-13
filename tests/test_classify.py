@@ -178,6 +178,21 @@ def test_a_subset_with_one_class_says_so_instead_of_faking_a_probability():
     assert np.allclose(got["scores"][:, 0], 1.0)
 
 
+def test_concatenating_the_blocks_keeps_both_and_changes_nothing_else():
+    """Arm C+P (H5) is arm C's matrix beside arm P's, standardised together by the same fit_predict.
+    The columns must be the two blocks in order and nothing else, because the whole claim of the arm
+    is that it differs from arm P in the presence of the concept columns alone."""
+    rng = np.random.default_rng(0)
+    c = rng.random((30, 4))
+    p = rng.normal(size=(30, 9))
+    cp = np.hstack([c, p])
+    assert cp.shape == (30, 13)
+    assert np.array_equal(cp[:, :4], c) and np.array_equal(cp[:, 4:], p)
+    got = classify.fit_predict(cp, np.array([0] * 15 + [1] * 15), cp[:5], n_classes=2,
+                               l2_grid=[1.0], cv_folds=5, seed=0)
+    assert got["scores"].shape == (5, 2)
+
+
 # ---- the multi-label task ------------------------------------------------------------------------
 
 def test_strata_are_the_class_or_any_finding():

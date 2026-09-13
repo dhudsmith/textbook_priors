@@ -100,6 +100,7 @@ def workspace(tmp_path):
         "evaluate": {"bootstrap": 200, "ci": 0.95, "seed": 0, "alpha": 0.6},
         "h4": {"baseline": "tiny-model", "thinking": "tiny-model-medium",
                "frontier": "frontier-medium", "subsample": SUBSAMPLE},
+        "h5": {"n": 20},
         "resources": {},
     }
     for key in ("outdir", "conceptdir", "cachedir", "featuredir", "figdir", "tabdir"):
@@ -239,7 +240,7 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     scores = np.load(results / "classify/toymnist.npz")
     assert np.array_equal(scores["labels"], y_test)
     assert {"A", "B__big-model", "B__tiny-model", "C__n20__seed0",
-            "P__n50__seed1"} <= set(scores.files)
+            "P__n50__seed1", "CP__n20__seed0", "CP__n50__seed1"} <= set(scores.files)
 
     stages.evaluate("toymnist", str(results / "evaluate/toymnist.json"))
     got = json.loads((results / "evaluate/toymnist.json").read_text())
@@ -260,7 +261,7 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     chest = np.load(results / "classify/toychest.npz")
     assert chest["labels"].shape == (90, 3)
     assert not any(k == "A" or k.startswith("B__") or k.startswith("CV__") for k in chest.files)
-    assert {"C__n20__seed0", "P__n20__seed1", "Cperm__n20__seed0"} <= set(chest.files)
+    assert {"C__n20__seed0", "P__n20__seed1", "CP__n20__seed0", "Cperm__n20__seed0"} <= set(chest.files)
     assert not any("n50" in k for k in chest.files), "a pool of 40 cannot fill a subset of 50"
     stages.evaluate("toychest", str(results / "evaluate/toychest.json"))
     chest_eval = json.loads((results / "evaluate/toychest.json").read_text())
@@ -276,6 +277,17 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     assert set(across["h1"]["c_beats_p_at_smallest_n"]) == {"toymnist", "toychest"}
     assert set(across["h1"]["n_b"]) == {"toymnist"}
     assert set(across["h2"]["b_beats_a"]) == {"toymnist"} and across["h2"]["n_datasets"] == 1
+
+    # H5 counts every dataset, reads the grid point config names, and its arm is the two blocks
+    # concatenated: the fixture's concept features carry the label and its pixel features are
+    # noisy, so C+P must beat P where C does.
+    h5 = across["h5"]
+    assert h5["n"] == 20 and set(h5["per_dataset"]) == {"toymnist", "toychest"}
+    assert h5["per_dataset"]["toymnist"] is True
+    assert h5["differences"]["toymnist"]["median"] > 0
+    summary = json.loads((results / "classify/toymnist.json").read_text())
+    cols = summary["feature_columns"]
+    assert cols["CP"] == cols["C"] + cols["P"], "the concatenated block is exactly the two blocks"
     assert across["h2"]["b_beats_a"]["toymnist"] is True
     assert across["h3"]["ladder"]["t"]["larger"] == "big-model"
     assert across["h3"]["ladder"]["t"]["wins"] == 1
@@ -300,9 +312,9 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
 
     stages.tables(config["tabdir"])
     stages.figures(config["figdir"])
-    for name in ("h1", "h2", "h3", "h4", "literature", "completeness", "numbers"):
+    for name in ("h1", "h2", "h3", "h4", "h5", "literature", "completeness", "numbers"):
         assert (Path(config["tabdir"]) / f"{name}.tex").stat().st_size > 0
-    for name in ("curve", "n_b", "ladder", "readers", "thinking"):
+    for name in ("curve", "n_b", "ladder", "readers", "thinking", "h5"):
         assert (Path(config["figdir"]) / f"fig_{name}.png").stat().st_size > 0
 
     # Every macro the report's prose reads has to exist, or pdflatex fails on an undefined control
@@ -310,6 +322,7 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     macros = (Path(config["tabdir"]) / "numbers.tex").read_text()
     for name in ("hOneSupported", "hTwoSupported", "hThreeSupported", "cBeatsPWins", "bBeatsAWins",
                  "friedmanP", "medianNB", "numDatasets", "numArmBDatasets", "minWinsAll", "numModels",
+                 "hFiveSupported", "hFiveWins", "hFiveN", "hFiveMedianGain",
                  "litGapZeroMedian", "litGapConceptMedian", "litGapPixelMedian", "litLargestN",
                  "litPixelWithinTwoPoints", "litZeroWithinFivePoints", "aucLitToy"):
         assert f"\\newcommand{{\\{name}}}" in macros, name

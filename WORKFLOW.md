@@ -127,6 +127,30 @@ A null here is a result and not a failure: if thinking does not move the concept
 model's reading of the features is not attention-limited, which is a sharper statement than a rise
 would be.
 
+**H5 — Complement.** *The textbook adds something the pixels do not already carry.*
+
+H1 asks whether concept scores can stand in for pixel features at equal labels, and answers no. That
+is not the same question as whether they carry anything pixels lack: two feature blocks can be
+individually unequal and still complementary. H5 asks the second question directly, with the same
+classifier and the same labelled subsets, by giving the regression **both** feature blocks at once.
+
+- **Arm C+P**: the concept vectors of arm C concatenated with arm P's frozen ImageNet features,
+  standardised together, one L2 strength for the whole matrix, the same nested subsets and the same
+  seeds. Only the features differ from arm P, so the difference is what the textbook adds.
+- Primary comparison: AUC(C+P) > AUC(P) at **n = 50**, the smallest labelled subset, where a prior
+  has the most room to help and where H1's own comparison is read. Supported if it wins on at least
+  10 of the 12 datasets (p = 0.019). Every other grid point is reported and decides nothing.
+- **Registered on 2026-09-13, after H1 to H4 were decided and before any C+P number existed.** That
+  order is the thing arm D could not claim (§10), and the distinction is not that H5 is uninformed
+  by earlier results - it is prompted by H1's failure - but that no result in this study answers it
+  and none of its numbers were seen before the rule was written. It costs no calls: the concept
+  answers and the pixel features are both already on disk, so the whole test is a re-analysis. The
+  git history carries the rule in a commit that precedes the one carrying its numbers.
+- **One limit, stated rather than tuned away.** Twelve or so concept columns join 512 pixel columns
+  under a single L2 penalty, so a real but small contribution can be regularised away; a per-block
+  penalty would test a different, unregistered model. A null here therefore means "no detectable
+  gain under the same classifier every other arm uses", not "no information".
+
 **Two limits on H4b, both stated rather than analysed away.** The frontier model is closed and of
 unknown size, so the step is *capability* and not parameters; it cannot join H3's ladder and does
 not. And it **refuses `temperature: 0`** — only its served default is allowed — so it is the one
@@ -143,8 +167,8 @@ for a clinician, or that any arm is state of the art.
 
 ## 3. Arms
 
-Four, all pre-registered and all predicting on the shared test sample. A and B use no labels; C
-and P are the same regularised logistic regression on different features. A fifth arm, D, existed
+Five, all pre-registered and all predicting on the shared test sample. A and B use no labels; C, P
+and C+P are the same regularised logistic regression on different features. A fifth arm, D, existed
 between 2026-09-12 and 2026-09-12 and was removed; §10 records what it measured and why it went.
 chestmnist has arms C and P only (below).
 
@@ -154,6 +178,7 @@ chestmnist has arms C and P only (below).
 | B textbook-only | 0 | concept scores | nearest class fingerprint from the bank; the zero-label prior, and the line that defines n_B |
 | C concept regression | n | concept scores | what the prior is worth once a few labels exist (H1) |
 | P pixel probe | n | ImageNet ResNet-18 penultimate features | the label-matched pixel baseline (H1): transfer learning without the textbook |
+| C+P complement | n | both blocks concatenated | whether the textbook adds anything the pixels lack (H5); differs from P in its features alone |
 
 A VLM is an enormous pretrained model, so the fair pixel baseline is also pretrained: frozen
 ImageNet features under the same classifier, the same regularisation search and the same nested
@@ -173,6 +198,10 @@ subsets as arm C, so features are the only difference.
   labelled images**, features standardised on those n. No validation set: n labels means n labels.
   Subsets are class-stratified nested prefixes of the labelled pool with a floor of one image per
   class; the fold count is `min(5, smallest class count)`; a class absent from a subset scores 0.
+- *Arm C+P*: arm C's feature matrix and arm P's, concatenated and standardised together inside the
+  n labelled images, then the identical regression, grid and cross-validation. No weighting, no
+  per-block penalty and no feature selection: the point is that it differs from arm P in the
+  presence of the concept columns and in nothing else.
 - *chestmnist*: fourteen findings that co-occur, so there is no class to match a fingerprint
   against and "exactly one of these categories" is false of most films. Arms A and B are not
   defined for it and are not run; the ladder models and H4's readers, which exist for arm B and
@@ -310,18 +339,19 @@ Each names the failure it prevents; `TALK.md` argues them.
               then, per model x split x prompt x chunk of 100: concept levels, or a class
               distribution; every raw response archived and protected 12 local + 521 throttled
 3  FEATURES   per dataset: ImageNet ResNet-18 penultimate features of the sampled images 12 CPU
-4  CLASSIFY   per dataset: arms A, B, C, P at every n and seed, the permutation controls, and
-              every reader's cross-validated probe on the shared prefix (H4); C and P alone
-              for chestmnist                                                             12 CPU
+4  CLASSIFY   per dataset: arms A, B, C, P, C+P at every n and seed, the permutation controls,
+              and every reader's cross-validated probe on the shared prefix (H4); the labelled
+              arms alone for chestmnist                                                  12 CPU
 5  EVALUATE   AUC per arm; the paired bootstrap; n_B; a second bootstrap over the prefix for
-              H4's readers; then the sign tests, the ladder and the chain                12 + 1
-6  REPORT     five figures, tables, number macros, the technical report PDF               local
+              H4's readers; then the sign tests, the ladder, the chain and H5            12 + 1
+6  REPORT     six figures, tables, number macros, the technical report PDF                local
 ```
 
 Targets: `all` (the report), `smoke`, `sample`, `score`, `features`, `classify`, `evaluate`,
-`report`. Five figures: the learning curve with arm B's line (H1), n_B per dataset (H1 detail),
-the model ladder (H3), the reader chain and thinking's effect against the baseline (H4). H2 is a
-table of paired differences and permutation drops.
+`report`. Six figures: the learning curve with arm B's line (H1), n_B per dataset (H1 detail),
+the model ladder (H3), the reader chain and thinking's effect against the baseline (H4), and what
+the concept block adds on top of the pixels (H5). H2 is a table of paired differences and
+permutation drops.
 
 ## 7. The scoring stage
 
@@ -393,6 +423,7 @@ classify: {l2_grid: [0.01, 0.1, 1, 10, 100], cv_folds: 5, missing_max_frac: 0.05
 evaluate: {bootstrap: 10000, ci: 0.95, seed: 0, alpha: 0.05}   # one level for every rule
 h4: {baseline: qwen3.8-27b-fp8, thinking: qwen3.8-27b-fp8-medium, frontier: gpt-5.6-terra-medium,
      subsample: 200}
+h5: {n: 50}                                   # the grid point H5 is decided at
 resources: {...}                # first guesses, then set from benchmarks/ with the reasoning
 ```
 
@@ -462,6 +493,11 @@ when the owner had them deleted in the cleaning audit; what they measured stays 
 
 The lesson it leaves is the one any replacement has to obey: **a decision rule before the calls.**
 An arm worth adding is worth pre-registering, and anything that cannot be is a separate study.
+
+**H5 was added on 2026-09-13, and is a hypothesis rather than an extension**, because its rule was
+written and committed before its numbers existed (§2). It costs no calls. What separates it from
+arm D is not innocence of the earlier results - it exists because H1 failed - but that the
+comparison it makes had never been computed when the rule was fixed.
 
 **Literature reconciliation, another extension inside `all`** (added 2026-09-12, no rerun). The
 user asked to pull published results for these six MedMNIST tasks and add them as benchmarks in

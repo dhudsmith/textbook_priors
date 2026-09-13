@@ -509,3 +509,25 @@ macros. The six original datasets reproduce exactly under the extended code, che
 of their evaluate outputs taken before the run. Findings are in CHANGELOG.md: all four hypotheses
 unsupported on twelve, H2 flipping on the tasks the model cannot name, H4a's pattern holding on
 eleven. TALK.md's scene 5 and scene 6 carry the two sentences that changed.
+
+## 2026-09-13 10:40 — "Hypothesize that P + C beats P. Register the hypothesis, then run it and integrate it"
+
+Asked alongside a question about whether the study is publishable (answered in the session, with the
+literature search behind it). The hypothesis is the one H1 does not answer: H1 shows the concept
+scores cannot replace the pixel features at equal labels, which is not the same as showing they add
+nothing on top of them.
+
+Registered as **H5** before any of its numbers existed, and this commit is the evidence: WORKFLOW.md
+§2 states the arm, the primary grid point (n = 50, from `config.yaml h5.n`) and the rule (10 of 12,
+the same alpha every other rule uses); the code, the tests and the report section are all in place;
+arm C+P has never been fitted. The numbers arrive in the next commit.
+
+What separates H5 from arm D, which was removed for being post-hoc, is not that H5 is uninformed by
+the earlier results — it exists precisely because H1 failed — but that the comparison it makes had
+never been computed when the rule was written. It also costs no calls: both feature blocks are
+already on disk, so the whole test is a re-analysis. WORKFLOW.md §2 and §10 say all of this in the
+plan rather than only here.
+
+One limit is registered with it rather than discovered later: a dozen concept columns join 512 pixel
+columns under a single L2 penalty, so a null means "no detectable gain under the classifier every
+other arm uses", not "no information".

@@ -25,8 +25,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 ARM_LABEL = {"C": "arm C: concept scores", "P": "arm P: ImageNet features",
-             "B": "arm B: textbook only (no labels)", "A": "arm A: zero-shot (no labels)"}
-ARM_COLOUR = {"C": "#1f77b4", "P": "#d62728", "B": "#2ca02c", "A": "#7f7f7f"}
+             "CP": "arm C+P: both blocks", "B": "arm B: textbook only (no labels)",
+             "A": "arm A: zero-shot (no labels)"}
+ARM_COLOUR = {"C": "#1f77b4", "P": "#d62728", "CP": "#9467bd", "B": "#2ca02c", "A": "#7f7f7f"}
 
 # Not an arm: the published, fully supervised ceiling (data/literature/benchmarks.yaml), read onto
 # the same axes as a fixed reference rather than a line that moves with n. One colour, used nowhere
@@ -162,6 +163,35 @@ def figure_n_b(per, datasets, curve_n, dest):
     ax.set_title("An open circle is a coded value: the crossing is outside the grid", fontsize=9)
     fig.tight_layout()
     fig.savefig(Path(dest) / "fig_n_b.png", dpi=200)
+    plt.close(fig)
+
+
+def figure_h5(across, datasets, dest):
+    """H5: what the concept block adds on top of the pixel block, per dataset.
+
+    One point per dataset: the paired difference AUC(C+P) - AUC(P) at the grid point the rule is
+    decided at, with its 95% interval. Zero is the null the hypothesis is against, and the
+    hypothesis asked for a win on almost every dataset rather than a large effect anywhere, so the
+    figure is drawn as differences with intervals and not as two curves a reader would have to
+    subtract by eye.
+    """
+    h5 = across["h5"]
+    ordered = [d for d in datasets if d in h5["differences"]]
+    fig, ax = plt.subplots(figsize=(8, 3.4 + 0.2 * len(ordered)))
+    for i, dataset in enumerate(ordered):
+        d = h5["differences"][dataset]
+        clear = d["lo"] > 0 or d["hi"] < 0
+        ax.errorbar(d["median"], i, xerr=[[d["median"] - d["lo"]], [d["hi"] - d["median"]]],
+                    fmt="o", color=ARM_COLOUR["CP"], alpha=1.0 if clear else 0.45, capsize=3,
+                    markersize=6, linewidth=1.2)
+    ax.axvline(0, color="grey", linestyle=":", linewidth=1)
+    ax.set_yticks(range(len(ordered)), ordered)
+    ax.invert_yaxis()
+    ax.set_xlabel(f"AUC(C+P) $-$ AUC(P) at n = {h5['n']}  (paired 95% interval)")
+    ax.set_title("H5: what the concept block adds on top of the pixels", fontsize=11)
+    ax.grid(alpha=0.25, axis="x")
+    fig.tight_layout()
+    fig.savefig(Path(dest) / "fig_h5.png", dpi=200)
     plt.close(fig)
 
 
@@ -350,6 +380,39 @@ def table_h4(across, datasets, dest):
            "what a labelled model would achieve.", "h4")
 
 
+def table_h5(across, per, datasets, dest):
+    """H5: arm P against arm C+P at the decided grid point, and at each dataset's largest."""
+    h5 = across["h5"]
+    n = h5["n"]
+    rows = []
+    for d in datasets:
+        if d not in h5["differences"]:
+            continue
+        got, diff = per[d], h5["differences"][d]
+        largest = max(got["curve_n"])
+        wide = got["differences"][f"CP_minus_P__n{largest}"]
+        rows.append([tex_escape(d),
+                     fmt(got["curve"][f"P__n{n}"]["point"]),
+                     fmt(got["curve"][f"CP__n{n}"]["point"]),
+                     f"{fmt(diff['median'])} [{fmt(diff['lo'])}, {fmt(diff['hi'])}]",
+                     f"{fmt(wide['median'])} [{fmt(wide['lo'])}, {fmt(wide['hi'])}]"
+                     + ("" if largest == max(curve_all(per)) else f" ({largest})")])
+    _table(dest, "h5",
+           ["dataset", f"AUC(P, n={n})", f"AUC(C+P, n={n})", f"C+P $-$ P at n={n}",
+            "C+P $-$ P at the largest n"],
+           rows,
+           f"H5. What the concept block adds on top of the pixel block: the same classifier on arm "
+           f"P's features against those features with arm C's concatenated, standardised together "
+           f"under one L2 penalty. Decided at n = {n}, where arm C+P won on {h5['wins']} of "
+           f"{h5['n_datasets']} datasets against the {h5['min_wins']} the rule asks for. The "
+           "largest-n column is reported and decides nothing.", "h5")
+
+
+def curve_all(per):
+    """Every grid point any dataset reached, so a table can say when one stopped short."""
+    return sorted({n for got in per.values() for n in got["curve_n"]})
+
+
 LIT_METHOD_LABEL = {"resnet18_224": "ResNet-18 (224)", "resnet50_224": "ResNet-50 (224)",
                     "auto_sklearn": "auto-sklearn", "autokeras": "AutoKeras",
                     "google_automl": "Google AutoML Vision"}
@@ -434,6 +497,16 @@ def numbers(per, across, datasets, curve_n, primary, dest, literature=None):
         "startedAbove": h1["datasets_where_the_probe_starts_above_arm_b"],
         "friedmanP": fmt(h3["friedman"]["p"], 4),
     }
+    h5 = across.get("h5")
+    if h5:
+        lines["hFiveSupported"] = "supported" if h5["supported"] else "not supported"
+        lines["hFiveWins"] = h5["wins"]
+        lines["hFiveN"] = h5["n"]
+        lines["hFivep"] = fmt(h5["sign_test_p"], 4)
+        clear = [d for d, v in h5["differences"].items() if v["lo"] > 0]
+        lines["hFiveClearGains"] = len(clear)
+        lines["hFiveClearLosses"] = len([d for d, v in h5["differences"].items() if v["hi"] < 0])
+        lines["hFiveMedianGain"] = fmt(median([v["median"] for v in h5["differences"].values()]))
     h4 = across.get("h4")
     if h4:
         lines["hFourSupported"] = "supported" if h4["supported"] else "not supported"

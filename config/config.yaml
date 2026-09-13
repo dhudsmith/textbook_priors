@@ -176,6 +176,14 @@ classify: {l2_grid: [0.01, 0.1, 1, 10, 100], cv_folds: 5, missing_max_frac: 0.05
 # hypothesis over however many datasets it covers - H2, H3 and H4 exclude chestmnist.
 evaluate: {bootstrap: 10000, ci: 0.95, seed: 0, alpha: 0.05}
 
+# H5's decision point, fixed here before arm C+P was ever fitted (WORKFLOW.md section 2): does the
+# concept block add anything on top of the pixel block, under the same classifier? Decided at the
+# smallest labelled subset, where a prior has the most room to help and where H1 is read too. The
+# arm costs no calls - both feature blocks are already on disk - and every other grid point is
+# reported without deciding anything.
+h5:
+  n: 50
+
 # H4's chain, fixed here before a single call of it was bought (WORKFLOW.md section 2). Each step
 # changes exactly one thing: baseline to thinking holds the model and changes the effort; thinking
 # to frontier holds the effort and changes the model. `gpt-5.6-terra` cannot be asked for no

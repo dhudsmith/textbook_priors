@@ -401,11 +401,11 @@ def classify(dataset: str, out: str, arrays: str) -> None:
     AUCs, because the paired bootstrap has to resample the test images once for every arm at the
     same time. The scores ride in an .npz beside the JSON, which is small enough to be a result.
 
-    Four arms: A zero-shot, B nearest fingerprint, C the concept probe, P the pixel probe, plus H4's
-    cross-validated probe for every reader. The multi-label task (chestmnist) gets arms C and P
-    alone: a nearest fingerprint and a distribution over class names are not defined over fourteen
-    co-occurring findings (WORKFLOW.md section 3), so it skips A, B and H4 and its regressions are
-    fitted one finding at a time.
+    Five arms: A zero-shot, B nearest fingerprint, C the concept probe, P the pixel probe and C+P,
+    the two feature blocks concatenated (H5), plus H4's cross-validated probe for every reader. The
+    multi-label task (chestmnist) gets the labelled arms alone: a nearest fingerprint and a
+    distribution over class names are not defined over fourteen co-occurring findings (WORKFLOW.md
+    section 3), so it skips A, B and H4 and its regressions are fitted one finding at a time.
     """
     from . import classify as arms
     spec, curve = CONFIG["classify"], CONFIG["curve"]
@@ -509,6 +509,11 @@ def classify(dataset: str, out: str, arrays: str) -> None:
         x_pool_c = np.hstack([pool_c, np.isnan(pool_concepts)[:, keep].astype(float)])
         x_test_c = np.hstack([test_c, np.isnan(test_concepts)[:, keep].astype(float)])
         x_pool_p, x_test_p = pixel_arrays["pool_features"], pixel_arrays["test_features"]
+        # H5's arm: both blocks side by side, standardised together inside fit_predict, one L2
+        # strength for the whole matrix. It differs from arm P in the presence of the concept
+        # columns and in nothing else, which is what makes the difference "what the textbook adds".
+        x_pool_cp = np.hstack([x_pool_c, x_pool_p])
+        x_test_cp = np.hstack([x_test_c, x_test_p])
         # Subsets are stratified on the class, or for the multi-label task on any-finding against
         # no-finding (classify.strata); the regression itself sees the full label.
         pool_strata = arms.strata(y_pool)
@@ -517,13 +522,15 @@ def classify(dataset: str, out: str, arrays: str) -> None:
         for seed in curve["seeds"]:
             subsets = arms.nested_subsets(pool_strata, curve_n, n_strata, seed)
             for n, idx in subsets.items():
-                for arm, x_pool, x_test in (("C", x_pool_c, x_test_c), ("P", x_pool_p, x_test_p)):
+                for arm, x_pool, x_test in (("C", x_pool_c, x_test_c), ("P", x_pool_p, x_test_p),
+                                            ("CP", x_pool_cp, x_test_cp)):
                     got = arms.fit_predict(x_pool[idx], y_pool[idx], x_test, len(classes),
                                            spec["l2_grid"], spec["cv_folds"], seed,
                                            multi_label=multi_label)
                     key = f"{arm}__n{n}__seed{seed}"
                     out_arrays[key] = got["scores"]
-                    index.append({"arm": arm, "key": key, "model": primary if arm == "C" else None,
+                    index.append({"arm": arm, "key": key,
+                                  "model": primary if arm in ("C", "CP") else None,
                                   "labels": int(len(idx)), "n": int(n), "seed": int(seed),
                                   "C": got["C"], "folds": got["folds"]})
                     fits.append({"key": key, "C": got["C"], "folds": got["folds"],
@@ -555,6 +562,8 @@ def classify(dataset: str, out: str, arrays: str) -> None:
             incomplete_over_cap={key: cellspec["over_missing_cap"]
                                  for key, cellspec in gathered["cells"].items()},
             missing_indicator_columns=int(keep.sum()),
+            feature_columns={"C": int(x_pool_c.shape[1]), "P": int(x_pool_p.shape[1]),
+                             "CP": int(x_pool_cp.shape[1])},
             pool_medians={c["id"]: float(m) for c, m in zip(concepts, medians)},
         ))
 
@@ -603,7 +612,7 @@ def evaluate(dataset: str, out: str) -> None:
 
         # ---- the curve, and the differences H1 turns on ----------------------------------------
         curve_points = {}
-        for arm in ("C", "P"):
+        for arm in ("C", "P", "CP"):
             for n in curve_n:
                 draws = mean_over_seeds(arm, n)
                 curve_points[f"{arm}__n{n}"] = {
@@ -614,6 +623,10 @@ def evaluate(dataset: str, out: str) -> None:
         for n in curve_n:
             differences[f"C_minus_P__n{n}"] = metrics.interval(
                 mean_over_seeds("C", n) - mean_over_seeds("P", n), spec["ci"])
+            # H5: what the concept block adds on top of the pixels, at every grid point. The rule
+            # reads one of them (config h5.n); the rest are reported and decide nothing.
+            differences[f"CP_minus_P__n{n}"] = metrics.interval(
+                mean_over_seeds("CP", n) - mean_over_seeds("P", n), spec["ci"])
         controls = {}
         n_b, h4, arm_b_by_model = None, None, None
 
@@ -706,8 +719,8 @@ def evaluate_across(out: str) -> None:
     must win on the smallest count of datasets whose one-sided sign test has p < alpha, which is
     6 of 6, 9 of 11 and 10 of 12. The per-dataset differences are what carries the reading.
 
-    H1 counts every dataset; H2, H3 and H4 count the datasets that have an arm B, which excludes
-    the multi-label task, and n_B's median is taken over those. H4 is a hypothesis and not an
+    H1 and H5 count every dataset; H2, H3 and H4 count the datasets that have an arm B, which
+    excludes the multi-label task, and n_B's median is taken over those. H4 is a hypothesis and not an
     extension: its decision rule was written into config and WORKFLOW.md before any call of its
     readers was bought, which is what arm D could not say for itself and why arm D is gone.
     """
@@ -813,8 +826,27 @@ def evaluate_across(out: str) -> None:
         h4["min_wins"], h4["n_datasets"] = need_b, len(arm_b)
         h4["supported"] = bool(h4["h4a"]["supported"] and h4["h4b"]["supported"])
 
+        # H5: does the textbook add anything the pixels do not already carry? Arm C+P against arm
+        # P at the grid point config fixed before the arm was ever fitted, on every dataset,
+        # because a complement question needs no arm B. Every other grid point rides along and
+        # decides nothing (WORKFLOW.md section 2).
+        h5_n = int(CONFIG["h5"]["n"])
+        cp_beats_p = {d: per[d]["differences"][f"CP_minus_P__n{h5_n}"]["median"] > 0
+                      for d in datasets}
+        h5 = {
+            "n": h5_n,
+            "per_dataset": cp_beats_p,
+            "wins": sum(cp_beats_p.values()),
+            "differences": {d: per[d]["differences"][f"CP_minus_P__n{h5_n}"] for d in datasets},
+            "differences_by_n": {d: {n: per[d]["differences"][f"CP_minus_P__n{n}"]
+                                     for n in per[d]["curve_n"]} for d in datasets},
+            "sign_test_p": metrics.sign_test(sum(cp_beats_p.values()), len(datasets)),
+            "min_wins": need_all, "n_datasets": len(datasets),
+            "supported": bool(sum(cp_beats_p.values()) >= need_all),
+        }
+
         run.write(out, dict(datasets=datasets, arm_b_datasets=arm_b, alpha=alpha,
-                            h1=h1, h2=h2, h3=h3, h4=h4,
+                            h1=h1, h2=h2, h3=h3, h4=h4, h5=h5,
                             flagged_cells={d: [k for k, over in per[d]["incomplete_over_cap"].items() if over]
                                            for d in datasets}))
 
@@ -832,6 +864,7 @@ def tables(dest: str) -> None:
         reporting.table_h2(per, datasets, curve, primary, dest)
         reporting.table_h3(across, datasets, dest)
         reporting.table_h4(across, datasets, dest)
+        reporting.table_h5(across, per, datasets, dest)
         reporting.table_literature(per, literature, datasets, curve, primary, dest)
         reporting.table_completeness(per, datasets, dest)
         macros = reporting.numbers(per, across, datasets, curve, primary, dest, literature)
@@ -839,7 +872,7 @@ def tables(dest: str) -> None:
 
 
 def figures(dest: str) -> None:
-    """The five figures: one per hypothesis, and H4a read against its baseline."""
+    """The six figures: one per hypothesis, H4a read against its baseline, and H5's differences."""
     from . import report as reporting
     datasets, curve = CONFIG["datasets"], CONFIG["curve"]["n"]
     per, across = reporting.load(CONFIG["outdir"], datasets)
@@ -851,9 +884,10 @@ def figures(dest: str) -> None:
         reporting.figure_ladder(across, datasets, dest)
         reporting.figure_readers(across, datasets, dest)
         reporting.figure_thinking(across, datasets, dest)
+        reporting.figure_h5(across, datasets, dest)
         run.write(f"{CONFIG['outdir']}/figures.json", dict(dest=dest,
                   files=["fig_curve.png", "fig_n_b.png", "fig_ladder.png", "fig_readers.png",
-                         "fig_thinking.png"]))
+                         "fig_thinking.png", "fig_h5.png"]))
 
 
 def main(argv=None) -> None:

@@ -28,7 +28,7 @@
 A multimodal language model carries textbook knowledge about what pathology looks like. This study
 asks what that knowledge is worth, measured in the currency a practitioner cares about: labelled
 images. On the \numDatasets\ MedMNIST 2D benchmarks, a vision--language model scores each image
-against a cited bank of diagnostic visual features, and four arms are compared on one shared test
+against a cited bank of diagnostic visual features, and five arms are compared on one shared test
 sample per dataset:
 
 \begin{itemize}
@@ -37,6 +37,8 @@ sample per dataset:
   \item \textbf{B, textbook-only} --- nearest class fingerprint from the concept bank. No labels.
   \item \textbf{C, concept probe} --- regularised logistic regression on the concept scores, $n$ labels.
   \item \textbf{P, pixel probe} --- the same regression on frozen ImageNet features, the same $n$ labels.
+  \item \textbf{C+P, complement} --- the same regression on both feature blocks concatenated, the
+        same $n$ labels: what the textbook adds on top of the pixels (H5).
 \end{itemize}
 
 Arms C and P differ in their features and in nothing else: the same classifier, the same
@@ -192,6 +194,36 @@ Table~\ref{tab:h4} and Figure~\ref{fig:readers}, not only the three the chain re
   against how well the model read the concepts with no reasoning. Solid points have intervals
   clear of zero. A handful of points is a pattern, not a slope, and none is fitted.}\label{fig:thinking}
 \end{figure}
+
+\subsection*{H5 --- Complement: \hFiveSupported}
+
+\emph{The textbook adds something the pixels do not already carry.} H1 asks whether the concept
+scores can replace the pixel features at equal labels and answers no; that is not the same as
+asking whether they carry anything the pixels lack. Arm C+P gives the same regularised regression
+both feature blocks at once, standardised together under one L2 penalty, on the same nested
+subsets --- so it differs from arm P in the presence of the concept columns and in nothing else.
+Supported if it beats arm P at $n = \hFiveN$ on at least \minWinsAll\ of \numDatasets\ datasets.
+
+Arm C+P won on \hFiveWins\ of \numDatasets\ ($p = \hFivep$), with a median difference of
+\hFiveMedianGain\ AUC; \hFiveClearGains\ datasets have an interval clear of zero above and
+\hFiveClearLosses\ below. The rule was written into \texttt{WORKFLOW.md} and
+\texttt{config/config.yaml} and committed before arm C+P was fitted for the first time, which is
+what separates it from an arm chosen after seeing what would win. It costs no calls: both feature
+blocks were already on disk, so the whole comparison is a re-analysis of the existing archive.
+
+One limit, stated rather than tuned away: roughly a dozen concept columns join 512 pixel columns
+under a single penalty, so a real but small contribution can be shrunk away. A null here means no
+detectable gain under the classifier every other arm uses, not that the concept answers carry
+nothing --- Table~\ref{tab:h2}'s permutation controls show they carry class information.
+
+\begin{figure}[htbp]\centering
+  \includegraphics[width=0.8\textwidth]{fig_h5.png}
+  \caption{H5: the paired difference between the two feature blocks together and the pixel block
+  alone, at the labelled subset the rule is decided at. Solid points have intervals clear of
+  zero.}\label{fig:h5}
+\end{figure}
+
+\input{tables/h5}
 
 \section{Extension: reading the arms against the published literature}
 \label{sec:literature}
