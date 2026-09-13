@@ -857,6 +857,8 @@ def tables(dest: str) -> None:
     datasets, curve = CONFIG["datasets"], CONFIG["curve"]["n"]
     primary = CONFIG["vlm"]["primary"]
     per, across = reporting.load(CONFIG["outdir"], datasets)
+    classify_summaries = {d: json.loads(Path(f"{CONFIG['outdir']}/classify/{d}.json").read_text())
+                          for d in datasets}
     literature = data.load_literature(CONFIG["literature"])
     Path(dest).mkdir(parents=True, exist_ok=True)
     with Run("tables", dict(datasets=datasets, literature_sha256=literature.sha256)) as run:
@@ -867,6 +869,8 @@ def tables(dest: str) -> None:
         reporting.table_h5(across, per, datasets, dest)
         reporting.table_literature(per, literature, datasets, curve, primary, dest)
         reporting.table_completeness(per, datasets, dest)
+        reporting.table_features(classify_summaries, datasets, dest)
+        reporting.appendix_prompts(CONFIG["outdir"], datasets, dest)
         macros = reporting.numbers(per, across, datasets, curve, primary, dest, literature)
         run.write(f"{CONFIG['outdir']}/tables.json", dict(dest=dest, macros=macros))
 

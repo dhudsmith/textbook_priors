@@ -12,6 +12,8 @@
 \usepackage{booktabs}
 \usepackage{hyperref}
 \usepackage{parskip}
+\usepackage{fancyvrb}         % the prompt appendix. This cluster's fancyvrb is v2.7a, which has
+                              % no `breaklines`, so the generator wraps the lines itself
 \graphicspath{{figs/}}
 \input{tables/numbers}
 
@@ -42,7 +44,7 @@ sample per dataset:
 \end{itemize}
 
 Arms C and P differ in their features and in nothing else: the same classifier, the same
-regularisation search and the same labelled subsets. The four hypotheses and their decision rules
+regularisation search and the same labelled subsets. The five hypotheses and their decision rules
 were fixed in \texttt{WORKFLOW.md} before any number existed, and are reported here as they were
 written. Every across-dataset rule is a one-sided sign test held to one level, $p < \alphaLevel$:
 an arm must win on at least \minWinsAll\ of the \numDatasets\ datasets, or \minWinsArmB\ of the
@@ -83,16 +85,135 @@ differences on the same images, where a thin column is common mode.
 
 \section{Methods as executed}
 
-Every response from the model was archived raw, with the served model name and the hash of the
-prompt string that produced it; everything downstream is a deterministic function of that archive.
-An answer that did not parse, or that named a level outside its concept's own scale, was recorded
-as missing and never repaired into a value. Concept levels map to equally spaced values on $[0,1]$;
-a missing answer takes the labelled pool's median for that concept and is flagged by an indicator
-column. Arm~B scores a class by the negative mean absolute difference over the concepts that both
-the fingerprint and the image commit to. Arms C and P choose their L2 strength by cross-validation
-inside the $n$ labelled images, with no validation set. The metric is
-\texttt{medmnist.evaluator.getAUC}, and every interval is a 95\% percentile interval from a paired
-bootstrap over the test images, shared by every arm.
+\subsection*{The calls, and what was archived}
+
+Each call is one chat completion carrying a system message and a user message; the user message is
+the rendered prompt text followed by the 224-pixel image as a lossless PNG data URI, encoded from
+the release array without resizing. Both prompts are pure functions of the concept bank and the
+pinned label map, rendered once per dataset by their own rule and hashed, so the string sent, the
+string hashed into every response manifest and the string printed in
+Appendix~\ref{app:prompts} are one artifact. The full text of both prompts for every dataset is in
+that appendix.
+
+Calls ran at \texttt{temperature: 0} with reasoning disabled by
+\texttt{chat\_template\_kwargs.enable\_thinking: false} and a budget of 512 completion tokens, in
+chunks of 100 images. A reply that did not parse bought exactly one retry at a doubled budget --- the
+same prompt, the same temperature, the repair being aimed at a reply cut off mid-JSON --- after
+which the answer was recorded as missing and never guessed. Transport failures (429 and 5xx) were
+retried separately with exponential backoff, up to four times, with a 120-second per-call timeout.
+Every attempt's raw message is kept in the archive, including the ones that failed, so the record
+shows what the model said and not only what could be read from it. The archive is write-protected
+once written; re-querying is a deliberate act.
+
+H4's two readers are the exception to the reasoning setting and are described with H4 below.
+
+\subsection*{From answers to a concept vector}
+
+A concept's ordered scale maps to equally spaced values on $[0,1]$, so a level's numeric value is
+its position over one less than the number of levels. This weights concepts by scale length --- an
+adjacent miss costs $1.0$ on a two-level scale and $0.25$ on a five-level one --- which is a
+consequence of the mapping and not a claim about importance, and it is why no per-concept
+coefficient anywhere here should be read as one. A missing answer takes the labelled pool's median
+for that concept, and a binary indicator column records that it was missing, so the regression can
+use ``the model would not say'' as information rather than as a value. An indicator that would be
+constant carries nothing and is dropped; a concept the model never answered anywhere in the pool
+has no median and takes $0.5$. The indicator columns are chosen on the pool and reused unchanged on
+the test images, because the fit and the prediction must have the same columns.
+Table~\ref{tab:features} gives the resulting widths per dataset.
+
+\subsection*{The arms}
+
+\textbf{Arm A} reads the archived zero-shot distribution straight out of the archive, one column
+per class in label-index order; a class the model omitted from its JSON scores zero. No softmax is
+applied and none is needed: the metric ranks each class column independently.
+
+\textbf{Arm B} maps each class's fingerprint through the same level-to-number mapping, with
+\texttt{any} masked out, and scores a class by the negative mean absolute difference over the
+concepts that the fingerprint commits to \emph{and} the image answered. A class with no overlap at
+all scores $-1$, the worst such a mean can be: nothing speaks for it, and leaving it undefined
+would make the AUC undefined rather than merely uninformative. A thin fingerprint is therefore
+scored on few concepts, and a near-miss on any of them costs it proportionally more.
+
+\textbf{Arms C, P and C+P} are one multinomial logistic regression under three feature blocks.
+Arm~C takes the concept vectors with their missing-indicator columns; arm~P takes the 512
+penultimate activations of a frozen ImageNet ResNet-18 (\texttt{IMAGENET1K\_V1}), with greyscale
+images repeated across three channels and only the normalisation applied --- the weights' own
+transform resizes to 256 and crops back to 224, which would discard the frame edge the release
+already provides at the right size.
+
+\textbf{Arm C+P fuses the two by concatenation, and by nothing else.} The concept block
+(concepts plus indicators) is placed to the left of the pixel block in one design matrix, so its
+width is exactly the sum of the two, which Table~\ref{tab:features} reports per dataset. That
+matrix is then standardised column-wise on the $n$ labelled images --- each column centred and
+scaled by its own mean and standard deviation over those rows, which is what puts a concept column
+on $[0,1]$ and a ResNet activation on the same footing --- and handed to the same regression with
+the same single $\ell_2$ penalty over the whole matrix, the same grid, the same cross-validation
+and the same labelled subsets as arm~P. There is no per-block weighting, no per-block penalty, no
+feature selection and no dimensionality reduction on either side. The point of the arm is that it
+differs from arm~P in the presence of the concept columns and in nothing else, which is what makes
+the difference attributable to them; the cost of that discipline is stated with H5 below.
+
+\subsection*{The classifier, identically for C, P and C+P}
+
+Features are standardised on the $n$ labelled images and the test images are transformed by that
+same fit. The regularisation strength is chosen inside those same $n$ images by stratified
+$k$-fold cross-validation, scored by mean out-of-fold accuracy, over
+\texttt{scikit-learn}'s $C$ --- the \emph{inverse} penalty --- on the grid
+$\{0.01, 0.1, 1, 10, 100\}$. There is no validation set: $n$ labels means $n$ labels. The fold
+count is the smaller of five and the smallest class count in the subset, and below two folds the
+grid's median is taken without a search. The final fit uses lbfgs with a 2000-iteration cap and
+softmax over all classes at once. A class absent from a subset gets an all-zero score column rather
+than being dropped, so every arm's score matrix has the same shape and the AUC is over the same
+classes; a subset containing one class only is reported as degenerate rather than given a fabricated
+probability.
+
+Labelled subsets are class-stratified nested prefixes of the pool: each subset extends the one
+before it, so the curve is one labelling effort growing rather than unrelated draws at each size. Each is as
+close to the pool's class proportions as whole numbers allow by largest remainder, with a floor of
+one image per class, because a subset missing a class cannot predict it. Three seeds draw three
+such sequences and every curve point is the mean over them.
+
+\subsection*{The multi-label task}
+
+chestmnist has fourteen findings that co-occur, so arms A and B are undefined for it and are not
+run. Arms C, P and C+P fit the same regression one finding at a time, one-vs-rest, on the same
+feature blocks. Two things differ and are stated rather than left to be discovered: the subsets are
+stratified on whether a film carries any finding at all rather than on a class, and the penalty is
+chosen by out-of-fold AUC rather than accuracy, because a finding present in two percent of films
+makes ``always negative'' the most accurate classifier at every strength. A finding with no
+positives in a subset cannot be fitted and scores a constant column, which the metric reads as
+uninformative.
+
+\subsection*{The permutation controls}
+
+Two, both free re-analyses of the archive. Arm~B's control attaches the same fingerprint rows to
+the wrong classes, so the bank still says what a textbook says and only the labels on it are
+shuffled; a draw equal to the identity is rejected and redrawn. Arm~C's control shuffles each
+concept column across images independently, so every concept's marginal distribution survives and
+only its pairing with the image, and hence with the label, is destroyed. Each runs at three seeds
+and the reported drop is the mean over them.
+
+\subsection*{The metric, the bootstrap, and $n_B$}
+
+The metric is \texttt{medmnist.evaluator.getAUC}: the positive column for a binary task and the
+unweighted mean of the one-vs-rest columns otherwise, over classes for a multi-class task and over
+findings for the multi-label one. It is computed here by an equivalent average-rank formula, which
+the smoke tier holds to the package's own evaluator on every task type, including on the coarse
+tied scores arm~B produces.
+
+One bootstrap per dataset is shared by every arm: a replicate resamples the test images once with
+replacement and every arm is recomputed on that same resample, so a difference between two arms is
+a difference of two columns of one matrix and its interval is a percentile of that. Ten thousand
+replicates, seed~0, 95\% percentile intervals. A class with no positives in a replicate is
+undefined rather than counted as one half. H4's readers are scored on a prefix of the test sample
+rather than all of it, so they get their own bootstrap over that prefix; two sets of images cannot
+share one resample.
+
+$n_B$ is the smallest grid point at which the pixel probe's seed-mean AUC reaches the zero-label
+textbook arm. It is ordinal, not numeric: \texttt{<=50} records that the probe was already above at
+the first grid point and \texttt{>2000} that it never crossed, and the median across datasets is
+taken on ranks so that neither is discarded --- dropping them would remove exactly the datasets
+carrying the most evidence.
 
 \section{Results}
 
@@ -168,6 +289,15 @@ C's classifier inside the scored images themselves by stratified cross-validatio
 fixed by seed and identical across readers, and every image is scored by a fit that never saw it.
 It measures what the answers carry. It is not a point on the learning curve, and no $n_B$ reads it.
 
+The readers are the one place the call settings differ from the archive's. Both were asked for
+\texttt{reasoning\_effort: medium}, and where an effort is sent the thinking-off switch is not:
+they are two ways of saying one thing to a stack that need not agree with itself. Their token
+budgets are their own, sized from measured completion lengths --- 2048 on the local reader, where
+512 is what made thinking look impossible and a thinking answer costs about 986 completion tokens
+against 112 with thinking off, and 4096 on the gateway model, which is also billed at a discounted
+service tier. The gateway dialect takes \texttt{max\_completion\_tokens} rather than
+\texttt{max\_tokens}, which is why the two readers are two rules.
+
 Two limits on H4b. The frontier model is closed and of unknown size, so the step is capability and
 not parameters. And it refuses \texttt{temperature: 0} --- only its served default is allowed ---
 so it is the one reader here whose answers are sampled rather than deterministic; they would differ
@@ -200,9 +330,13 @@ Table~\ref{tab:h4} and Figure~\ref{fig:readers}, not only the three the chain re
 \emph{The textbook adds something the pixels do not already carry.} H1 asks whether the concept
 scores can replace the pixel features at equal labels and answers no; that is not the same as
 asking whether they carry anything the pixels lack. Arm C+P gives the same regularised regression
-both feature blocks at once, standardised together under one L2 penalty, on the same nested
-subsets --- so it differs from arm P in the presence of the concept columns and in nothing else.
-Supported if it beats arm P at $n = \hFiveN$ on at least \minWinsAll\ of \numDatasets\ datasets.
+both feature blocks at once: the concept block concatenated to the left of the pixel block in one
+design matrix, standardised column-wise on the same $n$ labelled images and fitted with the same
+single $\ell_2$ penalty, the same grid and the same nested subsets as arm~P, with no per-block
+weighting and no feature selection. The fusion is described in full under Methods and its widths
+are in Table~\ref{tab:features}; arm C+P differs from arm~P in the presence of the concept columns
+and in nothing else. Supported if it beats arm~P at $n = \hFiveN$ on at least \minWinsAll\ of
+\numDatasets\ datasets.
 
 Arm C+P won on \hFiveWins\ of \numDatasets\ ($p = \hFivep$), with a median difference of
 \hFiveMedianGain\ AUC; \hFiveClearGains\ datasets have an interval clear of zero above and
@@ -211,10 +345,13 @@ Arm C+P won on \hFiveWins\ of \numDatasets\ ($p = \hFivep$), with a median diffe
 what separates it from an arm chosen after seeing what would win. It costs no calls: both feature
 blocks were already on disk, so the whole comparison is a re-analysis of the existing archive.
 
-One limit, stated rather than tuned away: roughly a dozen concept columns join 512 pixel columns
-under a single penalty, so a real but small contribution can be shrunk away. A null here means no
+One limit, stated rather than tuned away: seven to fourteen concept columns join 512 pixel columns
+under a single penalty (Table~\ref{tab:features}), so the concept block is outnumbered by roughly
+forty to one and a real but small contribution can be shrunk away. A null here would mean no
 detectable gain under the classifier every other arm uses, not that the concept answers carry
-nothing --- Table~\ref{tab:h2}'s permutation controls show they carry class information.
+nothing --- Table~\ref{tab:h2}'s permutation controls show they carry class information. The same
+asymmetry cuts the other way for a positive result: a gain found under this handicap is not an
+artefact of giving the concept block room it was not entitled to.
 
 \begin{figure}[htbp]\centering
   \includegraphics[width=0.8\textwidth]{fig_h5.png}
@@ -263,6 +400,8 @@ computes no ACC for any arm, and a published ACC with nothing to set beside it w
 
 \input{tables/completeness}
 
+\input{tables/features}
+
 \section{What this study cannot separate}
 
 Every source dataset is public and labelled, so ``the model carries textbook knowledge'' and ``the
@@ -276,6 +415,10 @@ Every result file carries a manifest: its parameters, its seeds, the git commit 
 package versions, host, thread pins and wall time. The response archive additionally records the
 served model name, the prompt hash and the bank hash for every call, and is write-protected once
 written, so re-querying is a deliberate act.
+
+\appendix
+
+\input{tables/appendix_prompts}
 
 \section*{Sources behind the concept bank}
 \nocite{*}

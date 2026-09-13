@@ -344,11 +344,15 @@ Each names the failure it prevents; `TALK.md` argues them.
               arms alone for chestmnist                                                  12 CPU
 5  EVALUATE   AUC per arm; the paired bootstrap; n_B; a second bootstrap over the prefix for
               H4's readers; then the sign tests, the ladder, the chain and H5            12 + 1
-6  REPORT     six figures, tables, number macros, the technical report PDF                local
+6  REPORT     six figures, tables, number macros, an appendix of every rendered prompt,
+              the technical report PDF                                                    local
 ```
 
 Targets: `all` (the report), `smoke`, `sample`, `score`, `features`, `classify`, `evaluate`,
-`report`. Six figures: the learning curve with arm B's line (H1), n_B per dataset (H1 detail),
+`report`. The report carries an appendix printing every dataset's rendered prompts verbatim,
+generated from the same `results/prompts/` files the archive was hashed against, and a table of
+each arm's design-matrix widths so arm C+P's fusion is a number rather than a description.
+Six figures: the learning curve with arm B's line (H1), n_B per dataset (H1 detail),
 the model ladder (H3), the reader chain and thinking's effect against the baseline (H4), and what
 the concept block adds on top of the pixels (H5). H2 is a table of paired differences and
 permutation drops.

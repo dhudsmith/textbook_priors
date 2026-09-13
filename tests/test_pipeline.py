@@ -129,7 +129,15 @@ def workspace(tmp_path):
     (results / "prompts").mkdir(parents=True, exist_ok=True)
     (results / "prompts" / "toymnist.json").write_text(json.dumps(
         {"dataset": "toymnist", "concepts": CONCEPTS, "classes": CLASSES, "bank_sha256": "x",
-         "prompts": {"concept": {"sha256": "c"}, "zero_shot": {"sha256": "z"}}}))
+         "bank_file": "data/concepts/toymnist.yaml",
+         # system/user as `render_prompts` writes them: the appendix prints these verbatim, so a
+         # fixture without them would let a missing field reach the report unnoticed.
+         "prompts": {"concept": {"sha256": "c", "keys": [c["id"] for c in CONCEPTS],
+                                 "system": "You are an expert reader.",
+                                 "user": "Answer 2 questions about this image."},
+                     "zero_shot": {"sha256": "z", "keys": CLASSES,
+                                   "system": "You are an expert reader.",
+                                   "user": "Which of 2 categories is this image?"}}}))
 
     # The gathered archive: both models on the test split, the primary also on the pool, and a
     # zero-shot cell whose numbers carry nothing.
@@ -192,8 +200,11 @@ def add_multi_label_dataset(tmp_path, config, rng):
     results = Path(config["outdir"])
     (results / "prompts" / "toychest.json").write_text(json.dumps(
         {"dataset": "toychest", "concepts": CONCEPTS, "classes": [f"f{j}" for j in range(findings)],
-         "bank_sha256": "y", "multi_label": True,
-         "prompts": {"concept": {"sha256": "cc"}, "zero_shot": None}}))
+         "bank_sha256": "y", "bank_file": "data/concepts/toychest.yaml", "multi_label": True,
+         "prompts": {"concept": {"sha256": "cc", "keys": [c["id"] for c in CONCEPTS],
+                                 "system": "You are an expert reader.",
+                                 "user": "Answer 2 questions about this film."},
+                     "zero_shot": None}}))
 
     def rows(labels):
         return [{"position": i, "index": i, "label": [int(v) for v in y], "complete": True,
@@ -312,10 +323,39 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
 
     stages.tables(config["tabdir"])
     stages.figures(config["figdir"])
-    for name in ("h1", "h2", "h3", "h4", "h5", "literature", "completeness", "numbers"):
+    for name in ("h1", "h2", "h3", "h4", "h5", "literature", "completeness", "features",
+                 "appendix_prompts", "numbers"):
         assert (Path(config["tabdir"]) / f"{name}.tex").stat().st_size > 0
     for name in ("curve", "n_b", "ladder", "readers", "thinking", "h5"):
         assert (Path(config["figdir"]) / f"fig_{name}.png").stat().st_size > 0
+
+    # The appendix has to print what was actually sent, or it is decoration. It reads the same
+    # rendered file every score manifest hashes, so the strings must appear in it verbatim, and the
+    # multi-label dataset must be shown as having no zero-shot prompt rather than silently omitted.
+    appendix = (Path(config["tabdir"]) / "appendix_prompts.tex").read_text()
+    for dataset in ("toymnist", "toychest"):
+        rendered = json.loads((results / "prompts" / f"{dataset}.json").read_text())
+        for key, message in rendered["prompts"].items():
+            if message is None:
+                assert "multi-label, so arm A is not defined" in appendix
+                continue
+            assert message["user"] in appendix, f"{dataset} {key} user text missing"
+            assert message["sha256"][:16] in appendix
+
+    # Wrapping for the page must not alter the prompt. The invariant that makes the printed
+    # SHA-256 checkable is that only whitespace changes, so every other character survives in order.
+    from priors.report import _wrap_verbatim
+    long_prompt = json.loads((results / "prompts" / "toymnist.json").read_text())["prompts"]
+    for message in long_prompt.values():
+        for text in (message["system"], message["user"], "x " * 300, "  indented " + "y" * 400):
+            wrapped = _wrap_verbatim(text)
+            assert "".join(wrapped.split()) == "".join(text.split())
+            assert max(len(line) for line in wrapped.split("\n")) <= 92 or "y" * 93 in text
+
+    # The feature table documents arm C+P's fusion as a fact: its width is the sum of the blocks.
+    features = (Path(config["tabdir"]) / "features.tex").read_text()
+    cols = json.loads((results / "classify/toymnist.json").read_text())["feature_columns"]
+    assert f"{cols['C']} & {cols['P']} & {cols['CP']}" in features
 
     # Every macro the report's prose reads has to exist, or pdflatex fails on an undefined control
     # sequence after the whole study has run.

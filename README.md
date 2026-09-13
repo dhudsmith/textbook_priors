@@ -39,7 +39,7 @@ scoring fan-out; from the owner's checkout, where every result exists, it is not
 | 3 | **Features** | Per dataset: ImageNet ResNet-18 penultimate features | 12 |
 | 4 | **Classify** | Per dataset: arms A, B, C, P over the curve, the permutation controls, and every reader's probe; C and P alone for the multi-label chestmnist | 12 |
 | 5 | **Evaluate** | AUC, the paired bootstrap, n_B; then the sign tests, the ladder and the reader chain | 12 + 1 |
-| 6 | **Report** | Five figures, the tables, the technical report PDF | 3 |
+| 6 | **Report** | Six figures, the tables, the prompt appendix, the technical report PDF | 3 |
 
 ## Layout
 
@@ -62,7 +62,8 @@ results/               one JSON per unit of work, each with a manifest
 results/score/         the raw VLM response archive, write-protected once written
 results/prompts_txt/   opt-in: a plain-text render of each prompt, for a human reader; no manifest
 benchmarks/            wall time and peak memory per job
-report/                report.tex, references.bib, generated tables/ and figs/
+report/                report.tex, references.bib, generated tables/ and figs/; tables/ also
+                       holds the generated prompt appendix and the feature-width table
 logs/                  one log per job
 docs/                  reference notes on the LLM service: models, reasoning levels, throughput
 CONCEPT_BANK.md        how the bank was built, and the rules the smoke tier enforces

@@ -291,6 +291,11 @@ def figure_thinking(across, datasets, dest):
 
 # ---- tables ---------------------------------------------------------------------------------------
 
+def _write(dest, name, tex):
+    """One generated .tex fragment, written where report.tex includes it from."""
+    (Path(dest) / f"{name}.tex").write_text(tex if tex.endswith("\n") else tex + "\n")
+
+
 def _table(dest, name, header, rows, caption, label):
     body = "\n".join(" & ".join(r) + r" \\" for r in rows)
     tex = (r"\begin{table}[htbp]\centering\small" "\n"
@@ -473,6 +478,126 @@ def table_completeness(per, datasets, dest):
            "more than 5\\% incomplete is excluded from the headline. Only the primary model "
            "scores the multi-label task.", "completeness")
 
+
+def table_features(classify, datasets, dest):
+    """What each arm's design matrix actually is, per dataset.
+
+    The one table that documents arm C+P's fusion as a fact rather than a description: the concept
+    block's width, the missing-indicator columns that ride with it, the pixel block's width, and
+    their sum. Every number is read from the classify stage's own record, so the table cannot
+    disagree with the matrices that were fitted.
+    """
+    rows = []
+    for d in datasets:
+        got = classify[d]
+        cols = got["feature_columns"]
+        indicators = got["missing_indicator_columns"]
+        rows.append([tex_escape(d),
+                     str(got["n_classes"]),
+                     str(cols["C"] - indicators),
+                     str(indicators),
+                     str(cols["C"]),
+                     str(cols["P"]),
+                     str(cols["CP"]),
+                     ", ".join(str(n) for n in got["curve_n"])])
+    _table(dest, "features",
+           ["dataset", "classes", "concepts", "missing flags", "C cols", "P cols", "C+P cols",
+            "labelled subsets"],
+           rows,
+           "The design matrices as fitted. The concept block is one column per concept plus one "
+           "binary missing-indicator column for each concept the primary model ever failed to "
+           "answer in the labelled pool; an indicator that would be constant is dropped. The pixel "
+           "block is the ResNet-18 penultimate layer. Arm C+P is the two blocks side by side, so "
+           "its width is exactly their sum, and the last column is the labelled subsets that "
+           "dataset's pool could fill.", "features")
+
+
+# Wrapped rather than broken by the TeX engine: this cluster's fancyvrb is v2.7a, which predates
+# `breaklines`, and a prompt line runs to several hundred characters. Wrapping here keeps the
+# appendix readable on any TeX installation and keeps the transformation visible in one place.
+_WRAP = 92
+
+
+def _wrap_verbatim(text: str) -> str:
+    """Long lines hard-wrapped for the page, indentation carried onto continuations.
+
+    Only line breaks are introduced; every other character survives, which is what lets the printed
+    SHA-256 stay checkable against the rendered prompt file.
+    """
+    import textwrap
+    out = []
+    for line in text.replace("\t", "    ").split("\n"):
+        if len(line) <= _WRAP:
+            out.append(line)
+            continue
+        indent = " " * (len(line) - len(line.lstrip(" ")))
+        out.extend(textwrap.wrap(line, width=_WRAP, subsequent_indent=indent + "  ",
+                                 break_long_words=True, break_on_hyphens=False,
+                                 drop_whitespace=False) or [line])
+    return "\n".join(out)
+
+
+def appendix_prompts(outdir, datasets, dest):
+    """Every prompt that was sent, verbatim, from the file the archive was hashed against.
+
+    Not a re-rendering: this reads `results/prompts/<dataset>.json`, the same artifact each score
+    job read and whose SHA-256 every response manifest carries, so what a reader sees here is what
+    the model was asked, character for character (WORKFLOW.md section 7).
+    """
+    out = [r"\section{The concept prompt and the zero-shot prompt, in full}",
+           r"\label{app:prompts}", ""]
+    out.append(
+        "Every call is one chat completion with a system message and a user message. The user "
+        "message carries the text below followed by the image, sent as a PNG data URI "
+        r"(\texttt{image\_url}); PNG because it is lossless, and the 224-pixel release array is "
+        "encoded without resizing, so the model sees the same pixels the ImageNet encoder does. "
+        "The text is a pure function of the concept bank and the pinned label map, rendered once "
+        "per dataset by its own rule and hashed into every response manifest, so the string here, "
+        "the string that was sent and the string the manifest names are one artifact. Levels are "
+        "listed in the bank's own order and the model is asked to copy one of them exactly; the "
+        "reply is parsed against those levels and anything else is recorded as missing, never "
+        "repaired into a value.")
+    out.append("")
+    out.append(
+        rf"One typographic caveat: lines longer than {_WRAP} characters are hard-wrapped here to "
+        r"fit the page, with the original indentation carried onto the continuation. No other "
+        r"character is changed, and the SHA-256 printed with each prompt is of the string as sent, "
+        r"so the text below can be checked against "
+        r"	exttt{results/prompts/<dataset>.json} rather than taken on trust.")
+    out.append("")
+    out.append(
+        r"The concept prompt never names a class and the zero-shot prompt never mentions a "
+        r"concept --- H2 compares them, so their separation is checked on these rendered strings "
+        r"by the smoke tier rather than promised in prose. The multi-label task has no zero-shot "
+        r"prompt at all, because ``exactly one of these categories'' is false of a film carrying "
+        r"several findings or none.")
+    out.append("")
+
+    for dataset in datasets:
+        rendered = json.loads(Path(f"{outdir}/prompts/{dataset}.json").read_text())
+        out.append(rf"\subsection{{{tex_escape(dataset)}}}")
+        out.append("")
+        out.append(rf"Concept bank \texttt{{{tex_escape(rendered['bank_file'].split('/')[-1])}}}, "
+                   rf"SHA-256 \texttt{{{rendered['bank_sha256'][:16]}\ldots}}. "
+                   rf"{len(rendered['concepts'])} concepts, {len(rendered['classes'])} "
+                   rf"{'findings' if rendered.get('multi_label') else 'classes'}.")
+        out.append("")
+        for key, title in (("concept", "Concept prompt (arms B, C and C+P)"),
+                           ("zero_shot", "Zero-shot prompt (arm A)")):
+            message = rendered["prompts"][key]
+            if message is None:
+                out.append(rf"\paragraph{{{title}.}} Not rendered: {tex_escape(dataset)} is "
+                           r"multi-label, so arm A is not defined for it.")
+                out.append("")
+                continue
+            out.append(rf"\paragraph{{{title}.}} SHA-256 "
+                       rf"\texttt{{{message['sha256'][:32]}\ldots}}")
+            for label, text in (("system", message["system"]), ("user", message["user"])):
+                out.append(rf"\begin{{Verbatim}}[fontsize=\small,frame=leftline,label={label}]")
+                out.append(_wrap_verbatim(text))
+                out.append(r"\end{Verbatim}")
+            out.append("")
+    _write(dest, "appendix_prompts", "\n".join(out))
 
 def numbers(per, across, datasets, curve_n, primary, dest, literature=None):
     """The macros the prose reads, so no sentence states a number the run did not produce."""

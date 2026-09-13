@@ -581,3 +581,40 @@ wrote this", and it should be read before a theory is formed.
 Checked before standing behind the numbers: all twelve classify results, all twelve evaluate
 results and evaluation.json record commit 383693e, and `git diff 2a4a017 383693e` touches only
 SESSION_LOG.md - so every H5 number was produced by code byte-identical to the pre-registration.
+
+## 2026-09-13 14:25 — An accuracy pass over the report, and the prompts as an appendix
+
+Asked to take a pass through the report for accuracy, add anything specific to the analysis that
+had been left out, add appendices showing the prompts, and make sure arm C+P's fusion is described.
+
+The Methods section was one paragraph covering five arms; it is now seven subsections and states
+what the run actually did rather than what it broadly did. What was missing and is now in: the call
+settings (temperature 0, the thinking-off switch, 512 tokens, chunks of 100, the one content retry
+at a doubled budget, four transport retries, the 120-second timeout, every attempt archived); the
+PNG data URI and that the image is not resized; the concept-vector mapping with its scale-length
+consequence and the missing-indicator rule; arm A's zero-fill for an omitted class and arm B's
+`-1` for an empty overlap; the cross-validation criterion, which is out-of-fold accuracy for the
+single-label arms and out-of-fold AUC for the multi-label one, and that the grid is scikit-learn's
+inverse penalty C rather than a penalty; the largest-remainder nested subsets and their class floor;
+both permutation controls in their exact form; the shared bootstrap's mechanics and why H4 needs its
+own; n_B's ordinal coding; and H4's reader settings, including the 2048/4096 budgets and the
+gateway's discounted tier.
+
+**Arm C+P's fusion now has its own paragraph and its own generated table.** Concatenation with the
+concept block left of the pixel block, standardised column-wise on the same n labelled images, one
+shared L2 penalty over the whole matrix, no per-block weighting, no selection, no reduction.
+`tables/features.tex` prints the widths per dataset so the claim "its width is exactly their sum"
+is checkable rather than asserted, and it exposes something the prose had not: only organamnist and
+organsmnist carry any missing-indicator columns, two each, so the concept block is otherwise just
+the concepts.
+
+**The appendix is generated, not pasted.** `appendix_prompts` reads `results/prompts/<dataset>.json`
+- the same artifact each score job read and every response manifest hashes - and prints both
+prompts for all twelve datasets verbatim with their SHA-256, about 32 pages. Lines longer than 92
+characters are hard-wrapped because this cluster's fancyvrb is v2.7a and has no `breaklines`; a test
+holds the wrapper to changing whitespace and nothing else, so the printed hash stays checkable
+against the JSON, and the appendix says so.
+
+Building it needed the documented dance again: editing `tests/` invalidates the smoke marker every
+rule depends on, so a plain `snakemake all` planned all 521 scoring chunks. Ran smoke, touched
+`evaluate score features prompts_txt`, then built the four report jobs. 379 tests pass.

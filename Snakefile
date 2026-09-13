@@ -179,7 +179,8 @@ FIGS, TABS = config["figdir"], config["tabdir"]
 FIG_FILES = expand(f"{FIGS}/fig_{{f}}.png",
                    f=["curve", "n_b", "ladder", "readers", "thinking", "h5"])
 TABLE_TEX = expand(f"{TABS}/{{t}}.tex",
-                   t=["h1", "h2", "h3", "h4", "h5", "literature", "completeness", "numbers"])
+                   t=["h1", "h2", "h3", "h4", "h5", "literature", "completeness", "features",
+                      "appendix_prompts", "numbers"])
 
 wildcard_constraints:
     dataset="|".join(DATASETS),
@@ -803,6 +804,10 @@ rule tables:
     """Every table and number macro, from results/ alone. x1, local."""
     input:
         evaluation=EVALUATION, per_dataset=EVALUATED, code=CODE_REPORT,
+        # The feature-dimension table reads the classify stage's own record of the matrices it
+        # fitted, and the appendix reads the rendered prompts the archive was hashed against, so
+        # both are declared here rather than reached for behind Snakemake's back.
+        classify=CLASSIFIED, prompts=PROMPTS,
         literature=config["literature"],
     output: TABLE_TEX
     log: "logs/tables.log"
