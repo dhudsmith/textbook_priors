@@ -1102,3 +1102,106 @@ of five fully supervised methods and within five points of it on one dataset of 
 ten of twelve, and at or above it on two (dermamnist and retinamnist, where the published ResNets
 are weak). The concept probe at the same budget sits 0.129 below. Labels close the gap; the
 textbook does not.
+
+## 2026-09-13 — H5 supported: the textbook adds something the pixels do not carry
+
+The first supported hypothesis in this study, and the one that changes what the other four mean.
+
+**Pre-registered before its numbers existed** (commit 2a4a017, WORKFLOW.md §2): arm C+P is arm C's
+concept vectors concatenated with arm P's frozen ImageNet features, standardised together under one
+L2 penalty, on the same nested subsets and the same seeds, so it differs from arm P in the presence
+of the concept columns and in nothing else. Supported if it beats arm P at n = 50 on 10 of 12.
+It cost no calls: both feature blocks were already on disk.
+
+**Result: 11 of 12, p = 0.0032, and every one of the eleven has a paired interval clear of zero.**
+
+| dataset | AUC(P, 50) | AUC(C+P, 50) | difference at n = 50 | at the largest n |
+|---|---|---|---|---|
+| pathmnist | 0.958 | 0.965 | **+0.007 [+0.005, +0.009]** | +0.004 [+0.002, +0.006] |
+| dermamnist | 0.749 | 0.768 | **+0.019 [+0.010, +0.029]** | +0.012 [+0.005, +0.020] |
+| octmnist | 0.871 | 0.887 | **+0.016 [+0.013, +0.020]** | +0.018 [+0.012, +0.024] |
+| pneumoniamnist | 0.935 | 0.941 | **+0.005 [+0.004, +0.007]** | +0.004 [+0.001, +0.007] |
+| bloodmnist | 0.906 | 0.915 | **+0.009 [+0.007, +0.011]** | +0.002 [+0.002, +0.004] |
+| organamnist | 0.946 | 0.945 | −0.000 [−0.001, +0.001] | +0.001 [−0.000, +0.002] |
+| breastmnist | 0.809 | 0.833 | **+0.023 [+0.009, +0.039]** | +0.015 [−0.003, +0.035] |
+| retinamnist | 0.748 | 0.756 | **+0.007 [+0.004, +0.011]** | −0.001 [−0.005, +0.003] |
+| tissuemnist | 0.698 | 0.705 | **+0.006 [+0.004, +0.008]** | +0.005 [+0.001, +0.009] |
+| organcmnist | 0.891 | 0.894 | **+0.003 [+0.002, +0.004]** | +0.001 [+0.000, +0.001] |
+| organsmnist | 0.847 | 0.849 | **+0.001 [+0.000, +0.003]** | +0.001 [−0.000, +0.003] |
+| chestmnist | 0.546 | 0.556 | **+0.010 [+0.004, +0.016]** | +0.005 [−0.000, +0.011] |
+
+**The effect is small and it is real.** Median +0.007 AUC, largest +0.023 (breastmnist). Nothing
+here rescues the textbook as a substitute for labels: H1 stands, and 0.007 AUC is not a clinical
+argument for anything. What it settles is a different question. The permutation controls already
+showed the concept answers carry class information; H2 showed the nearest-fingerprint readout
+throws most of it away; H5 shows that what survives is not merely a worse copy of what the pixels
+already encode. Under one shared penalty, with a dozen concept columns against 512 pixel columns,
+the concept block still moves the AUC on eleven of twelve tasks in the same direction.
+
+**It persists but shrinks with labels.** Seven of twelve intervals are still clear of zero at each
+dataset's largest subset. The complement is worth most where labels are scarcest, which is the
+regime the study was built to probe.
+
+**Where it does not help: the organ triple.** organamnist, organcmnist and organsmnist gain
+−0.000, +0.003 and +0.001, against a median +0.009 over the other nine. Those three share one
+concept set (position, body side, relative size, attenuation) over the same LiTS volumes in three
+planes, and those are exactly the properties a convolutional feature map already encodes well. The
+gain does not track how weak arm P is (Spearman −0.43, p = 0.16 over twelve datasets); the organ
+result is better read as redundancy between the bank's concepts and pixel features than as a
+ceiling effect, and twelve datasets cannot separate the two.
+
+**What the five verdicts now say together.** The textbook prior cannot replace labelled data (H1),
+its own nearest-fingerprint readout is worse than asking the model for the diagnosis on most tasks
+(H2), it does not improve with a bigger model (H3) or a better reader (H4) — and it nevertheless
+carries a small, consistent increment that frozen pixel features do not (H5). The binding
+constraint is the readout, not the presence of information: four ways of reading the bank fail,
+and the one that hands the answers to a classifier alongside the pixels succeeds.
+
+## 2026-09-13 — Where this sits in the literature, and two operational findings
+
+**Related work, checked before claiming novelty.** The closest prior work is LaBo (Yang et al.,
+CVPR 2023), which builds GPT-3 concept bottlenecks over eleven mostly-natural-image datasets and
+reports them 11.7% more accurate than black-box linear probes at one shot. This study finds the
+opposite on medical images: concept features lose to ImageNet features at fifty labels on ten of
+twelve tasks. Natural images with CLIP-aligned concepts and medical images with textbook checklists
+read by a VLM are different regimes, and the boundary is worth recording. Label-free CBM (Oikarinen
+et al., ICLR 2023) notes in the same direction that its method works best where CLIP is strong.
+A 2025 MedMNIST benchmark (arXiv 2501.14685) covers all twelve datasets with twelve frozen encoders
+and linear probing, but runs no VLM zero-shot and no concept arm; the medical CBM literature
+(MedCBR, CCBM, visual concept filtering) evaluates one to three datasets at full label budgets as
+an interpretability method. The overthinking literature of 2025-26 reports qualitatively what H4a
+measures: longer reasoning degrades attention to the image.
+
+What appears not to exist elsewhere: the three-way comparison at matched small label budgets
+(structured concept scores, the same model's zero-shot diagnosis, frozen pixel features) across all
+twelve tasks with a paired bootstrap; the n_B framing; the representation-versus-readout
+dissociation H2 and H5 make together; and the tissuemnist flip, where the model's own zero-shot is
+at chance (0.499) and its concept answers still rank at 0.642.
+
+Two gaps a reader would hold against this study, both already in the plan as unbuilt extensions
+(§10): `generic_prompt`, which is the control that tests whether *cited* features beat any twelve
+plausible questions — the permutation controls do not test that — and a stronger arm P than
+ImageNet ResNet-18, since the benchmark above shows DINOv2 is far ahead of it on these tasks.
+
+**Operational finding: a second checkout on another branch defeats the code-as-input rule.**
+Adding arm C+P changed `priors/stages.py`. A second session, given the same task at 11:45 without
+the owner intending two at once, built the same arm on its own branch and switched this shared
+checkout onto that branch at 11:52 while twelve classify jobs from this branch were in flight. A
+SLURM job reads the working tree when it starts, so five of the twelve imported the other branch's
+`stages.py` and wrote its arm name instead of this one's; their evaluate jobs then failed on a
+missing key. The first diagnosis here was a stale NFS bytecode cache, which was wrong: the
+manifests named the culprit, each recording the other branch's commit and a clean tree, and that is
+what the manifest is for. Read the manifest before theorising. The five outputs were deleted and
+all twelve recomputed; every result behind H5 records a commit whose code is byte-identical to the
+pre-registration (`git diff 2a4a017 383693e` touches only SESSION_LOG.md).
+
+**Operational finding: `--touch` in one checkout is a `--touch` of the shared cache for all of
+them.** `data/cache` is a symlink onto project storage in every checkout, so the second session's
+touch of `sample` and `features` in its own worktree bumped the mtimes of the arrays this one
+reads. That, plus the `stages.py` mtime from the branch switch, made every archived chunk look
+stale: two runs from here planned all 521 scoring chunks, 51,718 calls. Both were killed before any
+chunk was written and the archive was verified intact against the redrawn samples, which were
+identical. The rule this leaves: after a refactor that cannot have changed a number, `--touch` the
+upstream targets before running anything, and read the job-stats table for `score_` lines before
+every launch. README already says one checkout runs the workflow at a time; the symlinks make that
+sharper, because a second checkout does not have to run anything to disturb the first.

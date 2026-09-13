@@ -563,3 +563,21 @@ The second session also cancelled its own worktree run (12 classify jobs, nothin
 left its branch on origin as a duplicate implementation for the owner to keep or delete. The lesson
 is the one README already states - one checkout runs the workflow at a time - with a corollary the
 symlinks make sharp: a `--touch` in any checkout is a `--touch` of the shared cache for all of them.
+
+## 2026-09-13 12:45 — H5 run and integrated, after a concurrent session disturbed the run
+
+The hypothesis registered at 10:40 ran and is **supported**: 11 of 12, p = 0.0032, every winning
+interval clear of zero, median gain 0.007 AUC. Integrated into the report as its own section, a
+table, a figure and seven macros; CHANGELOG.md carries the reading, and the literature position the
+publication question in the same message prompted.
+
+Three launches were aborted first, and the entry above this one, written by the second session,
+explains why: it switched this shared checkout onto its own branch mid-run, and its `--touch`
+reached the shared cache. My first diagnosis of the five wrong classify outputs was a stale NFS
+bytecode cache. That was wrong, and the manifests said so plainly - each recorded the other
+branch's commit - which is a small lesson worth keeping: the manifest exists to answer "what code
+wrote this", and it should be read before a theory is formed.
+
+Checked before standing behind the numbers: all twelve classify results, all twelve evaluate
+results and evaluation.json record commit 383693e, and `git diff 2a4a017 383693e` touches only
+SESSION_LOG.md - so every H5 number was produced by code byte-identical to the pre-registration.
