@@ -1,8 +1,8 @@
 # Textbook priors over visual features
 
 Can a vision-language model's textbook knowledge of what pathology looks like stand in for
-labelled data? On six MedMNIST 2D benchmarks a VLM scores each image against a cited bank of
-diagnostic visual features, and four arms — two label-free, two label-matched — say what those
+labelled data? On the twelve MedMNIST 2D benchmarks a VLM scores each image against a cited bank
+of diagnostic visual features, and four arms — two label-free, two label-matched — say what those
 scores are worth in the currency of labelled images. The whole study, from the fixed inputs to the
 technical report, is one Snakemake workflow on Palmetto2. The plan and the four hypotheses are
 `WORKFLOW.md`; dated findings are `CHANGELOG.md`; the talk narrative is `TALK.md`.
@@ -26,7 +26,7 @@ tests. The bank files are deliberately not inputs of `smoke`, so that editing on
 invalidates that dataset alone; the last invocation above is how the schema tests are re-run after
 such an edit, and the reasoning is in the Snakefile's stage-0 banner.
 
-`rule all` is the technical report. A dry run from a clean clone is 336 jobs, 294 of them the
+`rule all` is the technical report. A dry run from a clean clone is 616 jobs, 521 of them the
 scoring fan-out; from the owner's checkout, where every result exists, it is nothing to be done.
 
 ## The stages
@@ -34,11 +34,11 @@ scoring fan-out; from the owner's checkout, where every result exists, it is not
 | # | Stage | What happens | Jobs |
 |---|---|---|---|
 | 0 | **Smoke** | The tests: bank schema, label maps, prompts, the sampler, the estimators, the metric | 1 |
-| 1 | **Sample** | Per dataset: the seeded 500-image test sample and 2000-image labelled pool | 6 |
-| 2 | **Score** | Per dataset: render both prompts; then the VLM calls, archived raw, including H4's two readers | 6 + 294 |
-| 3 | **Features** | Per dataset: ImageNet ResNet-18 penultimate features | 6 |
-| 4 | **Classify** | Per dataset: arms A, B, C, P over the curve, the permutation controls, and every reader's probe | 6 |
-| 5 | **Evaluate** | AUC, the paired bootstrap, n_B; then the sign tests, the ladder and the reader chain | 6 + 1 |
+| 1 | **Sample** | A release file missing from storage is fetched first; per dataset: the seeded test sample and labelled pool, capped at the official split | 4 + 12 |
+| 2 | **Score** | Per dataset: render both prompts; then the VLM calls, archived raw, including H4's two readers | 12 + 521 |
+| 3 | **Features** | Per dataset: ImageNet ResNet-18 penultimate features | 12 |
+| 4 | **Classify** | Per dataset: arms A, B, C, P over the curve, the permutation controls, and every reader's probe; C and P alone for the multi-label chestmnist | 12 |
+| 5 | **Evaluate** | AUC, the paired bootstrap, n_B; then the sign tests, the ladder and the reader chain | 12 + 1 |
 | 6 | **Report** | Five figures, the tables, the technical report PDF | 3 |
 
 ## Layout
@@ -57,6 +57,7 @@ data/literature/       the pinned published-benchmark table, committed: cited, n
 data/raw               symlink to the raw MedMNIST releases on project storage; gitignored
 data/cache/sample/     symlink target: the sampled image arrays, one npz per dataset; gitignored
 scripts/link_storage.sh  one-time setup: make those two symlinks
+scripts/fetch_medmnist.sh  one release file from the pinned Zenodo record, resumable, MD5-checked
 results/               one JSON per unit of work, each with a manifest
 results/score/         the raw VLM response archive, write-protected once written
 results/prompts_txt/   opt-in: a plain-text render of each prompt, for a human reader; no manifest
@@ -89,17 +90,17 @@ SESSION_LOG.md         timestamped record of how the work was directed
 | module | what it holds to what | tests |
 |---|---|---|
 | `test_bank.py` | the twelve committed bank files to the schema `CONCEPT_BANK.md` defines | 110 |
-| `test_release.py` | `config/medmnist.yaml` to the installed `medmnist` package | 20 |
+| `test_release.py` | `config/medmnist.yaml` to the installed `medmnist` package | 38 |
 | `test_literature.py` | the pinned literature-benchmark table to the datasets the workflow runs and to `references.bib` | 4 |
-| `test_prompts.py` | the two prompts to H2's separation, the renderer to its switches, and the txt render to the JSON | 52 |
-| `test_sample.py` | the streaming reader to a release-shaped fixture whose rows identify themselves | 14 |
+| `test_prompts.py` | the two prompts to H2's separation, the renderer to its switches and its gloss, the txt render to the JSON, and the six archived datasets to the prompt hashes that bought them | 104 |
+| `test_sample.py` | the streaming reader to a release-shaped fixture whose rows identify themselves, and the sample caps to the split sizes | 15 |
 | `test_score.py` | the image encoding, the reply parser, the two retry policies, the exact request body each dialect sends, and the profile's caps against config's | 57 |
-| `test_classify.py` | the estimators to fixtures small enough to check by hand, arm B included | 19 |
-| `test_evaluate.py` | the fast AUC to the package's evaluator, and the decision rules to the plan | 20 |
-| `test_pipeline.py` | the analysis chain end to end, on an archive whose answer is known | 4 |
+| `test_classify.py` | the estimators to fixtures small enough to check by hand, arm B and the one-vs-rest fit included | 21 |
+| `test_evaluate.py` | the fast AUC to the package's evaluator on every task type, and the decision rules to the plan | 22 |
+| `test_pipeline.py` | the analysis chain end to end, on an archive whose answer is known, single- and multi-label | 4 |
 | `test_metrics.py` | the AUC convention to the package that defines it | 3 |
 
-303 tests, run by the `smoke` rule before anything else.
+378 tests, run by the `smoke` rule before anything else.
 
 ## Where the data comes from
 
@@ -110,11 +111,12 @@ Three inputs are fixed before the workflow runs and no rule refetches, reruns or
   `CONCEPT_BANK.md`, with every feature and every class fingerprint carrying a citation. Expert
   review is **simulated** — no clinician has reviewed these files, and each says so.
 - **The MedMNIST v2 224-pixel releases** (Zenodo record 10519652), on project storage and reached
-  through the `data/raw` symlink. `config/medmnist.yaml` records each file's name, MD5, size, split
-  sizes and label map, read from the `medmnist` package rather than retyped; the smoke target holds
-  that file to the installed package.
+  through the `data/raw` symlink. Eight were downloaded before the workflow; the four the talk never
+  needed are fetched by `rule fetch` from the same record when missing. `config/medmnist.yaml`
+  records each file's name, MD5, size, split sizes and label map, read from the `medmnist` package
+  rather than retyped; the smoke target holds that file to the installed package.
 - **The published literature benchmarks**, `data/literature/benchmarks.yaml`: AUC and ACC for five
-  fully supervised methods on these same six tasks, transcribed from Yang et al. 2023's Table 3 and
+  fully supervised methods on these same twelve tasks, transcribed from Yang et al. 2023's Table 3 and
   cross-checked against that paper's own across-dataset average. Read into the report as a
   reconciliation point (`data/literature/README.md`), not rerun and not a comparison arm.
 
@@ -139,7 +141,7 @@ symlinks onto `/project/dane2/wficai/textbook_priors` (`scripts/link_storage.sh`
 lost workspace costs seconds rather than the sampled arrays — and it is also why **only one
 checkout runs the workflow at a time**: two Snakemake instances would write the same cached npz.
 
-It matters most for `results/score/`, the VLM response archive: 27,000 calls the plan treats as
+It matters most for `results/score/`, the VLM response archive: 51,718 calls the plan treats as
 fixed from the moment they are written (`WORKFLOW.md` §5, principle 7). A run from a throwaway
 worktree would put that archive somewhere that disappears.
 

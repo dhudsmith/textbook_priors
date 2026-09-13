@@ -6,11 +6,12 @@ agents* (Clemson HPC Day). This file is the scientific and engineering plan; `TA
 talk narrative; `CONCEPT_BANK.md` the procedure that built the bank. Workflow conventions are the
 `research-workflow` skill (`~/.claude/skills/research-workflow/SKILL.md`).
 
-This is the **talk version**: six datasets, four vision-language models, two label-free arms and
-two label-matched arms, and a report a person can read in one sitting. The full version (twelve
-datasets, the from-scratch CNN ceiling with its reconciliation against the published table, the
-blocked ANOVA over the model ladder) lives on branch `claude/textbook-priors-workflow-2kdgap`; §10
-lists what was cut and why.
+Twelve datasets - every MedMNIST v2 2D benchmark - four vision-language models, two label-free
+arms and two label-matched arms, and a report a person can read in one sitting. The study was built
+and run on six datasets first, one per modality, for the talk; on 2026-09-13 it was extended to all
+twelve, with the six results already in hand (§2 says what that does to the rules). An earlier full
+plan with a from-scratch CNN ceiling and a blocked ANOVA over the model ladder lives on branch
+`claude/textbook-priors-workflow-2kdgap`; §10 lists what was cut from it and what came back.
 
 ---
 
@@ -19,10 +20,11 @@ lists what was cut and why.
 A multimodal language model carries textbook knowledge about what pathology looks like. **Can
 that knowledge stand in for labelled data?**
 
-On six MedMNIST 2D benchmarks spanning six modalities, a vision-language model (VLM) scores each
-image against a cited bank of diagnostic visual features (the *concept bank*, built outside the
-workflow and committed as an input). We ask what those scores are worth, measured in the currency
-a practitioner cares about: labelled images.
+On the twelve MedMNIST 2D benchmarks - histology, dermoscopy, OCT, chest X-ray, fundus, breast
+ultrasound, blood smear, kidney microscopy, and abdominal CT in three planes - a vision-language
+model (VLM) scores each image against a cited bank of diagnostic visual features (the *concept
+bank*, built outside the workflow and committed as an input). We ask what those scores are worth,
+measured in the currency a practitioner cares about: labelled images.
 
 ## 2. The hypotheses
 
@@ -31,13 +33,30 @@ them is an extension in §10, not part of `all`. H4 was added on 2026-09-12, aft
 decided and before a single call of its own was bought — which is the distinction arm D could not
 make for itself, and the reason arm D is gone (§10).
 
-Primary metric throughout: **test AUC** from the `medmnist` evaluator (macro one-vs-rest). Every
-arm predicts on the **same seeded 500-image test sample** per dataset, so every comparison is
-paired, and each has a 95% interval from a paired bootstrap over the test images. Across datasets
-we use a one-sided sign test rather than pooling incommensurable AUCs. With six datasets that
-test is coarse: 6 of 6 wins is p = 0.016 and 5 of 6 is p = 0.11, so a hypothesis is *supported*
-only when it wins on every dataset, and the per-dataset paired differences with their intervals
-are what a reader should look at.
+Primary metric throughout: **test AUC** from the `medmnist` evaluator (macro one-vs-rest over
+classes; the mean over the fourteen findings for chestmnist). Every arm predicts on the **same
+seeded test sample** per dataset - 500 images, or the whole official test split where that is
+smaller (§4) - so every comparison is paired, and each has a 95% interval from a paired bootstrap
+over the test images. Across datasets we use a one-sided sign test rather than pooling
+incommensurable AUCs, and every rule is held to **one level, p < 0.05**: an arm must win on the
+smallest number of datasets whose sign test reaches it. That is 6 of 6 when the study had six
+datasets, and now 10 of 12 (p = 0.019) for a rule over all twelve or 9 of 11 (p = 0.033) for one
+over the eleven that have an arm B. Five of six was p = 0.11 and never counted; neither does 9 of
+12 or 8 of 11. The per-dataset paired differences with their intervals are what a reader should
+look at.
+
+**Which datasets each rule covers.** chestmnist is multi-label - fourteen findings that co-occur -
+and a nearest fingerprint or a distribution over class names is not defined over such a label
+space (§3). It runs in the two labelled arms only, so it counts for H1's C-against-P comparison and
+for nothing else; H2, H3 and H4 are read over the other eleven, and n_B's median over those eleven.
+
+**Two honest limits on the counts.** organa/c/smnist are the same LiTS volumes in three planes, so
+twelve datasets are at most ten independent units and eleven are nine; the report gives the win
+count and the paired differences so a reader can recount with the organ triple as one vote (9 of
+10 is p = 0.011). And the rules were restated at this level on 2026-09-13, when six of the twelve
+verdicts were already known and six were not: the level reproduces the six-dataset rule exactly
+(6 of 6), so nothing already decided moves, but the twelve-dataset thresholds are pre-registered
+only with respect to the six new datasets.
 
 **H1 — Substitution.** *Textbook features are worth a measurable number of labelled images.*
 
@@ -48,23 +67,30 @@ are what a reader should look at.
   worth." Coded `<=50` when arm P is already above at the first grid point and `>2000` when it
   never crosses, with a 95% interval from the same bootstrap (resample test images, recompute
   AUC(B) and every AUC(P, n), take the crossing).
-- Supported if median n_B ≥ 100 **and** AUC(C) > AUC(P) at n = 50 on all six datasets.
+- Supported if median n_B ≥ 100 over the eleven arm-B datasets **and** AUC(C) > AUC(P) at n = 50
+  on at least 10 of the 12 datasets (p = 0.019).
 
 **H2 — The bank, not just the model.** *Directing the VLM at cited visual features beats asking
 it for the diagnosis, and the bank's structure carries the difference.*
 
-- AUC(B) > AUC(A), the zero-shot class distribution, on all six datasets. A and B are separate
-  calls on separate prompts: the concept prompt never names a class and the zero-shot prompt never
-  mentions a concept, so the comparison cannot be circular.
-- Both B and C lose AUC under the permutation controls on every dataset: fingerprints permuted
-  across classes (B), concept columns permuted across images (C). Free re-analyses of the archive.
+- AUC(B) > AUC(A), the zero-shot class distribution, on at least 9 of the 11 arm-B datasets
+  (p = 0.033). A and B are separate calls on separate prompts: the concept prompt never names a
+  class and the zero-shot prompt never mentions a concept, so the comparison cannot be circular.
+  retinamnist's class names are the digits 0 to 4, which are not a diagnosis question, so its
+  zero-shot listing glosses each digit with the ICDR grade it stands for; the JSON keys stay the
+  release names.
+- Both B and C lose AUC under the permutation controls on every dataset they run on: fingerprints
+  permuted across classes (B, eleven datasets), concept columns permuted across images (C, all
+  twelve). Free re-analyses of the archive.
 
 **H3 — Scale.** *The prior gets better with a bigger model.* Four models, two per family (qwen at
-9B and 27B, gemma at 12B and 31B), all scoring arm B on the same test samples. Read within
-family, since size and training data are confounded across families: supported if the larger
-model has the higher AUC(B) on at least 5 of 6 datasets in **both** families. That threshold is
-descriptive (p = 0.11), which six datasets cannot improve on; the ladder figure and a Friedman
-test over the four models are reported alongside. Both size steps also change quantisation
+9B and 27B, gemma at 12B and 31B), all scoring arm B on the same test samples of the eleven arm-B
+datasets. Read within family, since size and training data are confounded across families:
+supported if the larger model has the higher AUC(B) on at least 9 of 11 datasets in **both**
+families (p = 0.033). With six datasets the rule was 5 of 6 and descriptive (p = 0.11), which six
+datasets could not improve on; eleven can, and the rule is now held to the same level as the
+others. The ladder figure and a Friedman test over the four models are reported alongside. Both
+size steps also change quantisation
 (qwen 27B is fp8, gemma 31B is served as NVFP4) and the qwen step changes generation (3.5 → 3.8),
 so "larger" moves together with "newer" and "quantised"; stated as a limit, not analysed away.
 
@@ -92,9 +118,10 @@ effort. Two steps, each changing exactly one thing:
   existing models join by being subset rather than re-bought, and every difference is paired. 200
   is measured, not round: below it organamnist's rarest class empties and its AUC column stops
   existing (6 of 11 classes reach five images at 100, 10 at 150, all 11 at 200). dermamnist stays
-  thin either way and carries the caveat §3 already gives it.
-- Supported if each step wins on all six datasets, the rule H1 and H2 are held to. 5 of 6 is
-  reported and called suggestive, never supported.
+  thin either way and carries the caveat §3 already gives it. breastmnist has 156 test images in
+  all, so its readers read the whole sample.
+- Supported if each step wins on at least 9 of the 11 arm-B datasets (p = 0.033), the level H1 and
+  H2 are held to. Fewer is reported and called suggestive, never supported.
 
 A null here is a result and not a failure: if thinking does not move the concept answers, the
 model's reading of the features is not attention-limited, which is a sharper statement than a rise
@@ -119,6 +146,7 @@ for a clinician, or that any arm is state of the art.
 Four, all pre-registered and all predicting on the shared test sample. A and B use no labels; C
 and P are the same regularised logistic regression on different features. A fifth arm, D, existed
 between 2026-09-12 and 2026-09-12 and was removed; §10 records what it measured and why it went.
+chestmnist has arms C and P only (below).
 
 | arm | labels | features | what it establishes |
 |---|---|---|---|
@@ -145,6 +173,15 @@ subsets as arm C, so features are the only difference.
   labelled images**, features standardised on those n. No validation set: n labels means n labels.
   Subsets are class-stratified nested prefixes of the labelled pool with a floor of one image per
   class; the fold count is `min(5, smallest class count)`; a class absent from a subset scores 0.
+- *chestmnist*: fourteen findings that co-occur, so there is no class to match a fingerprint
+  against and "exactly one of these categories" is false of most films. Arms A and B are not
+  defined for it and are not run; the ladder models and H4's readers, which exist for arm B and
+  the probe, do not score it. Arms C and P fit the same regression **one finding at a time**
+  (one-vs-rest), with the subsets stratified on any-finding against no-finding, the L2 strength
+  chosen by out-of-fold AUC rather than accuracy (a finding present in two percent of films makes
+  "always negative" the most accurate classifier at every strength), and a finding absent from a
+  subset scored as a constant. Its AUC is the package's convention for the task: the mean over
+  findings of each finding's one-vs-rest AUC.
 - *The cross-validated probe* (H4): the same regularised logistic regression as arm C, on the same
   concept vectors, fitted inside the scored images by stratified k-fold rather than on the labelled
   pool. Each fold's held-out images are scored by a fit that never saw them, so every image gets
@@ -154,7 +191,7 @@ subsets as arm C, so features are the only difference.
   reader toward the baseline's habits on precisely the answers H4 compares. It estimates
   information content and is not a learning-curve point — the same images are the training and the
   evaluation material, and no labels were spent to make it.
-- *Evaluation*: `medmnist.evaluator.getAUC`, the package's own convention, on the 500-image sample.
+- *Evaluation*: `medmnist.evaluator.getAUC`, the package's own convention, on the test sample.
   An image with any missing concept answer counts as incomplete; a dataset-model cell more than 5%
   incomplete is flagged in the report and excluded from the headline.
 - *The test sample is drawn at random, not stratified, and a rare class is thin.* Measured on the
@@ -174,22 +211,26 @@ subsets as arm C, so features are the only difference.
 
 | dimension | value | why not more |
 |---|---|---|
-| datasets | pathmnist, dermamnist, octmnist, pneumoniamnist, bloodmnist, organamnist | one per modality: histology, dermoscopy, OCT, chest X-ray, blood smear, CT; the full version has twelve |
+| datasets | all twelve MedMNIST v2 2D benchmarks; the talk's six were pathmnist, dermamnist, octmnist, pneumoniamnist, bloodmnist, organamnist | there are no more 2D benchmarks in the release |
 | resolution | 224 | what the VLM sees and what the ImageNet encoder wants |
 | VLMs | 4, two per family | H3 needs the pairs; more buy nothing |
-| test sample | 500 per dataset, seed 0 | shared by every arm; every dataset has ≥ 624 test images |
-| labelled pool | 2000 per dataset, seed 0, from the official train split | the largest curve point; every dataset has ≥ 4708 train images |
-| curve | n = 50, 100, 200, 500, 1000, 2000 × 3 seeds | CPU-cheap; the resolution of n_B is the grid |
+| test sample | 500 per dataset, seed 0, capped at the official test split | shared by every arm; breastmnist has 156 test images and retinamnist 400, and take them all |
+| labelled pool | 2000 per dataset, seed 0, from the official train split, capped at it | the largest curve point; breastmnist's 546 and retinamnist's 1080 stop the curve at 500 and 1000 |
+| curve | n = 50, 100, 200, 500, 1000, 2000 × 3 seeds, the points a pool can fill | CPU-cheap; the resolution of n_B is the grid |
 
 Only the primary model scores the labelled pool; arm B is training-free, so the ladder models need
-the 500 test images and nothing else.
+the test sample and nothing else. Only the primary model scores chestmnist at all (§3).
 
-**Completed prior work: the data are already on disk, and the workflow does not fetch it.** Like
-the concept bank, the download was done before the workflow, verified once, and is not redone —
-there is no `fetch` rule or stage. The six 224-pixel release files sit in
-`/project/dane2/wficai/textbook_priors/raw/` (project storage, not purged), confirmed present on
-2026-09-11 at the exact size and against the MD5 that `medmnist` 3.0.2 records in
-`medmnist.INFO[<dataset>]["MD5_224"]`:
+**Prior work, and four files fetched by a rule.** Like the concept bank, eight of the twelve
+224-pixel release files were downloaded before the workflow, verified once, and are not redone:
+they sit in `/project/dane2/wficai/textbook_priors/raw/` (project storage, not purged), the talk's
+six confirmed present on 2026-09-11 at the exact size and against the MD5 that `medmnist` 3.0.2
+records in `medmnist.INFO[<dataset>]["MD5_224"]`, and breastmnist and retinamnist fetched whole by
+the earlier full plan. The other four - chestmnist, organcmnist, organsmnist and tissuemnist - were
+left half-fetched by that plan and are completed by `rule fetch` (stage 1) from the same pinned
+Zenodo record, in resumable parallel byte ranges because Zenodo serves about 105 KB/s per
+connection, and checked against the same MD5s, which `config/medmnist.yaml` carries for all
+twelve. A file already on disk is never fetched again.
 
 | file | MD5 | size |
 |---|---|---|
@@ -200,23 +241,24 @@ there is no `fetch` rule or stage. The six 224-pixel release files sit in
 | `bloodmnist_224.npz` | `b718ff6835fcbdb22ba9eacccd7b2601` | 1.4 GB |
 | `organamnist_224.npz` | `50747347e05c87dd3aaf92c49f9f3170` | 1.7 GB |
 
-The same directory also holds files the full version fetched (the 28-pixel files and other 224
-datasets); the talk version ignores them. `data/raw` is a symlink into that directory (§11,
-gitignored); the sample stage reads the six files straight from it. Provenance — the pinned
-Zenodo record (10519652) and the MD5 check above — is recorded here for the reader, not
-re-verified by any rule.
+The same directory also holds the 28-pixel files the earlier full plan fetched, which nothing
+here reads. `data/raw` is a symlink into that directory (§11, gitignored); the sample stage reads
+the twelve files straight from it. Provenance — the pinned Zenodo record (10519652) and the MD5
+check — is recorded here and in `config/medmnist.yaml`; only a fetch re-verifies it.
 
 | model | family | role | concept calls | zero-shot calls |
 |---|---|---|---|---|
-| `qwen3.8-27b-fp8` | qwen | primary | 15,000 (test + pool) | 3,000 (test) |
-| `qwen3.5-9b` | qwen | ladder | 3,000 (test) | — |
-| `gemma-4-12b` | gemma | ladder | 3,000 (test) | — |
-| `gemma-4-31b` | gemma | ladder | 3,000 (test) | — |
+| `qwen3.8-27b-fp8` | qwen | primary | 27,182 (test + pool, twelve datasets) | 5,056 (test, eleven) |
+| `qwen3.5-9b` | qwen | ladder | 5,056 (test, eleven) | — |
+| `gemma-4-12b` | gemma | ladder | 5,056 (test, eleven) | — |
+| `gemma-4-31b` | gemma | ladder | 5,056 (test, eleven) | — |
 
-**27,000 calls** in 270 chunk jobs of 100 images, which is the pre-registered budget, plus
-**2,400 for H4's two readers** in 24 chunks — 200 images per dataset each, concept prompt only, no
-pool and no zero-shot, because H4 is read through the concept answers alone. **29,400 in total.**
-A further 3,000 were bought for arm D; their archive was deleted on 2026-09-13 (§10).
+**47,406 calls** in 477 chunk jobs of 100 images, plus **4,312 for H4's two readers** in 44
+chunks — the 200-image prefix per dataset (156 for breastmnist), concept prompt only, no pool and
+no zero-shot, because H4 is read through the concept answers alone. **51,718 in total**, of which
+the talk's six datasets were 29,400 in 294 chunks and the six added on 2026-09-13 are 22,318 in
+227; the smoke tier pins both numbers. A further 3,000 were bought for arm D; their archive was
+deleted on 2026-09-13 (§10).
 
 H4's thinking reader is the expensive half in wall clock rather than in calls: at effort `medium`
 an answer costs about 986 completion tokens against 112 with thinking off, and this endpoint
@@ -260,17 +302,19 @@ Each names the failure it prevents; `TALK.md` argues them.
 ```
 0  SMOKE      bank schema and anchors, label maps against the pinned release, both prompts,
               the arm-B estimator on a fixture, metric conventions, client retry      seconds
-1  SAMPLE     per dataset: the seeded 500-image test sample and 2000-image labelled pool,
-              streamed out of the compressed npz without loading it (the raw releases are
-              prior work, §4 — no fetch rule)                                           6 CPU
+1  SAMPLE     a release file missing from storage is fetched from the pinned record first
+              (4 network jobs, once); then per dataset: the seeded test sample and labelled
+              pool, capped at the official split, streamed out of the compressed npz
+              without loading it                                                  4 + 12 CPU
 2  SCORE      per dataset: render the concept and zero-shot prompts from the bank;
               then, per model x split x prompt x chunk of 100: concept levels, or a class
-              distribution; every raw response archived and protected  6 local + 294 throttled
-3  FEATURES   per dataset: ImageNet ResNet-18 penultimate features of the sampled images  6 CPU
+              distribution; every raw response archived and protected 12 local + 521 throttled
+3  FEATURES   per dataset: ImageNet ResNet-18 penultimate features of the sampled images 12 CPU
 4  CLASSIFY   per dataset: arms A, B, C, P at every n and seed, the permutation controls, and
-              every reader's cross-validated probe on the shared prefix (H4)              6 CPU
+              every reader's cross-validated probe on the shared prefix (H4); C and P alone
+              for chestmnist                                                             12 CPU
 5  EVALUATE   AUC per arm; the paired bootstrap; n_B; a second bootstrap over the prefix for
-              H4's readers; then the sign tests, the ladder and the chain                 6 + 1
+              H4's readers; then the sign tests, the ladder and the chain                12 + 1
 6  REPORT     five figures, tables, number macros, the technical report PDF               local
 ```
 
@@ -320,9 +364,11 @@ The one stage type not seen in earlier projects, and the one that tests principl
 ## 8. Config, environments, resources
 
 ```yaml
-datasets: [pathmnist, dermamnist, octmnist, pneumoniamnist, bloodmnist, organamnist]
+datasets: [pathmnist, dermamnist, octmnist, pneumoniamnist, bloodmnist, organamnist,
+           breastmnist, retinamnist, tissuemnist, organcmnist, organsmnist, chestmnist]
 size: 224
-sample: {test_n: 500, pool_n: 2000, seed: 0}
+fetch: {segment_mb: 256, max_segments: 24}   # byte ranges per release file, for rule fetch
+sample: {test_n: 500, pool_n: 2000, seed: 0}  # both capped at the official split
 curve:  {n: [50, 100, 200, 500, 1000, 2000], seeds: [0, 1, 2]}
 vlm:
   primary: qwen3.8-27b-fp8
@@ -335,7 +381,7 @@ vlm:
     qwen3.8-27b-fp8-medium: {model: qwen3.8-27b-fp8, effort: medium, api: local,   cap: 4,  subsample: 200}
     gpt-5.6-terra-medium:   {model: gpt-5.6-terra,   effort: medium, api: gateway, cap: 12, subsample: 200}
   chunk: 100
-  prompt: {anchors: true}
+  prompt: {anchors: true, class_gloss: {retinamnist: {"0": no apparent diabetic retinopathy, ...}}}
   temperature: 0.0
   reasoning: none               # transmitted as chat_template_kwargs.enable_thinking: false
   retries: 1
@@ -344,9 +390,9 @@ vlm:
 features: {arch: resnet18, weights: imagenet1k_v1}
 classify: {l2_grid: [0.01, 0.1, 1, 10, 100], cv_folds: 5, missing_max_frac: 0.05,
            permute: {seeds: [0, 1, 2]}, probe: {folds: 5, seed: 0}}
-evaluate: {bootstrap: 10000, ci: 0.95, seed: 0, h3_min_wins: 5}
+evaluate: {bootstrap: 10000, ci: 0.95, seed: 0, alpha: 0.05}   # one level for every rule
 h4: {baseline: qwen3.8-27b-fp8, thinking: qwen3.8-27b-fp8-medium, frontier: gpt-5.6-terra-medium,
-     subsample: 200, min_wins: 6}
+     subsample: 200}
 resources: {...}                # first guesses, then set from benchmarks/ with the reasoning
 ```
 
@@ -375,18 +421,23 @@ linear probe as the fair pixel baseline; the learning curve as C against P with 
 horizontal line; separate prompts for A and B; the rendered anchors; the ladder scores the test
 split only.
 
-Cut for the talk, each with what it supported, and all still built on the full branch:
+Cut from the earlier full plan, each with what it supported, and all still built on that branch:
 
 - *Arm E, the ResNet-18 trained from scratch on the official splits*, its 72 GPU jobs, the
   28-pixel data and the reconciliation against the published MedMNIST table. It was the
   fully supervised ceiling and the check that the pipeline reproduces a known number; it tests no
-  hypothesis here, and it was half the Snakefile and the only GPU.
-- *Six of the twelve datasets*, among them chestmnist, the one multi-label task, which carried its
-  own code path through every stage (one-vs-rest fitting, multi-label AUC, exclusion from A and B).
+  hypothesis here, and it was half the Snakefile and the only GPU. The published table now enters
+  as the literature extension below instead.
 - *ACC*: reported alongside in the full plan, deciding nothing.
-- *The blocked ANOVA, the log₁₀-parameter contrast and the Nemenyi post-hoc for H3*: with six
-  datasets the within-family sign tests and the ladder figure say what can be said.
+- *The blocked ANOVA, the log₁₀-parameter contrast and the Nemenyi post-hoc for H3*: the
+  within-family sign tests, the Friedman test and the ladder figure say what can be said.
 - *A separate environment for the LLM client*: `openai` is not a heavy toolchain.
+
+Cut for the talk and **restored on 2026-09-13**: the other six datasets, chestmnist among them. The
+earlier plan had also confined chestmnist to arms C and P; here that is one branch in the classify
+and evaluate stages (§3) rather than a code path through every stage, and the report's figures and
+tables skip the arms a dataset does not have. The talk's six datasets were decided first and the
+twelve-dataset rules restated after (§2).
 
 Extensions, outside `all`, each one rule and a config block when wanted: `bare_levels` (the
 concept prompt without anchors, a re-score into a second archive), `generic_prompt` (a
@@ -428,7 +479,7 @@ trained on the full split is plainly a ceiling and not a competitor.
 ## 11. Layout
 
 ```
-Snakefile                 one file, seven labelled stages
+Snakefile                 one file, seven labelled stages (the fetch rule sits in stage 1)
 config/config.yaml        every grid and knob; per-rule resources
 config/medmnist.yaml      the pinned release: file names, MD5s, sizes, split sizes, label maps
 profiles/palmetto/        SLURM executor; job, core and per-model llm_* caps
@@ -436,6 +487,7 @@ profiles/local/           dry runs, smoke, touch
 envs/                     priors.yml  priors_torch.yml  priors.post-deploy.sh
 priors/                   data sample prompts llm score features classify evaluate report stages manifest
 scripts/link_storage.sh   one-time setup: the two symlinks below
+scripts/fetch_medmnist.sh one release file in resumable byte ranges, MD5-checked (rule fetch)
 docs/rcd_llm_service.md   the LLM service as this project found it: models, efforts, throughput
 data/concepts/            the concept-bank files and their README, committed
 data/literature/          the pinned published-benchmark table and its README, committed

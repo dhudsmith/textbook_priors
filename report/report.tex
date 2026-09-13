@@ -27,9 +27,9 @@
 
 A multimodal language model carries textbook knowledge about what pathology looks like. This study
 asks what that knowledge is worth, measured in the currency a practitioner cares about: labelled
-images. On \numDatasets\ MedMNIST 2D benchmarks spanning \numDatasets\ modalities, a
-vision--language model scores each image against a cited bank of diagnostic visual features, and
-four arms are compared on one shared test sample:
+images. On the \numDatasets\ MedMNIST 2D benchmarks, a vision--language model scores each image
+against a cited bank of diagnostic visual features, and four arms are compared on one shared test
+sample per dataset:
 
 \begin{itemize}
   \item \textbf{A, zero-shot} --- the model's class distribution from the image and the class names.
@@ -42,21 +42,31 @@ four arms are compared on one shared test sample:
 Arms C and P differ in their features and in nothing else: the same classifier, the same
 regularisation search and the same labelled subsets. The four hypotheses and their decision rules
 were fixed in \texttt{WORKFLOW.md} before any number existed, and are reported here as they were
-written.
+written. Every across-dataset rule is a one-sided sign test held to one level, $p < \alphaLevel$:
+an arm must win on at least \minWinsAll\ of the \numDatasets\ datasets, or \minWinsArmB\ of the
+\numArmBDatasets\ that have an arm B. The study was decided on six datasets first and extended to
+\numDatasets\ with those six verdicts known; \texttt{WORKFLOW.md} section~2 says so, and the level
+reproduces the six-dataset rule exactly.
+
+One dataset, chestmnist, is multi-label: fourteen findings that co-occur. A nearest fingerprint and
+a distribution over class names are not defined over such a label space, so it has arms C and P
+only, fitted one finding at a time, and counts for H1 alone; its AUC is the mean over findings.
 
 One further comparison point was added after those results were in hand, and it decides nothing.
-The \textbf{published literature} for these same six tasks is read in as a fixed ceiling, so the
+The \textbf{published literature} for these same tasks is read in as a fixed ceiling, so the
 arms can be placed against a benchmark trained on the full training split
 (Section~\ref{sec:literature}). It is an extension in the sense of \texttt{WORKFLOW.md}
 section~10: no \emph{supported} verdict in this report reads it.
 
 \section{Data and provenance}
 
-Six MedMNIST v2 224-pixel benchmarks (Zenodo record 10519652), read from the pinned release files
-whose names, checksums, split sizes and label maps are recorded in \texttt{config/medmnist.yaml}
-and held to the installed \texttt{medmnist} package by the smoke tier. Per dataset: a 500-image
-test sample shared by every arm and every model, and a 2000-image labelled pool from the official
-train split, both drawn with seed~0.
+The \numDatasets\ MedMNIST v2 224-pixel 2D benchmarks (Zenodo record 10519652), read from the
+pinned release files whose names, checksums, split sizes and label maps are recorded in
+\texttt{config/medmnist.yaml} and held to the installed \texttt{medmnist} package by the smoke
+tier. Per dataset: a 500-image test sample shared by every arm and every model, and a 2000-image
+labelled pool from the official train split, both drawn with seed~0 and both capped at the official
+split where it is smaller --- breastmnist has 156 test and 546 training images, retinamnist 400 and
+1080, and the learning curve stops where their pools do.
 
 The concept bank (\texttt{data/concepts/}) was built outside the workflow by literature review,
 with every feature and every class fingerprint carrying a citation. \textbf{Expert review is
@@ -87,10 +97,11 @@ bootstrap over the test images, shared by every arm.
 \subsection*{H1 --- Substitution: \hOneSupported}
 
 \emph{Textbook features are worth a measurable number of labelled images.} Supported if the median
-$n_B$ is at least 100 \textbf{and} arm C beats arm P at the smallest labelled subset on every
-dataset. Arm C won on \cBeatsPWins\ of \numDatasets\ datasets (one-sided sign test
-$p = \cBeatsPp$); the pixel probe never reached the textbook arm inside the curve on
-\neverReached\ datasets and started above it on \startedAbove.
+$n_B$ is at least 100 over the \numArmBDatasets\ arm-B datasets \textbf{and} arm C beats arm P at
+the smallest labelled subset on at least \minWinsAll\ of \numDatasets\ datasets. Arm C won on
+\cBeatsPWins\ of \numDatasets\ (one-sided sign test $p = \cBeatsPp$); the pixel probe never
+reached the textbook arm inside the curve on \neverReached\ datasets and started above it on
+\startedAbove.
 
 \begin{figure}[htbp]\centering
   \includegraphics[width=\textwidth]{fig_curve.png}
@@ -113,8 +124,9 @@ $p = \cBeatsPp$); the pixel probe never reached the textbook arm inside the curv
 \subsection*{H2 --- The bank, not just the model: \hTwoSupported}
 
 \emph{Directing the model at cited visual features beats asking it for the diagnosis, and the
-bank's structure carries the difference.} Arm B beat arm A on \bBeatsAWins\ of \numDatasets\
-datasets ($p = \bBeatsAp$). The two prompts are separate calls on separate prompts --- the concept
+bank's structure carries the difference.} Supported at \minWinsArmB\ of \numArmBDatasets. Arm B
+beat arm A on \bBeatsAWins\ of \numArmBDatasets\ datasets ($p = \bBeatsAp$). The two prompts are
+separate calls on separate prompts --- the concept
 prompt names no class and the zero-shot prompt mentions no concept, which the smoke tier checks on
 the rendered strings --- so the comparison cannot be circular. Table~\ref{tab:h2} also reports what
 each arm loses when the structure it claims to read is destroyed.
@@ -125,8 +137,9 @@ each arm loses when the structure it claims to read is destroyed.
 
 \emph{The prior gets better with a bigger model.} Read within family, because size and training
 data are confounded across families and both size steps also change quantisation. The larger model
-won on \ladderQwenWins\ of \numDatasets\ datasets in the qwen family and \ladderGemmaWins\ in the
-gemma family; a Friedman test over all \numModels\ models gives $p = \friedmanP$.
+won on \ladderQwenWins\ of \numArmBDatasets\ datasets in the qwen family and \ladderGemmaWins\ in
+the gemma family, against \minWinsArmB\ needed in both; a Friedman test over all \numModels\ models
+gives $p = \friedmanP$.
 
 \begin{figure}[htbp]\centering
   \includegraphics[width=0.8\textwidth]{fig_ladder.png}
@@ -159,9 +172,9 @@ so it is the one reader here whose answers are sampled rather than deterministic
 if re-bought, and the paired bootstrap cannot see that, because it resamples images over answers
 that are fixed only in the archive.
 
-H4a won on \hFourAWins\ of \numDatasets\ datasets and H4b on \hFourBWins\ of \numDatasets;
-both are held to the 6-of-6 rule H1 and H2 are held to, since 5 of 6 is $p = 0.11$ and six
-datasets cannot do better. All \numReaders\ readers are reported in
+H4a won on \hFourAWins\ of \numArmBDatasets\ datasets and H4b on \hFourBWins\ of
+\numArmBDatasets; both are held to the level every rule is held to, at least \minWinsArmB\ of
+\numArmBDatasets. All \numReaders\ readers are reported in
 Table~\ref{tab:h4} and Figure~\ref{fig:readers}, not only the three the chain reads.
 
 \begin{figure}[htbp]\centering
@@ -177,7 +190,7 @@ Table~\ref{tab:h4} and Figure~\ref{fig:readers}, not only the three the chain re
   \includegraphics[width=0.75\textwidth]{fig_thinking.png}
   \caption{H4a against its baseline: what reasoning added to each dataset's probe AUC, plotted
   against how well the model read the concepts with no reasoning. Solid points have intervals
-  clear of zero. Six points is a pattern, not a slope, and none is fitted.}\label{fig:thinking}
+  clear of zero. A handful of points is a pattern, not a slope, and none is fitted.}\label{fig:thinking}
 \end{figure}
 
 \section{Extension: reading the arms against the published literature}
@@ -185,7 +198,7 @@ Table~\ref{tab:h4} and Figure~\ref{fig:readers}, not only the three the chain re
 
 Everything in this section is a fixed comparison point, not a computation, and it decides no
 hypothesis. \texttt{data/literature/benchmarks.yaml} pins the AUC and ACC that
-\cite{yang2023} report for five fully supervised methods on these same six MedMNIST v2 tasks at
+\cite{yang2023} report for five fully supervised methods on these same \numDatasets\ MedMNIST v2 tasks at
 the same 224-pixel resolution --- trained on each dataset's whole official training split,
 thousands to tens of thousands of images, not this study's $n \leq 2000$ labelled pool. Table~%
 \ref{tab:literature} sets every arm of this study beside the best of those five published numbers,
@@ -194,8 +207,9 @@ at full scale, without mistaking the gap for a finding about any arm here.
 
 Read that way, the gap tracks the label budget and little else. The best zero-label arm on each
 dataset --- whichever of A and B wins there --- sits a median \litGapZeroMedian\ AUC below the
-published best, and is within five points of it on \litZeroWithinFivePoints\ of \numDatasets\
-datasets. Buying \litLargestN\ labels closes most of what remains: the pixel probe's median gap is
+published best, and is within five points of it on \litZeroWithinFivePoints\ of \numArmBDatasets\
+datasets. Buying \litLargestN\ labels (or a dataset's whole pool where that is smaller) closes most
+of what remains: the pixel probe's median gap is
 \litGapPixelMedian, within two points of the ceiling on \litPixelWithinTwoPoints\ of \numDatasets\
 and at or above it on \litPixelAtOrAboveCeiling, while the concept probe at the same budget sits
 \litGapConceptMedian\ below it. The ordering is the
