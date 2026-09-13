@@ -1,4 +1,4 @@
-# Published benchmark numbers for the six MedMNIST v2 tasks this study uses.
+# Published benchmark numbers for the twelve MedMNIST v2 2D tasks this study uses.
 #
 # A fixed input, like the concept bank and the pinned release (WORKFLOW.md section 4): completed
 # before the workflow reads it, and no rule re-derives or re-runs any of these numbers. They enter
@@ -24,7 +24,8 @@
 #
 # organamnist here is OrganAMNIST — the axial-view organ dataset — matching config/medmnist.yaml's
 # `organamnist` (labels bladder, femur-left, ...), not OrganMNIST3D, which the paper's own section
-# "Difference between Organ{A,C,S}MNIST and OrganMNIST3D" says must not be compared to it.
+# "Difference between Organ{A,C,S}MNIST and OrganMNIST3D" says must not be compared to it; the
+# same holds for organcmnist and organsmnist, the coronal and sagittal views.
 
 citation: yang2023
 source_title: >
@@ -70,3 +71,42 @@ datasets:
     auto_sklearn: {auc: 0.963, acc: 0.762}
     autokeras: {auc: 0.994, acc: 0.905}
     google_automl: {auc: 0.990, acc: 0.886}
+  # The six datasets added on 2026-09-13 when the study went from six datasets to twelve, read
+  # from the same Table 3 (ar5iv render of arXiv:2110.14795) and checked the same way: the twelve
+  # ResNet-18 (224) AUCs average to 0.925, the paper's own Table 5 figure for that row.
+  breastmnist:
+    resnet18_224: {auc: 0.891, acc: 0.833}
+    resnet50_224: {auc: 0.866, acc: 0.842}
+    auto_sklearn: {auc: 0.836, acc: 0.803}
+    autokeras: {auc: 0.871, acc: 0.831}
+    google_automl: {auc: 0.919, acc: 0.861}
+  retinamnist:
+    resnet18_224: {auc: 0.710, acc: 0.493}
+    resnet50_224: {auc: 0.716, acc: 0.511}
+    auto_sklearn: {auc: 0.690, acc: 0.515}
+    autokeras: {auc: 0.719, acc: 0.503}
+    google_automl: {auc: 0.750, acc: 0.531}
+  tissuemnist:
+    resnet18_224: {auc: 0.933, acc: 0.681}
+    resnet50_224: {auc: 0.932, acc: 0.680}
+    auto_sklearn: {auc: 0.828, acc: 0.532}
+    autokeras: {auc: 0.941, acc: 0.703}
+    google_automl: {auc: 0.924, acc: 0.673}
+  organcmnist:
+    resnet18_224: {auc: 0.994, acc: 0.920}
+    resnet50_224: {auc: 0.993, acc: 0.911}
+    auto_sklearn: {auc: 0.976, acc: 0.829}
+    autokeras: {auc: 0.990, acc: 0.879}
+    google_automl: {auc: 0.988, acc: 0.877}
+  organsmnist:
+    resnet18_224: {auc: 0.974, acc: 0.778}
+    resnet50_224: {auc: 0.975, acc: 0.785}
+    auto_sklearn: {auc: 0.945, acc: 0.672}
+    autokeras: {auc: 0.974, acc: 0.813}
+    google_automl: {auc: 0.964, acc: 0.749}
+  chestmnist:
+    resnet18_224: {auc: 0.773, acc: 0.947}
+    resnet50_224: {auc: 0.773, acc: 0.948}
+    auto_sklearn: {auc: 0.649, acc: 0.779}
+    autokeras: {auc: 0.742, acc: 0.937}
+    google_automl: {auc: 0.778, acc: 0.948}

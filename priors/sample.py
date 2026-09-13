@@ -81,9 +81,23 @@ def read_rows(path, split: str, indices) -> np.ndarray:
 
 
 def class_counts(labels) -> dict:
-    """Per-class counts, keyed by the label index as a string so the JSON keeps its order."""
-    values, counts = np.unique(np.asarray(labels).reshape(-1), return_counts=True)
+    """Per-class counts, keyed by the label index as a string so the JSON keeps its order.
+
+    A multi-label array (images x findings, 0/1) counts the positives of each finding instead: the
+    number a reader should check for chestmnist is how many images carry each finding, not how many
+    distinct label vectors occur."""
+    labels = np.asarray(labels)
+    if labels.ndim == 2 and labels.shape[1] > 1:
+        return {str(j): int(labels[:, j].sum()) for j in range(labels.shape[1])}
+    values, counts = np.unique(labels.reshape(-1), return_counts=True)
     return {str(int(v)): int(c) for v, c in zip(values, counts)}
+
+
+def squeeze_labels(labels: np.ndarray) -> np.ndarray:
+    """A single-label member is (n, 1) in the release and becomes (n,); a multi-label member is
+    (n, findings) and stays so. The shape is the task, and nothing downstream should guess it."""
+    labels = np.asarray(labels)
+    return labels.reshape(-1) if labels.ndim == 1 or labels.shape[1] == 1 else labels
 
 
 def draw(path, split: str, k: int, seed: int) -> dict:
@@ -93,7 +107,7 @@ def draw(path, split: str, k: int, seed: int) -> dict:
     report can show what the seed drew against what it drew from, rather than asserting that 500
     images are representative.
     """
-    labels = read_labels(path, split).reshape(-1)
+    labels = squeeze_labels(read_labels(path, split))
     indices = sample_indices(len(labels), k, seed)
     return {
         "indices": indices,

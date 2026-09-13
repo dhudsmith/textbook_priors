@@ -13,6 +13,11 @@ H4's readers are built the same way. The thinking reader answers a little better
 and the frontier reader better again, so both steps of the chain must come out positive; a chain
 that read its readers in the wrong order, or that compared a reader with itself, would show up as a
 step of zero or a step with the wrong sign.
+
+A second, multi-label dataset rides beside the first: three findings, arms C and P only, scored by
+the primary model alone, with a pool too small for the largest curve point. It exercises the path
+chestmnist takes - one-vs-rest fits, findings-as-columns AUC, no arm A or B, a shorter grid - and
+the across-dataset stage's habit of counting it for H1 and leaving it out of H2 to H4.
 """
 import importlib
 import json
@@ -79,7 +84,7 @@ def workspace(tmp_path):
         "release": str(tmp_path / "medmnist.yaml"), "cachedir": str(tmp_path / "cache"),
         "literature": str(tmp_path / "literature.yaml"),
         "featuredir": str(tmp_path / "features"), "figdir": str(tmp_path / "figs"),
-        "tabdir": str(tmp_path / "tabs"), "datasets": ["toymnist"], "size": 224,
+        "tabdir": str(tmp_path / "tabs"), "datasets": ["toymnist", "toychest"], "size": 224,
         "sample": {"test_n": n_test, "pool_n": n_pool, "seed": 0},
         "curve": {"n": [20, 50], "seeds": [0, 1]},
         "vlm": {"primary": "big-model", "models": MODELS, "readers": READERS,
@@ -90,9 +95,11 @@ def workspace(tmp_path):
         "features": {"arch": "resnet18", "weights": "imagenet1k_v1", "batch": 8},
         "classify": {"l2_grid": [0.1, 1.0], "cv_folds": 5, "missing_max_frac": 0.05,
                      "permute": {"seeds": [0, 1]}, "probe": {"folds": 4, "seed": 0}},
-        "evaluate": {"bootstrap": 200, "ci": 0.95, "seed": 0, "h3_min_wins": 1},
+        # One arm-B dataset: at alpha 0.6 one win of one (p = 0.5) reaches the level, so the fixture's
+        # verdicts can be asserted; at the real 0.05 a single dataset can never support anything.
+        "evaluate": {"bootstrap": 200, "ci": 0.95, "seed": 0, "alpha": 0.6},
         "h4": {"baseline": "tiny-model", "thinking": "tiny-model-medium",
-               "frontier": "frontier-medium", "subsample": SUBSAMPLE, "min_wins": 1},
+               "frontier": "frontier-medium", "subsample": SUBSAMPLE},
         "resources": {},
     }
     for key in ("outdir", "conceptdir", "cachedir", "featuredir", "figdir", "tabdir"):
@@ -103,14 +110,19 @@ def workspace(tmp_path):
          "datasets": {"toymnist": {"file": "toymnist_224.npz", "md5_224": "x", "size_bytes": 1,
                                    "medmnist_task": "binary-class", "n_channels": 1,
                                    "n_samples": {"train": 1, "val": 1, "test": 1},
-                                   "label": {0: "alpha", 1: "beta"}}}}))
+                                   "label": {0: "alpha", 1: "beta"}},
+                      "toychest": {"file": "toychest_224.npz", "md5_224": "y", "size_bytes": 1,
+                                   "medmnist_task": "multi-label, binary-class", "n_channels": 1,
+                                   "n_samples": {"train": 1, "val": 1, "test": 1},
+                                   "label": {0: "f0", 1: "f1", 2: "f2"}}}}))
     (tmp_path / "concepts" / "toymnist.yaml").write_text(yaml.safe_dump({
         "dataset": "toymnist", "modality": "toys", "task": "binary", "medmnist_task": "binary-class",
         "concepts": CONCEPTS,
         "classes": {"alpha": {"fingerprint": {"one": "low", "two": "small"}},
                     "beta": {"fingerprint": {"one": "high", "two": "any"}}}}))
     (tmp_path / "literature.yaml").write_text(yaml.safe_dump({
-        "citation": "toy2020", "datasets": {"toymnist": {"resnet18_224": {"auc": 0.99, "acc": 0.95}}}}))
+        "citation": "toy2020", "datasets": {"toymnist": {"resnet18_224": {"auc": 0.99, "acc": 0.95}},
+                                            "toychest": {"resnet18_224": {"auc": 0.80, "acc": 0.90}}}}))
 
     results = Path(config["outdir"])
     (results / "prompts").mkdir(parents=True, exist_ok=True)
@@ -158,7 +170,54 @@ def workspace(tmp_path):
     np.savez(Path(config["featuredir"]) / "toymnist.npz",
              test_features=(y_test[:, None] + rng.normal(0, 1.4, size=(n_test, 6))).astype(np.float32),
              pool_features=(y_pool[:, None] + rng.normal(0, 1.4, size=(n_pool, 6))).astype(np.float32))
+
+    add_multi_label_dataset(tmp_path, config, rng)
     return tmp_path, config, y_test
+
+
+def add_multi_label_dataset(tmp_path, config, rng):
+    """`toychest`: three findings, a pool of 40 (so the grid's 50 is dropped), the primary model
+    alone on the concept prompt. The first concept follows finding 0 and the second finding 1, so
+    arm C must read both findings well and finding 2, which nothing predicts, at chance."""
+    n_test, n_pool = 90, 40
+    findings = 3
+    y_test = (rng.random((n_test, findings)) < 0.4).astype(int)
+    y_pool = (rng.random((n_pool, findings)) < 0.4).astype(int)
+    y_pool[0] = 0                                        # at least one film with no finding
+    (tmp_path / "concepts" / "toychest.yaml").write_text(yaml.safe_dump({
+        "dataset": "toychest", "modality": "toy films", "task": "multi-label",
+        "medmnist_task": "multi-label, binary-class", "concepts": CONCEPTS,
+        "classes": {f"f{j}": {"fingerprint": {"one": "any", "two": "any"}} for j in range(findings)}}))
+    results = Path(config["outdir"])
+    (results / "prompts" / "toychest.json").write_text(json.dumps(
+        {"dataset": "toychest", "concepts": CONCEPTS, "classes": [f"f{j}" for j in range(findings)],
+         "bank_sha256": "y", "multi_label": True,
+         "prompts": {"concept": {"sha256": "cc"}, "zero_shot": None}}))
+
+    def rows(labels):
+        return [{"position": i, "index": i, "label": [int(v) for v in y], "complete": True,
+                 "answers": {"one": ["low", "high"][y[0]], "two": ["small", "large"][y[1]]}}
+                for i, y in enumerate(labels)]
+    cells = {"big-model__test__concept": {
+                 "model": "big-model", "split": "test", "prompt": "concept", "served_model": "big-model",
+                 "prompt_sha256": "cc", "n": n_test, "incomplete_frac": 0.0, "over_missing_cap": False,
+                 "rows": rows(y_test)},
+             "big-model__pool__concept": {
+                 "model": "big-model", "split": "pool", "prompt": "concept", "served_model": "big-model",
+                 "prompt_sha256": "cc", "n": n_pool, "incomplete_frac": 0.0, "over_missing_cap": False,
+                 "rows": rows(y_pool)}}
+    (results / "scores" / "toychest.json").write_text(json.dumps(
+        {"dataset": "toychest", "concepts": [c["id"] for c in CONCEPTS],
+         "classes": [f"f{j}" for j in range(findings)], "missing_max_frac": 0.05, "cells": cells,
+         "chunk_files": []}))
+    np.savez(Path(config["cachedir"]) / "toychest.npz",
+             test_labels=y_test, pool_labels=y_pool,
+             test_indices=np.arange(n_test), pool_indices=np.arange(n_pool),
+             test_images=np.zeros((n_test, 4, 4), dtype=np.uint8),
+             pool_images=np.zeros((n_pool, 4, 4), dtype=np.uint8))
+    np.savez(Path(config["featuredir"]) / "toychest.npz",
+             test_features=(y_test[:, :1] + rng.normal(0, 1.4, size=(n_test, 6))).astype(np.float32),
+             pool_features=(y_pool[:, :1] + rng.normal(0, 1.4, size=(n_pool, 6))).astype(np.float32))
 
 
 @pytest.fixture
@@ -195,8 +254,28 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     # The permutation control must cost arm B almost everything it had.
     assert got["controls"]["B__big-model"]["drop"]["median"] > 0.2
 
+    # The multi-label dataset: arms C and P only, a grid its pool can reach, and no n_B.
+    stages.classify("toychest", str(results / "classify/toychest.json"),
+                    str(results / "classify/toychest.npz"))
+    chest = np.load(results / "classify/toychest.npz")
+    assert chest["labels"].shape == (90, 3)
+    assert not any(k == "A" or k.startswith("B__") or k.startswith("CV__") for k in chest.files)
+    assert {"C__n20__seed0", "P__n20__seed1", "Cperm__n20__seed0"} <= set(chest.files)
+    assert not any("n50" in k for k in chest.files), "a pool of 40 cannot fill a subset of 50"
+    stages.evaluate("toychest", str(results / "evaluate/toychest.json"))
+    chest_eval = json.loads((results / "evaluate/toychest.json").read_text())
+    assert chest_eval["multi_label"] and chest_eval["curve_n"] == [20]
+    assert chest_eval["n_b"] is None and chest_eval["h4"] is None
+    assert chest_eval["auc"]["C__n20__seed0"] > 0.7, "two of three findings are readable"
+    assert "B_minus_A" not in chest_eval["differences"]
+
     stages.evaluate_across(str(results / "evaluation.json"))
     across = json.loads((results / "evaluation.json").read_text())
+    # H1 counts both datasets; everything that needs an arm B counts the single-label one alone.
+    assert across["arm_b_datasets"] == ["toymnist"]
+    assert set(across["h1"]["c_beats_p_at_smallest_n"]) == {"toymnist", "toychest"}
+    assert set(across["h1"]["n_b"]) == {"toymnist"}
+    assert set(across["h2"]["b_beats_a"]) == {"toymnist"} and across["h2"]["n_datasets"] == 1
     assert across["h2"]["b_beats_a"]["toymnist"] is True
     assert across["h3"]["ladder"]["t"]["larger"] == "big-model"
     assert across["h3"]["ladder"]["t"]["wins"] == 1
@@ -230,7 +309,7 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     # sequence after the whole study has run.
     macros = (Path(config["tabdir"]) / "numbers.tex").read_text()
     for name in ("hOneSupported", "hTwoSupported", "hThreeSupported", "cBeatsPWins", "bBeatsAWins",
-                 "friedmanP", "medianNB", "numDatasets", "numModels",
+                 "friedmanP", "medianNB", "numDatasets", "numArmBDatasets", "minWinsAll", "numModels",
                  "litGapZeroMedian", "litGapConceptMedian", "litGapPixelMedian", "litLargestN",
                  "litPixelWithinTwoPoints", "litZeroWithinFivePoints", "aucLitToy"):
         assert f"\\newcommand{{\\{name}}}" in macros, name

@@ -41,6 +41,11 @@ resources:
   # overruns writing nothing. Read together with llm_qwen3_8_27b_fp8 as the promise about this one
   # endpoint; nothing else is scheduled against it while the readers run.
   llm_reader_medium: 4
+  # Connections open to the Zenodo record at once: each fetch job holds one unit per byte-range
+  # segment (Snakefile: segments()). Zenodo served about 105 KB/s per connection from every node
+  # on 2026-09-09 and scaled linearly with connections up to the eight tested, so this is a
+  # politeness cap on a public archive, not a throughput one.
+  zenodo: 120
 latency-wait: 60
 keep-going: True
 rerun-incomplete: True

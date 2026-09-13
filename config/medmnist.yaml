@@ -1,14 +1,16 @@
 # The pinned MedMNIST v2 release, as the workflow reads it.
 #
-# Not a set of knobs: this file DESCRIBES the fixed input of WORKFLOW.md section 4 - the six
-# 224-pixel release files that were downloaded, checksummed and set aside before the workflow
-# existed. Rules take it as an INPUT file, not as a configfile, so a change to a label map
-# reruns the prompts and everything below them.
+# Not a set of knobs: this file DESCRIBES the fixed input of WORKFLOW.md section 4 - the twelve
+# 224-pixel release files of the pinned Zenodo record. Eight were downloaded, checksummed and set
+# aside before the workflow existed; the other four are fetched by `rule fetch` from the same
+# record and checked against the same MD5s. Rules take it as an INPUT file, not as a configfile,
+# so a change to a label map reruns the prompts and everything below them.
 #
 # Every value below was read from the `medmnist` package (version 3.0.2, PyPI wheel
 # medmnist-3.0.2-py3-none-any.whl) rather than retyped: `label`, `task` and `n_samples` come
 # verbatim from `medmnist.INFO[<dataset>]`, and `md5_224` from its `MD5_224`. `size_bytes` is
-# the size of the file on disk under storage_root/raw. The `smoke` target holds this file to
+# the file's size in the Zenodo record, which is also its size on disk under storage_root/raw
+# and what `rule fetch` cuts into byte ranges. The `smoke` target holds this file to
 # the installed package and to the concept bank's class names, so a package upgrade that moved
 # a label map fails loudly instead of quietly rewriting a prompt.
 #
@@ -17,7 +19,7 @@
 
 medmnist_version: "3.0.2"
 zenodo_record: 10519652          # the pinned release record; provenance, never re-fetched
-size: 224                        # the only resolution the talk version uses
+size: 224                        # the only resolution this study uses
 
 datasets:
   pathmnist:
@@ -127,3 +129,120 @@ datasets:
       8: "lung-right"
       9: "pancreas"
       10: "spleen"
+  breastmnist:
+    file: breastmnist_224.npz
+    md5_224: b56378a6eefa9fed602bb16d192d4c8b
+    size_bytes: 30903564
+    medmnist_task: "binary-class"
+    n_channels: 1
+    n_samples:
+      train: 546
+      val: 78
+      test: 156
+    label:
+      0: "malignant"
+      1: "normal, benign"
+  chestmnist:
+    file: chestmnist_224.npz
+    md5_224: 45bd33e6f06c3e8cdb481c74a89152aa
+    size_bytes: 3889293042
+    medmnist_task: "multi-label, binary-class"
+    n_channels: 1
+    n_samples:
+      train: 78468
+      val: 11219
+      test: 22433
+    label:
+      0: "atelectasis"
+      1: "cardiomegaly"
+      2: "effusion"
+      3: "infiltration"
+      4: "mass"
+      5: "nodule"
+      6: "pneumonia"
+      7: "pneumothorax"
+      8: "consolidation"
+      9: "edema"
+      10: "emphysema"
+      11: "fibrosis"
+      12: "pleural"
+      13: "hernia"
+  organcmnist:
+    file: organcmnist_224.npz
+    md5_224: 050f5e875dc056f6768abf94ec9995d1
+    size_bytes: 760231860
+    medmnist_task: "multi-class"
+    n_channels: 1
+    n_samples:
+      train: 12975
+      val: 2392
+      test: 8216
+    label:
+      0: "bladder"
+      1: "femur-left"
+      2: "femur-right"
+      3: "heart"
+      4: "kidney-left"
+      5: "kidney-right"
+      6: "liver"
+      7: "lung-left"
+      8: "lung-right"
+      9: "pancreas"
+      10: "spleen"
+  organsmnist:
+    file: organsmnist_224.npz
+    md5_224: b354719e553fbbb2513d5533f52a4cb1
+    size_bytes: 802713625
+    medmnist_task: "multi-class"
+    n_channels: 1
+    n_samples:
+      train: 13932
+      val: 2452
+      test: 8827
+    label:
+      0: "bladder"
+      1: "femur-left"
+      2: "femur-right"
+      3: "heart"
+      4: "kidney-left"
+      5: "kidney-right"
+      6: "liver"
+      7: "lung-left"
+      8: "lung-right"
+      9: "pancreas"
+      10: "spleen"
+  retinamnist:
+    file: retinamnist_224.npz
+    md5_224: eae7e3b6f3fcbda4ae613ebdcbe35348
+    size_bytes: 127992567
+    medmnist_task: "ordinal-regression"
+    n_channels: 3
+    n_samples:
+      train: 1080
+      val: 120
+      test: 400
+    label:
+      0: "0"
+      1: "1"
+      2: "2"
+      3: "3"
+      4: "4"
+  tissuemnist:
+    file: tissuemnist_224.npz
+    md5_224: b077128c4a949f0a4eb01517f9037b9c
+    size_bytes: 3433703243
+    medmnist_task: "multi-class"
+    n_channels: 1
+    n_samples:
+      train: 165466
+      val: 23640
+      test: 47280
+    label:
+      0: "Collecting Duct, Connecting Tubule"
+      1: "Distal Convoluted Tubule"
+      2: "Glomerular endothelial cells"
+      3: "Interstitial endothelial cells"
+      4: "Leukocytes"
+      5: "Podocytes"
+      6: "Proximal Tubule Segments"
+      7: "Thick Ascending Limb"

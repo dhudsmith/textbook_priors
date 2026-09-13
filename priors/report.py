@@ -90,30 +90,43 @@ def figure_curve(per, datasets, curve_n, dest, literature=None):
     from the four arms - a different colour, a sparser dash, no fill - because it is not one: it
     was not computed by this study, does not share the paired bootstrap, and carries no interval.
     """
-    fig, axes = plt.subplots(2, 3, figsize=(13, 7.5), sharex=True)
+    # Three panels a row for the talk's six datasets, four a row for twelve; a dataset whose pool
+    # stops short of the grid draws only the points it reached (`curve_n` in its evaluate file).
+    cols = 3 if len(datasets) <= 6 else 4
+    rows = -(-len(datasets) // cols)
+    fig, axes = plt.subplots(rows, cols, figsize=(4.3 * cols, 3.7 * rows), sharex=True, squeeze=False)
+    for ax in axes.flat[len(datasets):]:
+        ax.set_visible(False)
+    legend_ax = None
     for ax, dataset in zip(axes.flat, datasets):
         got = per[dataset]
+        own_n = list(got.get("curve_n", curve_n))
         for arm in ("C", "P"):
-            point = [got["curve"][f"{arm}__n{n}"]["point"] for n in curve_n]
-            lo = [got["curve"][f"{arm}__n{n}"]["lo"] for n in curve_n]
-            hi = [got["curve"][f"{arm}__n{n}"]["hi"] for n in curve_n]
-            ax.plot(curve_n, point, "o-", color=ARM_COLOUR[arm], label=ARM_LABEL[arm], markersize=4)
-            ax.fill_between(curve_n, lo, hi, color=ARM_COLOUR[arm], alpha=0.15, linewidth=0)
-        b_key = next(k for k in got["auc"] if k.startswith("B__"))
-        ax.axhline(got["auc"][b_key], color=ARM_COLOUR["B"], linestyle="--", label=ARM_LABEL["B"])
-        ax.axhline(got["auc"]["A"], color=ARM_COLOUR["A"], linestyle=":", label=ARM_LABEL["A"])
+            point = [got["curve"][f"{arm}__n{n}"]["point"] for n in own_n]
+            lo = [got["curve"][f"{arm}__n{n}"]["lo"] for n in own_n]
+            hi = [got["curve"][f"{arm}__n{n}"]["hi"] for n in own_n]
+            ax.plot(own_n, point, "o-", color=ARM_COLOUR[arm], label=ARM_LABEL[arm], markersize=4)
+            ax.fill_between(own_n, lo, hi, color=ARM_COLOUR[arm], alpha=0.15, linewidth=0)
+        if got.get("n_b") is not None:
+            b_key = next(k for k in got["auc"] if k.startswith("B__"))
+            ax.axhline(got["auc"][b_key], color=ARM_COLOUR["B"], linestyle="--", label=ARM_LABEL["B"])
+            ax.axhline(got["auc"]["A"], color=ARM_COLOUR["A"], linestyle=":", label=ARM_LABEL["A"])
+            ax.set_title(f"{dataset}  (n$_B$ = {got['n_b']['point']})", fontsize=10)
+            legend_ax = legend_ax or ax
+        else:
+            # The multi-label task: arms C and P only, so no horizontal lines and no crossing.
+            ax.set_title(f"{dataset}  (multi-label: arms C and P only)", fontsize=10)
         if literature is not None:
             ax.axhline(literature.dataset(dataset)["resnet18_224"]["auc"], color=LIT_COLOUR,
                       linestyle=(0, (1, 1)), linewidth=1.5, label=LIT_LABEL)
         ax.set_xscale("log")
         ax.set_xticks(curve_n, [str(n) for n in curve_n])
-        ax.set_title(f"{dataset}  (n$_B$ = {got['n_b']['point']})", fontsize=10)
         ax.grid(alpha=0.25)
     for ax in axes[:, 0]:
         ax.set_ylabel("test AUC")
     for ax in axes[-1]:
         ax.set_xlabel("labelled images")
-    axes.flat[0].legend(fontsize=8, loc="lower right")
+    (legend_ax or axes.flat[0]).legend(fontsize=8, loc="lower right")
     fig.suptitle("What labelled images buy, and what the textbook gives for nothing", fontsize=12)
     fig.tight_layout()
     fig.savefig(Path(dest) / "fig_curve.png", dpi=200)
@@ -127,7 +140,8 @@ def figure_n_b(per, datasets, curve_n, dest):
     number: `<=50` means the probe was already ahead at the first grid point and `>2000` that it
     never caught up inside the curve.
     """
-    fig, ax = plt.subplots(figsize=(8, 4.2))
+    datasets = [d for d in datasets if per[d].get("n_b") is not None]      # no arm B, no n_B
+    fig, ax = plt.subplots(figsize=(8, 3.4 + 0.15 * len(datasets)))
     for i, dataset in enumerate(datasets):
         n_b = per[dataset]["n_b"]
         code = n_b["point"]
@@ -158,6 +172,7 @@ def figure_ladder(across, datasets, dest):
     steps also change quantisation (WORKFLOW.md section 2).
     """
     order = across["h3"]["model_order"]
+    datasets = [d for d in datasets if d in across["h3"]["arm_b_auc"]]
     fig, ax = plt.subplots(figsize=(8.5, 4.6))
     for dataset in datasets:
         values = [across["h3"]["arm_b_auc"][dataset][m] for m in order]
@@ -166,7 +181,7 @@ def figure_ladder(across, datasets, dest):
     ax.set_ylabel("arm B test AUC (no labels)")
     ax.axhline(0.5, color="grey", linestyle=":", linewidth=1)
     ax.grid(alpha=0.25)
-    ax.legend(fontsize=8, ncol=2)
+    ax.legend(fontsize=7, ncol=3 if len(datasets) > 6 else 2)
     ax.set_title("The textbook arm across the model ladder, smallest to largest", fontsize=11)
     fig.tight_layout()
     fig.savefig(Path(dest) / "fig_ladder.png", dpi=200)
@@ -189,6 +204,7 @@ def figure_readers(across, datasets, dest):
     chain = [across["h4"]["h4a"]["from"], across["h4"]["h4a"]["to"], across["h4"]["h4b"]["to"]]
     rest = [r for r in order if r not in chain]
     columns = chain + rest
+    datasets = [d for d in datasets if d in across["h4"]["probe_auc"]]
     fig, ax = plt.subplots(figsize=(9.0, 4.8))
     for dataset in datasets:
         values = [across["h4"]["probe_auc"][dataset][r] for r in columns]
@@ -203,7 +219,8 @@ def figure_readers(across, datasets, dest):
     ax.set_ylabel(f"cross-validated probe AUC\n(concept answers, {across['h4']['subsample']} images)")
     ax.grid(alpha=0.25)
     # Under the axes, not inside them: inside, the legend sat on dermamnist's baseline point.
-    ax.legend(fontsize=8, ncol=3, loc="upper center", bbox_to_anchor=(0.5, -0.28), frameon=False)
+    ax.legend(fontsize=7, ncol=4 if len(datasets) > 6 else 3, loc="upper center",
+              bbox_to_anchor=(0.5, -0.28), frameon=False)
     ax.set_title("H4: what each reader's concept answers carry", fontsize=11)
     fig.tight_layout()
     fig.savefig(Path(dest) / "fig_readers.png", dpi=200, bbox_inches="tight")
@@ -221,6 +238,7 @@ def figure_thinking(across, datasets, dest):
     """
     h4 = across["h4"]
     base = h4["h4a"]["from"]
+    datasets = [d for d in datasets if d in h4["probe_auc"]]
     fig, ax = plt.subplots(figsize=(7.5, 4.6))
     for dataset in datasets:
         x = h4["probe_auc"][dataset][base]
@@ -259,23 +277,28 @@ def table_h1(per, datasets, curve_n, dest):
         got = per[d]
         smallest = curve_n[0]
         diff = got["differences"][f"C_minus_P__n{smallest}"]
-        rows.append([tex_escape(d), got["n_b"]["point"], f"[{got['n_b']['lo']}, {got['n_b']['hi']}]",
+        n_b = got.get("n_b")
+        rows.append([tex_escape(d), n_b["point"] if n_b else "--",
+                     f"[{n_b['lo']}, {n_b['hi']}]" if n_b else "--",
                      fmt(got["curve"][f"C__n{smallest}"]["point"]),
                      fmt(got["curve"][f"P__n{smallest}"]["point"]),
                      f"{fmt(diff['median'])} [{fmt(diff['lo'])}, {fmt(diff['hi'])}]"])
     _table(dest, "h1", ["dataset", r"n$_B$", "95\\% interval", f"AUC(C, n={curve_n[0]})",
                         f"AUC(P, n={curve_n[0]})", "difference C--P"], rows,
            "H1. The labelled images the pixel probe needed to reach the textbook arm, and the "
-           "concept probe against the pixel probe at the smallest labelled subset.", "h1")
+           "concept probe against the pixel probe at the smallest labelled subset. The multi-label "
+           "task has no arm B and so no n$_B$.", "h1")
 
 
 def table_h2(per, datasets, curve_n, primary, dest):
     rows = []
     for d in datasets:
         got = per[d]
+        if "B_minus_A" not in got["differences"]:       # the multi-label task has no arms A and B
+            continue
         diff = got["differences"]["B_minus_A"]
         b_drop = got["controls"][f"B__{primary}"]["drop"]
-        c_drop = got["controls"][f"C__n{max(curve_n)}"]["drop"]
+        c_drop = got["controls"][f"C__n{max(got.get('curve_n', curve_n))}"]["drop"]
         rows.append([tex_escape(d), fmt(got["auc"][f"B__{primary}"]), fmt(got["auc"]["A"]),
                      f"{fmt(diff['median'])} [{fmt(diff['lo'])}, {fmt(diff['hi'])}]",
                      f"{fmt(b_drop['median'])} [{fmt(b_drop['lo'])}, {fmt(b_drop['hi'])}]",
@@ -289,7 +312,8 @@ def table_h2(per, datasets, curve_n, primary, dest):
 
 def table_h3(across, datasets, dest):
     order = across["h3"]["model_order"]
-    rows = [[tex_escape(d)] + [fmt(across["h3"]["arm_b_auc"][d][m]) for m in order] for d in datasets]
+    rows = [[tex_escape(d)] + [fmt(across["h3"]["arm_b_auc"][d][m]) for m in order]
+            for d in datasets if d in across["h3"]["arm_b_auc"]]
     _table(dest, "h3", ["dataset"] + [tex_escape(m) for m in order], rows,
            "H3. Arm B's AUC for every model, smallest to largest. Read within family: size and "
            "training data are confounded across families, and both size steps also change "
@@ -306,7 +330,8 @@ def table_h4(across, datasets, dest):
     h4 = across["h4"]
     base, think, front = h4["h4a"]["from"], h4["h4a"]["to"], h4["h4b"]["to"]
     rows = []
-    for d in datasets:
+    covered = [d for d in datasets if d in h4["probe_auc"]]
+    for d in covered:
         got = h4["probe_auc"][d]
         a, b = h4["h4a"]["differences"][d], h4["h4b"]["differences"][d]
         rows.append([tex_escape(d), fmt(got[base]), fmt(got[think]), fmt(got[front]),
@@ -318,8 +343,8 @@ def table_h4(across, datasets, dest):
            rows,
            f"H4. The cross-validated probe on each reader's concept answers, on the "
            f"{h4['subsample']} images every reader was scored on. H4a holds the model and adds "
-           f"reasoning; H4b holds the reasoning effort and changes the model. Supported on "
-           f"{h4['h4a']['wins']} of {len(datasets)} and {h4['h4b']['wins']} of {len(datasets)} "
+           f"reasoning; H4b holds the reasoning effort and changes the model. Won on "
+           f"{h4['h4a']['wins']} of {len(covered)} and {h4['h4b']['wins']} of {len(covered)} "
            "respectively. These AUCs are not points on the learning curve: the probe is fitted "
            "inside the same images it scores, so it measures what the answers carry rather than "
            "what a labelled model would achieve.", "h4")
@@ -343,15 +368,18 @@ def table_literature(per, literature, datasets, curve_n, primary, dest):
     for d in datasets:
         got = per[d]
         best_method, best = ceiling(literature, d)
+        # The largest labelled subset this dataset's pool reached: the grid's top, or less where
+        # the official train split is smaller (breastmnist 500, retinamnist 1000).
+        own_largest = max(got.get("curve_n", curve_n))
         # Every arm, not only arm B: the ceiling is a reference point for the study, and the study
         # has four arms. The two zero-label arms come first because they are the ones the ceiling
         # is most interesting against - what the model brings before any label is bought.
         rows.append([
             tex_escape(d),
-            fmt(got["auc"]["A"]),
-            fmt(got["auc"][f"B__{primary}"]),
-            fmt(got["curve"][f"C__n{largest}"]["point"]),
-            fmt(got["curve"][f"P__n{largest}"]["point"]),
+            fmt(got["auc"].get("A")),
+            fmt(got["auc"].get(f"B__{primary}")),
+            fmt(got["curve"][f"C__n{own_largest}"]["point"]) + ("" if own_largest == largest else f" ({own_largest})"),
+            fmt(got["curve"][f"P__n{own_largest}"]["point"]) + ("" if own_largest == largest else f" ({own_largest})"),
             fmt(best["auc"]),
             tex_escape(LIT_METHOD_LABEL[best_method]),
         ])
@@ -363,27 +391,36 @@ def table_literature(per, literature, datasets, curve_n, primary, dest):
            "against the best of five fully supervised methods reported for the same task on the "
            r"same 224-pixel release \cite{yang2023}. The published methods are trained on the whole "
            "official training split, thousands to tens of thousands of images, not this study's "
-           "n$\\le$2000 pool; A and B see no labels at all. Read the last column as a ceiling for "
+           "n$\\le$2000 pool; A and B see no labels at all, and are undefined for the multi-label "
+           "task. Where a pool is smaller than the grid the subset actually reached is in "
+           "parentheses. Read the last column as a ceiling for "
            "the task, not as a same-conditions comparison. ACC is pinned beside AUC in "
            r"\texttt{data/literature/benchmarks.yaml} and not shown, because this study computes no "
            "ACC to set beside it.", "literature")
 
 
 def table_completeness(per, datasets, dest):
-    models = sorted(next(iter(per.values()))["complete_frac"])
-    rows = [[tex_escape(d)] + [f"{100 * per[d]['complete_frac'][m]:.1f}" for m in models]
+    models = sorted(set().union(*(per[d]["complete_frac"] for d in datasets)))
+    rows = [[tex_escape(d)] + [f"{100 * per[d]['complete_frac'][m]:.1f}" if m in per[d]["complete_frac"]
+                               else "--" for m in models]
             for d in datasets]
     _table(dest, "completeness", ["dataset"] + [tex_escape(m) for m in models], rows,
            "Percentage of test images for which every concept came back with a level on that "
            "concept's own scale. An image with any missing answer counts as incomplete; a cell "
-           "more than 5\\% incomplete is excluded from the headline.", "completeness")
+           "more than 5\\% incomplete is excluded from the headline. Only the primary model "
+           "scores the multi-label task.", "completeness")
 
 
 def numbers(per, across, datasets, curve_n, primary, dest, literature=None):
     """The macros the prose reads, so no sentence states a number the run did not produce."""
     h1, h2, h3 = across["h1"], across["h2"], across["h3"]
+    arm_b = across.get("arm_b_datasets", datasets)
     lines = {
         "numDatasets": len(datasets),
+        "numArmBDatasets": len(arm_b),
+        "minWinsAll": h1.get("min_wins", len(datasets)),
+        "minWinsArmB": h2.get("min_wins", len(arm_b)),
+        "alphaLevel": across.get("alpha", 0.05),
         "numModels": len(h3["model_order"]),
         "hOneSupported": "supported" if h1["supported"] else "not supported",
         "hTwoSupported": "supported" if h2["supported"] else "not supported",
@@ -422,10 +459,12 @@ def numbers(per, across, datasets, curve_n, primary, dest, literature=None):
         gaps = {"Zero": [], "Concept": [], "Pixel": []}
         for d in datasets:
             top = ceiling(literature, d)[1]["auc"]
-            zero = [per[d]["auc"]["A"], per[d]["auc"][f"B__{primary}"]]
-            gaps["Zero"].append(top - max(zero))
-            gaps["Concept"].append(top - per[d]["curve"][f"C__n{largest}"]["point"])
-            gaps["Pixel"].append(top - per[d]["curve"][f"P__n{largest}"]["point"])
+            own_largest = max(per[d].get("curve_n", curve_n))
+            if "A" in per[d]["auc"]:                    # the multi-label task has no zero-label arm
+                zero = [per[d]["auc"]["A"], per[d]["auc"][f"B__{primary}"]]
+                gaps["Zero"].append(top - max(zero))
+            gaps["Concept"].append(top - per[d]["curve"][f"C__n{own_largest}"]["point"])
+            gaps["Pixel"].append(top - per[d]["curve"][f"P__n{own_largest}"]["point"])
         for name, values in gaps.items():
             lines[f"litGap{name}Median"] = fmt(median(values))
         lines["litLargestN"] = largest
@@ -440,9 +479,10 @@ def numbers(per, across, datasets, curve_n, primary, dest, literature=None):
         key = "".join(part.capitalize() for part in d.replace("mnist", "").split("_")) or d
         if literature is not None:
             lines[f"aucLit{key}"] = fmt(ceiling(literature, d)[1]["auc"])
-        lines[f"nB{key}"] = per[d]["n_b"]["point"].replace("<=", r"$\leq$").replace(">", "$>$")
-        lines[f"aucB{key}"] = fmt(per[d]["auc"][f"B__{primary}"])
-        lines[f"aucA{key}"] = fmt(per[d]["auc"]["A"])
+        n_b = per[d].get("n_b")
+        lines[f"nB{key}"] = n_b["point"].replace("<=", r"$\leq$").replace(">", "$>$") if n_b else "--"
+        lines[f"aucB{key}"] = fmt(per[d]["auc"].get(f"B__{primary}"))
+        lines[f"aucA{key}"] = fmt(per[d]["auc"].get("A"))
     text = "\n".join(rf"\newcommand{{\{k}}}{{{v}}}" for k, v in lines.items()) + "\n"
     (Path(dest) / "numbers.tex").write_text(text)
     return lines

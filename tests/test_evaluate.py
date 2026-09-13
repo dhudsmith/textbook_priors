@@ -47,6 +47,18 @@ def test_it_agrees_on_a_binary_task_and_reads_the_positive_column(evaluator):
         evaluator.getAUC(y, scores, "binary-class"), abs=1e-12)
 
 
+def test_it_agrees_on_the_multi_label_task_with_labels_as_a_matrix(evaluator):
+    """chestmnist's labels are (images, findings) of 0/1 and its AUC is the mean over findings of
+    each finding's one-vs-rest AUC, which is what the package computes for that task string."""
+    rng = np.random.default_rng(3)
+    y = (rng.random((200, 5)) < 0.3).astype(int)
+    scores = rng.random((200, 5)) + 0.6 * y
+    assert metrics.auc(y, scores, "multi-label, binary-class", 5) == pytest.approx(
+        evaluator.getAUC(y, scores, "multi-label, binary-class"), abs=1e-12)
+    keys, reps = metrics.bootstrap_aucs(y, {"x": scores}, "multi-label, binary-class", 5, 20, 0)
+    assert reps.shape == (20, 1) and np.all(np.isfinite(reps))
+
+
 def test_a_class_with_no_positives_is_undefined_rather_than_half():
     """It happens in bootstrap replicates of a thin class - dermamnist has five vascular lesions in
     the whole test sample - and calling it 0.5 would quietly drag the macro average toward chance."""
@@ -114,6 +126,15 @@ def test_the_sign_test_is_the_one_the_plan_quotes():
     assert metrics.sign_test(6, 6) == pytest.approx(0.0156, abs=5e-4)
     assert metrics.sign_test(5, 6) == pytest.approx(0.1094, abs=5e-4)
     assert metrics.sign_test(3, 6) > 0.5
+
+
+def test_the_rule_is_a_level_and_reads_as_the_counts_the_plan_quotes():
+    """`evaluate.alpha` is one level; the counts WORKFLOW.md section 2 states follow from it: every
+    one of six, nine of eleven, ten of twelve."""
+    assert metrics.min_wins(6, 0.05) == 6
+    assert metrics.min_wins(11, 0.05) == 9
+    assert metrics.min_wins(12, 0.05) == 10
+    assert metrics.min_wins(3, 0.05) == 4, "three datasets cannot reach the level at all"
 
 
 def test_the_friedman_test_runs_over_the_model_ladder(config):

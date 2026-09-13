@@ -48,9 +48,16 @@ OUT = config["outdir"]
 DATASETS = config["datasets"]
 RES = config["resources"]
 
-# The pinned release description, read here only to name each dataset's release file: the file a
-# sample job reads has to be a declared input, and this file is the authority on what it is called.
-RELEASE = yaml.safe_load(Path(config["release"]).read_text())["datasets"]
+# The pinned release description: each dataset's release file (the file a sample job reads has to
+# be a declared input, and this file is the authority on what it is called), its size and MD5 for
+# the fetch rule, its split sizes for the sample caps, and its task, which decides which arms a
+# dataset can have (WORKFLOW.md sections 3 and 4).
+RELEASE_DOC = yaml.safe_load(Path(config["release"]).read_text())
+RELEASE = RELEASE_DOC["datasets"]
+ZENODO = f"https://zenodo.org/records/{RELEASE_DOC['zenodo_record']}"
+# chestmnist: fourteen co-occurring findings. Arms A and B are not defined over such a label space,
+# so it is scored by the primary model alone, concept prompt alone, and joins arms C and P only.
+MULTI_LABEL = {d for d in DATASETS if RELEASE[d]["medmnist_task"].startswith("multi-label")}
 
 # BLAS sizes its thread pool from the machine, not the cgroup; pin it to the allocation.
 PIN = "export OMP_NUM_THREADS={threads} MKL_NUM_THREADS={threads} OPENBLAS_NUM_THREADS={threads}; "
@@ -106,12 +113,21 @@ def slug(model):
     return re.sub(r"[^a-z0-9]+", "_", model.lower())
 
 
-def chunk_ids(split, n=None):
-    """The chunk numbers one split is cut into, zero-padded so they sort.
+def split_n(dataset, split):
+    """How many images a dataset's sample of `split` holds: config's size, capped at the official
+    split (breastmnist has 156 test and 546 train images, retinamnist 400 and 1080; WORKFLOW.md
+    section 4). The sample stage draws the same number, so the chunk count here and the rows in
+    the cache agree by construction."""
+    wanted = config["sample"]["test_n" if split == "test" else "pool_n"]
+    return min(wanted, RELEASE[dataset]["n_samples"]["test" if split == "test" else "train"])
 
-    `n` overrides the split's full size for a reader that scores only a prefix of it (H4)."""
+
+def chunk_ids(dataset, split, n=None):
+    """The chunk numbers one dataset's split is cut into, zero-padded so they sort.
+
+    `n` overrides the split's size for a reader that scores only a prefix of it (H4)."""
     if n is None:
-        n = config["sample"]["test_n" if split == "test" else "pool_n"]
+        n = split_n(dataset, split)
     return [f"{k:02d}" for k in range((n + CHUNK - 1) // CHUNK)]
 
 
@@ -124,11 +140,12 @@ def score_cells(model=None):
     cells = []
     for name in ([model] if model else MODELS):
         for split in config["vlm"]["models"][name]["splits"]:
-            extra = ["zero_shot"] if name == PRIMARY and split == "test" else []
-            prompts = ["concept"] + extra
-            for prompt in prompts:
-                for dataset in DATASETS:
-                    for chunk in chunk_ids(split):
+            for dataset in DATASETS:
+                if dataset in MULTI_LABEL and name != PRIMARY:
+                    continue                    # no arm B, so the ladder has nothing to score
+                zero_shot = name == PRIMARY and split == "test" and dataset not in MULTI_LABEL
+                for prompt in ["concept"] + (["zero_shot"] if zero_shot else []):
+                    for chunk in chunk_ids(dataset, split):
                         cells.append(f"{OUT}/score/{dataset}__{name}__{split}__{prompt}"
                                      f"__chunk{chunk}.json")
     return cells
@@ -144,8 +161,10 @@ def reader_cells(reader=None):
     cells = []
     for name in ([reader] if reader else READERS):
         spec = config["vlm"]["readers"][name]
-        for chunk in chunk_ids("test", spec["subsample"]):
-            for dataset in DATASETS:
+        for dataset in DATASETS:
+            if dataset in MULTI_LABEL:
+                continue                        # the probe H4 reads is not defined over findings
+            for chunk in chunk_ids(dataset, "test", min(spec["subsample"], split_n(dataset, "test"))):
                 cells.append(f"{OUT}/score/{dataset}__{name}__test__concept__chunk{chunk}.json")
     return cells
 
@@ -267,7 +286,50 @@ rule smoke:
 # report can show what the seed drew against what it drew from. The images go to the cache on the
 # project filesystem, because a quarter of a gigabyte of pixels per dataset is an input to the
 # score and features stages rather than a result anything reads.
+#
+# Eight of the twelve release files were downloaded, checksummed and set aside before the workflow
+# existed; the four the talk version never needed (chestmnist, organcmnist, organsmnist,
+# tissuemnist) are fetched by the rule below from the same pinned record, in parallel byte ranges
+# because Zenodo serves about 105 KB/s per connection, resumable, and checked against the MD5 the
+# release description carries. A file already on disk is never fetched again.
 # =====================================================================================
+
+RAW_FILES = sorted(RELEASE[d]["file"] for d in DATASETS)
+
+
+def described(file):
+    """The release entry behind one file name."""
+    return next(RELEASE[d] for d in DATASETS if RELEASE[d]["file"] == file)
+
+
+def segments(file):
+    """Parallel byte ranges for one release file: one per fetch.segment_mb, at most
+    fetch.max_segments. chestmnist_224.npz (3.9 GB) is 15 ranges, so about 40 minutes at Zenodo's
+    per-connection rate where one stream would take ten hours."""
+    f = config["fetch"]
+    per_segment = int(f["segment_mb"]) * 2 ** 20
+    return max(1, min(int(f["max_segments"]), -(-described(file)["size_bytes"] // per_segment)))
+
+
+rule fetch:
+    """One release file from the pinned record, in parallel byte ranges, MD5-checked. Runs only
+    for a file that is not on disk. x4 from the talk version's storage root."""
+    output: f"{config['rawdir']}/{{file}}"
+    wildcard_constraints:
+        file="|".join(re.escape(f) for f in RAW_FILES),
+    params:
+        url=lambda w: f"{ZENODO}/files/{w.file}?download=1",
+        md5=lambda w: described(w.file)["md5_224"],
+        bytes=lambda w: described(w.file)["size_bytes"],
+        segments=lambda w: segments(w.file),
+    log: "logs/fetch/{file}.log"
+    benchmark: "benchmarks/fetch/{file}.tsv"
+    threads: RES["fetch"]["cpus"]
+    resources: **res("fetch"), zenodo=lambda w: segments(w.file)
+    shell:
+        "scripts/fetch_medmnist.sh {params.url} {params.md5} {params.bytes} {params.segments} "
+        "{output} " + config["storage_root"] + " > {log} 2>&1"
+
 
 rule sample_dataset:
     """One dataset's test sample and labelled pool, streamed out of its release file. x6."""
@@ -277,8 +339,8 @@ rule sample_dataset:
         smoke=SMOKE,
         code=CODE_SAMPLE,
     params:
-        test_n=config["sample"]["test_n"],
-        pool_n=config["sample"]["pool_n"],
+        test_n=lambda w: split_n(w.dataset, "test"),
+        pool_n=lambda w: split_n(w.dataset, "pool"),
         seed=config["sample"]["seed"],
     output:
         json=f"{OUT}/sample/{{dataset}}.json",
@@ -319,6 +381,7 @@ rule render_prompts:
     params:
         size=config["size"],
         anchors=config["vlm"]["prompt"]["anchors"],
+        gloss=lambda w: (config["vlm"]["prompt"].get("class_gloss") or {}).get(w.dataset),
     output: f"{OUT}/prompts/{{dataset}}.json"
     log: "logs/render_prompts/{dataset}.log"
     conda: "envs/priors.yml"
@@ -711,7 +774,7 @@ rule evaluate_across:
         per_dataset=EVALUATED,
         code=CODE_EVALUATE,
     params:
-        h3_min_wins=config["evaluate"]["h3_min_wins"],
+        alpha=config["evaluate"]["alpha"],
         datasets=",".join(DATASETS),
     output: EVALUATION
     log: "logs/evaluate_across.log"

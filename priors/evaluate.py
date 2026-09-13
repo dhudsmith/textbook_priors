@@ -17,6 +17,15 @@ import numpy as np
 from scipy import stats
 
 
+def positives(labels: np.ndarray, c: int) -> np.ndarray:
+    """Which images are positive for class `c`: the images labelled `c` for a single-label task, and
+    the images whose finding `c` is set for a multi-label one, where `labels` is (images, findings)
+    of 0/1. The one place the two label shapes meet, so the AUC below is the package's convention
+    for both: one-vs-rest per class, one-vs-rest per finding."""
+    labels = np.asarray(labels)
+    return labels[:, c] == 1 if labels.ndim == 2 else labels == c
+
+
 def rank_auc(labels: np.ndarray, scores: np.ndarray, n_classes: int) -> np.ndarray:
     """One-vs-rest AUC per class, from average ranks (the Mann-Whitney form).
 
@@ -27,7 +36,7 @@ def rank_auc(labels: np.ndarray, scores: np.ndarray, n_classes: int) -> np.ndarr
     ranks = stats.rankdata(scores, axis=0)
     out = np.full(n_classes, np.nan)
     for c in range(n_classes):
-        positive = labels == c
+        positive = positives(labels, c)
         n_pos = int(positive.sum())
         n_neg = len(labels) - n_pos
         if n_pos == 0 or n_neg == 0:
@@ -38,7 +47,9 @@ def rank_auc(labels: np.ndarray, scores: np.ndarray, n_classes: int) -> np.ndarr
 
 def reduce_auc(per_class: np.ndarray, task: str) -> float:
     """The package's convention: the positive column for a binary task, the unweighted mean of the
-    one-vs-rest columns otherwise. Unweighted, so a rare class counts as much as a common one."""
+    one-vs-rest columns otherwise - over classes for a multi-class or ordinal task, over the
+    fourteen findings for the multi-label one. Unweighted, so a rare class counts as much as a
+    common one."""
     if task == "binary-class":
         return float(per_class[-1])
     return float(np.nanmean(per_class))
@@ -67,7 +78,7 @@ def bootstrap_aucs(labels, arm_scores: dict, task: str, n_classes: int, n_boot: 
         idx = rng.integers(0, n, size=n)
         y = labels[idx]
         ranks = stats.rankdata(stacked[idx], axis=0)
-        masks = np.stack([(y == c).astype(float) for c in range(n_classes)])     # classes x images
+        masks = np.stack([positives(y, c).astype(float) for c in range(n_classes)])  # classes x images
         sums = masks @ ranks                                                     # classes x columns
         counts = masks.sum(axis=1)
         for a, _ in enumerate(keys):
@@ -181,11 +192,26 @@ def quantile_code(values, q: float, grid) -> str:
 def sign_test(wins: int, n: int) -> float:
     """One-sided exact binomial test that an arm wins more often than chance across datasets.
 
-    With six datasets this is coarse on purpose: 6 of 6 is p = 0.016 and 5 of 6 is p = 0.11, so a
-    hypothesis is supported only when it wins everywhere (WORKFLOW.md section 2). The per-dataset
-    differences with their intervals are what a reader should look at.
+    Coarse on purpose, and coarser the fewer the datasets: 6 of 6 is p = 0.016 and 5 of 6 is
+    p = 0.11, so over six datasets a hypothesis is supported only when it wins everywhere; over
+    twelve, 10 of 12 is p = 0.019 (WORKFLOW.md section 2). The per-dataset differences with their
+    intervals are what a reader should look at.
     """
     return float(stats.binomtest(wins, n, 0.5, alternative="greater").pvalue)
+
+
+def min_wins(n: int, alpha: float) -> int:
+    """The smallest number of wins out of `n` whose one-sided sign test has p < alpha.
+
+    The decision rules are stated as a level (config `evaluate.alpha`) rather than as counts, so the
+    same rule reads a hypothesis over however many datasets it covers: 6 of 6 at n = 6, 9 of 11 at
+    n = 11, 10 of 12 at n = 12. Returns n + 1 when no count reaches the level, which no n >= 5 does at
+    alpha = 0.05.
+    """
+    for k in range(n + 1):
+        if sign_test(k, n) < alpha:
+            return k
+    return n + 1
 
 
 def friedman(table: np.ndarray) -> dict:

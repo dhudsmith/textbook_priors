@@ -54,9 +54,15 @@ def sample(dataset: str, out: str, arrays: str) -> None:
     described = release.dataset(dataset)
     path = Path(CONFIG["rawdir"]) / described["file"]
 
-    with Run("sample", dict(dataset=dataset, **spec), seeds=[spec["seed"]]) as run:
-        drawn = {"test": sampling.draw(path, "test", spec["test_n"], spec["seed"]),
-                 "pool": sampling.draw(path, "train", spec["pool_n"], spec["seed"])}
+    # Capped at the official split (WORKFLOW.md section 4): a dataset with fewer images than the
+    # sample takes the whole split, and the manifest records what was actually drawn.
+    test_n = release.split_size(dataset, "test", spec["test_n"])
+    pool_n = release.split_size(dataset, "train", spec["pool_n"])
+
+    with Run("sample", dict(dataset=dataset, **spec, drawn_test_n=test_n, drawn_pool_n=pool_n),
+             seeds=[spec["seed"]]) as run:
+        drawn = {"test": sampling.draw(path, "test", test_n, spec["seed"]),
+                 "pool": sampling.draw(path, "train", pool_n, spec["seed"])}
 
         Path(arrays).parent.mkdir(parents=True, exist_ok=True)
         np.savez(arrays, **{f"{split}_{key}": drawn[split][key]
@@ -81,17 +87,23 @@ def render_prompts(dataset: str, out: str) -> None:
     """Turn one dataset's concept bank and label map into both prompt strings.
 
     No LLM call, no image, no randomness: the output is a deterministic function of the two fixed
-    inputs and three config values, and it carries the hash of each input and of each rendered
-    prompt so that a score archive can be traced to the exact strings that produced it."""
+    inputs and a few config values, and it carries the hash of each input and of each rendered
+    prompt so that a score archive can be traced to the exact strings that produced it. A dataset
+    whose class names are not clinical terms gets a gloss beside each in the zero-shot listing
+    (config `vlm.prompt.class_gloss`); the multi-label task gets no zero-shot prompt at all."""
     from . import prompts
     size, anchors = CONFIG["size"], CONFIG["vlm"]["prompt"]["anchors"]
+    gloss = (CONFIG["vlm"]["prompt"].get("class_gloss") or {}).get(dataset)
     bank = data.load_bank(dataset, CONFIG["conceptdir"])
     release = data.load_release(CONFIG["release"])
     classes = release.class_names(dataset)
+    multi_label = release.multi_label(dataset)
     data.check_classes(bank, classes)
 
-    with Run("render_prompts", dict(dataset=dataset, size=size, anchors=anchors)) as run:
-        payload = prompts.render(bank, classes, size=size, anchors=anchors)
+    with Run("render_prompts", dict(dataset=dataset, size=size, anchors=anchors, gloss=gloss,
+                                    multi_label=multi_label)) as run:
+        payload = prompts.render(bank, classes, size=size, anchors=anchors, gloss=gloss,
+                                 multi_label=multi_label)
         run.write(
             out,
             dict(
@@ -118,6 +130,13 @@ def render_prompts_txt(dataset: str, out: str) -> None:
     Path(out).write_text(prompts.render_txt(dataset, rendered))
 
 
+def _label(value) -> int | list[int]:
+    """A label as the archive records it: one integer for a single-label task, the 0/1 vector over
+    findings for the multi-label one. The shape is the task (priors/sample.py), not a guess."""
+    flat = np.asarray(value).reshape(-1)
+    return [int(v) for v in flat] if flat.size > 1 else int(flat[0])
+
+
 def probe(dataset: str, model: str, out: str) -> None:
     """Ten images of one dataset through one model, on a compute node, outside `rule all`.
 
@@ -136,6 +155,8 @@ def probe(dataset: str, model: str, out: str) -> None:
     vlm = CONFIG["vlm"]
     spec = vlm["probe"]
     rendered = json.loads(Path(f"{CONFIG['outdir']}/prompts/{dataset}.json").read_text())
+    if rendered["prompts"]["zero_shot"] is None:
+        raise ValueError(f"{dataset} is a multi-label task and has no zero-shot prompt to probe")
     arrays = np.load(f"{CONFIG['cachedir']}/{dataset}.npz")
     images = arrays["test_images"][: spec["n"]]
 
@@ -156,7 +177,7 @@ def probe(dataset: str, model: str, out: str) -> None:
             records.append({
                 "position": position,
                 "index": int(arrays["test_indices"][position]),
-                "label": int(arrays["test_labels"][position]),
+                "label": _label(arrays["test_labels"][position]),
                 "concept": score.ask_one(client, rendered["prompts"]["concept"], url, "concept",
                                          rendered["concepts"], vlm["max_tokens"], vlm["retries"]),
                 "zero_shot": score.ask_one(client, rendered["prompts"]["zero_shot"], url,
@@ -247,6 +268,8 @@ def score_chunk(dataset: str, model: str, split: str, prompt: str, chunk: int, o
     # again. `min` because a subsample longer than the split would silently score fewer.
     scored = min(reader["subsample"], len(images)) if reader else len(images)
 
+    if rendered["prompts"][prompt] is None:
+        raise ValueError(f"{dataset} has no {prompt} prompt: it is a multi-label task (arms C and P only)")
     spans = score.chunks(scored, vlm["chunk"])
     if not 0 <= chunk < len(spans):
         raise ValueError(f"chunk {chunk} of {len(spans)} for {dataset}/{split}")
@@ -272,7 +295,7 @@ def score_chunk(dataset: str, model: str, split: str, prompt: str, chunk: int, o
                                    score.png_data_url(images[position]), prompt, schema,
                                    budget, vlm["retries"])
             records.append({"position": int(position), "index": int(indices[position]),
-                            "label": int(labels[position]), **answer})
+                            "label": _label(labels[position]), **answer})
 
         latencies = sorted(reply["elapsed_s"] for r in records for reply in r["replies"])
         run.write(out, dict(
@@ -378,13 +401,16 @@ def classify(dataset: str, out: str, arrays: str) -> None:
     AUCs, because the paired bootstrap has to resample the test images once for every arm at the
     same time. The scores ride in an .npz beside the JSON, which is small enough to be a result.
 
-    Five arms: A zero-shot, B nearest fingerprint, C the concept probe, P the pixel probe, and the
-    post-hoc D, which is arm A's question asked with the whole bank in the prompt. D decides no
-    hypothesis; it is here so that it is bootstrapped against the others rather than beside them.
+    Four arms: A zero-shot, B nearest fingerprint, C the concept probe, P the pixel probe, plus H4's
+    cross-validated probe for every reader. The multi-label task (chestmnist) gets arms C and P
+    alone: a nearest fingerprint and a distribution over class names are not defined over fourteen
+    co-occurring findings (WORKFLOW.md section 3), so it skips A, B and H4 and its regressions are
+    fitted one finding at a time.
     """
     from . import classify as arms
-    spec, sample_spec = CONFIG["classify"], CONFIG["sample"]
-    curve = CONFIG["curve"]
+    spec, curve = CONFIG["classify"], CONFIG["curve"]
+    release = data.load_release(CONFIG["release"])
+    multi_label = release.multi_label(dataset)
     rendered = json.loads(Path(f"{CONFIG['outdir']}/prompts/{dataset}.json").read_text())
     gathered = json.loads(Path(f"{CONFIG['outdir']}/scores/{dataset}.json").read_text())
     bank = data.load_bank(dataset, CONFIG["conceptdir"])
@@ -392,9 +418,15 @@ def classify(dataset: str, out: str, arrays: str) -> None:
     primary = CONFIG["vlm"]["primary"]
 
     sample_arrays = np.load(f"{CONFIG['cachedir']}/{dataset}.npz")
-    y_test = np.asarray(sample_arrays["test_labels"]).reshape(-1).astype(int)
-    y_pool = np.asarray(sample_arrays["pool_labels"]).reshape(-1).astype(int)
+    y_test = np.asarray(sample_arrays["test_labels"]).astype(int)
+    y_pool = np.asarray(sample_arrays["pool_labels"]).astype(int)
+    if not multi_label:
+        y_test, y_pool = y_test.reshape(-1), y_pool.reshape(-1)
     pixel_arrays = np.load(f"{CONFIG['featuredir']}/{dataset}.npz")
+    # The curve points this dataset's pool can reach (WORKFLOW.md section 4): breastmnist's 546
+    # images stop at 500 and retinamnist's 1080 at 1000; a point the pool cannot fill is dropped,
+    # not repeated, and the evaluate stage reads this list rather than config's.
+    curve_n = [n for n in curve["n"] if n <= len(y_pool)]
 
     def cell(model, split, prompt):
         key = f"{model}__{split}__{prompt}"
@@ -402,70 +434,73 @@ def classify(dataset: str, out: str, arrays: str) -> None:
             raise KeyError(f"{dataset}: {key} is not in the gathered scores")
         return gathered["cells"][key]["rows"]
 
-    out_arrays, index = {}, []
-    fingerprints = arms.fingerprint_matrix(classes, bank.classes, concepts)
+    out_arrays, index, fits = {}, [], []
+    b_complete, reader_report, sub = {}, {}, None
 
-    with Run("classify", dict(dataset=dataset, **spec, curve_n=curve["n"], seeds=curve["seeds"],
-                              primary=primary), seeds=curve["seeds"]) as run:
-        # ---- arm A: the zero-shot distribution, read straight out of the archive ----------------
-        zero_shot = cell(primary, "test", "zero_shot")
-        a_scores = np.array([[row["scores"].get(name) if row["scores"].get(name) is not None else 0.0
-                              for name in classes] for row in zero_shot])
-        out_arrays["A"] = a_scores
-        index.append({"arm": "A", "key": "A", "model": primary, "labels": "none"})
+    with Run("classify", dict(dataset=dataset, **spec, curve_n=curve_n, seeds=curve["seeds"],
+                              primary=primary, multi_label=multi_label), seeds=curve["seeds"]) as run:
+        if not multi_label:
+            fingerprints = arms.fingerprint_matrix(classes, bank.classes, concepts)
+            # ---- arm A: the zero-shot distribution, read straight out of the archive ------------
+            zero_shot = cell(primary, "test", "zero_shot")
+            a_scores = np.array([[row["scores"].get(name) if row["scores"].get(name) is not None else 0.0
+                                  for name in classes] for row in zero_shot])
+            out_arrays["A"] = a_scores
+            index.append({"arm": "A", "key": "A", "model": primary, "labels": "none"})
 
-        # ---- arm B: nearest fingerprint, for every model, plus the permutation control ----------
-        b_complete = {}
-        for model in CONFIG["vlm"]["models"]:
-            test_concepts = arms.concept_matrix(cell(model, "test", "concept"), concepts)
-            b_complete[model] = float(np.mean(~np.isnan(test_concepts).any(axis=1)))
-            out_arrays[f"B__{model}"] = arms.arm_b_scores(test_concepts, fingerprints)
-            index.append({"arm": "B", "key": f"B__{model}", "model": model, "labels": "none"})
-            for seed in spec["permute"]["seeds"]:
-                out_arrays[f"Bperm__{model}__seed{seed}"] = arms.arm_b_scores(
-                    test_concepts, arms.permute_fingerprints(fingerprints, seed))
-                index.append({"arm": "B_permuted", "key": f"Bperm__{model}__seed{seed}",
-                              "model": model, "labels": "none", "permute_seed": seed})
+            # ---- arm B: nearest fingerprint, for every model, plus the permutation control ------
+            for model in CONFIG["vlm"]["models"]:
+                test_concepts = arms.concept_matrix(cell(model, "test", "concept"), concepts)
+                b_complete[model] = float(np.mean(~np.isnan(test_concepts).any(axis=1)))
+                out_arrays[f"B__{model}"] = arms.arm_b_scores(test_concepts, fingerprints)
+                index.append({"arm": "B", "key": f"B__{model}", "model": model, "labels": "none"})
+                for seed in spec["permute"]["seeds"]:
+                    out_arrays[f"Bperm__{model}__seed{seed}"] = arms.arm_b_scores(
+                        test_concepts, arms.permute_fingerprints(fingerprints, seed))
+                    index.append({"arm": "B_permuted", "key": f"Bperm__{model}__seed{seed}",
+                                  "model": model, "labels": "none", "permute_seed": seed})
 
-        # ---- H4: every reader's concept answers, read by a cross-validated probe ----------------
-        # A reader is a model plus an effort. The four models above are readers at effort `none`
-        # and are subset to the same prefix the new readers were scored on, so they join H4 for
-        # nothing. The probe needs no labelled pool, which is the only reason six readers can be
-        # compared at all (WORKFLOW.md section 2); what it measures is how much class information
-        # the answers carry, not a point on any learning curve.
-        h4 = CONFIG["h4"]
-        sub = int(h4["subsample"])
-        probe_spec = spec["probe"]
-        y_sub = y_test[:sub]
-        readers = list(CONFIG["vlm"]["models"]) + list(CONFIG["vlm"].get("readers", {}))
-        reader_report = {}
-        for reader in readers:
-            rows = cell(reader, "test", "concept")[:sub]
-            if len(rows) < sub:
-                raise ValueError(f"{dataset}: {reader} has {len(rows)} rows, H4 needs {sub}")
-            raw = arms.concept_matrix(rows, concepts)
-            # Imputed on this reader's own medians over its own images: the pool's medians belong to
-            # one model at one effort, and using them here would push every reader toward the
-            # baseline's habits on exactly the answers H4 is comparing.
-            filled, _ = arms.impute(raw, arms.pool_medians(raw))
-            missing = np.isnan(raw)
-            columns = missing.any(axis=0)
-            x = np.hstack([filled, missing[:, columns].astype(float)])
-            got = arms.cv_probe(x, y_sub, len(classes), spec["l2_grid"],
-                                probe_spec["folds"], probe_spec["seed"])
-            out_arrays[f"CV__{reader}"] = got["scores"]
-            index.append({"arm": "CV", "key": f"CV__{reader}", "model": reader, "labels": "cv",
-                          "images": sub, "folds": got["folds"]})
-            reader_report[reader] = {
-                "complete_frac": float(np.mean(~np.isnan(raw).any(axis=1))),
-                "answered_frac": float(np.mean(~np.isnan(raw))),
-                "folds": got["folds"], "thin_classes": got["thin_classes"],
-                "missing_indicator_columns": int(columns.sum()),
-            }
+            # ---- H4: every reader's concept answers, read by a cross-validated probe ------------
+            # A reader is a model plus an effort. The four models above are readers at effort
+            # `none` and are subset to the same prefix the new readers were scored on, so they join
+            # H4 for nothing. The probe needs no labelled pool, which is the only reason six readers
+            # can be compared at all (WORKFLOW.md section 2); what it measures is how much class
+            # information the answers carry, not a point on any learning curve. The prefix is
+            # capped at the test sample where that is shorter (breastmnist: 156).
+            h4 = CONFIG["h4"]
+            sub = min(int(h4["subsample"]), len(y_test))
+            probe_spec = spec["probe"]
+            y_sub = y_test[:sub]
+            readers = list(CONFIG["vlm"]["models"]) + list(CONFIG["vlm"].get("readers", {}))
+            for reader in readers:
+                rows = cell(reader, "test", "concept")[:sub]
+                if len(rows) < sub:
+                    raise ValueError(f"{dataset}: {reader} has {len(rows)} rows, H4 needs {sub}")
+                raw = arms.concept_matrix(rows, concepts)
+                # Imputed on this reader's own medians over its own images: the pool's medians
+                # belong to one model at one effort, and using them here would push every reader
+                # toward the baseline's habits on exactly the answers H4 is comparing.
+                filled, _ = arms.impute(raw, arms.pool_medians(raw))
+                missing = np.isnan(raw)
+                columns = missing.any(axis=0)
+                x = np.hstack([filled, missing[:, columns].astype(float)])
+                got = arms.cv_probe(x, y_sub, len(classes), spec["l2_grid"],
+                                    probe_spec["folds"], probe_spec["seed"])
+                out_arrays[f"CV__{reader}"] = got["scores"]
+                index.append({"arm": "CV", "key": f"CV__{reader}", "model": reader, "labels": "cv",
+                              "images": sub, "folds": got["folds"]})
+                reader_report[reader] = {
+                    "complete_frac": float(np.mean(~np.isnan(raw).any(axis=1))),
+                    "answered_frac": float(np.mean(~np.isnan(raw))),
+                    "folds": got["folds"], "thin_classes": got["thin_classes"],
+                    "missing_indicator_columns": int(columns.sum()),
+                }
 
-        # ---- arms C and P: the curve, at every n and every seed ---------------------------------
+        # ---- arms C and P: the curve, at every n and every seed -------------------------------
         pool_concepts = arms.concept_matrix(cell(primary, "pool", "concept"), concepts)
         test_concepts = arms.concept_matrix(cell(primary, "test", "concept"), concepts)
+        if multi_label:
+            b_complete[primary] = float(np.mean(~np.isnan(test_concepts).any(axis=1)))
         medians = arms.pool_medians(pool_concepts)
         pool_c, pool_flags = arms.impute(pool_concepts, medians)
         test_c, test_flags = arms.impute(test_concepts, medians)
@@ -474,14 +509,18 @@ def classify(dataset: str, out: str, arrays: str) -> None:
         x_pool_c = np.hstack([pool_c, np.isnan(pool_concepts)[:, keep].astype(float)])
         x_test_c = np.hstack([test_c, np.isnan(test_concepts)[:, keep].astype(float)])
         x_pool_p, x_test_p = pixel_arrays["pool_features"], pixel_arrays["test_features"]
+        # Subsets are stratified on the class, or for the multi-label task on any-finding against
+        # no-finding (classify.strata); the regression itself sees the full label.
+        pool_strata = arms.strata(y_pool)
+        n_strata = 2 if multi_label else len(classes)
 
-        fits = []
         for seed in curve["seeds"]:
-            subsets = arms.nested_subsets(y_pool, curve["n"], len(classes), seed)
+            subsets = arms.nested_subsets(pool_strata, curve_n, n_strata, seed)
             for n, idx in subsets.items():
                 for arm, x_pool, x_test in (("C", x_pool_c, x_test_c), ("P", x_pool_p, x_test_p)):
                     got = arms.fit_predict(x_pool[idx], y_pool[idx], x_test, len(classes),
-                                           spec["l2_grid"], spec["cv_folds"], seed)
+                                           spec["l2_grid"], spec["cv_folds"], seed,
+                                           multi_label=multi_label)
                     key = f"{arm}__n{n}__seed{seed}"
                     out_arrays[key] = got["scores"]
                     index.append({"arm": arm, "key": key, "model": primary if arm == "C" else None,
@@ -490,13 +529,14 @@ def classify(dataset: str, out: str, arrays: str) -> None:
                     fits.append({"key": key, "C": got["C"], "folds": got["folds"],
                                  "classes_present": len(got["classes"])})
 
-        # ---- arm C's control: the concept columns shuffled across images ------------------------
+        # ---- arm C's control: the concept columns shuffled across images ----------------------
         for seed in spec["permute"]["seeds"]:
             shuffled = arms.permute_columns(x_pool_c, seed)
-            subsets = arms.nested_subsets(y_pool, curve["n"], len(classes), curve["seeds"][0])
+            subsets = arms.nested_subsets(pool_strata, curve_n, n_strata, curve["seeds"][0])
             for n, idx in subsets.items():
                 got = arms.fit_predict(shuffled[idx], y_pool[idx], x_test_c, len(classes),
-                                       spec["l2_grid"], spec["cv_folds"], curve["seeds"][0])
+                                       spec["l2_grid"], spec["cv_folds"], curve["seeds"][0],
+                                       multi_label=multi_label)
                 key = f"Cperm__n{n}__seed{seed}"
                 out_arrays[key] = got["scores"]
                 index.append({"arm": "C_permuted", "key": key, "model": primary,
@@ -506,11 +546,12 @@ def classify(dataset: str, out: str, arrays: str) -> None:
         np.savez(arrays, labels=y_test, **out_arrays)
         run.write(out, dict(
             dataset=dataset, classes=classes, n_classes=len(classes),
-            h4={"subsample": sub, "readers": reader_report},
+            multi_label=multi_label, curve_n=curve_n,
+            h4=None if multi_label else {"subsample": sub, "readers": reader_report},
             arrays={"file": arrays, "keys": sorted(out_arrays)},
             index=index,
             fits=fits,
-            complete_frac={model: b_complete[model] for model in b_complete},
+            complete_frac=b_complete,
             incomplete_over_cap={key: cellspec["over_missing_cap"]
                                  for key, cellspec in gathered["cells"].items()},
             missing_indicator_columns=int(keep.sum()),
@@ -521,10 +562,15 @@ def classify(dataset: str, out: str, arrays: str) -> None:
 def evaluate(dataset: str, out: str) -> None:
     """Every arm's AUC on one dataset, with paired intervals on the differences, and n_B.
 
-    One bootstrap, shared: each replicate resamples the 500 test images once and every arm is
+    One bootstrap, shared: each replicate resamples the test images once and every arm is
     recomputed on that same resample, so a difference between two arms is a difference of two
     columns of the same matrix and its interval is a percentile of that. The absolute AUCs carry
     the thin-class caveat of WORKFLOW.md section 3; the differences are what the hypotheses read.
+
+    The multi-label task has arms C and P alone, so it gets the curve, its permutation control and
+    the C-against-P differences, and neither n_B (there is no arm B to reach) nor the reader chain.
+    Its AUC is the package's convention for the task: the mean over findings of each finding's
+    one-vs-rest AUC.
     """
     from . import evaluate as metrics
     spec, curve = CONFIG["evaluate"], CONFIG["curve"]
@@ -534,6 +580,8 @@ def evaluate(dataset: str, out: str) -> None:
     arrays = np.load(f"{CONFIG['outdir']}/classify/{dataset}.npz")
     labels = arrays["labels"].astype(int)
     n_classes = summary["n_classes"]
+    multi_label = bool(summary.get("multi_label", False))
+    curve_n = list(summary.get("curve_n", curve["n"]))
     primary = CONFIG["vlm"]["primary"]
 
     # H4's arrays cover a prefix of the test sample, not all of it, so they cannot ride in the same
@@ -543,7 +591,7 @@ def evaluate(dataset: str, out: str) -> None:
                   if k != "labels" and not k.startswith("CV__")}
     cv_scores = {k[4:]: arrays[k] for k in arrays.files if k.startswith("CV__")}
     with Run("evaluate", dict(dataset=dataset, task=task, bootstrap=spec["bootstrap"],
-                              ci=spec["ci"]), seeds=[spec.get("seed", 0)]) as run:
+                              ci=spec["ci"], multi_label=multi_label), seeds=[spec.get("seed", 0)]) as run:
         point = {k: metrics.auc(labels, v, task, n_classes) for k, v in arm_scores.items()}
         keys, replicates = metrics.bootstrap_aucs(labels, arm_scores, task, n_classes,
                                                   spec["bootstrap"], spec.get("seed", 0))
@@ -556,32 +604,77 @@ def evaluate(dataset: str, out: str) -> None:
         # ---- the curve, and the differences H1 turns on ----------------------------------------
         curve_points = {}
         for arm in ("C", "P"):
-            for n in curve["n"]:
+            for n in curve_n:
                 draws = mean_over_seeds(arm, n)
                 curve_points[f"{arm}__n{n}"] = {
                     "point": float(np.mean([point[f"{arm}__n{n}__seed{s}"] for s in curve["seeds"]])),
                     **metrics.interval(draws, spec["ci"])}
 
         differences = {}
-        for n in curve["n"]:
+        for n in curve_n:
             differences[f"C_minus_P__n{n}"] = metrics.interval(
                 mean_over_seeds("C", n) - mean_over_seeds("P", n), spec["ci"])
-        b_primary = replicates[:, column[f"B__{primary}"]]
-        differences["B_minus_A"] = metrics.interval(b_primary - replicates[:, column["A"]], spec["ci"])
-        for n in curve["n"]:
-            differences[f"C_minus_B__n{n}"] = metrics.interval(
-                mean_over_seeds("C", n) - b_primary, spec["ci"])
-
-        # ---- the permutation controls: how much each arm loses when its structure is destroyed --
         controls = {}
-        for model in CONFIG["vlm"]["models"]:
-            drops = np.mean([replicates[:, column[f"Bperm__{model}__seed{s}"]]
-                             for s in CONFIG["classify"]["permute"]["seeds"]], axis=0)
-            controls[f"B__{model}"] = {
-                "permuted": float(np.mean([point[f"Bperm__{model}__seed{s}"]
-                                           for s in CONFIG["classify"]["permute"]["seeds"]])),
-                "drop": metrics.interval(replicates[:, column[f"B__{model}"]] - drops, spec["ci"])}
-        for n in curve["n"]:
+        n_b, h4, arm_b_by_model = None, None, None
+
+        if not multi_label:
+            b_primary = replicates[:, column[f"B__{primary}"]]
+            differences["B_minus_A"] = metrics.interval(b_primary - replicates[:, column["A"]], spec["ci"])
+            for n in curve_n:
+                differences[f"C_minus_B__n{n}"] = metrics.interval(
+                    mean_over_seeds("C", n) - b_primary, spec["ci"])
+
+            # ---- arm B's control: how much it loses when its structure is destroyed ------------
+            for model in CONFIG["vlm"]["models"]:
+                drops = np.mean([replicates[:, column[f"Bperm__{model}__seed{s}"]]
+                                 for s in CONFIG["classify"]["permute"]["seeds"]], axis=0)
+                controls[f"B__{model}"] = {
+                    "permuted": float(np.mean([point[f"Bperm__{model}__seed{s}"]
+                                               for s in CONFIG["classify"]["permute"]["seeds"]])),
+                    "drop": metrics.interval(replicates[:, column[f"B__{model}"]] - drops, spec["ci"])}
+
+            # ---- n_B: how many labelled images the pixel probe needs to reach the textbook -----
+            point_curve = {n: curve_points[f"P__n{n}"]["point"] for n in curve_n}
+            n_b_point = metrics.crossing(point_curve, point[f"B__{primary}"], curve_n)
+            draws = []
+            for b in range(replicates.shape[0]):
+                draws.append(metrics.crossing({n: float(np.mean([replicates[b, column[f"P__n{n}__seed{s}"]]
+                                                                 for s in curve["seeds"]]))
+                                               for n in curve_n}, b_primary[b], curve_n))
+            draws = np.array(draws, dtype=float)
+            half = (1 - spec["ci"]) / 2
+            n_b = {
+                "point": metrics.code_crossing(n_b_point, curve_n),
+                "median": metrics.quantile_code(draws, 0.5, curve_n),
+                "lo": metrics.quantile_code(draws, half, curve_n),
+                "hi": metrics.quantile_code(draws, 1 - half, curve_n),
+                "already_above_frac": float(np.mean(draws == -np.inf)),
+                "never_reaches_frac": float(np.mean(draws == np.inf)),
+            }
+            arm_b_by_model = {m: point[f"B__{m}"] for m in CONFIG["vlm"]["models"]}
+
+            # ---- H4: the reader chain, on the prefix every reader shares ----------------------
+            # Its own bootstrap, over the same images for every reader, so `thinking - baseline`
+            # and `frontier - thinking` are differences of two columns of one matrix exactly as
+            # every other paired difference in this study is. The decision rule is in config and
+            # was fixed before the first of these calls was bought (WORKFLOW.md section 2).
+            h4_spec = CONFIG["h4"]
+            sub = min(int(h4_spec["subsample"]), len(labels))
+            y_sub = labels[:sub]
+            cv_point = {k: metrics.auc(y_sub, v, task, n_classes) for k, v in cv_scores.items()}
+            cv_keys, cv_reps = metrics.bootstrap_aucs(y_sub, cv_scores, task, n_classes,
+                                                      spec["bootstrap"], spec.get("seed", 0))
+            cv_column = {k: i for i, k in enumerate(cv_keys)}
+            steps = {}
+            for name, (lo, hi) in {"thinking_minus_baseline": (h4_spec["baseline"], h4_spec["thinking"]),
+                                   "frontier_minus_thinking": (h4_spec["thinking"], h4_spec["frontier"])}.items():
+                steps[name] = {"from": lo, "to": hi,
+                               **metrics.interval(cv_reps[:, cv_column[hi]] - cv_reps[:, cv_column[lo]],
+                                                  spec["ci"])}
+            h4 = {"subsample": sub, "probe_auc": cv_point, "steps": steps}
+
+        # ---- arm C's control, for every task -------------------------------------------------
+        for n in curve_n:
             permuted = np.mean([replicates[:, column[f"Cperm__n{n}__seed{s}"]]
                                 for s in CONFIG["classify"]["permute"]["seeds"]], axis=0)
             controls[f"C__n{n}"] = {
@@ -589,53 +682,15 @@ def evaluate(dataset: str, out: str) -> None:
                                            for s in CONFIG["classify"]["permute"]["seeds"]])),
                 "drop": metrics.interval(mean_over_seeds("C", n) - permuted, spec["ci"])}
 
-        # ---- n_B: how many labelled images the pixel probe needs to reach the textbook ---------
-        point_curve = {n: curve_points[f"P__n{n}"]["point"] for n in curve["n"]}
-        n_b_point = metrics.crossing(point_curve, point[f"B__{primary}"], curve["n"])
-        draws = []
-        for b in range(replicates.shape[0]):
-            draws.append(metrics.crossing({n: float(np.mean([replicates[b, column[f"P__n{n}__seed{s}"]]
-                                                             for s in curve["seeds"]]))
-                                           for n in curve["n"]}, b_primary[b], curve["n"]))
-        draws = np.array(draws, dtype=float)
-        half = (1 - spec["ci"]) / 2
-        n_b = {
-            "point": metrics.code_crossing(n_b_point, curve["n"]),
-            "median": metrics.quantile_code(draws, 0.5, curve["n"]),
-            "lo": metrics.quantile_code(draws, half, curve["n"]),
-            "hi": metrics.quantile_code(draws, 1 - half, curve["n"]),
-            "already_above_frac": float(np.mean(draws == -np.inf)),
-            "never_reaches_frac": float(np.mean(draws == np.inf)),
-        }
-
-        # ---- H4: the reader chain, on the prefix every reader shares --------------------------
-        # Its own bootstrap, over the same 200 images for every reader, so `thinking - baseline`
-        # and `frontier - thinking` are differences of two columns of one matrix exactly as every
-        # other paired difference in this study is. The decision rule is in config and was fixed
-        # before the first of these calls was bought (WORKFLOW.md section 2).
-        h4_spec = CONFIG["h4"]
-        sub = int(h4_spec["subsample"])
-        y_sub = labels[:sub]
-        cv_point = {k: metrics.auc(y_sub, v, task, n_classes) for k, v in cv_scores.items()}
-        cv_keys, cv_reps = metrics.bootstrap_aucs(y_sub, cv_scores, task, n_classes,
-                                                  spec["bootstrap"], spec.get("seed", 0))
-        cv_column = {k: i for i, k in enumerate(cv_keys)}
-        steps = {}
-        for name, (lo, hi) in {"thinking_minus_baseline": (h4_spec["baseline"], h4_spec["thinking"]),
-                               "frontier_minus_thinking": (h4_spec["thinking"], h4_spec["frontier"])}.items():
-            steps[name] = {"from": lo, "to": hi,
-                           **metrics.interval(cv_reps[:, cv_column[hi]] - cv_reps[:, cv_column[lo]],
-                                              spec["ci"])}
-        h4 = {"subsample": sub, "probe_auc": cv_point, "steps": steps}
-
         run.write(out, dict(
             dataset=dataset, task=task, n_classes=n_classes, classes=summary["classes"],
+            multi_label=multi_label, curve_n=curve_n,
             auc={k: point[k] for k in sorted(point)},
             curve=curve_points,
             differences=differences,
             controls=controls,
             n_b=n_b,
-            arm_b_by_model={m: point[f"B__{m}"] for m in CONFIG["vlm"]["models"]},
+            arm_b_by_model=arm_b_by_model,
             h4=h4,
             complete_frac=summary["complete_frac"],
             incomplete_over_cap=summary["incomplete_over_cap"],
@@ -647,25 +702,30 @@ def evaluate_across(out: str) -> None:
     """The across-dataset tests: H1, H2, H3 and H4 as WORKFLOW.md section 2 states their rules.
 
     Sign tests rather than pooled AUCs, because an AUC on pathmnist and an AUC on octmnist are not
-    commensurable quantities to average. With six datasets the test is coarse - 6 of 6 is p = 0.016
-    and 5 of 6 is p = 0.11 - so a hypothesis is supported only when it wins everywhere, and the
-    per-dataset differences are what carries the reading.
+    commensurable quantities to average. Every rule is held to one level, `evaluate.alpha`: an arm
+    must win on the smallest count of datasets whose one-sided sign test has p < alpha, which is
+    6 of 6, 9 of 11 and 10 of 12. The per-dataset differences are what carries the reading.
 
-    H4 is a hypothesis and not an extension, which is the one thing about it worth stating here.
-    Its decision rule was written into config and WORKFLOW.md before any call of its readers was
-    bought, which is what arm D could not say for itself and why arm D is gone.
+    H1 counts every dataset; H2, H3 and H4 count the datasets that have an arm B, which excludes
+    the multi-label task, and n_B's median is taken over those. H4 is a hypothesis and not an
+    extension: its decision rule was written into config and WORKFLOW.md before any call of its
+    readers was bought, which is what arm D could not say for itself and why arm D is gone.
     """
     from . import evaluate as metrics
     spec, curve = CONFIG["evaluate"], CONFIG["curve"]
     datasets = CONFIG["datasets"]
     models = CONFIG["vlm"]["models"]
+    alpha = spec["alpha"]
     per = {d: json.loads(Path(f"{CONFIG['outdir']}/evaluate/{d}.json").read_text()) for d in datasets}
+    arm_b = [d for d in datasets if not per[d].get("multi_label", False)]
+    need_all, need_b = metrics.min_wins(len(datasets), alpha), metrics.min_wins(len(arm_b), alpha)
 
-    with Run("evaluate_across", dict(datasets=datasets, min_n_b=100, h3_min_wins=spec["h3_min_wins"])) as run:
+    with Run("evaluate_across", dict(datasets=datasets, min_n_b=100, alpha=alpha,
+                                     min_wins_all=need_all, min_wins_arm_b=need_b)) as run:
         smallest = min(curve["n"])
         # H1: the textbook is worth a measurable number of labelled images.
         c_beats_p = {d: per[d]["differences"][f"C_minus_P__n{smallest}"]["median"] > 0 for d in datasets}
-        n_b_values = {d: per[d]["n_b"]["point"] for d in datasets}
+        n_b_values = {d: per[d]["n_b"]["point"] for d in arm_b}
         numeric = [float(v) for v in n_b_values.values() if v.isdigit()]
         never = sum(1 for v in n_b_values.values() if v.startswith(">"))
         already = sum(1 for v in n_b_values.values() if v.startswith("<="))
@@ -673,8 +733,9 @@ def evaluate_across(out: str) -> None:
         # "median n_B at least 100" has to be read on the ordinal scale, because n_B is ordinal and
         # its values include `<=50` and `>2000`. A median over the numeric ones alone would drop
         # exactly the datasets that carry the most information: a `>2000` is the strongest possible
-        # evidence for H1 and a `<=50` the strongest against, and discarding both would let three
-        # datasets decide a six-dataset rule. Ranks keep them in, in the right order.
+        # evidence for H1 and a `<=50` the strongest against, and discarding both would let a few
+        # datasets decide the rule. Ranks keep them in, in the right order. A dataset whose pool
+        # stops short of 2000 has a shorter grid, and its `>last` still ranks above every number.
         ranks = [metrics.rank_of(-np.inf if v.startswith("<=") else np.inf if v.startswith(">")
                                  else float(v), curve["n"]) for v in n_b_values.values()]
         median_rank = float(np.median(ranks))
@@ -689,21 +750,23 @@ def evaluate_across(out: str) -> None:
             "c_beats_p_at_smallest_n": c_beats_p,
             "c_beats_p_wins": sum(c_beats_p.values()),
             "c_beats_p_sign_test_p": metrics.sign_test(sum(c_beats_p.values()), len(datasets)),
-            "supported": bool(sum(c_beats_p.values()) == len(datasets)
+            "min_wins": need_all, "n_datasets": len(datasets),
+            "supported": bool(sum(c_beats_p.values()) >= need_all
                               and median_rank >= threshold_rank),
         }
 
         # H2: the bank, not just the model.
-        b_beats_a = {d: per[d]["differences"]["B_minus_A"]["median"] > 0 for d in datasets}
+        b_beats_a = {d: per[d]["differences"]["B_minus_A"]["median"] > 0 for d in arm_b}
         b_drops = {d: per[d]["controls"][f"B__{CONFIG['vlm']['primary']}"]["drop"]["median"] > 0
-                   for d in datasets}
-        c_drops = {d: per[d]["controls"][f"C__n{max(curve['n'])}"]["drop"]["median"] > 0
+                   for d in arm_b}
+        c_drops = {d: per[d]["controls"][f"C__n{max(per[d]['curve_n'])}"]["drop"]["median"] > 0
                    for d in datasets}
         h2 = {
             "b_beats_a": b_beats_a, "b_beats_a_wins": sum(b_beats_a.values()),
-            "b_beats_a_sign_test_p": metrics.sign_test(sum(b_beats_a.values()), len(datasets)),
+            "b_beats_a_sign_test_p": metrics.sign_test(sum(b_beats_a.values()), len(arm_b)),
             "b_loses_under_permutation": b_drops, "c_loses_under_permutation": c_drops,
-            "supported": bool(sum(b_beats_a.values()) == len(datasets)
+            "min_wins": need_b, "n_datasets": len(arm_b),
+            "supported": bool(sum(b_beats_a.values()) >= need_b
                               and all(b_drops.values()) and all(c_drops.values())),
         }
 
@@ -714,42 +777,44 @@ def evaluate_across(out: str) -> None:
         ladder = {}
         for family, members in families.items():
             small, large = [name for _, name in sorted(members)][0], [name for _, name in sorted(members)][-1]
-            wins = {d: per[d]["arm_b_by_model"][large] > per[d]["arm_b_by_model"][small] for d in datasets}
+            wins = {d: per[d]["arm_b_by_model"][large] > per[d]["arm_b_by_model"][small] for d in arm_b}
             ladder[family] = {"smaller": small, "larger": large, "wins": sum(wins.values()),
                               "per_dataset": wins,
-                              "sign_test_p": metrics.sign_test(sum(wins.values()), len(datasets))}
+                              "sign_test_p": metrics.sign_test(sum(wins.values()), len(arm_b))}
         order = [name for _, name in sorted((m["params_b"], n) for n, m in models.items())]
-        table = np.array([[per[d]["arm_b_by_model"][m] for m in order] for d in datasets])
+        table = np.array([[per[d]["arm_b_by_model"][m] for m in order] for d in arm_b])
         h3 = {
             "ladder": ladder, "model_order": order,
-            "arm_b_auc": {d: {m: per[d]["arm_b_by_model"][m] for m in order} for d in datasets},
+            "arm_b_auc": {d: {m: per[d]["arm_b_by_model"][m] for m in order} for d in arm_b},
             "friedman": metrics.friedman(table),
-            "supported": bool(all(f["wins"] >= spec["h3_min_wins"] for f in ladder.values())),
+            "min_wins": need_b, "n_datasets": len(arm_b),
+            "supported": bool(all(f["wins"] >= need_b for f in ladder.values())),
         }
 
         # H4: a better reader gets more class information out of the same images. Two steps, each
-        # changing one thing: effort (H4a) then model (H4b). Supported on 6 of 6, the rule H1 and
-        # H2 are held to, because 5 of 6 is p = 0.11 and this study cannot do better with six
-        # datasets. The `probe_auc` per reader is reported whatever the verdict: which concepts a
-        # reader can answer is the question the study is really asking now.
+        # changing one thing: effort (H4a) then model (H4b), held to the same level as H1 and H2.
+        # The `probe_auc` per reader is reported whatever the verdict: which concepts a reader can
+        # answer is the question the study is really asking now.
         h4_spec, h4 = CONFIG["h4"], {}
         for part, step in (("h4a", "thinking_minus_baseline"), ("h4b", "frontier_minus_thinking")):
-            wins = {d: per[d]["h4"]["steps"][step]["median"] > 0 for d in datasets}
-            first = per[datasets[0]]["h4"]["steps"][step]
+            wins = {d: per[d]["h4"]["steps"][step]["median"] > 0 for d in arm_b}
+            first = per[arm_b[0]]["h4"]["steps"][step]
             h4[part] = {
                 "step": step, "from": first["from"], "to": first["to"],
                 "per_dataset": wins, "wins": sum(wins.values()),
-                "differences": {d: per[d]["h4"]["steps"][step] for d in datasets},
-                "sign_test_p": metrics.sign_test(sum(wins.values()), len(datasets)),
-                "supported": bool(sum(wins.values()) >= h4_spec["min_wins"]),
+                "differences": {d: per[d]["h4"]["steps"][step] for d in arm_b},
+                "sign_test_p": metrics.sign_test(sum(wins.values()), len(arm_b)),
+                "supported": bool(sum(wins.values()) >= need_b),
             }
-        readers = sorted(per[datasets[0]]["h4"]["probe_auc"])
-        h4["probe_auc"] = {d: {r: per[d]["h4"]["probe_auc"][r] for r in readers} for d in datasets}
+        readers = sorted(per[arm_b[0]]["h4"]["probe_auc"])
+        h4["probe_auc"] = {d: {r: per[d]["h4"]["probe_auc"][r] for r in readers} for d in arm_b}
         h4["readers"] = readers
         h4["subsample"] = h4_spec["subsample"]
+        h4["min_wins"], h4["n_datasets"] = need_b, len(arm_b)
         h4["supported"] = bool(h4["h4a"]["supported"] and h4["h4b"]["supported"])
 
-        run.write(out, dict(datasets=datasets, h1=h1, h2=h2, h3=h3, h4=h4,
+        run.write(out, dict(datasets=datasets, arm_b_datasets=arm_b, alpha=alpha,
+                            h1=h1, h2=h2, h3=h3, h4=h4,
                             flagged_cells={d: [k for k, over in per[d]["incomplete_over_cap"].items() if over]
                                            for d in datasets}))
 

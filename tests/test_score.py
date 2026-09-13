@@ -453,20 +453,40 @@ def test_only_the_primary_model_scores_the_labelled_pool(config):
             assert spec["splits"] == ["test"], name
 
 
-def test_the_call_budget_is_what_the_plan_says(config):
-    """27,000 calls in 270 chunks (WORKFLOW.md section 4). If a grid moves, this is where the new
-    number shows up, rather than in a service bill."""
-    sample, models = config["sample"], config["vlm"]["models"]
-    chunk, primary, datasets = config["vlm"]["chunk"], config["vlm"]["primary"], config["datasets"]
+def budget(config, release, datasets):
+    """Calls and chunks the fan-out buys for `datasets`, by the rules the Snakefile's score_cells and
+    reader_cells apply: samples capped at the official split, the multi-label task scored by the
+    primary model alone on the concept prompt alone, readers on a prefix of the test sample."""
+    sample, models, readers = config["sample"], config["vlm"]["models"], config["vlm"]["readers"]
+    chunk, primary = config["vlm"]["chunk"], config["vlm"]["primary"]
     calls = jobs = 0
-    for name, spec in models.items():
-        for split in spec["splits"]:
-            n = sample["test_n" if split == "test" else "pool_n"]
-            prompts = 2 if (name == primary and split == "test") else 1
-            calls += n * len(datasets) * prompts
-            jobs += len(score.chunks(n, chunk)) * len(datasets) * prompts
-    assert calls == 27_000
-    assert jobs == 270
+    for d in datasets:
+        multi = release.multi_label(d)
+        for name, spec in models.items():
+            if multi and name != primary:
+                continue
+            for split in spec["splits"]:
+                n = release.split_size(d, "test" if split == "test" else "train",
+                                       sample["test_n" if split == "test" else "pool_n"])
+                prompts = 2 if (name == primary and split == "test" and not multi) else 1
+                calls += n * prompts
+                jobs += len(score.chunks(n, chunk)) * prompts
+        for spec in readers.values():
+            if multi:
+                continue
+            n = min(spec["subsample"], release.split_size(d, "test", sample["test_n"]))
+            calls += n
+            jobs += len(score.chunks(n, chunk))
+    return calls, jobs
+
+
+def test_the_call_budget_is_what_the_plan_says(config, release):
+    """51,718 calls in 521 chunks over twelve datasets, of which the talk version's six are 29,400 in
+    294 (WORKFLOW.md section 4). If a grid moves, this is where the new number shows up, rather than
+    in a service bill."""
+    talk_six = ["pathmnist", "dermamnist", "octmnist", "pneumoniamnist", "bloodmnist", "organamnist"]
+    assert budget(config, release, talk_six) == (29_400, 294)
+    assert budget(config, release, config["datasets"]) == (51_718, 521)
 
 
 def test_a_job_refuses_to_write_a_file_named_for_another_cell(tmp_path):

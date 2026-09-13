@@ -28,14 +28,29 @@ storage_root: /project/dane2/wficai/textbook_priors
 rawdir: data/raw
 cachedir: data/cache/sample
 
-# One dataset per modality: histology, dermoscopy, OCT, chest X-ray, blood smear, CT.
-datasets: [pathmnist, dermamnist, octmnist, pneumoniamnist, bloodmnist, organamnist]
+# All twelve MedMNIST v2 2D benchmarks. The first six are the talk version's one-per-modality set
+# (histology, dermoscopy, OCT, chest X-ray, blood smear, axial CT), whose results were in before the
+# other six were added on 2026-09-13 (WORKFLOW.md section 2 says what that does to the rules).
+# chestmnist is the one multi-label task: fourteen findings that co-occur, so a nearest fingerprint
+# (arm B) and a distribution over class names (arm A) are not defined for it. It runs in arms C and
+# P alone, scored by the primary model only, and joins H1's C-against-P count and nothing else.
+datasets: [pathmnist, dermamnist, octmnist, pneumoniamnist, bloodmnist, organamnist,
+           breastmnist, retinamnist, tissuemnist, organcmnist, organsmnist, chestmnist]
 size: 224                          # what the VLM sees and what the ImageNet encoder wants
+
+# The four release files the talk version never needed are fetched from the pinned Zenodo record
+# by `rule fetch`, in parallel byte ranges because Zenodo serves about 105 KB/s per connection
+# (measured 2026-09-09) but as many connections as are opened: one range per segment_mb, at most
+# max_segments, resumable, then concatenated and checked against the MD5 in config/medmnist.yaml.
+fetch: {segment_mb: 256, max_segments: 24}
 
 # The two samples every arm is measured on. One seed for both, so the whole study is paired: every
 # arm and every model predicts on the same 500 test images, and the curve's largest point is a
 # prefix of the same 2000-image labelled pool. Every dataset has at least 624 test and 4708 train
-# images, which the smoke tier checks against the pinned split sizes.
+# images, which the smoke tier checks against the pinned split sizes. Both are CAPPED at the
+# official split: breastmnist (156 test, 546 train) and retinamnist (400, 1080) take the whole split
+# where it is smaller than the sample, and the curve points a dataset's pool cannot reach are
+# dropped for that dataset, not repeated.
 sample: {test_n: 500, pool_n: 2000, seed: 0}
 
 # The learning curve: how many labelled images arms C and P get, and at how many draws of them.
@@ -49,6 +64,18 @@ vlm:
   prompt:
     anchors: true                  # render each level's cited anchor text; false is the
                                    # `bare_levels` extension of WORKFLOW.md section 10
+    # The zero-shot prompt lists the release's class names, and retinamnist's are the digit strings
+    # "0" to "4": asking a model to choose among digits is not a diagnosis question, so arm B would
+    # beat arm A there by construction and H2 would collect a free vote. Each digit is listed with
+    # the ICDR severity grade it stands for (the bank's own class comments). The JSON keys the model
+    # answers with stay the release names, so nothing downstream changes.
+    class_gloss:
+      retinamnist:
+        "0": no apparent diabetic retinopathy
+        "1": mild non-proliferative diabetic retinopathy
+        "2": moderate non-proliferative diabetic retinopathy
+        "3": severe non-proliferative diabetic retinopathy
+        "4": proliferative diabetic retinopathy
 
   primary: qwen3.8-27b-fp8         # the only model that scores the labelled pool, and the only
                                    # one asked the zero-shot prompt (arm A)
@@ -143,8 +170,11 @@ classify: {l2_grid: [0.01, 0.1, 1, 10, 100], cv_folds: 5, missing_max_frac: 0.05
 
 # The bootstrap resamples the 500 test images, not the labelled subsets: it is the test sample's
 # sampling error that every arm shares, and sharing it is what makes the differences paired.
-# h3_min_wins is descriptive at 5 of 6 (p = 0.11), which six datasets cannot improve on.
-evaluate: {bootstrap: 10000, ci: 0.95, seed: 0, h3_min_wins: 5}
+# `alpha` is the one-sided sign-test level every across-dataset rule is held to: an arm must win on
+# the smallest count of datasets that has p < alpha, which is 6 of 6, 9 of 11 and 10 of 12
+# (WORKFLOW.md section 2). Stated as a level rather than as counts so the same rule reads a
+# hypothesis over however many datasets it covers - H2, H3 and H4 exclude chestmnist.
+evaluate: {bootstrap: 10000, ci: 0.95, seed: 0, alpha: 0.05}
 
 # H4's chain, fixed here before a single call of it was bought (WORKFLOW.md section 2). Each step
 # changes exactly one thing: baseline to thinking holds the model and changes the effort; thinking
@@ -155,8 +185,10 @@ h4:
   baseline: qwen3.8-27b-fp8               # already in the archive, at effort none
   thinking: qwen3.8-27b-fp8-medium
   frontier: gpt-5.6-terra-medium
-  subsample: 200                          # the shared prefix every reader in the chain is read on
-  min_wins: 6                             # supported on 6 of 6 (p = 0.016), as H1 and H2 are
+  subsample: 200                          # the shared prefix every reader in the chain is read on;
+                                          # capped at the test sample where that is smaller
+                                          # (breastmnist: 156). Supported at `evaluate.alpha`, as
+                                          # H1 and H2 are.
 
 # Resources per rule. cpus is also `threads`; mem_mb per job; runtime in minutes.
 #
@@ -172,6 +204,10 @@ resources:
   # packing for nothing. Wall time 19 s to 126 s - pathmnist inflates 13.5 GB in one pass at about
   # 100 MB/s - so 20 minutes is ten times the longest run and covers a contended filesystem.
   sample: {cpus: 1, mem_mb: 1500, runtime: 20}
+  # curl is network-bound: one core, and memory is a few segment buffers. Ten hours covers the
+  # largest of the four fetched files (chestmnist, 3.9 GB) at one connection's rate if the segments
+  # all but one stall; at 24 connections it is under an hour.
+  fetch:  {cpus: 1, mem_mb: 2000, runtime: 600}
   # H4's two readers, 200 images each in two chunks of 100. The gateway one is somebody else's
   # capacity and answered in 2.4 to 6.5 s a call across all six datasets, so 60 minutes is generous.
   #

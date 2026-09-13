@@ -176,3 +176,34 @@ def test_a_subset_with_one_class_says_so_instead_of_faking_a_probability():
                                n_classes=2, l2_grid=[1.0], cv_folds=5, seed=0)
     assert got["folds"] == 0 and got["C"] is None
     assert np.allclose(got["scores"][:, 0], 1.0)
+
+
+# ---- the multi-label task ------------------------------------------------------------------------
+
+def test_strata_are_the_class_or_any_finding():
+    """The nested subsets of the curve are stratified on the class; for chestmnist, whose label is a
+    vector of fourteen findings, on whether the image carries any finding at all."""
+    assert list(classify.strata(np.array([2, 0, 1]))) == [2, 0, 1]
+    assert list(classify.strata(np.array([[2], [0]]))) == [2, 0]
+    assert list(classify.strata(np.array([[1, 0, 0], [0, 0, 0], [0, 1, 1]]))) == [1, 0, 1]
+
+
+def test_one_vs_rest_fits_each_finding_and_scores_a_constant_where_it_cannot():
+    """The multi-label path of fit_predict: one regression per finding, a probability per finding
+    per image, and a finding with no positives in the subset scored as a constant column rather than
+    fitted on nothing or dropped."""
+    rng = np.random.default_rng(0)
+    x = rng.normal(size=(60, 3))
+    y = np.zeros((60, 3), dtype=int)
+    y[:, 0] = (x[:, 0] > 0).astype(int)              # finding 0 follows feature 0
+    y[:, 1] = rng.integers(0, 2, size=60)            # finding 1 is noise
+    #                                                  finding 2 never occurs in the subset
+    got = classify.fit_predict(x, y, x[:10], n_classes=3, l2_grid=[0.1, 1.0], cv_folds=5, seed=0,
+                               multi_label=True)
+    assert got["scores"].shape == (10, 3)
+    assert np.all((got["scores"] >= 0) & (got["scores"] <= 1))
+    assert np.allclose(got["scores"][:, 2], 0.0), "an absent finding is a constant column"
+    assert got["classes"] == [0, 1] and got["C_per_finding"][2] is None
+    order = np.argsort(got["scores"][:, 0])
+    assert (x[:10][order, 0] > 0).astype(int).tolist() == sorted((x[:10, 0] > 0).astype(int).tolist()), \
+        "the fitted finding ranks its positives above its negatives"

@@ -124,6 +124,19 @@ def pool_medians(matrix: np.ndarray) -> np.ndarray:
     return np.where(np.isnan(medians), 0.5, medians)
 
 
+def strata(labels) -> np.ndarray:
+    """What the nested subsets are stratified on: the class for a single-label task, and for the
+    multi-label one whether the image carries any finding at all. Fourteen co-occurring findings
+    have no single class to stratify on, and any-finding against no-finding is the split that
+    matters for a curve whose first point is fifty images: it keeps positives of some kind in every
+    subset. The floor of one image per stratum is then one abnormal film, not one of each finding,
+    and a finding absent from a subset scores a constant (see fit_predict)."""
+    labels = np.asarray(labels)
+    if labels.ndim == 2 and labels.shape[1] > 1:
+        return (labels.sum(axis=1) > 0).astype(int)
+    return labels.reshape(-1).astype(int)
+
+
 def nested_subsets(labels, grid, n_classes: int, seed: int) -> dict:
     """Class-stratified nested prefixes of the labelled pool, one per grid point.
 
@@ -153,7 +166,8 @@ def nested_subsets(labels, grid, n_classes: int, seed: int) -> dict:
     return subsets
 
 
-def fit_predict(x_train, y_train, x_test, n_classes: int, l2_grid, cv_folds: int, seed: int) -> dict:
+def fit_predict(x_train, y_train, x_test, n_classes: int, l2_grid, cv_folds: int, seed: int,
+                multi_label: bool = False) -> dict:
     """Multinomial logistic regression with its L2 strength chosen inside the labelled images.
 
     No validation set: n labels means n labels (WORKFLOW.md section 3). The regularisation strength
@@ -161,7 +175,18 @@ def fit_predict(x_train, y_train, x_test, n_classes: int, l2_grid, cv_folds: int
     standardised on them, and the fold count drops to the smallest class count when five folds
     would not fit. A class absent from the subset gets an all-zero score column rather than being
     dropped, so every arm's scores have the same shape and the AUC is over the same classes.
+
+    `multi_label` (chestmnist) fits the same regression one finding at a time, one-vs-rest, which is
+    what the package's per-finding AUC is a metric of. Two things differ from the single-label path
+    and are said here rather than discovered: a finding with no positives (or no negatives) in the
+    subset cannot be fitted and scores a constant column, which the AUC reads as uninformative; and
+    the L2 strength is chosen by out-of-fold AUC rather than accuracy, because a finding present in
+    two percent of films makes "always negative" the most accurate classifier at every strength and
+    accuracy could not choose between them.
     """
+    if multi_label:
+        return _fit_predict_one_vs_rest(x_train, np.asarray(y_train), x_test, n_classes, l2_grid,
+                                        cv_folds, seed)
     present = np.unique(y_train)
     scaler = StandardScaler().fit(x_train)
     train, test = scaler.transform(x_train), scaler.transform(x_test)
@@ -196,6 +221,43 @@ def fit_predict(x_train, y_train, x_test, n_classes: int, l2_grid, cv_folds: int
     scores = np.zeros((len(x_test), n_classes))
     scores[:, model.classes_] = probabilities
     return {"scores": scores, "C": float(best), "folds": folds, "classes": present.tolist()}
+
+
+def _fit_predict_one_vs_rest(x_train, y_train, x_test, n_findings, l2_grid, cv_folds, seed) -> dict:
+    """The multi-label half of fit_predict: one binary regression per finding, L2 by out-of-fold AUC."""
+    from sklearn.metrics import roc_auc_score
+
+    scaler = StandardScaler().fit(x_train)
+    train, test = scaler.transform(x_train), scaler.transform(x_test)
+    scores = np.zeros((len(x_test), n_findings))
+    chosen, fold_counts, present = [], [], []
+    for j in range(n_findings):
+        yj = y_train[:, j].astype(int)
+        n_pos = int(yj.sum())
+        if n_pos == 0 or n_pos == len(yj):
+            scores[:, j] = float(yj[0])            # nothing to learn: the subset is all one way
+            chosen.append(None); fold_counts.append(0)
+            continue
+        present.append(j)
+        folds = int(min(cv_folds, n_pos, len(yj) - n_pos))
+        best, best_score = float(np.median(l2_grid)), -np.inf
+        if folds >= 2:
+            splitter = StratifiedKFold(n_splits=folds, shuffle=True, random_state=seed)
+            for c in l2_grid:
+                oof = np.zeros(len(yj))
+                for fit_idx, val_idx in splitter.split(train, yj):
+                    model = LogisticRegression(C=c, max_iter=2000).fit(train[fit_idx], yj[fit_idx])
+                    oof[val_idx] = model.predict_proba(train[val_idx])[:, 1]
+                got = roc_auc_score(yj, oof)
+                if got > best_score:
+                    best, best_score = c, got
+        model = LogisticRegression(C=best, max_iter=2000).fit(train, yj)
+        scores[:, j] = model.predict_proba(test)[:, 1]
+        chosen.append(float(best)); fold_counts.append(folds)
+    fitted = [c for c in chosen if c is not None]
+    return {"scores": scores, "C": float(np.median(fitted)) if fitted else None,
+            "C_per_finding": chosen, "folds": int(min(fold_counts)) if fold_counts else 0,
+            "classes": present}
 
 
 def cv_probe(x, y, n_classes: int, l2_grid, folds: int, seed: int) -> dict:

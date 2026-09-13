@@ -465,3 +465,34 @@ ratio, lymphocyte size, immature-granulocyte chromatin - the last already flagge
 as resting on an unsourced floor) with features the model does not see at 224 pixels (opacity on
 half of pneumoniamnist's pneumonia films). Whether to make that check a rule, and whether an expert
 pass follows, is the owner's call; nothing in the bank or the workflow changed.
+
+## 2026-09-13 08:20 — "Expand the full analysis to all 12 MedMNIST. Follow it through from start to finish."
+
+"I know this is a long request that will involve many calls. Proceed until complete and documented."
+The talk version's six datasets become the twelve 2D benchmarks, the whole workflow run to the
+report. What the build settled before a call was bought:
+
+- **Eight release files were on disk; four were the full branch's half-finished byte-range
+  segments** (chestmnist, organcmnist, organsmnist, tissuemnist). The full branch's resumable fetch
+  script and rule come back as `rule fetch`, scoped to files not on disk, with the sizes and MD5s
+  the release description now carries for all twelve.
+- **Samples cap at the official split** (breastmnist 156 and 546, retinamnist 400 and 1080) and the
+  curve drops the points a pool cannot reach; nothing else changes for the ten datasets that do not
+  cap.
+- **chestmnist runs in arms C and P alone**, scored by the primary model on the concept prompt only:
+  a nearest fingerprint and a distribution over class names are not defined over fourteen
+  co-occurring findings. Its regressions are one-vs-rest per finding with the L2 strength chosen by
+  out-of-fold AUC, because a finding present in two percent of films makes accuracy blind, and its
+  AUC is the package's mean over findings. It joins H1's count and nothing else.
+- **retinamnist's classes are the digits 0 to 4**, so the zero-shot listing glosses each with its
+  ICDR grade; the JSON keys stay the release names and the six archived datasets render byte for
+  byte as they did, which a test now pins by hash.
+- **The decision rules become one level, alpha = 0.05**, the full branch's own pre-registered
+  thresholds restated: 6 of 6, 9 of 11 (H2 to H4, which exclude chestmnist), 10 of 12 (H1). The
+  six talk datasets' verdicts were known when this was written and the six new ones' were not;
+  WORKFLOW.md says so rather than pretending otherwise.
+- **Budget**: 51,718 calls in 521 chunks, of which 22,318 in 227 are new; 1,000 of those go to the
+  gateway reader, about four dollars at flex.
+
+378 tests pass, including an end-to-end run of the multi-label path on a toy dataset; the DAG from a
+clean clone is 616 jobs.

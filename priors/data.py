@@ -72,6 +72,20 @@ class Release:
     def dataset(self, name: str) -> dict:
         return self.doc["datasets"][name]
 
+    def task(self, name: str) -> str:
+        return self.dataset(name)["medmnist_task"]
+
+    def multi_label(self, name: str) -> bool:
+        """chestmnist: fourteen findings that co-occur. Arms A and B are not defined over such a
+        label space (WORKFLOW.md section 3), so every stage that builds them asks this first."""
+        return self.task(name).startswith("multi-label")
+
+    def split_size(self, name: str, split: str, wanted: int) -> int:
+        """How many images a sample of `wanted` can actually take from `split`: the official split
+        size caps it (breastmnist has 156 test images, retinamnist 400), and a dataset that caps takes
+        the whole split rather than failing at the far end of a read (WORKFLOW.md section 4)."""
+        return int(min(wanted, self.dataset(name)["n_samples"][split]))
+
     def class_names(self, name: str) -> list[str]:
         """The class names in label-index order: the order every score vector, every zero-shot
         distribution and every AUC column uses. Taken from the release rather than from the bank,

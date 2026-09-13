@@ -89,10 +89,28 @@ def test_draw_reports_the_sample_beside_the_split_it_came_from(fake_release):
     assert sum(drawn["split_class_counts"].values()) == len(images)
 
 
-def test_the_samples_fit_inside_the_official_splits(config, release):
-    """A dataset with fewer test images than the sample, or fewer train images than the pool, would
-    fail at the far end of a 12 GB read; the pinned split sizes say so in a millisecond."""
+def test_the_samples_are_capped_at_the_official_splits(config, release):
+    """A sample larger than its split would fail at the far end of a 12 GB read; the cap
+    (WORKFLOW.md section 4) takes the whole split instead, and exactly two datasets cap: breastmnist
+    (156 test, 546 train) and retinamnist (400, 1080). Every other one draws the full sample."""
+    capped = set()
     for dataset in RUN_DATASETS:
         n = release.dataset(dataset)["n_samples"]
-        assert n["test"] >= config["sample"]["test_n"], dataset
-        assert n["train"] >= config["sample"]["pool_n"], dataset
+        test_n = release.split_size(dataset, "test", config["sample"]["test_n"])
+        pool_n = release.split_size(dataset, "train", config["sample"]["pool_n"])
+        assert test_n <= n["test"] and pool_n <= n["train"], dataset
+        if test_n < config["sample"]["test_n"] or pool_n < config["sample"]["pool_n"]:
+            capped.add(dataset)
+            assert (test_n, pool_n) == (n["test"], n["train"]), "a capped sample is the whole split"
+    assert capped == {"breastmnist", "retinamnist"}
+
+
+def test_multi_label_labels_keep_their_shape_and_count_positives_per_finding():
+    """chestmnist's label member is (images, 14) of 0/1. It must not be flattened into a vector of
+    zeros and ones, and its counts are positives per finding, not counts of label vectors."""
+    single = np.array([[0], [1], [1], [2]], dtype=np.uint8)
+    multi = np.array([[1, 0, 1], [0, 0, 0], [1, 1, 0]], dtype=np.uint8)
+    assert sample.squeeze_labels(single).shape == (4,)
+    assert sample.squeeze_labels(multi).shape == (3, 3)
+    assert sample.class_counts(single) == {"0": 1, "1": 2, "2": 1}
+    assert sample.class_counts(multi) == {"0": 2, "1": 1, "2": 1}
