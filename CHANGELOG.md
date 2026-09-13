@@ -991,3 +991,21 @@ Restoring it changed `priors/stages.py` and `priors/prompts.py`, which are input
 the owner's checkout was brought back to "nothing to be done" with `snakemake --touch`, as the
 conventions prescribe for a change that cannot move a number; nothing was recomputed but the PDF,
 which had two wrong sentences.
+
+## 2026-09-13 — The comparison the plan never named: the concept regression against zero-shot
+
+The owner asked why no hypothesis sets arm C, the concept regression, against arm A, the model's own
+zero-shot class distribution. Because the plan paired arms by label budget — H1 compares the two
+labelled arms at equal n, H2 the two zero-label arms — and C against A crosses budgets, so it is a
+learning-curve crossing like n_B, which the plan defined only for the pixel probe against arm B. H2
+then showed A beats B everywhere, which makes A the zero-label line that matters and leaves that
+crossing undefined.
+
+Read from the curve figure and `results/evaluate/*.json` (seed-mean C against A; no rule decides
+it and it is not pre-registered): C overtakes A by n = 50 on bloodmnist, organamnist and pathmnist;
+at n = 1000 on dermamnist; never inside the grid on octmnist (0.933 at 2000 against 0.941) or
+pneumoniamnist, where C is flat at 0.728 across the whole curve while A sits at 0.918. On those two
+tasks the model knows more about the images than its concept answers carry, and no amount of labels
+on those answers recovers it. Mentioned in the talk as a reading of the figure, not as a verdict
+(`TALK.md`, scene 5). A pre-registered version for the full branch would define n_A the way n_B is
+defined.

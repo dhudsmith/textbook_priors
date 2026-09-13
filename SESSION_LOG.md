@@ -445,3 +445,23 @@ anyway, the four stale module docstrings the previous entry had left alone are f
 commit. The 30 arm-D chunks, their logs and their benchmarks are deleted from the owner's checkout;
 WORKFLOW.md §4 and §10 and a CHANGELOG.md entry say so. The checkout is then brought back to
 "nothing to be done" with `snakemake --touch` and the PDF rebuilt, the only recomputation.
+
+## 2026-09-13 08:05 — "Why don't I have a hypothesis that compares ... with zero shot?"
+
+The owner asked why no hypothesis sets the concept regression (arm C) against zero-shot (arm A);
+the answer - the plan paired arms by label budget, and H2's result made A the zero-label line that
+matters after the fact - and the reading of the curve it implies are in CHANGELOG.md. They asked for
+it in the talk without pre-registering it, so TALK.md scene 5 now names it as a reading of the
+figure, not a verdict.
+
+Then: how are arm B's class fingerprints determined, and should they be re-examined? They are set
+from cited literature by the rule each bank file's header states - commit only where the sources
+report the feature in a majority of the class or it is definitional, else `any` - with simulated
+review and no clinician. A throwaway check in the session (scratch, uncited) compared every
+committed fingerprint cell with the primary model's modal answer for that class on the labelled
+pool, which arm B never reads: 391 cells, 70% agree, 93% within one level, organamnist worst at 56%.
+The disagreements mix a fingerprint the literature may have wrong (monocyte nucleus-to-cytoplasm
+ratio, lymphocyte size, immature-granulocyte chromatin - the last already flagged in the bank README
+as resting on an unsourced floor) with features the model does not see at 224 pixels (opacity on
+half of pneumoniamnist's pneumonia films). Whether to make that check a rule, and whether an expert
+pass follows, is the owner's call; nothing in the bank or the workflow changed.
