@@ -123,9 +123,8 @@ Rules the review enforces (not machine-checkable):
 6. **Review.** Read the file as a sceptical clinician would: is every concept visible, is every
    fingerprint sourced, is anything a diagnosis in disguise? Fix, then fill `reviewed_by` with the
    simulated-review statement and the date.
-7. **Validate.** Run `snakemake --profile profiles/local smoke` in the workflow repository once
-   the file is in `data/concepts/`. Until the Snakefile exists, a standalone validator encoding
-   the same rules stands in; see `data/concepts/README.md`.
+7. **Validate.** Run `snakemake --profile profiles/local -j 2 -F smoke` in the workflow repository
+   once the file is in `data/concepts/`; `tests/test_bank.py` encodes every rule above.
 
 ## Starting points
 
@@ -149,9 +148,10 @@ Verify each against the MedMNIST v2 paper before relying on it.
 - **chestmnist** is multi-label with fourteen findings. Write concepts at the level of
   radiographic signs (opacity location and pattern, cardiac silhouette size, pleural line,
   mediastinal contour) rather than one concept per finding, and let fingerprints share concepts.
-  Cap at twelve concepts. chestmnist is excluded from arm B (`WORKFLOW.md` §3); write its
-  fingerprints as the expected levels when a finding is present, as documentation and for the
-  report, and expect its numbers to come from the arms that need only the concept scores.
+  Cap at twelve concepts. chestmnist is not among the talk version's six datasets (`WORKFLOW.md`
+  §10), and on the full branch it is excluded from arm B; write its fingerprints as the expected
+  levels when a finding is present, as documentation, and expect its numbers to come from the arms
+  that need only the concept scores.
 - **retinamnist** is ordinal. Fingerprints for the five grades should be monotone in the lesion
   concepts; the scale levels do the work.
 - **organa/c/smnist** are greyscale CT slices with a fixed window. Concepts are anatomical

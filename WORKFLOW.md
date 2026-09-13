@@ -164,7 +164,7 @@ subsets as arm C, so features are the only difference.
   paired bootstrap will show that as a wide interval on every arm at once. Equal-as-possible
   stratification was considered and rejected: it would raise those columns only to 23, 46 and 56 -
   the splits themselves hold little more - while making each column's negatives a uniform mixture
-  rather than the dataset's own, and the study's three hypotheses are paired differences on the
+  rather than the dataset's own, and the study's hypotheses are paired differences on the
   same images, where the thin columns are common mode. Matching the split's proportions, the other
   reading of "stratify", reproduces what the seed already drew and buys nothing. So the sample
   stays as §4 fixes it, the absolute per-dataset AUCs are read with this in mind, and the report
@@ -271,13 +271,13 @@ Each names the failure it prevents; `TALK.md` argues them.
               every reader's cross-validated probe on the shared prefix (H4)              6 CPU
 5  EVALUATE   AUC per arm; the paired bootstrap; n_B; a second bootstrap over the prefix for
               H4's readers; then the sign tests, the ladder and the chain                 6 + 1
-6  REPORT     four figures, tables, number macros, the technical report PDF               local
+6  REPORT     five figures, tables, number macros, the technical report PDF               local
 ```
 
 Targets: `all` (the report), `smoke`, `sample`, `score`, `features`, `classify`, `evaluate`,
-`report`. Four figures: the learning curve with arm B's line (H1), n_B per dataset (H1 detail),
-the model ladder (H3), the reader chain (H4). H2 is a table of paired differences and permutation
-drops.
+`report`. Five figures: the learning curve with arm B's line (H1), n_B per dataset (H1 detail),
+the model ladder (H3), the reader chain and thinking's effect against the baseline (H4). H2 is a
+table of paired differences and permutation drops.
 
 ## 7. The scoring stage
 
@@ -326,8 +326,11 @@ vlm:
   models:                       # concurrency published, cap ours, splits = what it scores
     qwen3.5-9b:      {family: qwen,  params_b: 9,  concurrency: 128, cap: 96, splits: [test]}
     gemma-4-12b:     {family: gemma, params_b: 12, concurrency: 32,  cap: 24, splits: [test]}
-    qwen3.8-27b-fp8: {family: qwen,  params_b: 27, concurrency: 64,  cap: 48, splits: [test, pool]}
+    qwen3.8-27b-fp8: {family: qwen,  params_b: 27, concurrency: 64,  cap: 24, splits: [test, pool]}
     gemma-4-31b:     {family: gemma, params_b: 31, concurrency: 16,  cap: 12, splits: [test]}
+  readers:                      # H4: model + effort, concept prompt on a 200-image prefix of test
+    qwen3.8-27b-fp8-medium: {model: qwen3.8-27b-fp8, effort: medium, api: local,   cap: 4,  subsample: 200}
+    gpt-5.6-terra-medium:   {model: gpt-5.6-terra,   effort: medium, api: gateway, cap: 12, subsample: 200}
   chunk: 100
   prompt: {anchors: true}
   temperature: 0.0
@@ -336,8 +339,11 @@ vlm:
   base_url: https://llm.rcd.clemson.edu/v1
   key_file: ~/.config/rcd_llm/key
 features: {arch: resnet18, weights: imagenet1k_v1}
-classify: {l2_grid: [0.01, 0.1, 1, 10, 100], cv_folds: 5, missing_max_frac: 0.05, permute: {seeds: [0, 1, 2]}}
-evaluate: {bootstrap: 10000, ci: 0.95, h3_min_wins: 5}
+classify: {l2_grid: [0.01, 0.1, 1, 10, 100], cv_folds: 5, missing_max_frac: 0.05,
+           permute: {seeds: [0, 1, 2]}, probe: {folds: 5, seed: 0}}
+evaluate: {bootstrap: 10000, ci: 0.95, seed: 0, h3_min_wins: 5}
+h4: {baseline: qwen3.8-27b-fp8, thinking: qwen3.8-27b-fp8-medium, frontier: gpt-5.6-terra-medium,
+     subsample: 200, min_wins: 6}
 resources: {...}                # first guesses, then set from benchmarks/ with the reasoning
 ```
 
@@ -353,7 +359,7 @@ openai, pillow; `medmnist` for its evaluator, installed without its torch requir
 3. The ten-image probe on the primary model (rule `probe`, outside `all`): a compute node reaches
    the service, the archive and manifest are right, a malformed response is handled.
 4. The primary fan-out under its cap, then the ladder models; features; classify; evaluate.
-5. The three figures, the tables, the report; a CHANGELOG entry per milestone.
+5. The figures, the tables, the report; a CHANGELOG entry per milestone.
 6. Demo rehearsal (`TALK.md`).
 
 Commit after each coherent change. Dry-run and lint before every submission; ask before more than
@@ -424,8 +430,10 @@ config/config.yaml        every grid and knob; per-rule resources
 config/medmnist.yaml      the pinned release: file names, MD5s, sizes, split sizes, label maps
 profiles/palmetto/        SLURM executor; job, core and per-model llm_* caps
 profiles/local/           dry runs, smoke, touch
-envs/                     priors.yml  priors_torch.yml
+envs/                     priors.yml  priors_torch.yml  priors.post-deploy.sh
 priors/                   data sample prompts llm score features classify evaluate report stages manifest
+scripts/link_storage.sh   one-time setup: the two symlinks below
+docs/rcd_llm_service.md   the LLM service as this project found it: models, efforts, throughput
 data/concepts/            the concept-bank files and their README, committed
 data/literature/          the pinned published-benchmark table and its README, committed
 data/raw, data/cache      symlinks into storage_root on the project filesystem; gitignored

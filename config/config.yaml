@@ -2,8 +2,9 @@
 #
 # Every grid, seed and cap lives here, so a number in results/ traces to a line in this file plus
 # the seed in its manifest. The Snakefile only expands these lists. WORKFLOW.md section 8 is the
-# plan's version of this file; sections arrive here as the stages that read them are implemented,
-# so that no key in this file is unread by a rule.
+# plan's version of this file. No key here is unread: the values a rule's numbers depend on reach
+# it as params, and `vlm.models.*.concurrency` is what the smoke tier checks the profile's caps
+# against.
 #
 # Resources sit at the bottom. They are not a rerun trigger - the values a rule's numbers depend
 # on reach it as `params` - so editing a memory request reruns nothing.
@@ -110,9 +111,10 @@ vlm:
   base_url: https://llm.rcd.clemson.edu/v1
   key_file: ~/.config/rcd_llm/key  # owner-only; read by priors/llm.py and nowhere else
   temperature: 0.0
-  reasoning: none                  # sent as chat_template_kwargs.enable_thinking: false, because
-                                   # with reasoning on the primary model spends the whole budget in
-                                   # reasoning_content and returns nothing
+  reasoning: none                  # sent as chat_template_kwargs.enable_thinking: false. The
+                                   # archive was bought thinking-off and stays so (WORKFLOW.md
+                                   # section 7); thinking does work at a larger budget, and H4's
+                                   # readers below are where it is used
   max_tokens: 512                  # enough for twelve concepts of JSON; the one content retry
                                    # doubles it, which is the repair for a truncated reply
   retries: 1                       # content retries on a malformed answer, then recorded missing

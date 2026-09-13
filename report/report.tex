@@ -40,7 +40,7 @@ four arms are compared on one shared test sample:
 \end{itemize}
 
 Arms C and P differ in their features and in nothing else: the same classifier, the same
-regularisation search and the same labelled subsets. The three hypotheses and their decision rules
+regularisation search and the same labelled subsets. The four hypotheses and their decision rules
 were fixed in \texttt{WORKFLOW.md} before any number existed, and are reported here as they were
 written.
 
@@ -193,7 +193,7 @@ so a reader can see how far a handful of labels and a textbook prior sit from a 
 at full scale, without mistaking the gap for a finding about any arm here.
 
 Read that way, the gap tracks the label budget and little else. The best zero-label arm on each
-dataset --- whichever of A, B and D wins there --- sits a median \litGapZeroMedian\ AUC below the
+dataset --- whichever of A and B wins there --- sits a median \litGapZeroMedian\ AUC below the
 published best, and is within five points of it on \litZeroWithinFivePoints\ of \numDatasets\
 datasets. Buying \litLargestN\ labels closes most of what remains: the pixel probe's median gap is
 \litGapPixelMedian, within two points of the ceiling on \litPixelWithinTwoPoints\ of \numDatasets\

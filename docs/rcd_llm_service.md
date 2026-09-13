@@ -202,10 +202,12 @@ starts from the decision rather than from the experiment.
   measured completion lengths plus room.
 - **Aliases are never named.** `cub` and `tiger` point at whatever the service currently prefers,
   and `cub`'s target today is this study's own primary model. Config names targets.
-- **Caps are politeness, not throughput.** The local reader shares `llm_qwen3_8_27b_fp8` with the
-  four thinking-off rules, because it is the same endpoint under a different setting and two rules
-  pointed at one endpoint must share one cap. The gateway reader has `llm_gateway`, which exists so
-  that a mistake costs twelve calls in flight rather than twelve hundred.
+- **Caps are politeness, not throughput.** The local reader holds its own `llm_reader_medium: 4`
+  beside the primary model's `llm_qwen3_8_27b_fp8: 24`. It is the same endpoint, so the two are read
+  together as one promise about concurrency; the reader's own cap exists because a thinking chunk is
+  an order of magnitude longer and has to be throttled harder to finish inside its time limit
+  (CHANGELOG.md, 2026-09-12, the thinking wave). The gateway reader has `llm_gateway: 12`, which
+  exists so that a mistake costs twelve calls in flight rather than twelve hundred.
 
 ## The embeddings endpoint
 
@@ -214,8 +216,10 @@ local, no credits. **2,560 dimensions, unit-normalised as returned, deterministi
 (max |diff| 0.0 on a repeated input). 256 texts in one call in 0.20 s. No matryoshka: a `dimensions`
 parameter is rejected. The space is anisotropic — two unrelated anchor sentences sit near cosine
 0.8, and the class names "pneumonia" and "normal" at 0.90 — so absolute cosines carry little and
-only rankings should be read. H5 uses it (WORKFLOW.md §2). The reranker `qwen3-rerank-4b` is
-served beside it at `/v1/rerank` and is not used.
+only rankings should be read. Nothing in the workflow uses it: the text-embedding hypothesis that
+would have was rewound the same evening, because nothing on the service embeds pixels
+(SESSION_LOG.md, 2026-09-12 23:15). The reranker `qwen3-rerank-4b` is served beside it at
+`/v1/rerank` and is not used.
 
 ## Gateway pricing is in the metadata after all
 

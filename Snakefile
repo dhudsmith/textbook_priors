@@ -2,7 +2,7 @@
 # TEXTBOOK PRIORS OVER VISUAL FEATURES
 #
 # Can a vision-language model's textbook knowledge of what pathology looks like stand in for
-# labelled data? Six MedMNIST benchmarks, four arms, three hypotheses (WORKFLOW.md sections 1-3).
+# labelled data? Six MedMNIST benchmarks, four arms, four hypotheses (WORKFLOW.md sections 1-3).
 #
 #     snakemake --profile profiles/palmetto              # everything, on SLURM
 #     snakemake --profile profiles/palmetto -n           # dry run: inspect the DAG
@@ -11,22 +11,23 @@
 #
 # The workflow reads top to bottom through seven stages (WORKFLOW.md section 6):
 #
-#   0  SMOKE      bank schema and anchors, label maps against the pinned release, all three
-#                 prompts, the arm-B estimator on a fixture, metric conventions, client retry
+#   0  SMOKE      bank schema and anchors, label maps against the pinned release, both prompts,
+#                 the estimators on fixtures, metric conventions, the client's request bodies
 #   1  SAMPLE     per dataset: the seeded 500-image test sample and 2000-image labelled pool
 #   2  SCORE      per dataset: render the concept and zero-shot prompts from the bank;
-#                 then, per model x split x prompt x chunk of 100, the VLM calls, archived raw
+#                 then, per model x split x prompt x chunk of 100, the VLM calls, archived raw;
+#                 plus H4's two readers on a 200-image prefix of the test sample
 #   3  FEATURES   per dataset: ImageNet ResNet-18 penultimate features of the sampled images
-#   4  CLASSIFY   per dataset: arms A, B, C, P at every n and seed, and the permutation controls
-#   5  EVALUATE   AUC per arm; the paired bootstrap; n_B; the sign tests and the ladder
-#   6  REPORT     three figures, tables, number macros, the technical report PDF
+#   4  CLASSIFY   per dataset: arms A, B, C, P at every n and seed, the permutation controls,
+#                 and every reader's cross-validated probe on the shared prefix (H4)
+#   5  EVALUATE   AUC per arm; the paired bootstrap; n_B; the sign tests, the ladder, the chain
+#   6  REPORT     five figures, tables, number macros, the technical report PDF
 #
-# The stages land one at a time, each tested before the next is written; the section at the foot
-# of this file lists what is still to come. Every unit of work is one entry point of
-# priors/stages.py, a pure function of its inputs, its config values and its own seed, writing one
-# JSON with a run manifest. Tables and figures read only those files. The two fixed inputs - the
-# concept bank and the raw MedMNIST releases - were completed before the workflow and no rule
-# refetches or re-verifies them (WORKFLOW.md section 4).
+# Every unit of work is one entry point of priors/stages.py, a pure function of its inputs, its
+# config values and its own seed, writing one JSON with a run manifest. Tables and figures read
+# only those files. The three fixed inputs - the concept bank, the raw MedMNIST releases and the
+# published literature benchmarks - were completed before the workflow and no rule refetches or
+# re-verifies them (WORKFLOW.md section 4).
 # =====================================================================================
 
 import re
@@ -683,7 +684,7 @@ rule evaluate_dataset:
     shell: STAGE + "evaluate {wildcards.dataset} --out {output} > {log} 2>&1"
 
 rule evaluate_across:
-    """The three hypotheses, decided by the rules fixed before the numbers existed. x1, local."""
+    """The four hypotheses, decided by the rules fixed before the numbers existed. x1, local."""
     input:
         per_dataset=EVALUATED,
         code=CODE_EVALUATE,
@@ -723,7 +724,7 @@ rule tables:
     shell: STAGE + "tables --dest " + TABS + " > {log} 2>&1"
 
 rule figures:
-    """The three figures, one per hypothesis. x1."""
+    """The five figures: the curve, n_B, the ladder, the reader chain, thinking's effect. x1."""
     input:
         evaluation=EVALUATION, per_dataset=EVALUATED, code=CODE_REPORT,
         literature=config["literature"],
@@ -736,6 +737,7 @@ rule figures:
     shell: STAGE + "figures --dest " + FIGS + " > {log} 2>&1"
 
 rule technical_report:
+    """The PDF, from the generated tables and figures. x1."""
     input: tex="report/report.tex", bib="report/references.bib", tables=TABLE_TEX, figs=FIG_FILES
     output: "report/report.pdf"
     log: "logs/technical_report.log"
@@ -754,11 +756,6 @@ rule technical_report:
 
 
 # =====================================================================================
-# STILL TO COME, in this order, each one tested before the next is written:
-#
-#   0  smoke              two tiers of it are still missing, and arrive with the code they test:
-#                         the arm-B estimator on a fixture (with priors/classify.py) and the LLM
-#                         client's retry on a malformed answer (with priors/llm.py)
-#\n# Extensions (WORKFLOW.md section 10), each outside `all`: bare_levels, generic_prompt,
-# primary_upgrade.
+# Extensions (WORKFLOW.md section 10), each one rule and a config block if ever wanted, none
+# built: bare_levels, generic_prompt, primary_upgrade, reasoning_sweep.
 # =====================================================================================

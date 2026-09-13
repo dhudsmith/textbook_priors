@@ -87,8 +87,9 @@ own file too.
   and no concept was invented to paper over them.
 
 - **`chestmnist` is out of arm B, and pairwise separability is the wrong measure for it.**
-  `WORKFLOW.md` §10 excludes it: nearest-fingerprint matching is not defined over fourteen
-  co-occurring findings, so chestmnist runs in arms A, C, P and E only. Its fingerprints are
+  The talk version does not run chestmnist at all (`WORKFLOW.md` §10); on the full branch,
+  nearest-fingerprint matching is not defined over fourteen co-occurring findings, so it runs in
+  the arms that need only concept scores or pixels. Its fingerprints are
   deliberately thin — 74% `any`, and `cardiomegaly` commits exactly one concept, a wide cardiac
   silhouette — which is right for a label that constrains one sign and says nothing about the
   rest. They stand as documentation and as the expected levels when a finding is present, and
@@ -269,12 +270,8 @@ them is closer to noise than to a reading:
 
 ## Schema
 
-Defined in `../../CONCEPT_BANK.md`, which is the single source of the rules a smoke test must
-enforce — including the two structural checks this bank relies on: the three `organ*mnist` files
-share one concept set, and `retinamnist`'s fingerprints are monotone across grades 0 to 4.
-
-The workflow's `smoke` target does not exist yet — it arrives with the Snakefile skeleton
-(`WORKFLOW.md` §9, step 1). Until then these files have been checked by a standalone
-validator that encodes the same rules, plus two structural checks the prose requires: the three
-`organ*mnist` files must share one concept set, and `retinamnist`'s fingerprints must be
-monotone across grades 0 to 4. The smoke test should encode all of it.
+Defined in `../../CONCEPT_BANK.md`, the single source of the rules the smoke tier enforces.
+`tests/test_bank.py` encodes all of them over the twelve files, including the two structural checks
+this bank relies on: the three `organ*mnist` files share one concept set, and `retinamnist`'s
+fingerprints are monotone across grades 0 to 4. The talk version's rules read six of the twelve
+files; the smoke tier checks all twelve, and the rest stay as the full branch's fixed input.

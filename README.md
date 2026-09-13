@@ -4,7 +4,7 @@ Can a vision-language model's textbook knowledge of what pathology looks like st
 labelled data? On six MedMNIST 2D benchmarks a VLM scores each image against a cited bank of
 diagnostic visual features, and four arms — two label-free, two label-matched — say what those
 scores are worth in the currency of labelled images. The whole study, from the fixed inputs to the
-technical report, is one Snakemake workflow on Palmetto2. The plan and the three hypotheses are
+technical report, is one Snakemake workflow on Palmetto2. The plan and the four hypotheses are
 `WORKFLOW.md`; dated findings are `CHANGELOG.md`; the talk narrative is `TALK.md`.
 
 ```bash
@@ -23,20 +23,20 @@ tests. The bank files are deliberately not inputs of `smoke`, so that editing on
 invalidates that dataset alone; the last invocation above is how the schema tests are re-run after
 such an edit, and the reasoning is in the Snakefile's stage-0 banner.
 
-All seven stages are built. `rule all` is the technical report, and a dry run from a clean clone is
-336 jobs: 294 of them the scoring fan-out.
+`rule all` is the technical report. A dry run from a clean clone is 336 jobs, 294 of them the
+scoring fan-out; from the owner's checkout, where every result exists, it is nothing to be done.
 
 ## The stages
 
-| # | Stage | What happens | Jobs | Built |
-|---|---|---|---|---|
-| 0 | **Smoke** | The tests: bank schema, label maps, prompts, the sampler, the estimators, the metric | 1 | yes |
-| 1 | **Sample** | Per dataset: the seeded 500-image test sample and 2000-image labelled pool | 6 | yes |
-| 2 | **Score** | Per dataset: render both prompts; then the VLM calls, archived raw | 6 + 294 | prompts, probe |
-| 3 | **Features** | Per dataset: ImageNet ResNet-18 penultimate features | 6 | yes |
-| 4 | **Classify** | Per dataset: arms A, B, C, P over the curve, the permutation controls, and every reader's probe | 6 | yes |
-| 5 | **Evaluate** | AUC, the paired bootstrap, n_B; then the sign tests, the ladder and the reader chain | 6 + 1 | yes |
-| 6 | **Report** | Five figures, the tables, the technical report PDF | 3 | yes |
+| # | Stage | What happens | Jobs |
+|---|---|---|---|
+| 0 | **Smoke** | The tests: bank schema, label maps, prompts, the sampler, the estimators, the metric | 1 |
+| 1 | **Sample** | Per dataset: the seeded 500-image test sample and 2000-image labelled pool | 6 |
+| 2 | **Score** | Per dataset: render both prompts; then the VLM calls, archived raw, including H4's two readers | 6 + 294 |
+| 3 | **Features** | Per dataset: ImageNet ResNet-18 penultimate features | 6 |
+| 4 | **Classify** | Per dataset: arms A, B, C, P over the curve, the permutation controls, and every reader's probe | 6 |
+| 5 | **Evaluate** | AUC, the paired bootstrap, n_B; then the sign tests, the ladder and the reader chain | 6 + 1 |
+| 6 | **Report** | Five figures, the tables, the technical report PDF | 3 |
 
 ## Layout
 
@@ -87,15 +87,15 @@ SESSION_LOG.md         timestamped record of how the work was directed
 | `test_bank.py` | the twelve committed bank files to the schema `CONCEPT_BANK.md` defines | 110 |
 | `test_release.py` | `config/medmnist.yaml` to the installed `medmnist` package | 20 |
 | `test_literature.py` | the pinned literature-benchmark table to the datasets the workflow runs and to `references.bib` | 4 |
-| `test_prompts.py` | the two prompts to H2's separation, and the renderer to its switches | 48 |
+| `test_prompts.py` | the two prompts to H2's separation, and the renderer to its switches | 46 |
 | `test_sample.py` | the streaming reader to a release-shaped fixture whose rows identify themselves | 14 |
-| `test_score.py` | the image encoding, the reply parser, the two retry policies and the exact request body each dialect sends, without calling the service | 56 |
+| `test_score.py` | the image encoding, the reply parser, the two retry policies, the exact request body each dialect sends, and the profile's caps against config's | 57 |
 | `test_classify.py` | the estimators to fixtures small enough to check by hand, arm B included | 19 |
-| `test_evaluate.py` | the fast AUC to the package's evaluator, and the decision rules to the plan | 19 |
+| `test_evaluate.py` | the fast AUC to the package's evaluator, and the decision rules to the plan | 20 |
 | `test_pipeline.py` | the analysis chain end to end, on an archive whose answer is known | 4 |
 | `test_metrics.py` | the AUC convention to the package that defines it | 3 |
 
-Every tier WORKFLOW.md section 6 asks for now exists, including the arm-B estimator on a fixture.
+297 tests, run by the `smoke` rule before anything else.
 
 ## Where the data comes from
 

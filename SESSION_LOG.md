@@ -402,3 +402,34 @@ or not anything uses them.
 The study stands where it stood at 22:09: four hypotheses, four verdicts, the report built. The
 user's underlying idea - an image embedding from the same family of model that read the concepts -
 is not possible on this service, and that is the finding, not a redesign of it.
+
+## 2026-09-13 07:00 — Cleaning audit: everything the talk needs, and only that
+
+"Now that the workflow is set and all results are in, perform a cleaning audit to make sure we have
+everything needed and only everything needed for the talk workflow. Remove unused code files or
+other extraneous things we made. Also, make sure all the results are in my primary directory ...
+Don't do anything that would trigger running rules ... Don't add any new complexity. Just clean and
+simplify. Make sure all documentation is up to date, clear, and concise. Make sure talk.md has our
+clearest most up to date plan."
+
+What the audit found, before anything was changed: every function in `priors/` is referenced, every
+key in `config/config.yaml` is read by a rule, a stage or the smoke tier, and `~/Code/textbook_priors`
+holds every result `rule all` names — 336 jobs from a clean clone, "Nothing to be done" there. So
+there was no code to remove, and the constraint that nothing may rerun shaped what was touched: the
+`priors/` modules and `tests/` are rule inputs, so their few stale docstrings ("three figures", "all
+three prompt strings") were left alone rather than paid for with a `--touch` of the archive.
+
+What changed: the documentation. The Snakefile header, README, WORKFLOW.md §6, §8 and §11, CLAUDE.md,
+TALK.md, CONCEPT_BANK.md, the bank README, the service notes and the config comments all still said
+three hypotheses, three or four figures, a smoke tier that did not exist yet, a thinking reader that
+shared the primary model's cap, and an H5 that had been rewound. TALK.md now states that the H4
+chain landed and scene 6 is not provisional, moves the thinking-effect scatter from "to make" to
+"already generated" (`fig_thinking.png`), and holds the embedding dead end as a third alternate. Two
+sentences in `report/report.tex` were wrong — "three hypotheses", and a literature paragraph that
+still named arm D — so the PDF is the one output rebuilt, locally, with pdflatex and no calls.
+
+Two things found and left for the owner. `results/prompts_txt/` holds six files from the
+`render_prompts_txt` rule of commit d43a4d3, which the H4 commit an hour later silently dropped along
+with its tests (a parallel-session clobber; the message never mentions it): restore the rule or
+delete the files. And the 30 `__directed__` arm-D chunks stay in the archive as CHANGELOG.md's
+removal entry asked — deleting 3,000 bought calls wants a deliberate word, not a cleanup pass.
