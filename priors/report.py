@@ -5,8 +5,8 @@ and the sentences whose direction depends on a value read a macro from `numbers.
 asserting something a later run could contradict. If a figure and the prose ever disagree, it is
 because someone edited the prose.
 
-Three figures, one per hypothesis (WORKFLOW.md section 6): the learning curve with arm B's line,
-n_B per dataset, and the model ladder.
+Five figures (WORKFLOW.md section 6): the learning curve with arm B's line (H1), n_B per dataset
+(H1), the model ladder (H3), the reader chain and thinking's effect against the baseline (H4).
 
 One table, `literature`, and one line on the curve figure read a fixed input besides results/:
 `data/literature/benchmarks.yaml`, published fully supervised numbers for the same six tasks

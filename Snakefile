@@ -41,7 +41,7 @@ configfile: "config/config.yaml"
 # Anything with a real toolchain or a real cost is submitted so it runs with declared resources.
 localrules:
     all, sample, prompts, score, features, classify, evaluate, report, smoke, render_prompts,
-    collect_scores, evaluate_across, tables,
+    collect_scores, evaluate_across, tables, prompts_txt, render_prompts_txt,
 
 
 OUT = config["outdir"]
@@ -81,6 +81,7 @@ def res(name):
 
 CODE_SAMPLE = code("data", "sample", "stages")
 CODE_PROMPTS = code("data", "prompts", "stages")
+CODE_PROMPTS_TXT = code("prompts", "stages")    # formats the file render_prompts already wrote
 CODE_SCORE = code("llm", "score", "stages")     # the prompts arrive as a file, not as a module
 CODE_FEATURES = code("features", "stages")
 CODE_CLASSIFY = code("classify", "data", "stages")
@@ -92,6 +93,7 @@ TEST_FILES = sorted(str(p) for p in Path("tests").glob("*.py"))
 SMOKE = f"{OUT}/smoke_ok.txt"
 SAMPLES = expand(f"{OUT}/sample/{{dataset}}.json", dataset=DATASETS)
 PROMPTS = expand(f"{OUT}/prompts/{{dataset}}.json", dataset=DATASETS)
+PROMPTS_TXT = expand(f"{OUT}/prompts_txt/{{dataset}}.txt", dataset=DATASETS)
 
 MODELS = list(config["vlm"]["models"])
 READERS = list(config["vlm"].get("readers", {}))     # H4: model + effort, scored on a prefix
@@ -176,6 +178,11 @@ rule sample:
 
 rule prompts:
     input: PROMPTS
+
+rule prompts_txt:
+    """Opt-in, outside `all`: a human-readable txt render of every dataset's prompts, decides no
+    hypothesis (WORKFLOW.md section 7)."""
+    input: PROMPTS_TXT
 
 rule score:
     input: SCORE_TABLES
@@ -316,6 +323,21 @@ rule render_prompts:
     log: "logs/render_prompts/{dataset}.log"
     conda: "envs/priors.yml"
     shell: STAGE + "render-prompts {wildcards.dataset} --out {output} > {log} 2>&1"
+
+
+rule render_prompts_txt:
+    """One dataset's rendered prompts as plain text, for a human reader. x6, local, opt-in (build
+    with `prompts_txt`, WORKFLOW.md section 7): formats the JSON `render_prompts` already wrote,
+    so the text a person reads is the same artifact hashed into every score manifest rather than a
+    second copy of the prompt logic. Decides no hypothesis and feeds no rule below it."""
+    input:
+        rendered=f"{OUT}/prompts/{{dataset}}.json",
+        code=CODE_PROMPTS_TXT,
+        smoke=SMOKE,
+    output: f"{OUT}/prompts_txt/{{dataset}}.txt"
+    log: "logs/render_prompts_txt/{dataset}.log"
+    conda: "envs/priors.yml"
+    shell: STAGE + "prompts-txt {wildcards.dataset} --out {output} > {log} 2>&1"
 
 
 rule probe:

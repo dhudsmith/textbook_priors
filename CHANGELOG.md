@@ -968,3 +968,26 @@ is worth fewer than fifty labels; the concept answers carry real class informati
 textbook's own readout discards; neither a bigger open model, nor a frontier closed one, nor asking
 the model to think first, changes how much of that information is there in any uniform way. The
 binding constraint on these six tasks is not the reader. It is the bank and the way it is read.
+
+## 2026-09-13 — Arm D's archive deleted; the txt render of the prompts restored
+
+Two decisions from the owner's cleaning audit before the talk, recorded because each changes what
+exists on disk rather than what is known.
+
+**The 30 `__directed__` chunks are gone.** The 2026-09-12 removal entry kept them on purpose and said
+deleting them would need a deliberate word; the owner gave it. Their logs and benchmarks went with
+them. What arm D measured — the nearest-fingerprint readout is lossy, and the bank is not
+information the model lacked — stays in the two entries of 2026-09-12 above, and nothing in
+`rule all` read the archive, so no number moves. `results/score/` now holds exactly the 294 chunks
+the DAG names: 270 at effort none and 24 for H4's two readers.
+
+**`render_prompts_txt` is back.** Commit d43a4d3 added it on 2026-09-12 at 15:42; the H4 commit at
+15:50, built in a parallel session from an older base, dropped the rule, its module function and
+its six tests without saying so. The six files it had written sat in `results/prompts_txt/` with no
+rule behind them until the audit noticed. Restored as committed: opt-in, outside `all`, no manifest,
+no hypothesis.
+
+Restoring it changed `priors/stages.py` and `priors/prompts.py`, which are inputs of every rule, so
+the owner's checkout was brought back to "nothing to be done" with `snakemake --touch`, as the
+conventions prescribe for a change that cannot move a number; nothing was recomputed but the PDF,
+which had two wrong sentences.

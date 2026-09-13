@@ -216,7 +216,7 @@ re-verified by any rule.
 **27,000 calls** in 270 chunk jobs of 100 images, which is the pre-registered budget, plus
 **2,400 for H4's two readers** in 24 chunks — 200 images per dataset each, concept prompt only, no
 pool and no zero-shot, because H4 is read through the concept answers alone. **29,400 in total.**
-A further 3,000 were bought for arm D and are archived but no longer read (§10).
+A further 3,000 were bought for arm D; their archive was deleted on 2026-09-13 (§10).
 
 H4's thinking reader is the expensive half in wall clock rather than in calls: at effort `medium`
 an answer costs about 986 completion tokens against 112 with thinking off, and this endpoint
@@ -297,6 +297,9 @@ The one stage type not seen in earlier projects, and the one that tests principl
   anchors, the rendered zero-shot prompt, the bank-file hash). Every `score_*` rule takes that file
   as an input instead of re-deriving the prompt, so the string sent to the model, the one hashed
   into the manifest, and the one the report or the demo shows are the same artifact.
+  `render_prompts_txt` (target `prompts_txt`, opt-in, outside `all`, no LLM calls) formats that
+  same file into `results/prompts_txt/<dataset>.txt`, one block per arm, for a person to read
+  rather than parse; it decides no hypothesis and no rule below it reads its output.
 - **Per call**: the 224-pixel PNG; JSON requested and validated against the scales; one retry with
   a doubled token budget on a malformed answer, then recorded as missing, never guessed.
 - **Thinking off**, and for a reason that turned out to be ours rather than the service's.
@@ -403,8 +406,8 @@ It was removed because it was designed after seeing the numbers and so could dec
 arm that decides nothing has to be labelled post-hoc in every table, figure, macro and paragraph it
 touches. That cost every reader of the report a second explanation of why a number was there and
 what it was not allowed to mean, on every page it appeared. The study is clearer with four
-pre-registered arms and no asterisk. The 30 archived chunks stay on disk unread: they were bought,
-and deleting an archive is not something a removal of this kind justifies.
+pre-registered arms and no asterisk. The 30 archived chunks stayed on disk unread until 2026-09-13,
+when the owner had them deleted in the cleaning audit; what they measured stays in `CHANGELOG.md`.
 
 The lesson it leaves is the one any replacement has to obey: **a decision rule before the calls.**
 An arm worth adding is worth pre-registering, and anything that cannot be is a separate study.
@@ -437,7 +440,8 @@ docs/rcd_llm_service.md   the LLM service as this project found it: models, effo
 data/concepts/            the concept-bank files and their README, committed
 data/literature/          the pinned published-benchmark table and its README, committed
 data/raw, data/cache      symlinks into storage_root on the project filesystem; gitignored
-results/                  one JSON per unit of work; results/score/ is the response archive
+results/                  one JSON per unit of work; results/score/ is the response archive;
+                          results/prompts_txt/ a human-readable txt render, opt-in, no manifest
 benchmarks/  logs/        per job
 report/                   report.tex, references.bib; tables/ and figs/ generated
 README.md  CHANGELOG.md  SESSION_LOG.md  CLAUDE.md  CONCEPT_BANK.md  WORKFLOW.md  TALK.md

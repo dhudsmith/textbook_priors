@@ -16,6 +16,9 @@ snakemake --profile profiles/local -j 2 -F smoke  # re-run the tests after editi
 
 # opt-in, outside `rule all`: ten images through the service on a compute node
 snakemake --profile profiles/palmetto results/probe/pneumoniamnist__qwen3.8-27b-fp8.json
+
+# opt-in, outside `rule all`, no LLM calls: a human-readable txt render of every prompt
+snakemake --profile profiles/local -j 2 prompts_txt
 ```
 
 Every rule takes the `smoke` marker as an input, so nothing is computed on code that fails its
@@ -56,6 +59,7 @@ data/cache/sample/     symlink target: the sampled image arrays, one npz per dat
 scripts/link_storage.sh  one-time setup: make those two symlinks
 results/               one JSON per unit of work, each with a manifest
 results/score/         the raw VLM response archive, write-protected once written
+results/prompts_txt/   opt-in: a plain-text render of each prompt, for a human reader; no manifest
 benchmarks/            wall time and peak memory per job
 report/                report.tex, references.bib, generated tables/ and figs/
 logs/                  one log per job
@@ -87,7 +91,7 @@ SESSION_LOG.md         timestamped record of how the work was directed
 | `test_bank.py` | the twelve committed bank files to the schema `CONCEPT_BANK.md` defines | 110 |
 | `test_release.py` | `config/medmnist.yaml` to the installed `medmnist` package | 20 |
 | `test_literature.py` | the pinned literature-benchmark table to the datasets the workflow runs and to `references.bib` | 4 |
-| `test_prompts.py` | the two prompts to H2's separation, and the renderer to its switches | 46 |
+| `test_prompts.py` | the two prompts to H2's separation, the renderer to its switches, and the txt render to the JSON | 52 |
 | `test_sample.py` | the streaming reader to a release-shaped fixture whose rows identify themselves | 14 |
 | `test_score.py` | the image encoding, the reply parser, the two retry policies, the exact request body each dialect sends, and the profile's caps against config's | 57 |
 | `test_classify.py` | the estimators to fixtures small enough to check by hand, arm B included | 19 |
@@ -95,7 +99,7 @@ SESSION_LOG.md         timestamped record of how the work was directed
 | `test_pipeline.py` | the analysis chain end to end, on an archive whose answer is known | 4 |
 | `test_metrics.py` | the AUC convention to the package that defines it | 3 |
 
-297 tests, run by the `smoke` rule before anything else.
+303 tests, run by the `smoke` rule before anything else.
 
 ## Where the data comes from
 

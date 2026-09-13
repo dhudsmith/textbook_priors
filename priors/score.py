@@ -11,10 +11,10 @@ answer, then missing. Truncation is the failure this is aimed at - a reply cut o
 common malformed answer - and doubling the budget is the one repair that can fix it without
 putting words in the model's mouth.
 
-There are two shapes of answer and three prompts. `concept` asks for a level per concept and
-is parsed against the scales; `zero_shot` (arm A) asks for a
-distribution over the class names and are parsed against the classes, which is why everything
-here switches on `kind == "concept"` rather than naming the three prompts one by one.
+There are two shapes of answer and two prompts. `concept` asks for a level per concept and is
+parsed against the scales; `zero_shot` (arm A) asks for a distribution over the class names and is
+parsed against the classes, which is why everything here switches on `kind == "concept"` rather
+than naming the prompts one by one.
 """
 from __future__ import annotations
 

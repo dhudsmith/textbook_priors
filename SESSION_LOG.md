@@ -435,3 +435,13 @@ Two things found and left for the owner. `results/prompts_txt/` holds six files 
 with its tests (a parallel-session clobber; the message never mentions it): restore the rule or
 delete the files. And the 30 `__directed__` arm-D chunks stay in the archive as CHANGELOG.md's
 removal entry asked — deleting 3,000 bought calls wants a deliberate word, not a cleanup pass.
+
+## 2026-09-13 07:30 — "Restore the txt rule. Update and recompile the tex. You can delete the D results"
+
+All three decisions the audit had left open, answered in one line. `render_prompts_txt` comes back
+exactly as d43a4d3 committed it (a clean cherry-pick: rule, module function, entry point, six tests,
+its README and WORKFLOW.md lines), and since `priors/stages.py` and `priors/prompts.py` were changing
+anyway, the four stale module docstrings the previous entry had left alone are fixed in the same
+commit. The 30 arm-D chunks, their logs and their benchmarks are deleted from the owner's checkout;
+WORKFLOW.md §4 and §10 and a CHANGELOG.md entry say so. The checkout is then brought back to
+"nothing to be done" with `snakemake --touch` and the PDF rebuilt, the only recomputation.
