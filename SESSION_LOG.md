@@ -316,3 +316,24 @@ reasoning is in CHANGELOG.md; the numbers are in config and the profile beside t
 
 Nothing about H4's design changed. This was an operations decision, taken on a measurement, of
 exactly the kind the workflow exists to make visible.
+
+## 2026-09-12 21:25 — The talk plan, fixed: workflow first, H4 as the follow-on
+
+"I would like to take your original talk plan and basically keep it. I don't want the talk to
+center around the hypothesis but the workflow, the basic spirit of the problem we're solving and
+what the evidence says. ... with the frontier and thinking incorporated as additional follow on
+'what if we added reasoning?' directions, to demonstrate the real research workflow in practice.
+... Let's target 25 minutes with 5 minutes for questions."
+
+Written into TALK.md §5 as a slide-by-slide table with minutes and the picture for each slide,
+and §4 rewritten from a live demo to two recorded clips. The spine is the one proposed at 14:40:
+cold open, old way and new way, the recipe, scenes where it nearly went wrong, what the evidence
+says, close. Two changes from that draft: the scenes drop from four to three to make room, and a
+new four-minute section carries today's H4 work as the workflow seen in practice over one day —
+the standing claim overturned by a test, the rule written before the calls, the one chunk that
+caught the temperature refusal, the wave measured and capped, and the result. Arm D appears for one
+beat as the contrast: added after the numbers, removed the same day; H4 pre-registered and kept.
+
+The follow-on section is written on the assumption, stated by the user, that the evening's pattern
+holds — frontier no better, thinking conditional. The analysis chain was at 33 of 40 jobs when this
+was written; if the final numbers disagree, §5 scene 6 is what changes.

@@ -98,15 +98,54 @@ Every rule would have been correct and every number reproducible, and the headli
 been an artefact of an unfair baseline. What caught it was a person reading the plan, not the DAG.
 The fix is in `WORKFLOW.md` §3 and the first entry of `CHANGELOG.md`.
 
-## 4. The demo
+## 4. The demo: recorded, not live
 
-Everything runs before the talk; the response archive is the fixed input. Live, and reversible:
+Twenty-five minutes with a second keynote following leaves no room for a queue or a sleeping
+model. Everything is recorded beforehand and played as a clip, at most two of them:
 
-- Add a fifth VLM to the config. The dry run lists exactly the new scoring chunks, the classify
-  jobs that read them and the tables downstream, and nothing else.
-- Ask the agent to make the reasoning level a wildcard of the score rule; watch it change the
-  config, the rule, the entry point and the resource cap together, then dry-run.
-- Show a scoring log where the cap held, and the calls-per-minute summary against the published
-  concurrency.
+- `snakemake -n` after editing one bank file: exactly one job reruns, with Snakemake's reason.
+- The reader wildcard added to the score rule: config, rule, entry point and cap change together,
+  then the dry run lists the twelve new chunks and nothing else. This is the refactor that H4
+  actually needed, so the clip shows work that happened rather than work staged for a talk.
 
-Record each beforehand as a fallback for a slow queue or a sleeping model.
+## 5. The talk, slide by slide
+
+Twenty-five minutes, five for questions. Fixed 2026-09-12 with the owner; the follow-on section
+assumes the H4 pattern of that evening holds, and is rewritten if the final chain says otherwise.
+
+**The refrain**, said four times in slightly different words: *the workflow turns hidden work into
+inspectable work. It does not inspect it for you.* Beneath it, the two questions every scene comes
+back to: *what did the agent do?* and *how do I know it is right?*
+
+**Style**: one idea per slide, a picture on every slide, almost no bullet lists, numbers only where
+a number changes what the audience believes. The project is the running example throughout and is
+never the subject.
+
+| # | minutes | scene | what is on the screen |
+|---|---|---|---|
+| 1 | 2 | **Cold open.** One chest X-ray at 224 pixels beside the textbook's checklist of what to look for. The question: how much of that does a vision-language model actually see? Then the turn: this talk is not about the answer. It is about how I could trust an answer when an AI agent wrote most of the code in three days. | the image; the concept bank rendered as a paper checklist with citations; the refrain, first time |
+| 2 | 3 | **The old way and the new way.** Nine before/after pairs from §1, shown as pictures not a table: a folder of numbered scripts against one Snakefile whose dry run prints the order; a README that became a notebook against README, CHANGELOG and SESSION_LOG each doing one job. | two desks side by side, then two or three pairs picked out |
+| 3 | 4 | **The recipe.** Seven stages, one file, every number has a rule. The agent reads the same document I read, and a dry run checks us both. | the DAG collapsed to stages; a terminal capture of `snakemake -n` after a bank edit, one job and its reason; one manifest with `served_model` and the prompt hash highlighted |
+| 4 | 7 | **Three scenes where it nearly went wrong**, told in order, each ending on what caught it. *(a) The unfair baseline*: a ResNet trained from scratch on fifty images against a model with billions of parameters of pretraining. Every rule correct, the claim worthless. A person reading the plan caught it; the DAG could not have. Refrain, second time. *(b) One chunk before 270*: rules generated in a loop all shared the last model's command. The first chunk came back with gemma's answers under qwen's file name, and the only trace was one manifest field disagreeing with the file it sat in. *(c) The wave that wrote nothing*: forty-eight jobs, two hours, zero output, because a call that takes 1.5 seconds alone takes 43 under our own load and 134 under eleven thinking chunks. Concurrency buys no throughput on a saturated endpoint; a cap is politeness, and the time limit is what decides whether anything is saved. | (a) the two plans side by side, one word changed; (b) the manifest and the filename, the disagreement circled, then the rule written out four times; (c) the contention chart: seconds per call against jobs in flight, and aggregate calls per second flat across it |
+| 5 | 4 | **What the evidence says.** Three hypotheses, rules fixed before any number existed, three verdicts computed rather than chosen: all unsupported. The honest headline: the textbook prior is worth fewer than fifty labelled images. And the twist the controls supply: the concept answers carry real class information; the textbook's own readout throws it away. A negative result you can stand behind is what the recipe is for. | the learning curve, six panels or three; a verdict slide with three rows and three "not supported"; the permutation drop in one bar |
+| 6 | 4 | **What if we added reasoning?** The workflow in practice, over one day. The question had shifted: not whether the textbook substitutes for labels, but how much of the features the model *sees*. So: a *reader* is a model plus a reasoning effort; the four models already archived are readers at effort none. 15:20, a test overturns a standing claim (thinking never worked here, and the cause was our own 512-token budget). 16:00, a decision rule is written before a call is bought: six of six or nothing. 16:12, one chunk runs first and the gateway model refuses temperature zero. 17:35, eleven chunks at once and a timed call says 134 seconds; cancelled, capped at four, same finish time, no chunk near its limit. Then the result: a frontier model reads cited features no better than a 27B open model, and thinking is not "help" or "no help" but conditional: it costs the tasks the model already read well and rescues the one it read badly. One beat of contrast: an arm added after seeing the numbers was removed the same day, because it could decide nothing; this one was kept because it was pre-registered. | a one-day timeline with the session log's timestamps as the ticks; the reader-chain figure; the scatter of thinking's effect against the baseline's probe AUC, one point per dataset, the line sloping down |
+| 7 | 1 | **Close.** The recipe and the transcript, side by side: the Snakefile and the session log. One is what was done; the other is why. You need both, and the workflow gives you the first for free. Refrain, last time. Hands-on at 3:35. | Snakefile header beside SESSION_LOG.md, same font, same size |
+
+**Visual assets.** Already generated by the workflow: the learning curve, the n_B plot, the model
+ladder, the reader-chain figure, every table, the manifests, the rendered prompts, a concept-bank
+file, the Snakefile header, the session log. To make for the talk, none of them a computation:
+
+1. The DAG, rendered by Snakemake and collapsed to stages.
+2. The before/after pairs as pictures.
+3. The contention chart, from measurements already in CHANGELOG.md: 1.5 s at one stream, 16.7 s for
+   one thinking chunk alone, 52 s at four, 134 s at eleven, 43 s at twenty-four, 89 s at forty-eight.
+4. The one-day timeline for scene 6, ticks from SESSION_LOG.md.
+5. The scatter of thinking's effect against baseline probe AUC, from the H4 table.
+6. Two terminal captures: the one-job dry run, and the manifest-versus-filename disagreement.
+7. The verdict slide.
+
+**What was cut from the first draft, and why.** The demo went from live to recorded (no room in
+twenty-five minutes). The scenes went from four to three; the two dropped — *the field we did not
+read* and *the median that was not a median* — are held as alternates if a scene runs short, and
+both fit the refrain. The results section shrank from a hypothesis-by-hypothesis walk to one figure
+and one verdict slide, because the talk is about the workflow and the science is its example.
