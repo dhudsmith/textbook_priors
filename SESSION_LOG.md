@@ -531,3 +531,35 @@ plan rather than only here.
 One limit is registered with it rather than discovered later: a dozen concept columns join 512 pixel
 columns under a single L2 penalty, so a null means "no detectable gain under the classifier every
 other arm uses", not "no information".
+
+## 2026-09-13 12:25 — A second session on the same task, and the damage it did
+
+A second Claude session was given the P + C prompt at 11:45 without the owner intending two to run
+at once, and did not know the 10:40 session existed. It built the same arm (as `PC`, with a
+permutation control) on its own branch, `claude/p-plus-c-hypothesis-57k952`, then at 11:52:34
+switched this checkout onto that branch to run, while the 10:40 session's chain had been submitted
+from here a minute earlier. Three things followed, each now undone; the owner's "clean up any
+damage you caused" at 12:05 directed the repair.
+
+- **Five classify outputs were written by the wrong code.** SLURM jobs read the working tree when
+  they start, so of the twelve classify jobs the 10:40 run submitted, five (bloodmnist,
+  breastmnist, octmnist, pneumoniamnist, retinamnist) imported the other branch's `stages.py` and
+  wrote arm `PC` arrays where this branch's evaluate expects `CP`; their evaluate jobs failed with
+  `KeyError: 'CP__n50__seed0'`. The manifest's `git_commit` field named the culprit in each file,
+  which is what it is for. The five outputs were deleted at 12:08 so the next run recomputes them;
+  the seven written by this branch's code stayed.
+- **The checkout was switched back at 11:55:30**, and that switch, like the first, rewrote
+  `stages.py` with a new mtime.
+- **A `snakemake --touch` in the second session's worktree reached the shared cache.** `data/cache`
+  is a symlink onto project storage in every checkout, so touching `sample` and `features` there
+  at 11:58 bumped the mtimes of the twelve sample arrays and the twelve feature arrays this checkout
+  reads. Together with the `stages.py` mtime, that made every archived chunk look stale: the next
+  `snakemake all` from here planned 574 jobs and submitted 127 scoring chunks before the second
+  session killed it at 12:17 and cancelled the jobs. None had started; all 521 chunks are on disk
+  with their contents untouched. The 10:40 session then ran the documented repair, `--touch score
+  features prompts`, and a dry run at 12:20 shows the 29-job analysis chain and nothing above it.
+
+The second session also cancelled its own worktree run (12 classify jobs, nothing written here) and
+left its branch on origin as a duplicate implementation for the owner to keep or delete. The lesson
+is the one README already states - one checkout runs the workflow at a time - with a corollary the
+symlinks make sharp: a `--touch` in any checkout is a `--touch` of the shared cache for all of them.
