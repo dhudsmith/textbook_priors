@@ -53,7 +53,7 @@ fetch: {segment_mb: 256, max_segments: 24}
 # dropped for that dataset, not repeated.
 sample: {test_n: 500, pool_n: 2000, seed: 0}
 
-# The learning curve: how many labelled images arms C and P get, and at how many draws of them.
+# The learning curve: how many labelled images arms C, P and PC get, and at how many draws of them.
 # The resolution of n_B - the headline number, the smallest n at which the pixel probe reaches the
 # zero-label textbook arm - is this grid and nothing finer.
 curve:  {n: [50, 100, 200, 500, 1000, 2000], seeds: [0, 1, 2]}
@@ -189,6 +189,14 @@ h4:
                                           # capped at the test sample where that is smaller
                                           # (breastmnist: 156). Supported at `evaluate.alpha`, as
                                           # H1 and H2 are.
+
+# H5: the textbook adds to the pixels. Arm PC is arm P's features and arm C's concept vector side by
+# side under the same classifier; the rule reads AUC(PC) > AUC(P) at one grid point, over every
+# dataset, at `evaluate.alpha` (WORKFLOW.md section 2). Registered 2026-09-13 with H1 to H4 decided
+# and no PC fit in existence; every dataset's pool reaches at_n. The smallest point, because a prior
+# has the most to add where labels are fewest; the rest of the curve is reported, not decided on.
+h5:
+  at_n: 50
 
 # Resources per rule. cpus is also `threads`; mem_mb per job; runtime in minutes.
 #

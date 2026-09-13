@@ -509,3 +509,31 @@ macros. The six original datasets reproduce exactly under the extended code, che
 of their evaluate outputs taken before the run. Findings are in CHANGELOG.md: all four hypotheses
 unsupported on twelve, H2 flipping on the tasks the model cannot name, H4a's pattern holding on
 eleven. TALK.md's scene 5 and scene 6 carry the two sentences that changed.
+
+## 2026-09-13 11:45 — "I hypothesize that p plus c beats p"
+
+"Graph that into a registered hypothesis in our documentation. Add it as an arm. Run the
+experiments. Integrate it into the report. Make a note in my talk notes to use this as an example
+of something that I could add on and how it's easy to do this without rerunning everything."
+
+Registered as H5 in WORKFLOW.md §2 before any PC fit existed, with H1 to H4 already decided on
+twelve datasets: arm PC is arm P's 512 frozen ImageNet columns and arm C's concept columns side by
+side under the identical classifier, and the rule reads AUC(PC) > AUC(P) at n = 50 on at least 10 of
+12 datasets, the level every other rule is held to. Two choices made without asking, both written
+into the plan: the smallest grid point decides, because a prior has the most to add where labels
+are fewest, and the rest of the curve is reported as a win count per n rather than folded into the
+rule; and the permutation control (PC with its concept block shuffled, pixels left alone) is
+reported beside the verdict rather than made a second condition, because it is the same comparison
+against a different baseline. What was known when the rule was written is stated in §2: every C
+and P number, which say P beats C and nothing about whether C adds to P.
+
+The arm costs no LLM call - both feature sets already sit on disk for every labelled image - so it
+is a third fit inside the classify stage, a third curve in evaluate, one more sign test, one table,
+one figure and a report section. The dry run from the owner's checkout is the demonstration the
+talk note asks for: the twelve classify jobs and everything below them rerun, the 521 archived
+chunks and the features do not.
+
+The branch this session started on was seven commits behind the one the owner's checkout runs
+(the twelve-dataset extension of the morning) and had no commits of its own, so it was fast-forwarded
+onto that state first; building the arm against six-dataset code would have made it unrunnable
+against the twelve-dataset results.

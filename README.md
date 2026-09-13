@@ -2,9 +2,9 @@
 
 Can a vision-language model's textbook knowledge of what pathology looks like stand in for
 labelled data? On the twelve MedMNIST 2D benchmarks a VLM scores each image against a cited bank
-of diagnostic visual features, and four arms — two label-free, two label-matched — say what those
-scores are worth in the currency of labelled images. The whole study, from the fixed inputs to the
-technical report, is one Snakemake workflow on Palmetto2. The plan and the four hypotheses are
+of diagnostic visual features, and five arms — two label-free, three label-matched — say what
+those scores are worth in the currency of labelled images. The whole study, from the fixed inputs
+to the technical report, is one Snakemake workflow on Palmetto2. The plan and the five hypotheses are
 `WORKFLOW.md`; dated findings are `CHANGELOG.md`; the talk narrative is `TALK.md`.
 
 ```bash
@@ -37,9 +37,9 @@ scoring fan-out; from the owner's checkout, where every result exists, it is not
 | 1 | **Sample** | A release file missing from storage is fetched first; per dataset: the seeded test sample and labelled pool, capped at the official split | 4 + 12 |
 | 2 | **Score** | Per dataset: render both prompts; then the VLM calls, archived raw, including H4's two readers | 12 + 521 |
 | 3 | **Features** | Per dataset: ImageNet ResNet-18 penultimate features | 12 |
-| 4 | **Classify** | Per dataset: arms A, B, C, P over the curve, the permutation controls, and every reader's probe; C and P alone for the multi-label chestmnist | 12 |
-| 5 | **Evaluate** | AUC, the paired bootstrap, n_B; then the sign tests, the ladder and the reader chain | 12 + 1 |
-| 6 | **Report** | Five figures, the tables, the technical report PDF | 3 |
+| 4 | **Classify** | Per dataset: arms A, B, C, P, PC over the curve, the permutation controls, and every reader's probe; C, P and PC alone for the multi-label chestmnist | 12 |
+| 5 | **Evaluate** | AUC, the paired bootstrap, n_B; then the sign tests, the ladder, the reader chain and PC against P | 12 + 1 |
+| 6 | **Report** | Six figures, the tables, the technical report PDF | 3 |
 
 ## Layout
 
@@ -79,7 +79,7 @@ SESSION_LOG.md         timestamped record of how the work was directed
 | `score.py` | The deterministic half of scoring: the image as a lossless PNG, and a reply parsed into a validated answer or a recorded absence. |
 | `prompts.py` | The concept and zero-shot prompt strings, rendered from the bank and the label map. |
 | `features.py` | Arm P's frozen ImageNet encoder, and the preprocessing that does not resize. |
-| `classify.py` | Every estimator: the concept vectors, arm B's fingerprint match, the regression behind arms C and P, H4's cross-validated probe, and the two permutation controls. |
+| `classify.py` | Every estimator: the concept vectors, arm B's fingerprint match, the regression behind arms C, P and PC, H4's cross-validated probe, and the permutation controls. |
 | `evaluate.py` | The AUC convention as a rank formula, the shared paired bootstrap, n_B, and the tests the hypotheses are decided by. |
 | `report.py` | Every figure, table and number macro, from results/ alone — plus one table that also reads the pinned literature benchmarks. |
 | `stages.py` | **The workflow driver.** One entry point per unit of parallel work. |
@@ -97,7 +97,7 @@ SESSION_LOG.md         timestamped record of how the work was directed
 | `test_score.py` | the image encoding, the reply parser, the two retry policies, the exact request body each dialect sends, and the profile's caps against config's | 57 |
 | `test_classify.py` | the estimators to fixtures small enough to check by hand, arm B and the one-vs-rest fit included | 21 |
 | `test_evaluate.py` | the fast AUC to the package's evaluator on every task type, and the decision rules to the plan | 22 |
-| `test_pipeline.py` | the analysis chain end to end, on an archive whose answer is known, single- and multi-label | 4 |
+| `test_pipeline.py` | the analysis chain end to end, on an archive whose answer is known, single- and multi-label, arm PC and H5 included | 4 |
 | `test_metrics.py` | the AUC convention to the package that defines it | 3 |
 
 378 tests, run by the `smoke` rule before anything else.

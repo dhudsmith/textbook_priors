@@ -1,7 +1,7 @@
 This repository is one Snakemake workflow following the conventions in the `research-workflow`
 skill (`~/.claude/skills/research-workflow/SKILL.md`). Load it before adding or changing rules,
 environments, resource requests, or running jobs. The project plan is WORKFLOW.md and the
-concept-bank procedure is CONCEPT_BANK.md; read both first. WORKFLOW.md §2 fixes the four
+concept-bank procedure is CONCEPT_BANK.md; read both first. WORKFLOW.md §2 fixes the five
 hypotheses, their metric and their decision rules: work that serves none of them belongs in the
 extensions list, not in `rule all`. TALK.md is the presentation narrative and constrains nothing.
 

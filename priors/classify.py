@@ -1,4 +1,4 @@
-"""classify: the four arms, from the response archive and the pixel features.
+"""classify: the five arms, from the response archive and the pixel features.
 
 Every estimator WORKFLOW.md section 3 fixes lives here, and nothing else does. The arms:
 
@@ -6,9 +6,14 @@ Every estimator WORKFLOW.md section 3 fixes lives here, and nothing else does. T
     B  textbook-only  nearest class fingerprint, no labels at all
     C  concept probe  regularised logistic regression on concept scores, n labels
     P  pixel probe    the same regression on frozen ImageNet features, the same n labels
+    PC both           the same regression on the pixel features and the concept scores side by
+                      side, the same n labels (H5: does the textbook add to the pixels?)
 
-C and P differ in their features and in nothing else - same classifier, same regularisation search,
-same labelled subsets - because that is what makes the two curves a statement about the features.
+C, P and PC differ in their features and in nothing else - same classifier, same regularisation
+search, same labelled subsets - because that is what makes the curves a statement about the
+features. PC is built in the stage driver by concatenation and has no estimator of its own here:
+one L2 strength over every standardised column, no weight on the concept block, because a block
+weight would be a hyper-parameter arm P never had.
 
 Three choices are worth reading before the code, because each is a decision rather than an
 implementation detail:

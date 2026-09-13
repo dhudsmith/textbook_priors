@@ -11,11 +11,11 @@ a table; tables and figures are drawn from those files by the report stages.
     score DATASET MODEL SPLIT PROMPT CHUNK --out FILE   one chunk of the fan-out (stage 2)
     collect-scores DATASET --out FILE            one dataset's chunks, gathered (stage 2)
     features DATASET --out FILE --arrays FILE    ImageNet features of the sampled images (stage 3)
-    classify DATASET --out FILE --arrays FILE    arms A, B, C, D, P and the controls (stage 4)
+    classify DATASET --out FILE --arrays FILE    arms A, B, C, P, PC and the controls (stage 4)
     evaluate DATASET --out FILE                  AUCs, the paired bootstrap and n_B (stage 5)
     evaluate-across --out FILE                   the sign tests, the ladder, the verdicts (stage 5)
     tables --dest DIR                            every table and number macro the report states
-    figures --dest DIR                           the five figures
+    figures --dest DIR                           the six figures
 
 Run with  python -m priors.stages <stage> [args]
 """
@@ -401,8 +401,9 @@ def classify(dataset: str, out: str, arrays: str) -> None:
     AUCs, because the paired bootstrap has to resample the test images once for every arm at the
     same time. The scores ride in an .npz beside the JSON, which is small enough to be a result.
 
-    Four arms: A zero-shot, B nearest fingerprint, C the concept probe, P the pixel probe, plus H4's
-    cross-validated probe for every reader. The multi-label task (chestmnist) gets arms C and P
+    Five arms: A zero-shot, B nearest fingerprint, C the concept probe, P the pixel probe, PC the
+    same probe on the pixel features and the concept vector side by side (H5), plus H4's
+    cross-validated probe for every reader. The multi-label task (chestmnist) gets arms C, P and PC
     alone: a nearest fingerprint and a distribution over class names are not defined over fourteen
     co-occurring findings (WORKFLOW.md section 3), so it skips A, B and H4 and its regressions are
     fitted one finding at a time.
@@ -496,7 +497,7 @@ def classify(dataset: str, out: str, arrays: str) -> None:
                     "missing_indicator_columns": int(columns.sum()),
                 }
 
-        # ---- arms C and P: the curve, at every n and every seed -------------------------------
+        # ---- arms C, P and PC: the curve, at every n and every seed ---------------------------
         pool_concepts = arms.concept_matrix(cell(primary, "pool", "concept"), concepts)
         test_concepts = arms.concept_matrix(cell(primary, "test", "concept"), concepts)
         if multi_label:
@@ -509,6 +510,12 @@ def classify(dataset: str, out: str, arrays: str) -> None:
         x_pool_c = np.hstack([pool_c, np.isnan(pool_concepts)[:, keep].astype(float)])
         x_test_c = np.hstack([test_c, np.isnan(test_concepts)[:, keep].astype(float)])
         x_pool_p, x_test_p = pixel_arrays["pool_features"], pixel_arrays["test_features"]
+        # Arm PC (H5): arm P's 512 pixel columns and arm C's concept columns side by side, under the
+        # same classifier, the same standardisation and the same subsets. No block weighting: a
+        # weight on the concept block would be a hyper-parameter arm P never had, and the question
+        # is whether the columns add anything as they are (WORKFLOW.md section 3).
+        x_pool_pc = np.hstack([x_pool_p, x_pool_c])
+        x_test_pc = np.hstack([x_test_p, x_test_c])
         # Subsets are stratified on the class, or for the multi-label task on any-finding against
         # no-finding (classify.strata); the regression itself sees the full label.
         pool_strata = arms.strata(y_pool)
@@ -517,30 +524,36 @@ def classify(dataset: str, out: str, arrays: str) -> None:
         for seed in curve["seeds"]:
             subsets = arms.nested_subsets(pool_strata, curve_n, n_strata, seed)
             for n, idx in subsets.items():
-                for arm, x_pool, x_test in (("C", x_pool_c, x_test_c), ("P", x_pool_p, x_test_p)):
+                for arm, x_pool, x_test in (("C", x_pool_c, x_test_c), ("P", x_pool_p, x_test_p),
+                                            ("PC", x_pool_pc, x_test_pc)):
                     got = arms.fit_predict(x_pool[idx], y_pool[idx], x_test, len(classes),
                                            spec["l2_grid"], spec["cv_folds"], seed,
                                            multi_label=multi_label)
                     key = f"{arm}__n{n}__seed{seed}"
                     out_arrays[key] = got["scores"]
-                    index.append({"arm": arm, "key": key, "model": primary if arm == "C" else None,
+                    index.append({"arm": arm, "key": key, "model": primary if arm != "P" else None,
                                   "labels": int(len(idx)), "n": int(n), "seed": int(seed),
                                   "C": got["C"], "folds": got["folds"]})
                     fits.append({"key": key, "C": got["C"], "folds": got["folds"],
                                  "classes_present": len(got["classes"])})
 
         # ---- arm C's control: the concept columns shuffled across images ----------------------
+        # Arm PC takes the same control, with the same shuffle: its pixel columns stay put and its
+        # concept block is exactly arm C's permuted one, so whatever PC keeps over P under this
+        # control is what a dozen extra columns of noise buy the classifier, not the textbook.
         for seed in spec["permute"]["seeds"]:
             shuffled = arms.permute_columns(x_pool_c, seed)
+            shuffled_pc = np.hstack([x_pool_p, shuffled])
             subsets = arms.nested_subsets(pool_strata, curve_n, n_strata, curve["seeds"][0])
             for n, idx in subsets.items():
-                got = arms.fit_predict(shuffled[idx], y_pool[idx], x_test_c, len(classes),
-                                       spec["l2_grid"], spec["cv_folds"], curve["seeds"][0],
-                                       multi_label=multi_label)
-                key = f"Cperm__n{n}__seed{seed}"
-                out_arrays[key] = got["scores"]
-                index.append({"arm": "C_permuted", "key": key, "model": primary,
-                              "labels": int(len(idx)), "n": int(n), "permute_seed": int(seed)})
+                for arm, x_pool, x_test in (("C", shuffled, x_test_c), ("PC", shuffled_pc, x_test_pc)):
+                    got = arms.fit_predict(x_pool[idx], y_pool[idx], x_test, len(classes),
+                                           spec["l2_grid"], spec["cv_folds"], curve["seeds"][0],
+                                           multi_label=multi_label)
+                    key = f"{arm}perm__n{n}__seed{seed}"
+                    out_arrays[key] = got["scores"]
+                    index.append({"arm": f"{arm}_permuted", "key": key, "model": primary,
+                                  "labels": int(len(idx)), "n": int(n), "permute_seed": int(seed)})
 
         Path(arrays).parent.mkdir(parents=True, exist_ok=True)
         np.savez(arrays, labels=y_test, **out_arrays)
@@ -567,8 +580,9 @@ def evaluate(dataset: str, out: str) -> None:
     columns of the same matrix and its interval is a percentile of that. The absolute AUCs carry
     the thin-class caveat of WORKFLOW.md section 3; the differences are what the hypotheses read.
 
-    The multi-label task has arms C and P alone, so it gets the curve, its permutation control and
-    the C-against-P differences, and neither n_B (there is no arm B to reach) nor the reader chain.
+    The multi-label task has arms C, P and PC alone, so it gets the curve, the permutation controls
+    and the C-against-P and PC-against-P differences, and neither n_B (there is no arm B to reach)
+    nor the reader chain.
     Its AUC is the package's convention for the task: the mean over findings of each finding's
     one-vs-rest AUC.
     """
@@ -601,9 +615,9 @@ def evaluate(dataset: str, out: str) -> None:
             cols = [column[f"{arm}__n{n}__seed{s}"] for s in curve["seeds"]]
             return replicates[:, cols].mean(axis=1)
 
-        # ---- the curve, and the differences H1 turns on ----------------------------------------
+        # ---- the curve, and the differences H1 and H5 turn on ----------------------------------
         curve_points = {}
-        for arm in ("C", "P"):
+        for arm in ("C", "P", "PC"):
             for n in curve_n:
                 draws = mean_over_seeds(arm, n)
                 curve_points[f"{arm}__n{n}"] = {
@@ -614,6 +628,8 @@ def evaluate(dataset: str, out: str) -> None:
         for n in curve_n:
             differences[f"C_minus_P__n{n}"] = metrics.interval(
                 mean_over_seeds("C", n) - mean_over_seeds("P", n), spec["ci"])
+            differences[f"PC_minus_P__n{n}"] = metrics.interval(
+                mean_over_seeds("PC", n) - mean_over_seeds("P", n), spec["ci"])
         controls = {}
         n_b, h4, arm_b_by_model = None, None, None
 
@@ -673,14 +689,17 @@ def evaluate(dataset: str, out: str) -> None:
                                                   spec["ci"])}
             h4 = {"subsample": sub, "probe_auc": cv_point, "steps": steps}
 
-        # ---- arm C's control, for every task -------------------------------------------------
-        for n in curve_n:
-            permuted = np.mean([replicates[:, column[f"Cperm__n{n}__seed{s}"]]
-                                for s in CONFIG["classify"]["permute"]["seeds"]], axis=0)
-            controls[f"C__n{n}"] = {
-                "permuted": float(np.mean([point[f"Cperm__n{n}__seed{s}"]
-                                           for s in CONFIG["classify"]["permute"]["seeds"]])),
-                "drop": metrics.interval(mean_over_seeds("C", n) - permuted, spec["ci"])}
+        # ---- arm C's control and arm PC's, for every task ----------------------------------------
+        # PC's drop is PC minus PC-with-its-concept-block-shuffled: what the textbook columns add
+        # over the same number of columns of noise beside the same pixels (H5).
+        for arm in ("C", "PC"):
+            for n in curve_n:
+                permuted = np.mean([replicates[:, column[f"{arm}perm__n{n}__seed{s}"]]
+                                    for s in CONFIG["classify"]["permute"]["seeds"]], axis=0)
+                controls[f"{arm}__n{n}"] = {
+                    "permuted": float(np.mean([point[f"{arm}perm__n{n}__seed{s}"]
+                                               for s in CONFIG["classify"]["permute"]["seeds"]])),
+                    "drop": metrics.interval(mean_over_seeds(arm, n) - permuted, spec["ci"])}
 
         run.write(out, dict(
             dataset=dataset, task=task, n_classes=n_classes, classes=summary["classes"],
@@ -699,17 +718,18 @@ def evaluate(dataset: str, out: str) -> None:
 
 
 def evaluate_across(out: str) -> None:
-    """The across-dataset tests: H1, H2, H3 and H4 as WORKFLOW.md section 2 states their rules.
+    """The across-dataset tests: H1 to H5 as WORKFLOW.md section 2 states their rules.
 
     Sign tests rather than pooled AUCs, because an AUC on pathmnist and an AUC on octmnist are not
     commensurable quantities to average. Every rule is held to one level, `evaluate.alpha`: an arm
     must win on the smallest count of datasets whose one-sided sign test has p < alpha, which is
     6 of 6, 9 of 11 and 10 of 12. The per-dataset differences are what carries the reading.
 
-    H1 counts every dataset; H2, H3 and H4 count the datasets that have an arm B, which excludes
-    the multi-label task, and n_B's median is taken over those. H4 is a hypothesis and not an
-    extension: its decision rule was written into config and WORKFLOW.md before any call of its
-    readers was bought, which is what arm D could not say for itself and why arm D is gone.
+    H1 and H5 count every dataset; H2, H3 and H4 count the datasets that have an arm B, which
+    excludes the multi-label task, and n_B's median is taken over those. H4 and H5 are hypotheses
+    and not extensions: each decision rule was written into config and WORKFLOW.md before the arm
+    it reads existed - H4's before any call of its readers was bought, H5's before any PC fit was
+    made - which is what arm D could not say for itself and why arm D is gone.
     """
     from . import evaluate as metrics
     spec, curve = CONFIG["evaluate"], CONFIG["curve"]
@@ -721,7 +741,8 @@ def evaluate_across(out: str) -> None:
     need_all, need_b = metrics.min_wins(len(datasets), alpha), metrics.min_wins(len(arm_b), alpha)
 
     with Run("evaluate_across", dict(datasets=datasets, min_n_b=100, alpha=alpha,
-                                     min_wins_all=need_all, min_wins_arm_b=need_b)) as run:
+                                     min_wins_all=need_all, min_wins_arm_b=need_b,
+                                     h5_at_n=CONFIG["h5"]["at_n"])) as run:
         smallest = min(curve["n"])
         # H1: the textbook is worth a measurable number of labelled images.
         c_beats_p = {d: per[d]["differences"][f"C_minus_P__n{smallest}"]["median"] > 0 for d in datasets}
@@ -813,8 +834,39 @@ def evaluate_across(out: str) -> None:
         h4["min_wins"], h4["n_datasets"] = need_b, len(arm_b)
         h4["supported"] = bool(h4["h4a"]["supported"] and h4["h4b"]["supported"])
 
+        # H5: the textbook adds to the pixels. Arm PC against arm P at the grid point config fixes
+        # (the smallest, where a prior has the most to add), held to the level H1 is held to and
+        # counted over every dataset, chestmnist included, since C, P and PC all exist there. The
+        # rest of the grid is reported as a win count per n, so a reader can see where the
+        # contribution runs out; it decides nothing. The permutation control is reported beside it
+        # and is not a second condition: it is the same comparison against P plus shuffled columns
+        # instead of P alone, and would decide the same thing twice.
+        at_n = int(CONFIG["h5"]["at_n"])
+        for d in datasets:
+            if at_n not in per[d]["curve_n"]:
+                raise ValueError(f"H5 is decided at n = {at_n}, which {d}'s curve does not reach")
+        pc_beats_p = {d: per[d]["differences"][f"PC_minus_P__n{at_n}"]["median"] > 0 for d in datasets}
+        pc_drops = {d: per[d]["controls"][f"PC__n{at_n}"]["drop"]["median"] > 0 for d in datasets}
+        wins_by_n = {}
+        for n in curve["n"]:
+            covered = [d for d in datasets if n in per[d]["curve_n"]]
+            wins_by_n[str(n)] = {
+                "wins": sum(per[d]["differences"][f"PC_minus_P__n{n}"]["median"] > 0 for d in covered),
+                "n_datasets": len(covered),
+                "min_wins": metrics.min_wins(len(covered), alpha)}
+        h5 = {
+            "at_n": at_n,
+            "pc_beats_p": pc_beats_p, "wins": sum(pc_beats_p.values()),
+            "sign_test_p": metrics.sign_test(sum(pc_beats_p.values()), len(datasets)),
+            "differences": {d: per[d]["differences"][f"PC_minus_P__n{at_n}"] for d in datasets},
+            "pc_loses_under_permutation": pc_drops, "control_wins": sum(pc_drops.values()),
+            "wins_by_n": wins_by_n,
+            "min_wins": need_all, "n_datasets": len(datasets),
+            "supported": bool(sum(pc_beats_p.values()) >= need_all),
+        }
+
         run.write(out, dict(datasets=datasets, arm_b_datasets=arm_b, alpha=alpha,
-                            h1=h1, h2=h2, h3=h3, h4=h4,
+                            h1=h1, h2=h2, h3=h3, h4=h4, h5=h5,
                             flagged_cells={d: [k for k, over in per[d]["incomplete_over_cap"].items() if over]
                                            for d in datasets}))
 
@@ -832,6 +884,7 @@ def tables(dest: str) -> None:
         reporting.table_h2(per, datasets, curve, primary, dest)
         reporting.table_h3(across, datasets, dest)
         reporting.table_h4(across, datasets, dest)
+        reporting.table_h5(per, across, datasets, dest)
         reporting.table_literature(per, literature, datasets, curve, primary, dest)
         reporting.table_completeness(per, datasets, dest)
         macros = reporting.numbers(per, across, datasets, curve, primary, dest, literature)
@@ -839,7 +892,8 @@ def tables(dest: str) -> None:
 
 
 def figures(dest: str) -> None:
-    """The five figures: one per hypothesis, and H4a read against its baseline."""
+    """The six figures: the curve, n_B, the ladder, the reader chain, thinking's effect, and arm
+    PC's gain over arm P along the curve (H5)."""
     from . import report as reporting
     datasets, curve = CONFIG["datasets"], CONFIG["curve"]["n"]
     per, across = reporting.load(CONFIG["outdir"], datasets)
@@ -851,9 +905,10 @@ def figures(dest: str) -> None:
         reporting.figure_ladder(across, datasets, dest)
         reporting.figure_readers(across, datasets, dest)
         reporting.figure_thinking(across, datasets, dest)
+        reporting.figure_complement(per, across, datasets, curve, dest)
         run.write(f"{CONFIG['outdir']}/figures.json", dict(dest=dest,
                   files=["fig_curve.png", "fig_n_b.png", "fig_ladder.png", "fig_readers.png",
-                         "fig_thinking.png"]))
+                         "fig_thinking.png", "fig_complement.png"]))
 
 
 def main(argv=None) -> None:

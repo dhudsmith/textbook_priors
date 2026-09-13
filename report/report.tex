@@ -28,7 +28,7 @@
 A multimodal language model carries textbook knowledge about what pathology looks like. This study
 asks what that knowledge is worth, measured in the currency a practitioner cares about: labelled
 images. On the \numDatasets\ MedMNIST 2D benchmarks, a vision--language model scores each image
-against a cited bank of diagnostic visual features, and four arms are compared on one shared test
+against a cited bank of diagnostic visual features, and five arms are compared on one shared test
 sample per dataset:
 
 \begin{itemize}
@@ -37,20 +37,24 @@ sample per dataset:
   \item \textbf{B, textbook-only} --- nearest class fingerprint from the concept bank. No labels.
   \item \textbf{C, concept probe} --- regularised logistic regression on the concept scores, $n$ labels.
   \item \textbf{P, pixel probe} --- the same regression on frozen ImageNet features, the same $n$ labels.
+  \item \textbf{PC, both} --- the same regression on the pixel features and the concept scores side
+        by side, the same $n$ labels.
 \end{itemize}
 
-Arms C and P differ in their features and in nothing else: the same classifier, the same
-regularisation search and the same labelled subsets. The four hypotheses and their decision rules
-were fixed in \texttt{WORKFLOW.md} before any number existed, and are reported here as they were
-written. Every across-dataset rule is a one-sided sign test held to one level, $p < \alphaLevel$:
+Arms C, P and PC differ in their features and in nothing else: the same classifier, the same
+regularisation search and the same labelled subsets. The five hypotheses and their decision rules
+were fixed in \texttt{WORKFLOW.md} before the numbers they read existed --- H1 to H3 before any
+number, H4 before its readers were scored, H5 on 2026-09-13 before any PC fit was made, with H1 to
+H4 already decided --- and are reported here as they were written. Every across-dataset rule is a one-sided sign test held to one level, $p < \alphaLevel$:
 an arm must win on at least \minWinsAll\ of the \numDatasets\ datasets, or \minWinsArmB\ of the
 \numArmBDatasets\ that have an arm B. The study was decided on six datasets first and extended to
 \numDatasets\ with those six verdicts known; \texttt{WORKFLOW.md} section~2 says so, and the level
 reproduces the six-dataset rule exactly.
 
 One dataset, chestmnist, is multi-label: fourteen findings that co-occur. A nearest fingerprint and
-a distribution over class names are not defined over such a label space, so it has arms C and P
-only, fitted one finding at a time, and counts for H1 alone; its AUC is the mean over findings.
+a distribution over class names are not defined over such a label space, so it has arms C, P and
+PC only, fitted one finding at a time, and counts for H1 and H5 alone; its AUC is the mean over
+findings.
 
 One further comparison point was added after those results were in hand, and it decides nothing.
 The \textbf{published literature} for these same tasks is read in as a fixed ceiling, so the
@@ -87,8 +91,9 @@ An answer that did not parse, or that named a level outside its concept's own sc
 as missing and never repaired into a value. Concept levels map to equally spaced values on $[0,1]$;
 a missing answer takes the labelled pool's median for that concept and is flagged by an indicator
 column. Arm~B scores a class by the negative mean absolute difference over the concepts that both
-the fingerprint and the image commit to. Arms C and P choose their L2 strength by cross-validation
-inside the $n$ labelled images, with no validation set. The metric is
+the fingerprint and the image commit to. Arms C, P and PC choose their L2 strength by
+cross-validation inside the $n$ labelled images, with no validation set; PC standardises every
+column and applies one strength to all of them, with no weight on the concept block. The metric is
 \texttt{medmnist.evaluator.getAUC}, and every interval is a 95\% percentile interval from a paired
 bootstrap over the test images, shared by every arm.
 
@@ -105,8 +110,9 @@ reached the textbook arm inside the curve on \neverReached\ datasets and started
 
 \begin{figure}[htbp]\centering
   \includegraphics[width=\textwidth]{fig_curve.png}
-  \caption{What labelled images buy (arms C and P, with 95\% intervals) against what the textbook
-  gives for nothing (arm B, dashed; arm A, dotted). Where the
+  \caption{What labelled images buy (arms C and P, with 95\% intervals; arm PC as the dashed
+  purple line, whose paired difference from P has its own figure in Section~H5) against what the
+  textbook gives for nothing (arm B, dashed green; arm A, dotted grey). Where the
   pixel probe crosses arm B's line is $n_B$. The finely dotted brown line is not an arm: the
   published, fully supervised ResNet-18 (224) AUC for the same task \cite{yang2023}, trained on
   the whole official training split rather than this study's labelled pool, read here as a ceiling
@@ -191,6 +197,39 @@ Table~\ref{tab:h4} and Figure~\ref{fig:readers}, not only the three the chain re
   \caption{H4a against its baseline: what reasoning added to each dataset's probe AUC, plotted
   against how well the model read the concepts with no reasoning. Solid points have intervals
   clear of zero. A handful of points is a pattern, not a slope, and none is fitted.}\label{fig:thinking}
+\end{figure}
+
+\subsection*{H5 --- Complementarity: \hFiveSupported}
+
+\emph{The textbook adds to the pixels: concept scores beside the pixel features beat the pixel
+features alone, at equal labels and under the identical classifier.} H1 asked whether the textbook
+can \emph{replace} labelled pixels and found it cannot; H5 asks the question a practitioner with a
+few labels would ask next, whether it is worth having \emph{as well}. Arm PC is arm P's 512 frozen
+ImageNet columns and arm C's concept columns side by side, under the same regression, the same
+regularisation search and the same nested subsets, so the paired difference PC $-$ P is the
+concept columns and nothing else. Decided at $n = \hFiveAtN$, the smallest labelled subset, where
+a prior has the most to add, and counted over all \numDatasets\ datasets, chestmnist included,
+since it has arms C, P and PC.
+
+PC beat P at $n = \hFiveAtN$ on \pcBeatsPWins\ of \numDatasets\ datasets against
+\minWinsAll\ needed (one-sided sign test $p = \pcBeatsPp$); \pcClearWins\ of those wins and
+\pcClearLosses\ of the losses have intervals clear of zero. At the largest subset,
+$n = \pcLargestN$, PC was ahead on \pcBeatsPWinsLargest\ of the \pcLargestNDatasets\ datasets
+whose pool reaches it. The control --- PC minus PC with its concept block shuffled across images
+and its pixel columns left alone --- came out positive on \pcControlWins\ of \numDatasets, which
+is how many datasets' gain is the textbook rather than a dozen extra columns. One stated limit: with
+one L2 strength over 512 pixel columns and about a dozen concept columns, the concept block is a
+small minority of the standardised features, and no block weighting was applied because a weight
+would be a hyper-parameter arm P never had.
+
+\input{tables/h5}
+
+\begin{figure}[htbp]\centering
+  \includegraphics[width=\textwidth]{fig_complement.png}
+  \caption{H5 along the curve: the paired difference AUC(PC) $-$ AUC(P) with its 95\% interval at
+  every labelled subset, one panel per dataset. The hypothesis is decided at the dashed rule; the
+  rest of the curve shows where the textbook's contribution runs out. Filled markers have intervals
+  clear of zero.}\label{fig:complement}
 \end{figure}
 
 \section{Extension: reading the arms against the published literature}

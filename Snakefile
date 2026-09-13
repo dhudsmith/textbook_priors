@@ -2,7 +2,7 @@
 # TEXTBOOK PRIORS OVER VISUAL FEATURES
 #
 # Can a vision-language model's textbook knowledge of what pathology looks like stand in for
-# labelled data? Six MedMNIST benchmarks, four arms, four hypotheses (WORKFLOW.md sections 1-3).
+# labelled data? Twelve MedMNIST benchmarks, five arms, five hypotheses (WORKFLOW.md sections 1-3).
 #
 #     snakemake --profile profiles/palmetto              # everything, on SLURM
 #     snakemake --profile profiles/palmetto -n           # dry run: inspect the DAG
@@ -18,10 +18,10 @@
 #                 then, per model x split x prompt x chunk of 100, the VLM calls, archived raw;
 #                 plus H4's two readers on a 200-image prefix of the test sample
 #   3  FEATURES   per dataset: ImageNet ResNet-18 penultimate features of the sampled images
-#   4  CLASSIFY   per dataset: arms A, B, C, P at every n and seed, the permutation controls,
+#   4  CLASSIFY   per dataset: arms A, B, C, P, PC at every n and seed, the permutation controls,
 #                 and every reader's cross-validated probe on the shared prefix (H4)
 #   5  EVALUATE   AUC per arm; the paired bootstrap; n_B; the sign tests, the ladder, the chain
-#   6  REPORT     five figures, tables, number macros, the technical report PDF
+#   6  REPORT     six figures, tables, number macros, the technical report PDF
 #
 # Every unit of work is one entry point of priors/stages.py, a pure function of its inputs, its
 # config values and its own seed, writing one JSON with a run manifest. Tables and figures read
@@ -176,9 +176,10 @@ CLASSIFIED = expand(f"{OUT}/classify/{{dataset}}.json", dataset=DATASETS)
 EVALUATED = expand(f"{OUT}/evaluate/{{dataset}}.json", dataset=DATASETS)
 EVALUATION = f"{OUT}/evaluation.json"
 FIGS, TABS = config["figdir"], config["tabdir"]
-FIG_FILES = expand(f"{FIGS}/fig_{{f}}.png", f=["curve", "n_b", "ladder", "readers", "thinking"])
+FIG_FILES = expand(f"{FIGS}/fig_{{f}}.png",
+                   f=["curve", "n_b", "ladder", "readers", "thinking", "complement"])
 TABLE_TEX = expand(f"{TABS}/{{t}}.tex",
-                   t=["h1", "h2", "h3", "h4", "literature", "completeness", "numbers"])
+                   t=["h1", "h2", "h3", "h4", "h5", "literature", "completeness", "numbers"])
 
 wildcard_constraints:
     dataset="|".join(DATASETS),
@@ -689,13 +690,18 @@ rule pixel_features:
 # =====================================================================================
 # 4  CLASSIFY
 #
-# The four arms, on the same 500 test images, so that every comparison the study makes is paired.
-# Arms A and B use no labels; C and P are the same regularised logistic regression on different
-# features, over class-stratified nested subsets of the labelled pool at six sizes and three seeds.
+# The five arms, on the same 500 test images, so that every comparison the study makes is paired.
+# Arms A and B use no labels; C, P and PC are the same regularised logistic regression on different
+# features - the concept scores, the pixel features, and the two side by side - over
+# class-stratified nested subsets of the labelled pool at six sizes and three seeds. Arm PC was
+# added on 2026-09-13 for H5 (does the textbook add to the pixels?) and cost no LLM call: it is a
+# third fit on inputs the archive and the features stage already held, so adding it reran this
+# stage and the four below it and nothing above.
 #
 # The permutation controls live here too, because they are re-analyses of the archive and cost no
 # calls: arm B's fingerprints attached to the wrong classes, and arm C's concept columns shuffled
-# across images. If either arm survives its control, it was not reading what it claims to read.
+# across images - PC takes the same shuffle on its concept block with the pixels left alone. If an
+# arm survives its control, it was not reading what it claims to read.
 #
 # Nothing is measured in this stage. It writes scores and the evaluate stage turns them into AUCs,
 # because the paired bootstrap has to resample the test images once for every arm at the same time.
@@ -769,12 +775,13 @@ rule evaluate_dataset:
     shell: STAGE + "evaluate {wildcards.dataset} --out {output} > {log} 2>&1"
 
 rule evaluate_across:
-    """The four hypotheses, decided by the rules fixed before the numbers existed. x1, local."""
+    """The five hypotheses, decided by the rules fixed before the numbers existed. x1, local."""
     input:
         per_dataset=EVALUATED,
         code=CODE_EVALUATE,
     params:
         alpha=config["evaluate"]["alpha"],
+        h5_at_n=config["h5"]["at_n"],
         datasets=",".join(DATASETS),
     output: EVALUATION
     log: "logs/evaluate_across.log"
@@ -809,7 +816,7 @@ rule tables:
     shell: STAGE + "tables --dest " + TABS + " > {log} 2>&1"
 
 rule figures:
-    """The five figures: the curve, n_B, the ladder, the reader chain, thinking's effect. x1."""
+    """The six figures: the curve, n_B, the ladder, the reader chain, thinking's effect, PC over P. x1."""
     input:
         evaluation=EVALUATION, per_dataset=EVALUATED, code=CODE_REPORT,
         literature=config["literature"],

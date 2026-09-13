@@ -7,7 +7,7 @@ talk narrative; `CONCEPT_BANK.md` the procedure that built the bank. Workflow co
 `research-workflow` skill (`~/.claude/skills/research-workflow/SKILL.md`).
 
 Twelve datasets - every MedMNIST v2 2D benchmark - four vision-language models, two label-free
-arms and two label-matched arms, and a report a person can read in one sitting. The study was built
+arms and three label-matched arms, and a report a person can read in one sitting. The study was built
 and run on six datasets first, one per modality, for the talk; on 2026-09-13 it was extended to all
 twelve, with the six results already in hand (§2 says what that does to the rules). An earlier full
 plan with a from-scratch CNN ceiling and a blocked ANOVA over the model ladder lives on branch
@@ -28,10 +28,11 @@ measured in the currency a practitioner cares about: labelled images.
 
 ## 2. The hypotheses
 
-Four, each with a decision rule fixed before the numbers exist. Everything that serves none of
-them is an extension in §10, not part of `all`. H4 was added on 2026-09-12, after H1 to H3 had been
-decided and before a single call of its own was bought — which is the distinction arm D could not
-make for itself, and the reason arm D is gone (§10).
+Five, each with a decision rule fixed before the numbers it reads exist. Everything that serves
+none of them is an extension in §10, not part of `all`. H4 was added on 2026-09-12, after H1 to H3
+had been decided and before a single call of its own was bought — which is the distinction arm D
+could not make for itself, and the reason arm D is gone (§10). H5 was added on 2026-09-13 in the
+same way: H1 to H4 decided on twelve datasets, the rule written, and then the first PC fit made.
 
 Primary metric throughout: **test AUC** from the `medmnist` evaluator (macro one-vs-rest over
 classes; the mean over the fourteen findings for chestmnist). Every arm predicts on the **same
@@ -47,8 +48,9 @@ look at.
 
 **Which datasets each rule covers.** chestmnist is multi-label - fourteen findings that co-occur -
 and a nearest fingerprint or a distribution over class names is not defined over such a label
-space (§3). It runs in the two labelled arms only, so it counts for H1's C-against-P comparison and
-for nothing else; H2, H3 and H4 are read over the other eleven, and n_B's median over those eleven.
+space (§3). It runs in the three labelled arms only, so it counts for H1's C-against-P comparison
+and for H5, and for nothing else; H2, H3 and H4 are read over the other eleven, and n_B's median
+over those eleven.
 
 **Two honest limits on the counts.** organa/c/smnist are the same LiTS volumes in three planes, so
 twelve datasets are at most ten independent units and eleven are nine; the report gives the win
@@ -136,6 +138,42 @@ sampling noise the paired bootstrap cannot see, because the bootstrap resamples 
 that are fixed only in the archive. Read H4b as a difference between two readers as they were
 actually asked, not between two models at matched settings.
 
+**H5 — Complementarity.** *The textbook adds to the pixels: concept scores beside the pixel
+features beat the pixel features alone, at equal labels and under the identical classifier.*
+
+H1 asked whether the textbook can *replace* labelled pixels, and on twelve datasets it cannot: the
+pixel probe passes the zero-label arm by fifty labels almost everywhere, and the concept regression
+loses to the pixel probe at fifty on ten of twelve. H5 asks the question a practitioner with a few
+labels would ask next — not *instead of*, but *as well as*. The arm that answers it costs no LLM
+call: the archive and the features stage already hold both feature sets for every labelled image.
+
+- **Arm PC**: arm P's 512 frozen ImageNet columns and arm C's concept columns (the concept vector
+  and its missing-indicator columns) side by side, under the same multinomial logistic regression,
+  the same L2 grid chosen by the same 5-fold CV inside the n labelled images, the same
+  standardisation of every column, the same class-stratified nested subsets and the same three
+  seeds. The paired difference AUC(PC) − AUC(P) is therefore the concept columns and nothing else.
+- **Decision rule**: AUC(PC) > AUC(P), seed-mean, at **n = 50** — the smallest grid point, where a
+  prior has the most to add — on at least 10 of the 12 datasets (p = 0.019), the level every other
+  rule is held to. chestmnist counts: arms C, P and PC all exist for it. The rest of the grid is
+  reported as a win count per n, so a reader can see where the textbook's contribution runs out;
+  that is description, and decides nothing.
+- **Control, reported beside it and not a second condition**: PC with its concept block permuted
+  across images (the same shuffle arm C's control uses) and its pixel columns left alone. The drop
+  PC − PC_perm is what the textbook's columns add over the same number of columns of noise beside
+  the same pixels; a gain over P that survives it was not the textbook. It is not part of the rule
+  because it is the same comparison against a different baseline and would decide the same thing
+  twice.
+- **What was known when this was written, stated rather than hidden.** Every C and P number on
+  every dataset. Those numbers say that P beats C; they say nothing about whether C adds to P,
+  which is a different question — a feature set can lose to another and still carry information
+  the other lacks — and it is the only thing this rule reads. No PC fit existed.
+- **One stated limit.** With one L2 strength over 512 pixel columns and about a dozen concept
+  columns, the concept block is a small minority of the standardised features. No block weighting
+  is applied, because a weight on the concept block would be a hyper-parameter arm P never had
+  and the arms would no longer differ in their features alone. If the concepts add nothing under
+  this rule, "nothing a linear classifier with equal treatment of every column could use" is the
+  precise reading.
+
 What no arm here can separate: every source dataset is public and labelled, so "the model carries
 textbook knowledge" and "the model has seen this benchmark" are not distinguishable with these data.
 Not claimed: that the concept scores are clinically valid, that the simulated review substitutes
@@ -143,10 +181,11 @@ for a clinician, or that any arm is state of the art.
 
 ## 3. Arms
 
-Four, all pre-registered and all predicting on the shared test sample. A and B use no labels; C
-and P are the same regularised logistic regression on different features. A fifth arm, D, existed
-between 2026-09-12 and 2026-09-12 and was removed; §10 records what it measured and why it went.
-chestmnist has arms C and P only (below).
+Five, all pre-registered and all predicting on the shared test sample. A and B use no labels; C,
+P and PC are the same regularised logistic regression on different features. Another arm, D,
+existed between 2026-09-12 and 2026-09-12 and was removed; §10 records what it measured and why it
+went. PC was added on 2026-09-13 for H5, pre-registered, and reuses inputs already on disk.
+chestmnist has arms C, P and PC only (below).
 
 | arm | labels | features | what it establishes |
 |---|---|---|---|
@@ -154,6 +193,7 @@ chestmnist has arms C and P only (below).
 | B textbook-only | 0 | concept scores | nearest class fingerprint from the bank; the zero-label prior, and the line that defines n_B |
 | C concept regression | n | concept scores | what the prior is worth once a few labels exist (H1) |
 | P pixel probe | n | ImageNet ResNet-18 penultimate features | the label-matched pixel baseline (H1): transfer learning without the textbook |
+| PC both | n | P's features and C's concept scores side by side | whether the textbook adds to the pixels once a few labels exist (H5) |
 
 A VLM is an enormous pretrained model, so the fair pixel baseline is also pretrained: frozen
 ImageNet features under the same classifier, the same regularisation search and the same nested
@@ -173,10 +213,15 @@ subsets as arm C, so features are the only difference.
   labelled images**, features standardised on those n. No validation set: n labels means n labels.
   Subsets are class-stratified nested prefixes of the labelled pool with a floor of one image per
   class; the fold count is `min(5, smallest class count)`; a class absent from a subset scores 0.
+- *Arm PC*: the same regression on the horizontal concatenation of P's feature matrix and C's
+  (concept vector plus the missing-indicator columns the pool selects), fitted on the same subset
+  under the same procedure; every column standardised, one L2 strength for all of them, no block
+  weight (§2, H5). Its permutation control shuffles the concept block across images exactly as
+  arm C's control does and leaves the pixel columns in place.
 - *chestmnist*: fourteen findings that co-occur, so there is no class to match a fingerprint
   against and "exactly one of these categories" is false of most films. Arms A and B are not
   defined for it and are not run; the ladder models and H4's readers, which exist for arm B and
-  the probe, do not score it. Arms C and P fit the same regression **one finding at a time**
+  the probe, do not score it. Arms C, P and PC fit the same regression **one finding at a time**
   (one-vs-rest), with the subsets stratified on any-finding against no-finding, the L2 strength
   chosen by out-of-fold AUC rather than accuracy (a finding present in two percent of films makes
   "always negative" the most accurate classifier at every strength), and a finding absent from a
@@ -310,18 +355,19 @@ Each names the failure it prevents; `TALK.md` argues them.
               then, per model x split x prompt x chunk of 100: concept levels, or a class
               distribution; every raw response archived and protected 12 local + 521 throttled
 3  FEATURES   per dataset: ImageNet ResNet-18 penultimate features of the sampled images 12 CPU
-4  CLASSIFY   per dataset: arms A, B, C, P at every n and seed, the permutation controls, and
-              every reader's cross-validated probe on the shared prefix (H4); C and P alone
-              for chestmnist                                                             12 CPU
+4  CLASSIFY   per dataset: arms A, B, C, P, PC at every n and seed, the permutation controls,
+              and every reader's cross-validated probe on the shared prefix (H4); C, P and PC
+              alone for chestmnist                                                       12 CPU
 5  EVALUATE   AUC per arm; the paired bootstrap; n_B; a second bootstrap over the prefix for
-              H4's readers; then the sign tests, the ladder and the chain                12 + 1
-6  REPORT     five figures, tables, number macros, the technical report PDF               local
+              H4's readers; then the sign tests, the ladder, the chain and PC against P   12 + 1
+6  REPORT     six figures, tables, number macros, the technical report PDF                local
 ```
 
 Targets: `all` (the report), `smoke`, `sample`, `score`, `features`, `classify`, `evaluate`,
-`report`. Five figures: the learning curve with arm B's line (H1), n_B per dataset (H1 detail),
-the model ladder (H3), the reader chain and thinking's effect against the baseline (H4). H2 is a
-table of paired differences and permutation drops.
+`report`. Six figures: the learning curve with arm B's line (H1), n_B per dataset (H1 detail),
+the model ladder (H3), the reader chain and thinking's effect against the baseline (H4), and arm
+PC's paired gain over arm P along the curve (H5). H2 is a table of paired differences and
+permutation drops.
 
 ## 7. The scoring stage
 
@@ -393,6 +439,7 @@ classify: {l2_grid: [0.01, 0.1, 1, 10, 100], cv_folds: 5, missing_max_frac: 0.05
 evaluate: {bootstrap: 10000, ci: 0.95, seed: 0, alpha: 0.05}   # one level for every rule
 h4: {baseline: qwen3.8-27b-fp8, thinking: qwen3.8-27b-fp8-medium, frontier: gpt-5.6-terra-medium,
      subsample: 200}
+h5: {at_n: 50}                  # arm PC against arm P, decided at the smallest grid point
 resources: {...}                # first guesses, then set from benchmarks/ with the reasoning
 ```
 

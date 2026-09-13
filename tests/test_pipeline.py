@@ -100,6 +100,7 @@ def workspace(tmp_path):
         "evaluate": {"bootstrap": 200, "ci": 0.95, "seed": 0, "alpha": 0.6},
         "h4": {"baseline": "tiny-model", "thinking": "tiny-model-medium",
                "frontier": "frontier-medium", "subsample": SUBSAMPLE},
+        "h5": {"at_n": 20},
         "resources": {},
     }
     for key in ("outdir", "conceptdir", "cachedir", "featuredir", "figdir", "tabdir"):
@@ -239,7 +240,10 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     scores = np.load(results / "classify/toymnist.npz")
     assert np.array_equal(scores["labels"], y_test)
     assert {"A", "B__big-model", "B__tiny-model", "C__n20__seed0",
-            "P__n50__seed1"} <= set(scores.files)
+            "P__n50__seed1", "PC__n20__seed0", "PCperm__n50__seed1"} <= set(scores.files)
+    # Arm PC is P's columns and C's columns side by side and nothing else, so its score matrix has
+    # the shape of every other arm's - the concatenation happens in the features, not the output.
+    assert scores["PC__n20__seed0"].shape == scores["P__n20__seed0"].shape
 
     stages.evaluate("toymnist", str(results / "evaluate/toymnist.json"))
     got = json.loads((results / "evaluate/toymnist.json").read_text())
@@ -250,6 +254,11 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     assert got["auc"]["B__tiny-model"] < got["auc"]["B__big-model"], "the noisy model must be worse"
     assert 0.4 <= got["auc"]["A"] <= 0.6, "a constant distribution cannot rank anything"
     assert got["auc"]["C__n50__seed0"] > got["auc"]["P__n50__seed0"], "clean features beat noisy ones"
+    # H5 in the fixture: the concept columns are a clean function of the label and the pixel
+    # columns are noisy, so putting the two side by side must beat the pixels alone, by a margin
+    # the bootstrap can see, and shuffling the concept block must take that margin away again.
+    assert got["differences"]["PC_minus_P__n20"]["lo"] > 0, "the textbook adds to noisy pixels"
+    assert got["controls"]["PC__n20"]["drop"]["median"] > 0, "the gain is the concepts, not the columns"
 
     # The permutation control must cost arm B almost everything it had.
     assert got["controls"]["B__big-model"]["drop"]["median"] > 0.2
@@ -260,7 +269,8 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     chest = np.load(results / "classify/toychest.npz")
     assert chest["labels"].shape == (90, 3)
     assert not any(k == "A" or k.startswith("B__") or k.startswith("CV__") for k in chest.files)
-    assert {"C__n20__seed0", "P__n20__seed1", "Cperm__n20__seed0"} <= set(chest.files)
+    assert {"C__n20__seed0", "P__n20__seed1", "Cperm__n20__seed0", "PC__n20__seed0",
+            "PCperm__n20__seed0"} <= set(chest.files)
     assert not any("n50" in k for k in chest.files), "a pool of 40 cannot fill a subset of 50"
     stages.evaluate("toychest", str(results / "evaluate/toychest.json"))
     chest_eval = json.loads((results / "evaluate/toychest.json").read_text())
@@ -268,6 +278,7 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     assert chest_eval["n_b"] is None and chest_eval["h4"] is None
     assert chest_eval["auc"]["C__n20__seed0"] > 0.7, "two of three findings are readable"
     assert "B_minus_A" not in chest_eval["differences"]
+    assert "PC_minus_P__n20" in chest_eval["differences"], "H5 counts the multi-label task"
 
     stages.evaluate_across(str(results / "evaluation.json"))
     across = json.loads((results / "evaluation.json").read_text())
@@ -294,15 +305,22 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     assert set(h4["readers"]) == {"big-model", "tiny-model", "tiny-model-medium", "frontier-medium"}
     assert h4["probe_auc"]["toymnist"]["frontier-medium"] > h4["probe_auc"]["toymnist"]["tiny-model"]
 
+    # H5 counts every dataset, is decided at the grid point config names, and in this fixture wins
+    # on both: clean concepts beside noisy pixels beat the pixels alone everywhere.
+    h5 = across["h5"]
+    assert h5["at_n"] == 20 and set(h5["pc_beats_p"]) == {"toymnist", "toychest"}
+    assert h5["wins"] == 2 and h5["supported"]
+    assert set(h5["wins_by_n"]) == {"20", "50"} and h5["wins_by_n"]["50"]["n_datasets"] == 1
+
     # The probe is fitted inside the images it scores, so it covers the prefix and not the sample.
     got_h4 = json.loads((results / "evaluate/toymnist.json").read_text())["h4"]
     assert got_h4["subsample"] == SUBSAMPLE
 
     stages.tables(config["tabdir"])
     stages.figures(config["figdir"])
-    for name in ("h1", "h2", "h3", "h4", "literature", "completeness", "numbers"):
+    for name in ("h1", "h2", "h3", "h4", "h5", "literature", "completeness", "numbers"):
         assert (Path(config["tabdir"]) / f"{name}.tex").stat().st_size > 0
-    for name in ("curve", "n_b", "ladder", "readers", "thinking"):
+    for name in ("curve", "n_b", "ladder", "readers", "thinking", "complement"):
         assert (Path(config["figdir"]) / f"fig_{name}.png").stat().st_size > 0
 
     # Every macro the report's prose reads has to exist, or pdflatex fails on an undefined control
@@ -311,7 +329,10 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     for name in ("hOneSupported", "hTwoSupported", "hThreeSupported", "cBeatsPWins", "bBeatsAWins",
                  "friedmanP", "medianNB", "numDatasets", "numArmBDatasets", "minWinsAll", "numModels",
                  "litGapZeroMedian", "litGapConceptMedian", "litGapPixelMedian", "litLargestN",
-                 "litPixelWithinTwoPoints", "litZeroWithinFivePoints", "aucLitToy"):
+                 "litPixelWithinTwoPoints", "litZeroWithinFivePoints", "aucLitToy",
+                 "hFiveSupported", "hFiveAtN", "pcBeatsPWins", "pcBeatsPp", "pcControlWins",
+                 "pcLargestN", "pcBeatsPWinsLargest", "pcLargestNDatasets", "pcClearWins",
+                 "pcClearLosses"):
         assert f"\\newcommand{{\\{name}}}" in macros, name
 
     # The literature table reads the ceiling against every arm, not only against arm B: the study

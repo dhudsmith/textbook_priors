@@ -5,13 +5,14 @@ and the sentences whose direction depends on a value read a macro from `numbers.
 asserting something a later run could contradict. If a figure and the prose ever disagree, it is
 because someone edited the prose.
 
-Five figures (WORKFLOW.md section 6): the learning curve with arm B's line (H1), n_B per dataset
-(H1), the model ladder (H3), the reader chain and thinking's effect against the baseline (H4).
+Six figures (WORKFLOW.md section 6): the learning curve with arm B's line (H1), n_B per dataset
+(H1), the model ladder (H3), the reader chain and thinking's effect against the baseline (H4), and
+arm PC's gain over arm P along the curve (H5).
 
 One table, `literature`, and one line on the curve figure read a fixed input besides results/:
 `data/literature/benchmarks.yaml`, published fully supervised numbers for the same six tasks
 (WORKFLOW.md section 10). Both are another extension that decides nothing — a reconciliation
-point, not a comparison arm — so the line is drawn distinctly from the four arms and carries no
+point, not a comparison arm — so the line is drawn distinctly from the five arms and carries no
 interval.
 """
 from __future__ import annotations
@@ -25,8 +26,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 ARM_LABEL = {"C": "arm C: concept scores", "P": "arm P: ImageNet features",
+             "PC": "arm PC: ImageNet features + concept scores",
              "B": "arm B: textbook only (no labels)", "A": "arm A: zero-shot (no labels)"}
-ARM_COLOUR = {"C": "#1f77b4", "P": "#d62728", "B": "#2ca02c", "A": "#7f7f7f"}
+ARM_COLOUR = {"C": "#1f77b4", "P": "#d62728", "PC": "#9467bd", "B": "#2ca02c", "A": "#7f7f7f"}
 
 # Not an arm: the published, fully supervised ceiling (data/literature/benchmarks.yaml), read onto
 # the same axes as a fixed reference rather than a line that moves with n. One colour, used nowhere
@@ -81,13 +83,15 @@ def fmt(value, places=3) -> str:
 def figure_curve(per, datasets, curve_n, dest, literature=None):
     """H1: what the labels buy, against what the textbook gives for nothing.
 
-    One panel per dataset. Arms C and P are the same classifier on different features, so the gap
-    between the curves is the features; arm B is a horizontal line because it uses no labels at all,
-    and where the red curve crosses it is n_B.
+    One panel per dataset. Arms C, P and PC are the same classifier on different features, so the
+    gap between the curves is the features; arm B is a horizontal line because it uses no labels at
+    all, and where the red curve crosses it is n_B. Arm PC (H5) is drawn without a band, because
+    the question it answers is a paired difference from arm P and that difference, with its
+    interval, has its own figure.
 
     `literature`, if given, adds one more horizontal line: the published, fully supervised
     ResNet-18 (224) AUC for the same task (data/literature/benchmarks.yaml). It is drawn distinctly
-    from the four arms - a different colour, a sparser dash, no fill - because it is not one: it
+    from the five arms - a different colour, a sparser dash, no fill - because it is not one: it
     was not computed by this study, does not share the paired bootstrap, and carries no interval.
     """
     # Three panels a row for the talk's six datasets, four a row for twelve; a dataset whose pool
@@ -107,6 +111,9 @@ def figure_curve(per, datasets, curve_n, dest, literature=None):
             hi = [got["curve"][f"{arm}__n{n}"]["hi"] for n in own_n]
             ax.plot(own_n, point, "o-", color=ARM_COLOUR[arm], label=ARM_LABEL[arm], markersize=4)
             ax.fill_between(own_n, lo, hi, color=ARM_COLOUR[arm], alpha=0.15, linewidth=0)
+        if all(f"PC__n{n}" in got["curve"] for n in own_n):
+            ax.plot(own_n, [got["curve"][f"PC__n{n}"]["point"] for n in own_n], "s--",
+                    color=ARM_COLOUR["PC"], label=ARM_LABEL["PC"], markersize=3.5, linewidth=1.2)
         if got.get("n_b") is not None:
             b_key = next(k for k in got["auc"] if k.startswith("B__"))
             ax.axhline(got["auc"][b_key], color=ARM_COLOUR["B"], linestyle="--", label=ARM_LABEL["B"])
@@ -259,6 +266,51 @@ def figure_thinking(across, datasets, dest):
     plt.close(fig)
 
 
+def figure_complement(per, across, datasets, curve_n, dest):
+    """H5: what the concept columns add to the pixel columns, along the curve.
+
+    One panel per dataset; y is the paired difference AUC(PC) - AUC(P) with its 95% interval from
+    the shared bootstrap, x is the labelled subset. The hypothesis is decided at one grid point,
+    marked by the vertical rule, and the rest of the curve is there so a reader can see where the
+    textbook's contribution runs out rather than take a single n on trust. A filled marker is an
+    interval clear of zero.
+    """
+    at_n = across["h5"]["at_n"]
+    cols = 3 if len(datasets) <= 6 else 4
+    rows = -(-len(datasets) // cols)
+    fig, axes = plt.subplots(rows, cols, figsize=(4.3 * cols, 3.2 * rows), sharex=True, squeeze=False)
+    for ax in axes.flat[len(datasets):]:
+        ax.set_visible(False)
+    for ax, dataset in zip(axes.flat, datasets):
+        got = per[dataset]
+        own_n = list(got.get("curve_n", curve_n))
+        diffs = [got["differences"][f"PC_minus_P__n{n}"] for n in own_n]
+        mid = [d["median"] for d in diffs]
+        ax.fill_between(own_n, [d["lo"] for d in diffs], [d["hi"] for d in diffs],
+                        color=ARM_COLOUR["PC"], alpha=0.18, linewidth=0)
+        ax.plot(own_n, mid, "-", color=ARM_COLOUR["PC"], linewidth=1.2)
+        for n, d in zip(own_n, diffs):
+            clear = d["lo"] > 0 or d["hi"] < 0
+            ax.plot([n], [d["median"]], "o", color=ARM_COLOUR["PC"], markersize=5,
+                    markerfacecolor=ARM_COLOUR["PC"] if clear else "white")
+        ax.axhline(0, color="grey", linestyle=":", linewidth=1)
+        ax.axvline(at_n, color="grey", linestyle="--", linewidth=0.8, alpha=0.7)
+        ax.set_xscale("log")
+        ax.set_xticks(curve_n, [str(n) for n in curve_n])
+        win = across["h5"]["pc_beats_p"][dataset]
+        ax.set_title(f"{dataset}  ({'PC > P' if win else 'PC <= P'} at n = {at_n})", fontsize=10)
+        ax.grid(alpha=0.25)
+    for ax in axes[:, 0]:
+        ax.set_ylabel("AUC(PC) $-$ AUC(P)")
+    for ax in axes[-1]:
+        ax.set_xlabel("labelled images")
+    fig.suptitle("H5: what the concept scores add to the pixel features, at every labelled subset "
+                 f"(decided at the dashed rule, n = {at_n}; filled = interval clear of zero)", fontsize=11)
+    fig.tight_layout()
+    fig.savefig(Path(dest) / "fig_complement.png", dpi=200)
+    plt.close(fig)
+
+
 # ---- tables ---------------------------------------------------------------------------------------
 
 def _table(dest, name, header, rows, caption, label):
@@ -350,6 +402,43 @@ def table_h4(across, datasets, dest):
            "what a labelled model would achieve.", "h4")
 
 
+def table_h5(per, across, datasets, dest):
+    """H5: arm PC against arm P at the deciding grid point, with the control and the curve's end.
+
+    Every column is a seed mean or a paired difference of seed means on the shared test sample.
+    The control column is PC minus PC with its concept block shuffled across images: what the
+    textbook's columns add over the same number of columns of noise beside the same pixels. The
+    last column is the same difference at the largest subset the dataset's pool reached, so the
+    table shows both where the hypothesis is decided and where the contribution ends up.
+    """
+    h5 = across["h5"]
+    at_n = h5["at_n"]
+    rows = []
+    for d in datasets:
+        got = per[d]
+        largest = max(got["curve_n"])
+        diff = got["differences"][f"PC_minus_P__n{at_n}"]
+        drop = got["controls"][f"PC__n{at_n}"]["drop"]
+        end = got["differences"][f"PC_minus_P__n{largest}"]
+        rows.append([tex_escape(d),
+                     fmt(got["curve"][f"P__n{at_n}"]["point"]),
+                     fmt(got["curve"][f"PC__n{at_n}"]["point"]),
+                     f"{fmt(diff['median'])} [{fmt(diff['lo'])}, {fmt(diff['hi'])}]",
+                     f"{fmt(drop['median'])} [{fmt(drop['lo'])}, {fmt(drop['hi'])}]",
+                     f"{fmt(end['median'])} [{fmt(end['lo'])}, {fmt(end['hi'])}] ({largest})"])
+    _table(dest, "h5",
+           ["dataset", f"AUC(P, n={at_n})", f"AUC(PC, n={at_n})", f"PC $-$ P, n={at_n}",
+            "PC drop, permuted", "PC $-$ P, largest n"],
+           rows,
+           f"H5. The pixel probe with and without the concept scores beside its features, at the "
+           f"smallest labelled subset (n = {at_n}), where the hypothesis is decided: PC won on "
+           f"{h5['wins']} of {h5['n_datasets']} datasets against {h5['min_wins']} needed. "
+           "``PC drop, permuted'' is what PC loses when its concept columns are shuffled across "
+           "images with the pixel columns left alone, so a drop near zero means the columns were "
+           "adding noise rather than the textbook. The last column is the same difference at the "
+           "largest subset the dataset's pool reached (in parentheses).", "h5")
+
+
 LIT_METHOD_LABEL = {"resnet18_224": "ResNet-18 (224)", "resnet50_224": "ResNet-50 (224)",
                     "auto_sklearn": "auto-sklearn", "autokeras": "AutoKeras",
                     "google_automl": "Google AutoML Vision"}
@@ -372,7 +461,7 @@ def table_literature(per, literature, datasets, curve_n, primary, dest):
         # the official train split is smaller (breastmnist 500, retinamnist 1000).
         own_largest = max(got.get("curve_n", curve_n))
         # Every arm, not only arm B: the ceiling is a reference point for the study, and the study
-        # has four arms. The two zero-label arms come first because they are the ones the ceiling
+        # has five arms. The two zero-label arms come first because they are the ones the ceiling
         # is most interesting against - what the model brings before any label is bought.
         rows.append([
             tex_escape(d),
@@ -448,6 +537,22 @@ def numbers(per, across, datasets, curve_n, primary, dest, literature=None):
         lines["hFourThinking"] = tex_escape(h4["h4a"]["to"])
         lines["hFourFrontier"] = tex_escape(h4["h4b"]["to"])
         lines["numReaders"] = len(h4["readers"])
+    h5 = across.get("h5")
+    if h5:
+        lines["hFiveSupported"] = "supported" if h5["supported"] else "not supported"
+        lines["hFiveAtN"] = h5["at_n"]
+        lines["pcBeatsPWins"] = h5["wins"]
+        lines["pcBeatsPp"] = fmt(h5["sign_test_p"], 4)
+        lines["pcControlWins"] = h5["control_wins"]
+        # The largest grid point: where the textbook's contribution ends up once labels are
+        # plentiful, over the datasets whose pool reaches it.
+        top = str(max(int(n) for n in h5["wins_by_n"]))
+        lines["pcLargestN"] = top
+        lines["pcBeatsPWinsLargest"] = h5["wins_by_n"][top]["wins"]
+        lines["pcLargestNDatasets"] = h5["wins_by_n"][top]["n_datasets"]
+        # Interval-clear wins at the deciding n: a win whose interval excludes zero.
+        lines["pcClearWins"] = sum(1 for d in h5["differences"].values() if d["lo"] > 0)
+        lines["pcClearLosses"] = sum(1 for d in h5["differences"].values() if d["hi"] < 0)
     for family, spec in h3["ladder"].items():
         lines[f"ladder{family.capitalize()}Wins"] = spec["wins"]
         lines[f"ladder{family.capitalize()}P"] = fmt(spec["sign_test_p"], 4)
