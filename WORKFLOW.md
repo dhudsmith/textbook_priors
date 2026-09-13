@@ -26,10 +26,10 @@ a practitioner cares about: labelled images.
 
 ## 2. The hypotheses
 
-Four, each with a decision rule fixed before the numbers exist. Everything that serves none of
-them is an extension in §10, not part of `all`. H4 was added on 2026-09-12, after H1 to H3 had been
-decided and before a single call of its own was bought — which is the distinction arm D could not
-make for itself, and the reason arm D is gone (§10).
+Five, each with a decision rule fixed before the numbers exist. Everything that serves none of
+them is an extension in §10, not part of `all`. H4 and H5 were added on 2026-09-12, after H1 to H3
+had been decided and before any computation of their own was run — which is the distinction arm D
+could not make for itself, and the reason arm D is gone (§10).
 
 Primary metric throughout: **test AUC** from the `medmnist` evaluator (macro one-vs-rest). Every
 arm predicts on the **same seeded 500-image test sample** per dataset, so every comparison is
@@ -109,6 +109,54 @@ sampling noise the paired bootstrap cannot see, because the bootstrap resamples 
 that are fixed only in the archive. Read H4b as a difference between two readers as they were
 actually asked, not between two models at matched settings.
 
+**H5 — The bank through a different readout.** *The textbook carries class information that the
+nearest-fingerprint readout loses.*
+
+H2's controls showed the concept answers carry real class information while arm B lost to simply
+naming the class; H4 showed that no better reader of the concepts changed that. H5 keeps the answers
+exactly as they are and changes only how they are read. An image's answers and a class's fingerprint
+are the same kind of object — committed levels over the bank's concepts — and the bank supplies
+cited prose for every level. Rendered as prose and embedded by the service's own text-embedding
+model (`qwen3-embedding-4b`: 2,560 dimensions, unit-normalised, deterministic across calls), an
+image and a class become two vectors and the class score is their cosine. Arm B's mean absolute
+difference over equally spaced ordinal codes becomes a learned semantic distance over the words the
+bank itself uses. No VLM is asked anything: the archive is read, not re-bought, and the only new
+traffic is text through `/v1/embeddings`.
+
+- **Z, name by embedding** (0 labels): the image's rendered answers against each class *name*
+  under the bank's modality string. The bank supplies the image's description; the target is the
+  bare name.
+- **T, textbook by embedding** (0 labels): the image's rendered answers against each class's
+  rendered *fingerprint*. The same subset of the bank as B: a concept at `any` renders nothing for
+  the class, and a missing answer renders nothing for the image.
+- **E, embedding probe** (n labels): arm C's classifier on the 2,560-dimensional embedding of the
+  rendered answers in place of the ordinal codes; same nested subsets, same seeds.
+
+Decision rules, both held to the 6-of-6 rule H1, H2 and H4 are held to:
+
+- **H5a — the readout was the loss.** AUC(T) > AUC(B, primary) on all six datasets. Identical
+  answers, identical subset of the bank; only the distance differs. If T reads the same answers
+  better than B does, what H2 lost was lost in the arithmetic; if it does no better, the bank's
+  discriminative content is limited whatever distance reads it, and the constraint is the bank.
+- **H5b — the bank beats the name, for this readout.** AUC(T) > AUC(Z) on all six. H2's question
+  again: does matching an image's textbook description to the textbook's description of each class
+  beat matching it to the class name, when both are read the same way.
+
+Reported alongside and entering the same bootstrap, deciding nothing: T's permutation control
+(fingerprint vectors permuted across classes, three seeds); E against C at every n, which says
+whether the equal-spaced ordinal coding loses information the words carry; T for each ladder model,
+H3's ladder through this readout; and the **fingerprint similarity matrix** — the cosines between
+the classes' rendered fingerprints, a property of the bank alone. Two classes whose textbook
+descriptions embed nearly alike cannot be separated by any reader of this bank, so that matrix is
+the first direct measurement of the bank as a constraint.
+
+Three limits, stated. The embedding space is anisotropic — unrelated anchor sentences sit near
+cosine 0.8 and the two pneumoniamnist class names at 0.90 (measured 2026-09-12) — so absolute
+cosines mean little; only the ranking within an image matters, which is all AUC reads. The rendering
+is one fixed template, recorded in config, chosen before any number existed and never tuned. And T
+inherits every limit of the answers: it cannot see what the VLM did not report, so H5 is about the
+readout and says nothing about the vision.
+
 What no arm here can separate: every source dataset is public and labelled, so "the model carries
 textbook knowledge" and "the model has seen this benchmark" are not distinguishable with these data.
 Not claimed: that the concept scores are clinically valid, that the simulated review substitutes
@@ -116,9 +164,10 @@ for a clinician, or that any arm is state of the art.
 
 ## 3. Arms
 
-Four, all pre-registered and all predicting on the shared test sample. A and B use no labels; C
-and P are the same regularised logistic regression on different features. A fifth arm, D, existed
-between 2026-09-12 and 2026-09-12 and was removed; §10 records what it measured and why it went.
+Seven, all pre-registered and all predicting on the shared test sample. A, B, Z and T use no
+labels; C, P and E are the same regularised logistic regression on different features. An arm D
+existed between 2026-09-12 and 2026-09-12 and was removed; §10 records what it measured and why
+it went.
 
 | arm | labels | features | what it establishes |
 |---|---|---|---|
@@ -126,6 +175,9 @@ between 2026-09-12 and 2026-09-12 and was removed; §10 records what it measured
 | B textbook-only | 0 | concept scores | nearest class fingerprint from the bank; the zero-label prior, and the line that defines n_B |
 | C concept regression | n | concept scores | what the prior is worth once a few labels exist (H1) |
 | P pixel probe | n | ImageNet ResNet-18 penultimate features | the label-matched pixel baseline (H1): transfer learning without the textbook |
+| Z name by embedding | 0 | concept answers, as prose | the image's rendered answers against each class name in the text-embedding space: the bare-name target read semantically (H5) |
+| T textbook by embedding | 0 | concept answers, as prose | the image's rendered answers against each class's rendered fingerprint: arm B's comparison with a learned distance in place of ordinal arithmetic (H5) |
+| E embedding probe | n | embedding of the concept answers | arm C's classifier on the 2,560-d embedding of the rendered answers: whether the ordinal coding loses what the words carry (H5, descriptive) |
 
 A VLM is an enormous pretrained model, so the fair pixel baseline is also pretrained: frozen
 ImageNet features under the same classifier, the same regularisation search and the same nested
@@ -145,6 +197,16 @@ subsets as arm C, so features are the only difference.
   labelled images**, features standardised on those n. No validation set: n labels means n labels.
   Subsets are class-stratified nested prefixes of the labelled pool with a floor of one image per
   class; the fold count is `min(5, smallest class count)`; a class absent from a subset scores 0.
+- *Rendering, for Z, T and E alike*: one renderer turns a set of committed levels into prose —
+  the bank's modality string, then the anchor text of each committed level in the bank's concept
+  order, joined as sentences, through the one template in config. An image's answers render with
+  missing answers skipped; a class's fingerprint renders with `any` skipped; a class *name* renders
+  as the name with underscores and hyphens as spaces. So T compares like with like, and reads the
+  same subset of the bank that B reads.
+- *Arms Z and T*: every rendered text is embedded once by `qwen3-embedding-4b` and L2-normalised;
+  the class score is the cosine between the image's vector and the class's vector, and AUC reads
+  it directly, as for B. Nothing is fitted and nothing is sampled.
+- *Arm E*: the image's answer embedding under the estimator of C and P, unchanged.
 - *The cross-validated probe* (H4): the same regularised logistic regression as arm C, on the same
   concept vectors, fitted inside the scored images by stratified k-fold rather than on the labelled
   pool. Each fold's held-out images are scored by a fit that never saw them, so every image gets
@@ -266,9 +328,11 @@ Each names the failure it prevents; `TALK.md` argues them.
 2  SCORE      per dataset: render the concept and zero-shot prompts from the bank;
               then, per model x split x prompt x chunk of 100: concept levels, or a class
               distribution; every raw response archived and protected  6 local + 294 throttled
-3  FEATURES   per dataset: ImageNet ResNet-18 penultimate features of the sampled images  6 CPU
-4  CLASSIFY   per dataset: arms A, B, C, P at every n and seed, the permutation controls, and
-              every reader's cross-validated probe on the shared prefix (H4)              6 CPU
+3  FEATURES   per dataset: ImageNet ResNet-18 penultimate features of the sampled images; and
+              the concept answers, class names and fingerprints rendered as prose and
+              embedded through the service's text-embedding model            6 CPU + 6 throttled
+4  CLASSIFY   per dataset: arms A, B, Z, T at zero labels, C, P, E at every n and seed, the
+              permutation controls, and every reader's probe on the shared prefix (H4)   6 CPU
 5  EVALUATE   AUC per arm; the paired bootstrap; n_B; a second bootstrap over the prefix for
               H4's readers; then the sign tests, the ladder and the chain                 6 + 1
 6  REPORT     four figures, tables, number macros, the technical report PDF               local
@@ -336,6 +400,8 @@ vlm:
   base_url: https://llm.rcd.clemson.edu/v1
   key_file: ~/.config/rcd_llm/key
 features: {arch: resnet18, weights: imagenet1k_v1}
+embed: {model: qwen3-embedding-4b, template: "{modality}. {text}", batch: 256, cap: 4,
+        permute: {seeds: [0, 1, 2]}}          # H5: the answers and the bank, as prose, embedded
 classify: {l2_grid: [0.01, 0.1, 1, 10, 100], cv_folds: 5, missing_max_frac: 0.05, permute: {seeds: [0, 1, 2]}}
 evaluate: {bootstrap: 10000, ci: 0.95, h3_min_wins: 5}
 resources: {...}                # first guesses, then set from benchmarks/ with the reasoning
@@ -403,6 +469,14 @@ and deleting an archive is not something a removal of this kind justifies.
 The lesson it leaves is the one any replacement has to obey: **a decision rule before the calls.**
 An arm worth adding is worth pre-registering, and anything that cannot be is a separate study.
 
+**H5 is not the full branch's cut "description embedding".** That arm would have asked the VLM
+for a free-text description of every image and embedded that — a control on structured against
+free-text elicitation, cut because the permutation controls test the bank's structure for nothing
+and the prose would have cost tokens on every call. H5 asks the VLM nothing new. It embeds the
+*structured answers already in the archive* and the *bank's own fingerprints*, rendered in the
+bank's words, and tests a claim the first four hypotheses left standing: that what arm B lost was
+lost in the arithmetic of its readout. The word is shared; the idea is not.
+
 **Literature reconciliation, another extension inside `all`** (added 2026-09-12, no rerun). The
 user asked to pull published results for these six MedMNIST tasks and add them as benchmarks in
 the report — verified, not rerun. `data/literature/benchmarks.yaml` pins the AUC and ACC that
@@ -425,11 +499,12 @@ config/medmnist.yaml      the pinned release: file names, MD5s, sizes, split siz
 profiles/palmetto/        SLURM executor; job, core and per-model llm_* caps
 profiles/local/           dry runs, smoke, touch
 envs/                     priors.yml  priors_torch.yml
-priors/                   data sample prompts llm score features classify evaluate report stages manifest
+priors/                   data sample prompts llm score features embed classify evaluate report stages manifest
 data/concepts/            the concept-bank files and their README, committed
 data/literature/          the pinned published-benchmark table and its README, committed
 data/raw, data/cache      symlinks into storage_root on the project filesystem; gitignored
 results/                  one JSON per unit of work; results/score/ is the response archive
+data/cache/embed          symlink target: the answer, name and fingerprint embeddings, one npz per dataset
 benchmarks/  logs/        per job
 report/                   report.tex, references.bib; tables/ and figs/ generated
 README.md  CHANGELOG.md  SESSION_LOG.md  CLAUDE.md  CONCEPT_BANK.md  WORKFLOW.md  TALK.md

@@ -206,3 +206,31 @@ starts from the decision rather than from the experiment.
   four thinking-off rules, because it is the same endpoint under a different setting and two rules
   pointed at one endpoint must share one cap. The gateway reader has `llm_gateway`, which exists so
   that a mistake costs twelve calls in flight rather than twelve hundred.
+
+## The embeddings endpoint
+
+Measured 2026-09-12. `qwen3-embedding-4b` (Qwen3-Embedding-4B) at `/v1/embeddings`, OpenAI dialect,
+local, no credits. **2,560 dimensions, unit-normalised as returned, deterministic across calls**
+(max |diff| 0.0 on a repeated input). 256 texts in one call in 0.20 s. No matryoshka: a `dimensions`
+parameter is rejected. The space is anisotropic — two unrelated anchor sentences sit near cosine
+0.8, and the class names "pneumonia" and "normal" at 0.90 — so absolute cosines carry little and
+only rankings should be read. H5 uses it (WORKFLOW.md §2). The reranker `qwen3-rerank-4b` is
+served beside it at `/v1/rerank` and is not used.
+
+## Gateway pricing is in the metadata after all
+
+`?full=true` carries a `pricing` block on every external model, in dollars per million tokens. It
+was missed on the first read of that listing because the local models have none.
+
+| model | input | cached input | output |
+|---|---|---|---|
+| gpt-5.6-terra | 2.00 | 0.20 | 12.00 |
+| gpt-5.5 | 5.00 | 0.50 | 30.00 |
+| gpt-5.4 | 2.50 | 0.25 | 15.00 |
+| gpt-5 | 1.25 | 0.125 | 10.00 |
+| text-embedding-3-large / -small | 0.13 / 0.02 | — | — |
+
+So H4's gateway reader — 1,200 calls at about 190 fresh and 1,500 cached prompt tokens and 300 to
+600 completion tokens each — cost roughly seven dollars at list and under four with `flex`, against
+a ten-credit allocation. The whole 30,000-call study on that model would have been on the order of
+a hundred and fifty dollars at list.

@@ -345,3 +345,29 @@ every thinking chunk complete and no cell flagged. The evening's pattern held un
 estimator on the full 200 images, so TALK.md §5 scene 6 is not rewritten. One number moved in the
 direction that justifies the preview having been marked uncitable: bloodmnist's thinking effect
 shrank from a clear loss on 100 images to noise on 200. The finding is in CHANGELOG.md.
+
+## 2026-09-12 22:30 — Embeddings, and the redirect to the service's own embedding model
+
+"I would like to try using embeddings. Add this in in a principled fashion, run it, analyze the
+outputs, and put it in the report. Think about how it could (or couldn't) be put into the talk."
+Then, mid-design, with the RCD local-API documentation attached: "I want to use the LLM based
+embeddings supported by the rcd llm service. Make sure you use that."
+
+The first design read "embeddings" as a contrastive image-text encoder run locally (BiomedCLIP) and
+had reached a written plan, a config block, a module and its tests before the redirect. None of it
+was committed and all of it was replaced. The service's only embedding model, `qwen3-embedding-4b`,
+is text-only, which forced a better design: the archive already holds every image described in the
+bank's own words - the VLM's concept answers - so embedding those descriptions and the bank's class
+fingerprints in one text space gives arm B's comparison with a learned distance in place of ordinal
+arithmetic, on identical inputs. That isolates the readout more purely than a pixel encoder would
+have, asks no VLM anything new, and costs no credits. It is H5 in WORKFLOW.md §2, with both decision
+rules written before a single embedding was requested.
+
+Two things the endpoint probe fixed: the space is anisotropic (unrelated anchor sentences at cosine
+0.8, the two pneumoniamnist class names at 0.90), which is why only within-image ranking is read; and
+the gateway models' metadata carries pricing after all, which answers the credit question of the
+afternoon exactly (docs/rcd_llm_service.md).
+
+One thing done on purpose: the embedding client lives in `priors/embed.py`, reusing `llm.py`'s key
+loader and backoff, rather than in `llm.py` itself, so that adding an endpoint does not change the
+provenance of the 294 protected chunks behind it.

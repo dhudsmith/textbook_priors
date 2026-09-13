@@ -41,6 +41,9 @@ resources:
   # overruns writing nothing. Read together with llm_qwen3_8_27b_fp8 as the promise about this one
   # endpoint; nothing else is scheduled against it while the readers run.
   llm_reader_medium: 4
+  # H5's embedding calls. Local, free of credits, and fast; four in flight is politeness on a
+  # shared 4B model, not a throughput decision, and matches config's embed.cap.
+  llm_qwen3_embedding_4b: 4
 latency-wait: 60
 keep-going: True
 rerun-incomplete: True
