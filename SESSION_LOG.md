@@ -795,8 +795,11 @@ unique commits, both superseded:
 Neither unmerged branch holds a result file; both are plan exploration that the shipped plan already
 answers. They are kept as annotated tags — `retired/llm-zero-shot-image-variants` and
 `retired/p-plus-c-hypothesis` — so the commits stay reachable and findable by name, and the branch
-list stays short. The four contained session branches are deleted. `claude/textbook-priors-workflow-2kdgap`
-(eaa7994) stays: WORKFLOW.md §10 cites it by name for the wider plan that was cut.
+list stays short, then deleted as branches. Deleted too are the three contained session branches and
+`claude/textbook-priors-talk` itself, all of which `main` now carries. What remains is `main`,
+`claude/textbook-priors-workflow-2kdgap` (eaa7994, which WORKFLOW.md §10 cites by name for the wider
+plan that was cut), and `claude/talk-workflow-cleanup-qmi9iy` — the branch the runner assigned this
+session, sitting on the same commit as `main` and safe to delete once the session is over.
 
 **`main` is the trunk again.** It had sat at 8c884c4 since the concept-bank work while every later
 commit accumulated on the talk branch; it fast-forwards to the talk head with nothing to merge and
