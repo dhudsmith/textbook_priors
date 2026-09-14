@@ -732,3 +732,32 @@ under B.
 build with `Undefined color model HTML`; `xcolor` is loaded now and the link colour is a named
 navy. PDF bookmarks are on and numbered. `report/report.toc` joined the gitignore beside the other
 things pdflatex leaves behind.
+
+## 2026-09-13 23:05 — Visuals for H6 and H7
+
+Two figures, each shaped by what its hypothesis has to show rather than by reusing the forest plot
+the report already has twice.
+
+**H6 is a dumbbell**, one row per dataset, the two efforts joined, sorted by the higher effort's
+reading, with the difference and its interval printed at the right and only the clear intervals
+drawn solid. A forest plot of differences alone would have hidden the finding: what makes
+dermamnist interesting is not only that its difference is large but that it sits at the bottom of
+the AUC axis, and the sort makes the two facts one picture. The other ten datasets are visibly
+short pairs clustered to the right.
+
+**H7 is a ladder drawn deliberately like H3's**, one line per dataset across luna, terra and sol,
+because the pair is the finding: the same picture over an open-weight parameter ladder found no
+trend and this one rises on nine of eleven. A reader can put the two figures side by side without
+translating between styles, which they could not do if H7 were drawn as a forest plot.
+
+Three defects fixed on the way. `figure_ladder` was using matplotlib's default ten-colour cycle
+over twelve datasets, so the eleventh silently wore the first's colour; there is now a stable
+twelve-hue table with distinct markers, shared by both ladders, so a dataset keeps one appearance
+everywhere and no two share both colour and marker. And both new legends sat on top of data in
+their first render — H6's over the best-read dataset's pair, H7's over retinamnist, which is the
+largest single effect the figure has — so both moved below the axes.
+
+The first rebuild attempt is worth recording: editing `stages.py` cascaded into the archive again
+and Snakemake tried to re-score a gemma chunk. The `protected()` output refused it with a
+`ProtectedOutputException`. That is principle 7 working as designed, and it caught what the touch
+discipline had missed. No calls were spent; the archive is intact at 587 files.

@@ -216,6 +216,105 @@ def figure_h5(across, datasets, dest):
     plt.close(fig)
 
 
+# One stable style per dataset, used by every figure that draws a line per dataset. Two reasons it
+# is a table rather than matplotlib's default cycle: that cycle holds ten colours and this study has
+# twelve datasets, so the eleventh silently repeated the first; and a dataset should wear the same
+# colour in every figure, or a reader comparing the H3 ladder with the H7 ladder is comparing two
+# different colour languages. Twelve categorical hues cannot all be told apart under colour-vision
+# deficiency - the guidance says so - so the marker carries the identity too, and no two datasets
+# share both a colour and a marker.
+_DATASET_HUES = ["#1f77b4", "#d62728", "#2ca02c", "#762a83", "#e6820e", "#17789c",
+                 "#8c564b", "#c2185b", "#5b8c00", "#00695c", "#7f7f7f", "#9a6a00"]
+_DATASET_MARKERS = ["o", "s", "^", "D", "v", "P"]
+
+
+def dataset_style(datasets):
+    """dataset -> (colour, marker), stable for a given dataset list."""
+    return {d: (_DATASET_HUES[i % len(_DATASET_HUES)], _DATASET_MARKERS[i % len(_DATASET_MARKERS)])
+            for i, d in enumerate(datasets)}
+
+
+# The two efforts of H6, checked against the palette validator: Delta E 22.7 apart under protanopia.
+EFFORT_COLOUR = {"more": "#1F3F6E", "less": "#C1591A"}
+
+
+def figure_h6(across, datasets, dest):
+    """H6: the frontier model at two efforts, one dumbbell per dataset.
+
+    A dumbbell rather than a third forest plot, because H6's claim is about two readings of one
+    model and a reader should see both levels, not only their difference: where the pair sits on the
+    axis is what says whether a dataset was read well at all. Sorted by the higher effort's AUC, so
+    the conditional structure is the vertical order - the dataset the model read worst is the only
+    one lowering the effort clearly rescues. The difference and its interval are printed at the
+    right, since the eye cannot read a 0.01 gap off an axis but the hypothesis turns on it.
+    """
+    h6 = across["h6"]
+    rows = [d for d in datasets if d in h6["differences"]]
+    auc = {d: across["h4"]["probe_auc"][d] for d in rows}
+    rows.sort(key=lambda d: auc[d][h6["more"]])
+    fig, ax = plt.subplots(figsize=(9.2, 0.42 * len(rows) + 1.9))
+    for i, dataset in enumerate(rows):
+        hi_eff, lo_eff = auc[dataset][h6["more"]], auc[dataset][h6["less"]]
+        diff = h6["differences"][dataset]
+        clear = diff["lo"] > 0 or diff["hi"] < 0
+        alpha = 1.0 if clear else 0.42
+        ax.plot([hi_eff, lo_eff], [i, i], color="#999999", linewidth=1.6, alpha=alpha, zorder=1)
+        ax.scatter([hi_eff], [i], color=EFFORT_COLOUR["more"], s=46, zorder=3, alpha=alpha,
+                   label="effort medium" if i == 0 else None)
+        ax.scatter([lo_eff], [i], color=EFFORT_COLOUR["less"], s=46, zorder=3, alpha=alpha,
+                   marker="D", label="effort low" if i == 0 else None)
+        ax.text(1.005, i, f"{diff['median']:+.3f} [{diff['lo']:+.3f}, {diff['hi']:+.3f}]"
+                + ("  *" if clear else ""), transform=ax.get_yaxis_transform(), va="center",
+                fontsize=7.5, family="monospace", alpha=1.0 if clear else 0.55)
+    ax.set_yticks(range(len(rows)), rows, fontsize=8)
+    ax.invert_yaxis()
+    ax.set_xlabel("cross-validated probe AUC on the concept answers")
+    ax.set_title(f"H6: {h6['less'].replace('-low', '')} read at two reasoning efforts\n"
+                 "(sorted by the higher effort; the difference and its 95% interval at right)",
+                 fontsize=10.5)
+    ax.grid(alpha=0.25, axis="x")
+    # Below the axes: inside, it sat on top of the best-read dataset's pair whichever corner it
+    # was put in, the rows spanning the full width of the axis by construction.
+    ax.legend(fontsize=8, loc="upper center", bbox_to_anchor=(0.5, -0.10 - 0.6 / len(rows)),
+              ncol=2, frameon=False)
+    fig.tight_layout(rect=(0, 0, 0.78, 1))
+    fig.savefig(Path(dest) / "fig_h6.png", dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+
+def figure_h7(across, datasets, dest):
+    """H7: the frontier family's price ladder at one effort, one line per dataset.
+
+    Drawn deliberately like the H3 ladder, because the pair is the point: the same picture over an
+    open-weight parameter ladder found no trend and this one does, and a reader should be able to
+    put the two figures side by side without translating between two styles.
+    """
+    h7 = across["h7"]
+    rows = [d for d in datasets if d in h7["probe_auc"]]
+    ladder = h7["ladder"]
+    style = dataset_style(datasets)
+    fig, ax = plt.subplots(figsize=(8.5, 5.0))
+    for dataset in rows:
+        colour, marker = style[dataset]
+        ax.plot(range(len(ladder)), [h7["probe_auc"][dataset][m] for m in ladder],
+                marker=marker, linestyle="-", color=colour, label=dataset, markersize=5,
+                linewidth=1.4, alpha=0.9)
+    ax.set_xticks(range(len(ladder)),
+                  [m.replace("gpt-5.6-", "").replace("-low", "") for m in ladder], fontsize=9)
+    ax.set_xlabel("the frontier family at effort low, cheapest to most expensive")
+    ax.set_ylabel("cross-validated probe AUC on the concept answers")
+    ax.axhline(0.5, color="grey", linestyle=":", linewidth=1)
+    ax.grid(alpha=0.25)
+    # Below the axes. In the lower right it covered retinamnist, which climbs from the bottom of
+    # the panel and is the largest single effect the figure has to show.
+    ax.legend(fontsize=8, loc="upper center", bbox_to_anchor=(0.5, -0.13),
+              ncol=4 if len(rows) > 6 else 2, frameon=False)
+    ax.set_title(f"H7: the closed family's price ladder, {h7['wins']} of {h7['n_datasets']} "
+                 "datasets rising end to end", fontsize=11)
+    fig.tight_layout(rect=(0, 0.06, 1, 1))
+    fig.savefig(Path(dest) / "fig_h7.png", dpi=200)
+    plt.close(fig)
+
 def figure_ladder(across, datasets, dest):
     """H3: arm B's AUC against model size, within family, one line per dataset.
 
@@ -225,9 +324,12 @@ def figure_ladder(across, datasets, dest):
     order = across["h3"]["model_order"]
     datasets = [d for d in datasets if d in across["h3"]["arm_b_auc"]]
     fig, ax = plt.subplots(figsize=(8.5, 4.6))
+    style = dataset_style(datasets)
     for dataset in datasets:
+        colour, marker = style[dataset]
         values = [across["h3"]["arm_b_auc"][dataset][m] for m in order]
-        ax.plot(range(len(order)), values, "o-", label=dataset, markersize=5, alpha=0.85)
+        ax.plot(range(len(order)), values, marker=marker, linestyle="-", color=colour,
+                label=dataset, markersize=5, alpha=0.85)
     ax.set_xticks(range(len(order)), [m.replace("-", "\n") for m in order], fontsize=8)
     ax.set_ylabel("arm B test AUC (no labels)")
     ax.axhline(0.5, color="grey", linestyle=":", linewidth=1)

@@ -350,7 +350,7 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     for name in ("h1", "h2", "h3", "h4", "h5", "h6h7", "literature", "completeness", "features",
                  "appendix_prompts", "numbers"):
         assert (Path(config["tabdir"]) / f"{name}.tex").stat().st_size > 0
-    for name in ("curve", "n_b", "ladder", "readers", "thinking", "h5"):
+    for name in ("curve", "n_b", "ladder", "readers", "thinking", "h5", "h6", "h7"):
         assert (Path(config["figdir"]) / f"fig_{name}.png").stat().st_size > 0
     # One sampled-image montage per dataset, including the multi-label one, whose rows are findings.
     for dataset in config["datasets"]:

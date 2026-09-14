@@ -181,7 +181,7 @@ EVALUATED = expand(f"{OUT}/evaluate/{{dataset}}.json", dataset=DATASETS)
 EVALUATION = f"{OUT}/evaluation.json"
 FIGS, TABS = config["figdir"], config["tabdir"]
 FIG_FILES = (expand(f"{FIGS}/fig_{{f}}.png",
-                    f=["curve", "n_b", "ladder", "readers", "thinking", "h5"])
+                    f=["curve", "n_b", "ladder", "readers", "thinking", "h5", "h6", "h7"])
              # One montage per dataset for the sampled-image appendix.
              + expand(f"{FIGS}/fig_samples_{{dataset}}.png", dataset=DATASETS))
 TABLE_TEX = expand(f"{TABS}/{{t}}.tex",

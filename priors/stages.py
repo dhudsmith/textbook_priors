@@ -932,10 +932,13 @@ def figures(dest: str) -> None:
         reporting.figure_readers(across, datasets, dest)
         reporting.figure_thinking(across, datasets, dest)
         reporting.figure_h5(across, datasets, dest)
+        reporting.figure_h6(across, datasets, dest)
+        reporting.figure_h7(across, datasets, dest)
         montages = reporting.figure_samples(CONFIG["outdir"], CONFIG["cachedir"], datasets, dest)
         run.write(f"{CONFIG['outdir']}/figures.json", dict(dest=dest,
                   files=["fig_curve.png", "fig_n_b.png", "fig_ladder.png", "fig_readers.png",
-                         "fig_thinking.png", "fig_h5.png"] + montages))
+                         "fig_thinking.png", "fig_h5.png", "fig_h6.png",
+                         "fig_h7.png"] + montages))
 
 
 def main(argv=None) -> None:

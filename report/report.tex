@@ -397,9 +397,22 @@ readers sit near half.
 The lower effort won on \hSixWins\ of \numArmBDatasets\ datasets and the higher on
 \hSixWinsForMore\ ($p = \hSixp$ for the lower), against \minWinsArmB\ needed; the median difference
 is \hSixMedian\ AUC, with \hSixClear\ intervals clear of zero for the lower effort and
-\hSixClearAgainst\ against it. One limit: this model is the study's only sampled reader, so two
+\hSixClearAgainst\ against it. Figure~\ref{fig:h6} draws both readings of every dataset rather than
+only their difference, sorted by the higher effort, so the one dataset the lower effort clearly
+rescues can be seen to be the one the model read worst. One limit: this model is the study's only sampled reader, so two
 efforts of it differ in their draw as well as their effort, and the paired bootstrap cannot see
-that.
+that. A second, measured at the probe before the fan-out: \texttt{low} is a small step from
+\texttt{medium} on this model --- 109 against 132 median reasoning tokens, where the local model's
+\texttt{none}-to-\texttt{medium} step is 112 against 986 --- so this is a null about a small lever,
+and the gateway rejects \texttt{minimal}, so a wider one cannot be bought.
+
+\begin{figure}[htbp]\centering
+  \includegraphics[width=\textwidth]{fig_h6.png}
+  \caption{H6: the frontier reader at \texttt{medium} and at \texttt{low} on every dataset, joined,
+  and sorted by the higher effort. Solid pairs have a difference interval clear of zero; the
+  difference and its 95\% interval are printed at the right. Only dermamnist, the dataset this
+  reader read worst, is clearly rescued by lowering the effort.}\label{fig:h6}
+\end{figure}
 
 \subsection{H7 --- Capability inside the frontier family: \hSevenSupported}
 
@@ -409,6 +422,19 @@ size, so the ladder is ordered by price --- their output tokens cost 1.20, 12.00
 per million --- which is the vendor's ranking and a proxy for capability, not a parameter count.
 The top beat the bottom on \hSevenWins\ of \numArmBDatasets\ ($p = \hSevenp$), median
 \hSevenMedian\ AUC.
+
+Figure~\ref{fig:h7} is drawn deliberately like Figure~\ref{fig:ladder}, the H3 ladder, because the
+pair is the finding: the same picture over an open-weight ladder from 9B to 31B parameters found no
+trend at all, and this one, ordered only by what the vendor charges, rises on most datasets. What
+separates these models is not what parameter count was measuring, and this study cannot say what it
+is --- they are closed, of unknown size, training data and architecture.
+
+\begin{figure}[htbp]\centering
+  \includegraphics[width=0.85\textwidth]{fig_h7.png}
+  \caption{H7: the closed family at effort \texttt{low}, cheapest to most expensive, one line per
+  dataset. Compare Figure~\ref{fig:ladder}, the same picture over open weights by parameter
+  count.}\label{fig:h7}
+\end{figure}
 
 \input{tables/h6h7}
 
