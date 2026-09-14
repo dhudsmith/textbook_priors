@@ -761,3 +761,51 @@ The first rebuild attempt is worth recording: editing `stages.py` cascaded into 
 and Snakemake tried to re-score a gemma chunk. The `protected()` output refused it with a
 `ProtectedOutputException`. That is principle 7 working as designed, and it caught what the touch
 discipline had missed. No calls were spent; the archive is intact at 587 files.
+
+## 2026-09-14 06:55 — "Clean up hanging checkouts or branches that were never merged in"
+
+The ask: one clean lineage for the talk, everything accounted for, and results that are always in
+the owner's checkout rather than somewhere a future session left them. Three things were wrong, and
+none of them was a branch.
+
+**The results were already only in `~/Code/textbook_priors`** — 587 archive files, twelve each of
+sample / prompts / prompts_txt / scores / features / evaluate, twenty-four classify, twenty figures,
+twelve tables and the 15M PDF. The session worktree held no results at all. So nothing had to be
+moved; what had to change is that nothing can put them anywhere else again. `config/config.yaml`
+now carries `run_root: ~/Code/textbook_priors`, and the Snakefile refuses to **execute** anywhere
+else, naming both paths in the error and pointing at `PRIORS_ALLOW_ANY_CWD=1` for anyone who means
+it. Reading the workflow elsewhere is untouched, deliberately: a dry run, `--lint`, `--touch` and
+`--unlock` from a session worktree are all legitimate and all still work. Tested both ways from the
+worktree before committing. The guard is module-level and touches no rule's shell line, so it
+triggers nothing: the checkout still dry-runs to "Nothing to be done".
+
+**The branches.** Eight `claude/...` heads existed on the remote. Six were fully contained in the
+talk branch — the runner opens one per session whether or not the session diverges — and two carried
+unique commits, both superseded:
+
+| ref | head | what it holds |
+|---|---|---|
+| `claude/concept-bank-subagents-io2xt9` | 8c884c4 | contained; also where `main` sat |
+| `claude/med-mnist-literature-benchmarks-3wcw8e` | ac2cee4 | contained |
+| `claude/workflow-validation-simplify-wz992z` | 1863cf3 | contained |
+| `claude/talk-workflow-cleanup-qmi9iy` | 163663a | contained; this session's own |
+| `claude/llm-zero-shot-image-variants-asnp2y` | df40793 | 2 commits, WORKFLOW.md only: the zero-shot split and the description-embedding arm, both dropped from the plan on 2026-09-09 |
+| `claude/p-plus-c-hypothesis-57k952` | de0e6cb | 1 commit: a second session's arm PC, superseded by the H5 arm C+P that shipped |
+
+Neither unmerged branch holds a result file; both are plan exploration that the shipped plan already
+answers. They are kept as annotated tags — `retired/llm-zero-shot-image-variants` and
+`retired/p-plus-c-hypothesis` — so the commits stay reachable and findable by name, and the branch
+list stays short. The four contained session branches are deleted. `claude/textbook-priors-workflow-2kdgap`
+(eaa7994) stays: WORKFLOW.md §10 cites it by name for the wider plan that was cut.
+
+**`main` is the trunk again.** It had sat at 8c884c4 since the concept-bank work while every later
+commit accumulated on the talk branch; it fast-forwards to the talk head with nothing to merge and
+nothing lost. `origin/HEAD` now points at it. CLAUDE.md tells the next session the rule that keeps
+this true: commit on whatever branch the runner hands you if you must, but fast-forward `main` onto
+the same commit and push both before the session ends, and retire superseded exploration as a tag
+rather than leaving a head behind.
+
+Three stale documentation claims fell out of the audit and are fixed: WORKFLOW.md §2 still opened
+"Four" hypotheses, CLAUDE.md still said four, and the README still described four arms, four
+hypotheses and a 616-job clean-clone DAG. The DAG is 665 jobs from a clone (677 forced, including
+twelve fetches), 587 of them the scoring fan-out — counted from `-n --forceall`, not estimated.

@@ -9,6 +9,13 @@
 # Resources sit at the bottom. They are not a rerun trigger - the values a rule's numbers depend
 # on reach it as `params` - so editing a memory request reruns nothing.
 
+# The one checkout this workflow runs in. Everything a run produces that is not committed -
+# results/, the response archive, benchmarks/, logs/, .snakemake/ - lands beside the Snakefile, so
+# a run from anywhere else scatters them somewhere nobody will look. The Snakefile refuses to
+# execute outside this directory unless PRIORS_ALLOW_ANY_CWD=1 says otherwise; reading the workflow
+# from elsewhere (a dry run, a lint, a --touch) is unaffected.
+run_root: ~/Code/textbook_priors
+
 outdir: results
 figdir: report/figs
 tabdir: report/tables

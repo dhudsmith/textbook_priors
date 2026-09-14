@@ -28,10 +28,11 @@ measured in the currency a practitioner cares about: labelled images.
 
 ## 2. The hypotheses
 
-Four, each with a decision rule fixed before the numbers exist. Everything that serves none of
-them is an extension in §10, not part of `all`. H4 was added on 2026-09-12, after H1 to H3 had been
-decided and before a single call of its own was bought — which is the distinction arm D could not
-make for itself, and the reason arm D is gone (§10).
+Seven, each with a decision rule fixed before the numbers exist. Everything that serves none of
+them is an extension in §10, not part of `all`. H1 to H3 were registered before any call was
+bought; H4 was added on 2026-09-12 and H5, H6 and H7 on 2026-09-13, each after the earlier ones had
+been decided and each before a single call of its own was bought — which is the distinction arm D
+could not make for itself, and the reason arm D is gone (§10).
 
 Primary metric throughout: **test AUC** from the `medmnist` evaluator (macro one-vs-rest over
 classes; the mean over the fourteen findings for chestmnist). Every arm predicts on the **same

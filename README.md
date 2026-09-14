@@ -2,10 +2,10 @@
 
 Can a vision-language model's textbook knowledge of what pathology looks like stand in for
 labelled data? On the twelve MedMNIST 2D benchmarks a VLM scores each image against a cited bank
-of diagnostic visual features, and four arms — two label-free, two label-matched — say what those
-scores are worth in the currency of labelled images. The whole study, from the fixed inputs to the
-technical report, is one Snakemake workflow on Palmetto2. The plan and the four hypotheses are
-`WORKFLOW.md`; dated findings are `CHANGELOG.md`; the talk narrative is `TALK.md`.
+of diagnostic visual features, and five arms — two label-free, three label-matched — say what
+those scores are worth in the currency of labelled images. The whole study, from the fixed inputs
+to the technical report, is one Snakemake workflow on Palmetto2. The plan and the seven hypotheses
+are `WORKFLOW.md`; dated findings are `CHANGELOG.md`; the talk narrative is `TALK.md`.
 
 ```bash
 snakemake --profile profiles/palmetto             # everything, on SLURM
@@ -26,20 +26,21 @@ tests. The bank files are deliberately not inputs of `smoke`, so that editing on
 invalidates that dataset alone; the last invocation above is how the schema tests are re-run after
 such an edit, and the reasoning is in the Snakefile's stage-0 banner.
 
-`rule all` is the technical report. A dry run from a clean clone is 616 jobs, 521 of them the
-scoring fan-out; from the owner's checkout, where every result exists, it is nothing to be done.
+`rule all` is the technical report. A dry run from a clean clone is 665 jobs, 587 of them the
+scoring fan-out, plus one fetch for any of the twelve releases not already on project storage; from
+the owner's checkout, where every result exists, it is nothing to be done.
 
 ## The stages
 
 | # | Stage | What happens | Jobs |
 |---|---|---|---|
 | 0 | **Smoke** | The tests: bank schema, label maps, prompts, the sampler, the estimators, the metric | 1 |
-| 1 | **Sample** | A release file missing from storage is fetched first; per dataset: the seeded test sample and labelled pool, capped at the official split | 4 + 12 |
-| 2 | **Score** | Per dataset: render both prompts; then the VLM calls, archived raw, including H4's two readers | 12 + 521 |
+| 1 | **Sample** | A release file missing from storage is fetched first; per dataset: the seeded test sample and labelled pool, capped at the official split | 0-12 + 12 |
+| 2 | **Score** | Per dataset: render both prompts; then the VLM calls, archived raw, over all five readers | 12 + 587 |
 | 3 | **Features** | Per dataset: ImageNet ResNet-18 penultimate features | 12 |
-| 4 | **Classify** | Per dataset: arms A, B, C, P over the curve, the permutation controls, and every reader's probe; C and P alone for the multi-label chestmnist | 12 |
+| 4 | **Classify** | Per dataset: arms A, B, C, P, C+P over the curve, the permutation controls, and every reader's probe; C, P and C+P alone for the multi-label chestmnist | 12 |
 | 5 | **Evaluate** | AUC, the paired bootstrap, n_B; then the sign tests, the ladder and the reader chain | 12 + 1 |
-| 6 | **Report** | Six figures plus a sampled-image montage per dataset, the tables, two appendices, the technical report PDF | 3 |
+| 6 | **Report** | Eight figures plus a sampled-image montage per dataset, twelve tables, two appendices, the technical report PDF | 3 |
 
 ## Layout
 
@@ -131,11 +132,17 @@ everything downstream of the model is a deterministic function of the archive.
 
 ## Where the workflow runs
 
-**From `~/Code/textbook_priors`, the owner's checkout.** Everything a run produces that is not
-committed — `results/`, `benchmarks/`, `logs/` and Snakemake's own `.snakemake/` metadata — lives
-in the checkout it ran from, and only that one persists. An agent session works in a throwaway
-worktree under the runner's `_sessions/` tree which is recreated without warning, taking every
-gitignored path with it; that is the place to edit, commit and push, not to run.
+**From `~/Code/textbook_priors`, the owner's checkout, and nowhere else.** Everything a run
+produces that is not committed — `results/`, `report/`, `benchmarks/`, `logs/` and Snakemake's own
+`.snakemake/` metadata — lives in the checkout it ran from, and only that one persists. That path
+is `run_root` in `config/config.yaml`, and the Snakefile refuses to execute anywhere else:
+reading the workflow elsewhere (a dry run, `--lint`, `--touch`, `--unlock`) is unaffected, and
+`PRIORS_ALLOW_ANY_CWD=1` overrides the refusal for anyone who means it.
+
+This is also where editing and committing happen. An agent session is given a throwaway worktree
+under the runner's `_sessions/` tree which is recreated without warning, taking every gitignored
+path with it and occasionally resetting to a stale commit; working there cost this project several
+near-misses, and `CLAUDE.md` now tells sessions not to.
 
 The two heavy directories are shared by every checkout, because `data/raw` and `data/cache` are
 symlinks onto `/project/dane2/wficai/textbook_priors` (`scripts/link_storage.sh`). That is why a

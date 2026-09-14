@@ -30,12 +30,43 @@
 # re-verifies them (WORKFLOW.md section 4).
 # =====================================================================================
 
+import os
 import re
+import sys
 from pathlib import Path
 
 import yaml
 
+from snakemake.exceptions import WorkflowError
+
 configfile: "config/config.yaml"
+
+
+# ---- one checkout runs this workflow, and it is the one the results live in --------------------
+#
+# results/, the write-protected response archive under results/score/, benchmarks/, logs/ and
+# Snakemake's own .snakemake/ metadata all sit beside this file, so where the workflow is RUN from
+# decides where they land. An agent session is given a throwaway git worktree that is recreated
+# without warning, and a run from there puts 58,186 calls' worth of archive somewhere nobody will
+# look for it and that will not survive the week.
+#
+# Reading the workflow from anywhere is fine and useful - a dry run, a lint, a --touch, an --unlock
+# from a session worktree are all legitimate - so this refuses execution alone. Set
+# PRIORS_ALLOW_ANY_CWD=1 to override it deliberately, which is the only way results should ever
+# land anywhere else.
+RUN_ROOT = Path(config["run_root"]).expanduser().resolve()
+_READS_ONLY = {"-n", "--dry-run", "--dryrun", "--lint", "--touch", "-t", "--unlock", "--list",
+               "--list-target-rules", "--summary", "--detailed-summary", "--dag", "--rulegraph",
+               "--filegraph", "--report", "--version", "--help", "-h"}
+if (Path.cwd().resolve() != RUN_ROOT and not _READS_ONLY.intersection(sys.argv)
+        and os.environ.get("PRIORS_ALLOW_ANY_CWD") != "1"):
+    raise WorkflowError(
+        "This workflow writes its results beside the Snakefile, so it runs in one checkout:\n"
+        f"    run_root (config/config.yaml):  {RUN_ROOT}\n"
+        f"    this working directory:         {Path.cwd().resolve()}\n\n"
+        "Run it from the checkout above. Editing, committing and dry-running from anywhere else\n"
+        "is fine and needs no override; if you really mean to write results here, set\n"
+        "PRIORS_ALLOW_ANY_CWD=1.")
 
 # Seconds-long bookkeeping runs in the submitting process rather than paying a SLURM round-trip.
 # Anything with a real toolchain or a real cost is submitted so it runs with declared resources.
