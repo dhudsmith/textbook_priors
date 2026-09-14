@@ -1240,3 +1240,84 @@ the prompt rather than the 89% the local stack does and because reasoning tokens
 A three-model sweep over the same prefix is $53.59 at list, $26.79 at `flex`. The service exposes
 no credit endpoint, so the balance has to be read off the service UI before anything is bought.
 The service hosts `luna`, `terra` and `sol`, and no `astra`.
+
+## 2026-09-13 — H6 not supported, H7 supported: effort is not the frontier model's problem, but capability is real
+
+Both registered before their calls (commit 49d2751) and both read by the same cross-validated probe
+on the same 200-image prefix, so the six existing readers joined for nothing and every difference is
+paired.
+
+**H6 — effort inside the frontier model: not supported, and the overthinking reading is wrong as a
+general claim.** `gpt-5.6-terra` at `low` beat itself at `medium` on 3 of 11 datasets; `medium` won
+on 8 (p = 0.9673 in the registered direction). The median difference is −0.012 AUC, against the
+lower effort. Reasoning is not what was holding this reader back.
+
+**But the prediction that motivated H6 was right, on the one dataset it named.** dermamnist is the
+only interval clear of zero in either direction: **+0.128 [+0.054, +0.203]** for the lower effort,
+0.688 against 0.554. That was the dataset picked out before the calls were bought, from the
+`pigment_network` collapse in the archive, and it is the dataset where H4b lost hardest. So the
+frontier reader does overthink dermoscopy, and does not overthink anything else here.
+
+| dataset | terra low | terra medium | low − medium |
+|---|---|---|---|
+| dermamnist | 0.688 | 0.554 | **+0.128 [+0.054, +0.203]** |
+| pneumoniamnist | 0.813 | 0.788 | +0.024 [−0.048, +0.095] |
+| organsmnist | 0.701 | 0.691 | +0.011 [−0.040, +0.061] |
+| pathmnist | 0.941 | 0.941 | −0.000 [−0.022, +0.024] |
+| tissuemnist | 0.680 | 0.689 | −0.008 [−0.064, +0.042] |
+| octmnist | 0.904 | 0.915 | −0.011 [−0.041, +0.016] |
+| retinamnist | 0.610 | 0.623 | −0.013 [−0.088, +0.059] |
+| organamnist | 0.796 | 0.810 | −0.013 [−0.067, +0.038] |
+| organcmnist | 0.741 | 0.762 | −0.020 [−0.069, +0.029] |
+| bloodmnist | 0.866 | 0.897 | −0.031 [−0.064, +0.002] |
+| breastmnist | 0.797 | 0.831 | −0.033 [−0.084, +0.014] |
+
+**Read beside H4a, this says something neither says alone.** H4a raised the local model's effort
+from `none` to `medium` and dermamnist gained +0.116. H6 lowered the frontier model's effort from
+`medium` to `low` and dermamnist gained +0.128. Two opposite interventions, the same dataset
+rescued, both landing it near 0.69–0.72. The generalisation is not "more thinking" or "less
+thinking" but that dermoscopy is where the default operating point is wrong, in whichever direction
+the default happens to sit — and the rest of the tasks barely care.
+
+**One limit on H6's power, measured at the probe and stated before the fan-out.** `low` is not much
+less thinking than `medium` for this model: 109 against 132 median reasoning tokens on breastmnist,
+where the local model's `none` to `medium` step is 112 against 986. Over the whole run the two
+efforts came out at 73% and 77% reasoning share. So H6 tested a small lever, and its null is a null
+about that lever, not about reasoning in general. The gateway rejects `minimal`, so a wider step is
+not purchasable here.
+
+**H7 — capability inside the frontier family: supported.** `gpt-5.6-sol` at `low` beat
+`gpt-5.6-luna` at `low` on **9 of 11 datasets (p = 0.0327)**, median +0.052 AUC, with four intervals
+clear of zero (octmnist, bloodmnist, organamnist, retinamnist) and none against. The ladder is
+ordered by price, the only public ordering these closed models have.
+
+| dataset | luna | terra | sol | sol − luna |
+|---|---|---|---|---|
+| retinamnist | 0.520 | 0.610 | 0.687 | **+0.166 [+0.078, +0.253]** |
+| dermamnist | 0.675 | 0.688 | 0.775 | +0.090 [−0.014, +0.185] |
+| organamnist | 0.706 | 0.796 | 0.784 | **+0.078 [+0.020, +0.134]** |
+| pneumoniamnist | 0.735 | 0.813 | 0.806 | +0.071 [−0.009, +0.149] |
+| organsmnist | 0.621 | 0.701 | 0.683 | +0.063 [−0.002, +0.133] |
+| bloodmnist | 0.850 | 0.866 | 0.902 | **+0.052 [+0.012, +0.092]** |
+| tissuemnist | 0.665 | 0.680 | 0.698 | +0.033 [−0.023, +0.088] |
+| octmnist | 0.911 | 0.904 | 0.943 | **+0.032 [+0.003, +0.063]** |
+| breastmnist | 0.765 | 0.797 | 0.779 | +0.014 [−0.053, +0.082] |
+| pathmnist | 0.952 | 0.941 | 0.951 | −0.002 [−0.026, +0.024] |
+| organcmnist | 0.731 | 0.741 | 0.714 | −0.018 [−0.075, +0.040] |
+
+**Set against H3, this is the sharpest pair of results in the study.** H3 moved along an open-weight
+ladder from 9B to 31B and found no trend at all: the larger model won 7 of 11 in one family and 5 of
+11 in the other, Friedman p = 0.90. H7 moves along a closed ladder ordered only by price and finds
+a clean one. Whatever separates luna from sol is not something the open ladder's parameter count
+captured, and the study cannot say what it is — these are closed models of unknown size, training
+data and architecture. What it can say is that "a better model reads cited visual features better"
+is true somewhere, and that the place it shows up is not where parameter count predicted.
+
+The gains are also largest where the readers are worst: retinamnist (+0.166 from a luna baseline of
+0.520) and dermamnist (+0.090 from 0.675). The same shape as H4a and H6, and the third time in this
+study that the interesting movement is on the tasks the models read badly.
+
+**Cost.** 6,475 calls, $38.76 at list and $19.38 at `flex`, against the $53.59 / $26.79 estimated
+before the run — completions came in shorter at `low` than the `medium` reader's. Caching differed
+sharply by model: 65% of terra's prompt came back cached against 29% for luna and sol, which is most
+of why sol cost twice terra despite a similar token count.

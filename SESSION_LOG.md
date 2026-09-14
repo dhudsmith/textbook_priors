@@ -691,3 +691,24 @@ Next, before the fan-out: one chunk per new reader, which is standing practice h
 more than usual this time, because the service metadata lists no reasoning levels and no image
 support for any gateway model — it omits images even for terra, which demonstrably accepts them —
 so whether luna and sol can see an image at all is unverified until a call is made.
+
+## 2026-09-13 22:15 — H6 and H7 decided
+
+Both ran to the report in about seventy minutes and cost $38.76 at list, $19.38 at `flex`, under the
+$53.59 / $26.79 quoted before the owner approved it. Findings are in CHANGELOG.md.
+
+Short version: **H6 not supported** — lowering the frontier model's effort helped on 3 of 11
+datasets and hurt on 8 — but the one interval clear of zero anywhere in it is dermamnist at +0.128,
+which is the dataset the archive had singled out before any call was bought, from a concept the
+model was collapsing to a single answer. The general overthinking claim is wrong here and the
+specific one was right. **H7 supported**, 9 of 11, p = 0.0327: the price ladder inside the closed
+family separates cleanly where H3's open-weight parameter ladder found nothing at all.
+
+Two things recorded against H6's null rather than glossed: the `low`-to-`medium` step is a small
+lever on this model (109 against 132 median reasoning tokens at the probe, where the local model's
+`none`-to-`medium` step is 112 against 986), and the gateway rejects `minimal`, so a wider step
+cannot be bought here. The null is about that lever.
+
+The probe before the fan-out earned its place again: it confirmed luna and sol accept an image at
+all, which the service metadata could not answer, and it is where the small-lever measurement came
+from.
