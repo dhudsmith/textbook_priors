@@ -649,3 +649,21 @@ the study's thin-class caveat visible rather than stated: dermamnist's vascular 
 most of the explanation for its 0.557.
 
 The report is now about 60 pages and 14 MB. Same build dance as before: smoke, touch, four jobs.
+
+## 2026-09-13 20:40 — Four questions about the frontier reader, none of them bought
+
+Asked whether the frontier model might be overthinking, whether to try luna, terra and sol at the
+lowest effort, whether the API offers `astra`, and whether the credits stretch to it.
+
+Answered from the archive and the service metadata rather than by running anything, because the
+last of those questions is the one that decides the first three and I cannot read the balance: the
+service has no credit endpoint and the figure lives only in its UI. The overthinking evidence, the
+dermamnist concept-collapse signal and the corrected costs are in CHANGELOG.md; the model family,
+the pricing table and the sweep costing are in `docs/rcd_llm_service.md`, which also loses an
+estimate that was half the true figure.
+
+Nothing was pre-registered and nothing was scored. If the owner wants the sweep, the design that
+follows from the evidence is two separate questions rather than one: effort within the frontier
+model (terra at `low` against terra at `medium`, which is the direct test of the overthinking
+hypothesis and re-reads H4b's step without the confound), and capability at matched low effort
+(luna, terra, sol). They would want the H5 treatment — rule and config committed before the calls.

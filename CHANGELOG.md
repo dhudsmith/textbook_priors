@@ -1205,3 +1205,38 @@ identical. The rule this leaves: after a refactor that cannot have changed a num
 upstream targets before running anything, and read the job-stats table for `score_` lines before
 every launch. README already says one checkout runs the workflow at a time; the symlinks make that
 sharper, because a second checkout does not have to run anything to disturb the first.
+
+## 2026-09-13 — Is H4b's null an artefact of overthinking? What the archive can and cannot say
+
+The owner asked whether the frontier reader might be suffering from overthinking, which would make
+H4b's null a statement about an operating point rather than about capability. The archive answers
+part of it for nothing.
+
+**The crude failure is ruled out.** All 2,156 gateway calls finished with `stop`. Zero truncations,
+zero content retries, zero missing answers, on every dataset. Whatever is happening, the model is
+not spending its budget on reasoning and returning nothing — the failure mode that made thinking
+look impossible on the local stack in the first place.
+
+**It is nevertheless thinking hard, and paying for it.** `reasoning_tokens` are 41% to 85% of its
+completion tokens depending on dataset (median 168 of 286 on dermamnist, 642 of 757 on organsmnist),
+and 728,022 of its 944,488 completion tokens overall.
+
+**One concrete signal, on the dataset where H4b loses hardest.** dermamnist is the frontier reader's
+worst result (probe AUC 0.554, against 0.741 for `gemma-4-12b` at no reasoning at all, and a
+−0.162 H4b step). Its answers there are not globally collapsed — mean mode share across the twelve
+concepts is 0.85, the same as every other reader — but on `pigment_network` it gives one level to
+93% of images where both qwen readers sit at 51–53%. Committing a discriminative concept to a
+single value is exactly how a reader loses AUC while still answering fluently.
+
+**What the archive cannot settle.** Whether reasoning caused that, or whether this model reads
+dermoscopy that way at any effort, is not decidable from answers bought at one effort. It needs the
+same model at a lower effort, which the gateway supports (it rejects `minimal`, not `low`). The
+plan's standing claim that the frontier model "cannot be asked for no reasoning at all" remains
+true and remains the reason H4b is a matched-`medium` comparison; what was never tried is `low`.
+
+**Costed, not bought.** Corrected figures are in `docs/rcd_llm_service.md`: the H4b reader cost
+$14.31 at list and $7.16 at `flex`, twice the original estimate, because the gateway caches 65% of
+the prompt rather than the 89% the local stack does and because reasoning tokens bill as output.
+A three-model sweep over the same prefix is $53.59 at list, $26.79 at `flex`. The service exposes
+no credit endpoint, so the balance has to be read off the service UI before anything is bought.
+The service hosts `luna`, `terra` and `sol`, and no `astra`.

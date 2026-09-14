@@ -235,6 +235,42 @@ was missed on the first read of that listing because the local models have none.
 | text-embedding-3-large / -small | 0.13 / 0.02 | — | — |
 
 So H4's gateway reader — 1,200 calls at about 190 fresh and 1,500 cached prompt tokens and 300 to
-600 completion tokens each — cost roughly seven dollars at list and under four with `flex`, against
-a ten-credit allocation. The whole 30,000-call study on that model would have been on the order of
-a hundred and fifty dollars at list.
+600 completion tokens each — was estimated at roughly seven dollars at list and under four with
+`flex`.
+
+**That estimate was half the real figure, and the twelve-dataset run measured it.** The H4b reader
+as actually bought is 2,156 calls carrying 3,585,440 prompt tokens of which 2,330,368 (65%, not the
+89% seen on the local stack) came back cached, and 944,488 completion tokens of which 728,022 were
+`reasoning_tokens`. At the pricing above that is **$14.31 at list and $7.16 at `flex`**. Two things
+the first estimate got wrong: the cache hit rate is lower on the gateway than locally, and reasoning
+tokens are billed as output — they are 77% of this reader's completion spend.
+
+## The gpt-5.6 family, and what an effort sweep would cost
+
+Read 2026-09-13 from `?full=true`. The service hosts exactly three gpt-5.6 variants and **no
+`astra`**; nothing among the 120 served models carries that name.
+
+| model | input | cached input | output | note |
+|---|---|---|---|---|
+| `gpt-5.6-luna` | 0.20 | 0.02 | 1.20 | a tenth of terra's output price |
+| `gpt-5.6-terra` | 2.00 | 0.20 | 12.00 | this study's H4b reader |
+| `gpt-5.6-sol` | 4.00 | 0.40 | 20.00 | the most expensive served |
+
+Their metadata carries no `reasoning` field and lists only `tools` under `features`, so neither the
+accepted effort levels nor image support can be read off it — the same unreliability this document
+already records for images on `gpt-5.5` and `gpt-5.6-terra`, both of which do accept them. The
+levels have to be probed one call at a time; what is known is that the gateway rejects `minimal`.
+
+Costed from the measured 1,663 prompt and 438 completion tokens per call, one reader over the same
+2,156-image prefix, with no cache credit assumed:
+
+| reader | list | `flex` | if low effort cuts completions to 40% (`flex`) |
+|---|---|---|---|
+| `gpt-5.6-luna` | $1.85 | $0.93 | $0.59 |
+| `gpt-5.6-terra` | $18.50 | $9.25 | $5.85 |
+| `gpt-5.6-sol` | $33.23 | $16.62 | $10.95 |
+| all three | $53.59 | $26.79 | $17.39 |
+
+**The balance cannot be read from here.** No credit endpoint exists (`/v1/credits`, `/api/credits`
+and the OpenAI billing paths all 404); the figure lives only on the service UI's OpenAI Credits
+page, so a spend of this size has to be checked there before it is bought.
