@@ -5,11 +5,14 @@ and the sentences whose direction depends on a value read a macro from `numbers.
 asserting something a later run could contradict. If a figure and the prose ever disagree, it is
 because someone edited the prose.
 
-Five figures (WORKFLOW.md section 6): the learning curve with arm B's line (H1), n_B per dataset
-(H1), the model ladder (H3), the reader chain and thinking's effect against the baseline (H4).
+Six figures (WORKFLOW.md section 6): the learning curve with arm B's line and arm C+P (H1, H5),
+n_B per dataset (H1), the model ladder (H3), the reader chain and thinking's effect against the
+baseline (H4), and what the concept block adds on top of the pixels (H5). Two appendices are
+generated here too: every rendered prompt, verbatim, and a montage of the sampled test images of
+every class, both read from the artifacts the run itself wrote.
 
 One table, `literature`, and one line on the curve figure read a fixed input besides results/:
-`data/literature/benchmarks.yaml`, published fully supervised numbers for the same six tasks
+`data/literature/benchmarks.yaml`, published fully supervised numbers for the same twelve tasks
 (WORKFLOW.md section 10). Both are another extension that decides nothing — a reconciliation
 point, not a comparison arm — so the line is drawn distinctly from the four arms and carries no
 interval.
@@ -19,6 +22,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import numpy as np
 import matplotlib
 
 matplotlib.use("Agg")
@@ -27,7 +31,11 @@ import matplotlib.pyplot as plt  # noqa: E402
 ARM_LABEL = {"C": "arm C: concept scores", "P": "arm P: ImageNet features",
              "CP": "arm C+P: both blocks", "B": "arm B: textbook only (no labels)",
              "A": "arm A: zero-shot (no labels)"}
-ARM_COLOUR = {"C": "#1f77b4", "P": "#d62728", "CP": "#9467bd", "B": "#2ca02c", "A": "#7f7f7f"}
+# One colour per arm, everywhere it appears. C+P's was chosen against the palette validator rather
+# than by eye: the obvious purple (#9467bd) sits at Delta E 1.7 from arm C's blue under protanopia
+# and 14.2 for normal vision, which is indistinguishable; #762a83 is 11.1 from that blue under
+# deuteranopia, 16 or more from every other line on the panel, and 8.6:1 against white for print.
+ARM_COLOUR = {"C": "#1f77b4", "P": "#d62728", "CP": "#762a83", "B": "#2ca02c", "A": "#7f7f7f"}
 
 # Not an arm: the published, fully supervised ceiling (data/literature/benchmarks.yaml), read onto
 # the same axes as a fixed reference rather than a line that moves with n. One colour, used nowhere
@@ -108,6 +116,14 @@ def figure_curve(per, datasets, curve_n, dest, literature=None):
             hi = [got["curve"][f"{arm}__n{n}"]["hi"] for n in own_n]
             ax.plot(own_n, point, "o-", color=ARM_COLOUR[arm], label=ARM_LABEL[arm], markersize=4)
             ax.fill_between(own_n, lo, hi, color=ARM_COLOUR[arm], alpha=0.15, linewidth=0)
+        # H5's arm rides on the same axes, deliberately without a band. It sits a few thousandths
+        # above arm P at every point, so a third ribbon would overlap arm P's almost exactly and
+        # read as a wider red band rather than as a second series; the interval that decides H5 is
+        # on the paired difference, which has its own figure. Square markers and a dashed line, so
+        # identity is not carried by colour alone.
+        cp = [got["curve"][f"CP__n{n}"]["point"] for n in own_n]
+        ax.plot(own_n, cp, "s--", color=ARM_COLOUR["CP"], label=ARM_LABEL["CP"],
+                markersize=3.5, linewidth=1.4)
         if got.get("n_b") is not None:
             b_key = next(k for k in got["auc"] if k.startswith("B__"))
             ax.axhline(got["auc"][b_key], color=ARM_COLOUR["B"], linestyle="--", label=ARM_LABEL["B"])
@@ -127,9 +143,14 @@ def figure_curve(per, datasets, curve_n, dest, literature=None):
         ax.set_ylabel("test AUC")
     for ax in axes[-1]:
         ax.set_xlabel("labelled images")
-    (legend_ax or axes.flat[0]).legend(fontsize=8, loc="lower right")
+    # Below the panels, not inside one. With six entries the in-panel legend grew wider than a
+    # panel and covered the first dataset's arm-B and arm-A rules and its y tick labels; a figure
+    # legend costs one strip of margin and obscures nothing.
+    handles, labels = (legend_ax or axes.flat[0]).get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=3 if len(datasets) <= 6 else 6,
+               fontsize=9, frameon=False, bbox_to_anchor=(0.5, 0.0))
     fig.suptitle("What labelled images buy, and what the textbook gives for nothing", fontsize=12)
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0.035 if len(datasets) > 6 else 0.06, 1, 1))
     fig.savefig(Path(dest) / "fig_curve.png", dpi=200)
     plt.close(fig)
 
@@ -598,6 +619,93 @@ def appendix_prompts(outdir, datasets, dest):
                 out.append(r"\end{Verbatim}")
             out.append("")
     _write(dest, "appendix_prompts", "\n".join(out))
+
+# How many example images per class the sample appendix draws. Six fits the page at a legible size
+# and is enough to show within-class variety without becoming a contact sheet.
+_SAMPLES_PER_CLASS = 6
+
+
+def figure_samples(outdir, cachedir, datasets, dest):
+    """One montage per dataset: the first few sampled test images of each class.
+
+    These are the images the study actually scored, taken in sample order out of the same cached
+    arrays every arm and every model read, not illustrations fetched from elsewhere. A reader who
+    wants to know what a 224-pixel `organamnist` bladder looks like, or how thin the dermatofibroma
+    class is, can see it rather than take the concept bank's word for it.
+
+    The multi-label task has no single class per image, so its rows are findings and each row shows
+    images positive for that finding; those images generally carry other findings too.
+    """
+    written = []
+    for dataset in datasets:
+        rendered = json.loads(Path(f"{outdir}/prompts/{dataset}.json").read_text())
+        classes = rendered["classes"]
+        multi_label = bool(rendered.get("multi_label"))
+        arrays = np.load(f"{cachedir}/{dataset}.npz")
+        images, labels = arrays["test_images"], arrays["test_labels"]
+
+        rows = []
+        for index, name in enumerate(classes):
+            member = (labels[:, index] == 1) if multi_label else (labels.reshape(-1) == index)
+            picked = np.flatnonzero(member)[:_SAMPLES_PER_CLASS]
+            rows.append((name, int(member.sum()), picked))
+
+        height = 1.05 * len(rows) + 0.55
+        fig, axes = plt.subplots(len(rows), _SAMPLES_PER_CLASS,
+                                 figsize=(1.05 * _SAMPLES_PER_CLASS + 1.9, height), squeeze=False)
+        for r, (name, total, picked) in enumerate(rows):
+            for c in range(_SAMPLES_PER_CLASS):
+                ax = axes[r][c]
+                ax.set_xticks([]); ax.set_yticks([])
+                for spine in ax.spines.values():
+                    spine.set_linewidth(0.4); spine.set_color("#bbbbbb")
+                if c < len(picked):
+                    frame = images[picked[c]]
+                    ax.imshow(frame, cmap=None if frame.ndim == 3 else "gray",
+                              vmin=None if frame.ndim == 3 else 0,
+                              vmax=None if frame.ndim == 3 else 255)
+                else:
+                    # Fewer than six in the whole sample: an empty cell says so honestly.
+                    ax.set_facecolor("#f2f2f2")
+            axes[r][0].set_ylabel(f"{name}\n({total} of {len(images)})", rotation=0, ha="right",
+                                  va="center", fontsize=7, labelpad=6)
+        fig.suptitle(f"{dataset}: sampled test images by "
+                     f"{'finding' if multi_label else 'class'}", fontsize=10)
+        fig.tight_layout(rect=(0, 0, 1, 1 - 0.35 / height))
+        name = f"fig_samples_{dataset}.png"
+        fig.savefig(Path(dest) / name, dpi=150)
+        plt.close(fig)
+        written.append(name)
+    return written
+
+
+def appendix_samples(outdir, datasets, dest):
+    """The section that places one montage per dataset, with what each row is."""
+    out = [r"\section{Sampled images, by class}", r"\label{app:samples}", ""]
+    out.append(
+        "Every image below is one this study scored: the montages are drawn from the same cached "
+        "sample arrays the vision--language model and the ImageNet encoder read, in sample order, "
+        "so they are the evidence rather than an illustration of it. Each row is one class, "
+        "labelled with how many of that class the seeded test sample happens to contain --- which "
+        "is where the thin-class caveat of the Data section becomes visible, and why a one-vs-rest "
+        "column built on five positives carries the same weight in the AUC as one built on "
+        "hundreds. A grey cell means the sample holds fewer images of that class than the six "
+        "shown. For the multi-label task each row is a finding and its images carry other findings "
+        "besides.")
+    out.append("")
+    for dataset in datasets:
+        rendered = json.loads(Path(f"{outdir}/prompts/{dataset}.json").read_text())
+        kind = "finding" if rendered.get("multi_label") else "class"
+        out.append(r"\begin{figure}[htbp]\centering")
+        out.append(rf"  \includegraphics[width=0.86\textwidth,"
+                   rf"height=0.86\textheight,keepaspectratio]{{fig_samples_{dataset}.png}}")
+        out.append(rf"  \caption{{{tex_escape(dataset)}: up to {_SAMPLES_PER_CLASS} sampled test "
+                   rf"images per {kind}, with the count of that {kind} in the "
+                   rf"sample.}}\label{{fig:samples-{dataset}}}")
+        out.append(r"\end{figure}")
+        out.append(r"\clearpage")
+        out.append("")
+    _write(dest, "appendix_samples", "\n".join(out))
 
 def numbers(per, across, datasets, curve_n, primary, dest, literature=None):
     """The macros the prose reads, so no sentence states a number the run did not produce."""

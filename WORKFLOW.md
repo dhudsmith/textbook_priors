@@ -349,9 +349,11 @@ Each names the failure it prevents; `TALK.md` argues them.
 ```
 
 Targets: `all` (the report), `smoke`, `sample`, `score`, `features`, `classify`, `evaluate`,
-`report`. The report carries an appendix printing every dataset's rendered prompts verbatim,
-generated from the same `results/prompts/` files the archive was hashed against, and a table of
-each arm's design-matrix widths so arm C+P's fusion is a number rather than a description.
+`report`. The report carries two generated appendices — every dataset's rendered prompts
+verbatim, from the same `results/prompts/` files the archive was hashed against, and a montage of
+the sampled test images of every class, drawn from the same cached arrays every arm was scored on
+— and a table of each arm's design-matrix widths so arm C+P's fusion is a number rather than a
+description.
 Six figures: the learning curve with arm B's line (H1), n_B per dataset (H1 detail),
 the model ladder (H3), the reader chain and thinking's effect against the baseline (H4), and what
 the concept block adds on top of the pixels (H5). H2 is a table of paired differences and

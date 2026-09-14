@@ -618,3 +618,34 @@ against the JSON, and the appendix says so.
 Building it needed the documented dance again: editing `tests/` invalidates the smoke marker every
 rule depends on, so a plain `snakemake all` planned all 521 scoring chunks. Ran smoke, touched
 `evaluate score features prompts_txt`, then built the four report jobs. 379 tests pass.
+
+## 2026-09-13 20:05 — Arm C+P on the learning curve, and a sampled-image appendix
+
+Two asks. First, put H5's arm on the plot of performance against number of training samples. It is
+there now as a dashed line with square markers, and deliberately without a confidence band: it
+tracks arm P within a few thousandths on every dataset, so a third ribbon would overlap arm P's
+almost exactly and read as a wider red band rather than a second series. The interval that decides
+H5 is on the paired difference and already has its own figure.
+
+Two things came out of drawing it that were not asked for and are worth recording. The palette
+validator rejected the purple the H5 forest plot had been using: `#9467bd` sits at Delta E 1.7 from
+arm C's blue under protanopia and 14.2 for normal vision, which is not a distinguishable pair. Arm
+C+P is now `#762a83`, which is 11.1 from that blue under deuteranopia, 16 or more from every other
+line on the panel, and 8.6:1 against white for print; the reason is a comment beside the palette so
+nobody re-picks by eye. And the six-entry legend no longer fitted inside a panel — it was covering
+pathmnist's arm-B and arm-A rules and its y tick labels — so it moved below the figure.
+
+Two pre-existing pairs still fail the same validator and were left alone, because changing them
+would repaint five figures and the talk: arm B green against arm P red (Delta E 3.9 deutan) and the
+two dotted reference lines, grey against brown (11.3 normal). Both carry line style as a second
+encoding, which is the condition under which the guidance allows it.
+
+Second ask: an appendix of sample images from each dataset for each class. `figure_samples` writes
+one montage per dataset from the same cached sample arrays every arm was scored on, six images per
+class in sample order, each row labelled with how many of that class the seeded sample holds; a
+grey cell means the sample holds fewer than six. The multi-label task's rows are findings. It makes
+the study's thin-class caveat visible rather than stated: dermamnist's vascular lesions are five of
+500, and chestmnist has one hernia, four pneumonias and six fibroses in the whole sample, which is
+most of the explanation for its 0.557.
+
+The report is now about 60 pages and 14 MB. Same build dance as before: smoke, touch, four jobs.

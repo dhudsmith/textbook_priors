@@ -228,8 +228,10 @@ reached the textbook arm inside the curve on \neverReached\ datasets and started
 
 \begin{figure}[htbp]\centering
   \includegraphics[width=\textwidth]{fig_curve.png}
-  \caption{What labelled images buy (arms C and P, with 95\% intervals) against what the textbook
-  gives for nothing (arm B, dashed; arm A, dotted). Where the
+  \caption{What labelled images buy (arms C and P, with 95\% intervals; arm C+P dashed, without a
+  band, because it tracks arm P within a few thousandths and its interval is on the paired
+  difference in Figure~\ref{fig:h5}) against what the textbook gives for nothing (arm B, dashed;
+  arm A, dotted). Where the
   pixel probe crosses arm B's line is $n_B$. The finely dotted brown line is not an arm: the
   published, fully supervised ResNet-18 (224) AUC for the same task \cite{yang2023}, trained on
   the whole official training split rather than this study's labelled pool, read here as a ceiling
@@ -419,6 +421,8 @@ written, so re-querying is a deliberate act.
 \appendix
 
 \input{tables/appendix_prompts}
+
+\input{tables/appendix_samples}
 
 \section*{Sources behind the concept bank}
 \nocite{*}

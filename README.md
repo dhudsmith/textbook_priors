@@ -39,7 +39,7 @@ scoring fan-out; from the owner's checkout, where every result exists, it is not
 | 3 | **Features** | Per dataset: ImageNet ResNet-18 penultimate features | 12 |
 | 4 | **Classify** | Per dataset: arms A, B, C, P over the curve, the permutation controls, and every reader's probe; C and P alone for the multi-label chestmnist | 12 |
 | 5 | **Evaluate** | AUC, the paired bootstrap, n_B; then the sign tests, the ladder and the reader chain | 12 + 1 |
-| 6 | **Report** | Six figures, the tables, the prompt appendix, the technical report PDF | 3 |
+| 6 | **Report** | Six figures plus a sampled-image montage per dataset, the tables, two appendices, the technical report PDF | 3 |
 
 ## Layout
 

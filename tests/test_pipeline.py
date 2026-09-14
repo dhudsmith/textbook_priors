@@ -328,6 +328,12 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
         assert (Path(config["tabdir"]) / f"{name}.tex").stat().st_size > 0
     for name in ("curve", "n_b", "ladder", "readers", "thinking", "h5"):
         assert (Path(config["figdir"]) / f"fig_{name}.png").stat().st_size > 0
+    # One sampled-image montage per dataset, including the multi-label one, whose rows are findings.
+    for dataset in config["datasets"]:
+        assert (Path(config["figdir"]) / f"fig_samples_{dataset}.png").stat().st_size > 0
+    samples = (Path(config["tabdir"]) / "appendix_samples.tex").read_text()
+    assert "fig_samples_toymnist.png" in samples and "fig_samples_toychest.png" in samples
+    assert "per finding" in samples and "per class" in samples
 
     # The appendix has to print what was actually sent, or it is decoration. It reads the same
     # rendered file every score manifest hashes, so the strings must appear in it verbatim, and the

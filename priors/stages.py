@@ -871,12 +871,13 @@ def tables(dest: str) -> None:
         reporting.table_completeness(per, datasets, dest)
         reporting.table_features(classify_summaries, datasets, dest)
         reporting.appendix_prompts(CONFIG["outdir"], datasets, dest)
+        reporting.appendix_samples(CONFIG["outdir"], datasets, dest)
         macros = reporting.numbers(per, across, datasets, curve, primary, dest, literature)
         run.write(f"{CONFIG['outdir']}/tables.json", dict(dest=dest, macros=macros))
 
 
 def figures(dest: str) -> None:
-    """The six figures: one per hypothesis, H4a read against its baseline, and H5's differences."""
+    """Six figures, plus one montage of sampled images per dataset for the appendix."""
     from . import report as reporting
     datasets, curve = CONFIG["datasets"], CONFIG["curve"]["n"]
     per, across = reporting.load(CONFIG["outdir"], datasets)
@@ -889,9 +890,10 @@ def figures(dest: str) -> None:
         reporting.figure_readers(across, datasets, dest)
         reporting.figure_thinking(across, datasets, dest)
         reporting.figure_h5(across, datasets, dest)
+        montages = reporting.figure_samples(CONFIG["outdir"], CONFIG["cachedir"], datasets, dest)
         run.write(f"{CONFIG['outdir']}/figures.json", dict(dest=dest,
                   files=["fig_curve.png", "fig_n_b.png", "fig_ladder.png", "fig_readers.png",
-                         "fig_thinking.png", "fig_h5.png"]))
+                         "fig_thinking.png", "fig_h5.png"] + montages))
 
 
 def main(argv=None) -> None:

@@ -176,11 +176,13 @@ CLASSIFIED = expand(f"{OUT}/classify/{{dataset}}.json", dataset=DATASETS)
 EVALUATED = expand(f"{OUT}/evaluate/{{dataset}}.json", dataset=DATASETS)
 EVALUATION = f"{OUT}/evaluation.json"
 FIGS, TABS = config["figdir"], config["tabdir"]
-FIG_FILES = expand(f"{FIGS}/fig_{{f}}.png",
-                   f=["curve", "n_b", "ladder", "readers", "thinking", "h5"])
+FIG_FILES = (expand(f"{FIGS}/fig_{{f}}.png",
+                    f=["curve", "n_b", "ladder", "readers", "thinking", "h5"])
+             # One montage per dataset for the sampled-image appendix.
+             + expand(f"{FIGS}/fig_samples_{{dataset}}.png", dataset=DATASETS))
 TABLE_TEX = expand(f"{TABS}/{{t}}.tex",
                    t=["h1", "h2", "h3", "h4", "h5", "literature", "completeness", "features",
-                      "appendix_prompts", "numbers"])
+                      "appendix_prompts", "appendix_samples", "numbers"])
 
 wildcard_constraints:
     dataset="|".join(DATASETS),
@@ -815,9 +817,13 @@ rule tables:
     shell: STAGE + "tables --dest " + TABS + " > {log} 2>&1"
 
 rule figures:
-    """Six figures: the curve, n_B, the ladder, the reader chain, thinking's effect, H5. x1."""
+    """Six figures plus a sampled-image montage per dataset. x1."""
     input:
         evaluation=EVALUATION, per_dataset=EVALUATED, code=CODE_REPORT,
+        # The montages draw the cached sample arrays every arm was scored on, and name their rows
+        # from the rendered prompts, so both are declared rather than reached for.
+        arrays=expand(f"{config['cachedir']}/{{dataset}}.npz", dataset=DATASETS),
+        prompts=PROMPTS,
         literature=config["literature"],
     output: FIG_FILES
     log: "logs/figures.log"
