@@ -406,6 +406,34 @@ def table_h4(across, datasets, dest):
            "what a labelled model would achieve.", "h4")
 
 
+def table_h6_h7(across, datasets, dest):
+    """H6 and H7 in one table: the effort step inside the frontier model, and its price ladder."""
+    h6, h7 = across["h6"], across["h7"]
+    short = lambda name: tex_escape(name.replace("gpt-5.6-", ""))
+    rows = []
+    for d in datasets:
+        if d not in h6["differences"]:
+            continue
+        step, top = h6["differences"][d], h7["differences"][d]
+        auc = h7["probe_auc"][d]
+        rows.append([tex_escape(d)]
+                    + [fmt(auc[r]) for r in h7["ladder"]]
+                    + [f"{fmt(step['median'])} [{fmt(step['lo'])}, {fmt(step['hi'])}]",
+                       f"{fmt(top['median'])} [{fmt(top['lo'])}, {fmt(top['hi'])}]"])
+    _table(dest, "h6h7",
+           ["dataset"] + [short(r) for r in h7["ladder"]]
+           + [f"H6: {short(h6['less'])} $-$ {short(h6['more'])}",
+              f"H7: {short(h7['ladder'][-1])} $-$ {short(h7['ladder'][0])}"],
+           rows,
+           f"H6 and H7, both by the cross-validated probe on the same prefix as H4. The first "
+           f"three columns are the frontier family at effort \\texttt{{low}}, in price order. H6 is "
+           f"the same model at two efforts and won on {h6['wins']} of {h6['n_datasets']} datasets "
+           f"for the lower effort and {h6['wins_for_more']} for the higher, against "
+           f"{h6['min_wins']} needed. H7 is the price ladder's extreme step and won on "
+           f"{h7['wins']} of {h7['n_datasets']}. Price orders these closed models because nothing "
+           f"public orders them by size.", "h6h7")
+
+
 def table_h5(across, per, datasets, dest):
     """H5: arm P against arm C+P at the decided grid point, and at each dataset's largest."""
     h5 = across["h5"]
@@ -730,6 +758,24 @@ def numbers(per, across, datasets, curve_n, primary, dest, literature=None):
         "startedAbove": h1["datasets_where_the_probe_starts_above_arm_b"],
         "friedmanP": fmt(h3["friedman"]["p"], 4),
     }
+    h6, h7 = across.get("h6"), across.get("h7")
+    if h6:
+        lines["hSixSupported"] = "supported" if h6["supported"] else "not supported"
+        lines["hSixWins"] = h6["wins"]
+        lines["hSixWinsForMore"] = h6["wins_for_more"]
+        lines["hSixp"] = fmt(h6["sign_test_p"], 4)
+        lines["hSixLess"] = tex_escape(h6["less"])
+        lines["hSixMore"] = tex_escape(h6["more"])
+        lines["hSixClear"] = len([d for d, v in h6["differences"].items() if v["lo"] > 0])
+        lines["hSixClearAgainst"] = len([d for d, v in h6["differences"].items() if v["hi"] < 0])
+        lines["hSixMedian"] = fmt(median([v["median"] for v in h6["differences"].values()]))
+    if h7:
+        lines["hSevenSupported"] = "supported" if h7["supported"] else "not supported"
+        lines["hSevenWins"] = h7["wins"]
+        lines["hSevenp"] = fmt(h7["sign_test_p"], 4)
+        lines["hSevenBottom"] = tex_escape(h7["ladder"][0])
+        lines["hSevenTop"] = tex_escape(h7["ladder"][-1])
+        lines["hSevenMedian"] = fmt(median([v["median"] for v in h7["differences"].values()]))
     h5 = across.get("h5")
     if h5:
         lines["hFiveSupported"] = "supported" if h5["supported"] else "not supported"

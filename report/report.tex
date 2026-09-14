@@ -364,6 +364,39 @@ artefact of giving the concept block room it was not entitled to.
 
 \input{tables/h5}
 
+\subsection*{H6 --- Effort in the frontier model: \hSixSupported}
+
+\emph{H4b's null is a statement about the model, not about how hard it was asked to think.} The
+same \hSixMore\ reader, asked for \texttt{low} instead of \texttt{medium}: one setting changed, the
+same prompt, the same images, the same probe. \texttt{low} is the floor the gateway allows, since
+it rejects \texttt{minimal}, which is also why H4b could not be run against a frontier reader at no
+reasoning at all.
+
+The archive motivates the question and rules out the crude version of it. Every one of the
+\texttt{medium} reader's calls finished cleanly, with no truncation and no missing answer, so this
+is not a token-budget failure. But its reasoning tokens are 41\% to 85\% of its completions, and on
+dermamnist --- where H4b loses hardest, and where a 12B open model at no reasoning reads the
+concepts better --- it commits one concept to a single level on 93\% of images where the two qwen
+readers sit near half.
+
+The lower effort won on \hSixWins\ of \numArmBDatasets\ datasets and the higher on
+\hSixWinsForMore\ ($p = \hSixp$ for the lower), against \minWinsArmB\ needed; the median difference
+is \hSixMedian\ AUC, with \hSixClear\ intervals clear of zero for the lower effort and
+\hSixClearAgainst\ against it. One limit: this model is the study's only sampled reader, so two
+efforts of it differ in their draw as well as their effort, and the paired bootstrap cannot see
+that.
+
+\subsection*{H7 --- Capability inside the frontier family: \hSevenSupported}
+
+\emph{A more capable closed model reads cited features better.} Three models of one family at
+\texttt{low}: \hSevenBottom, the middle rung, and \hSevenTop. Nothing public orders these models by
+size, so the ladder is ordered by price --- their output tokens cost 1.20, 12.00 and 20.00 dollars
+per million --- which is the vendor's ranking and a proxy for capability, not a parameter count.
+The top beat the bottom on \hSevenWins\ of \numArmBDatasets\ ($p = \hSevenp$), median
+\hSevenMedian\ AUC.
+
+\input{tables/h6h7}
+
 \section{Extension: reading the arms against the published literature}
 \label{sec:literature}
 

@@ -481,12 +481,15 @@ def budget(config, release, datasets):
 
 
 def test_the_call_budget_is_what_the_plan_says(config, release):
-    """51,718 calls in 521 chunks over twelve datasets, of which the talk version's six are 29,400 in
-    294 (WORKFLOW.md section 4). If a grid moves, this is where the new number shows up, rather than
-    in a service bill."""
+    """58,186 calls in 587 chunks over twelve datasets (WORKFLOW.md section 4). If a grid or a
+    reader moves, this is where the new number shows up, rather than in a service bill.
+
+    The talk version's six datasets are 33,000 of those in 330 chunks - more than the 29,400 they
+    were bought as, because H6 and H7 added three readers that score every dataset, this study
+    having grown past the talk it was built for."""
     talk_six = ["pathmnist", "dermamnist", "octmnist", "pneumoniamnist", "bloodmnist", "organamnist"]
-    assert budget(config, release, talk_six) == (29_400, 294)
-    assert budget(config, release, config["datasets"]) == (51_718, 521)
+    assert budget(config, release, talk_six) == (33_000, 330)
+    assert budget(config, release, config["datasets"]) == (58_186, 587)
 
 
 def test_a_job_refuses_to_write_a_file_named_for_another_cell(tmp_path):

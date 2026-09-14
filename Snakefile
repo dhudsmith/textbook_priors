@@ -103,7 +103,11 @@ PROMPTS = expand(f"{OUT}/prompts/{{dataset}}.json", dataset=DATASETS)
 PROMPTS_TXT = expand(f"{OUT}/prompts_txt/{{dataset}}.txt", dataset=DATASETS)
 
 MODELS = list(config["vlm"]["models"])
-READERS = list(config["vlm"].get("readers", {}))     # H4: model + effort, scored on a prefix
+READERS = list(config["vlm"].get("readers", {}))     # H4, H6, H7: model + effort, on a prefix
+# Which readers speak the gateway dialect (max_completion_tokens, a service tier, no temperature).
+# Derived from config rather than listed, so adding a reader cannot leave the rule behind.
+GATEWAY_READERS = [r for r, spec in config["vlm"].get("readers", {}).items()
+                   if spec.get("api") == "gateway"]
 PRIMARY = config["vlm"]["primary"]
 CHUNK = config["vlm"]["chunk"]
 
@@ -181,8 +185,8 @@ FIG_FILES = (expand(f"{FIGS}/fig_{{f}}.png",
              # One montage per dataset for the sampled-image appendix.
              + expand(f"{FIGS}/fig_samples_{{dataset}}.png", dataset=DATASETS))
 TABLE_TEX = expand(f"{TABS}/{{t}}.tex",
-                   t=["h1", "h2", "h3", "h4", "h5", "literature", "completeness", "features",
-                      "appendix_prompts", "appendix_samples", "numbers"])
+                   t=["h1", "h2", "h3", "h4", "h5", "h6h7", "literature", "completeness",
+                      "features", "appendix_prompts", "appendix_samples", "numbers"])
 
 wildcard_constraints:
     dataset="|".join(DATASETS),
@@ -614,7 +618,7 @@ rule score_reader:
 
 
 rule score_reader_gateway:
-    """One chunk of a gateway reader: a hundred images, concept prompt. x12."""
+    """One chunk of a gateway reader: a hundred images, concept prompt. x88 over four readers."""
     input:
         prompts=f"{OUT}/prompts/{{dataset}}.json",
         sample=f"{OUT}/sample/{{dataset}}.json",
@@ -627,7 +631,7 @@ rule score_reader_gateway:
         reader=lambda w: config["vlm"]["readers"][w.model],
         retries=config["vlm"]["retries"],
     wildcard_constraints:
-        model="gpt\-5\.6\-terra\-medium",
+        model="|".join(re.escape(m) for m in sorted(GATEWAY_READERS, key=len, reverse=True)),
         split="test",
         prompt="concept",
     output: protected(f"{OUT}/score/{{dataset}}__{{model}}__{{split}}__{{prompt}}__chunk{{chunk}}.json")

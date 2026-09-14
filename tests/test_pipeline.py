@@ -46,7 +46,14 @@ READERS = {"tiny-model-medium": {"model": "tiny-model", "effort": "medium", "api
                                  "cap": 4, "max_tokens": 2048, "subsample": SUBSAMPLE},
            "frontier-medium": {"model": "frontier", "effort": "medium", "api": "gateway",
                                "service_tier": "flex", "cap": 4, "max_tokens": 4096,
-                               "subsample": SUBSAMPLE}}
+                               "subsample": SUBSAMPLE},
+           # H6's other effort and H7's cheap rung, both the gateway dialect.
+           "frontier-low": {"model": "frontier", "effort": "low", "api": "gateway",
+                            "service_tier": "flex", "cap": 4, "max_tokens": 4096,
+                            "subsample": SUBSAMPLE},
+           "cheap-low": {"model": "cheap", "effort": "low", "api": "gateway",
+                         "service_tier": "flex", "cap": 4, "max_tokens": 4096,
+                         "subsample": SUBSAMPLE}}
 
 
 def rows_for(labels, rng, signal=True, noise=0.0):
@@ -101,6 +108,8 @@ def workspace(tmp_path):
         "h4": {"baseline": "tiny-model", "thinking": "tiny-model-medium",
                "frontier": "frontier-medium", "subsample": SUBSAMPLE},
         "h5": {"n": 20},
+        "h6": {"more": "frontier-medium", "less": "frontier-low"},
+        "h7": {"ladder": ["cheap-low", "frontier-low"]},
         "resources": {},
     }
     for key in ("outdir", "conceptdir", "cachedir", "featuredir", "figdir", "tabdir"):
@@ -150,7 +159,11 @@ def workspace(tmp_path):
     # H4's readers, on the prefix only. The baseline (tiny-model) is pure noise, the thinking
     # reader is mostly right, the frontier reader almost always right, so both steps of the chain
     # must come out positive and the figure must rise from left to right.
-    for reader, noise in (("tiny-model-medium", 0.25), ("frontier-medium", 0.05)):
+    # `frontier-low` is built noisier than `frontier-medium` and `cheap-low` noisier still, so H6
+    # must come out against the lower effort and H7 must find the top of the ladder above the
+    # bottom: a fixture whose two new hypotheses could not fail would test nothing.
+    for reader, noise in (("tiny-model-medium", 0.25), ("frontier-medium", 0.05),
+                          ("frontier-low", 0.15), ("cheap-low", 0.40)):
         cells[f"{reader}__test__concept"] = {
             "model": reader, "split": "test", "prompt": "concept", "served_model": reader,
             "prompt_sha256": "c", "n": SUBSAMPLE, "incomplete_frac": 0.0,
@@ -314,7 +327,18 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     assert h4["h4a"]["supported"] and h4["h4b"]["supported"] and h4["supported"]
     # Every reader is reported, not only the three in the chain: a reader hidden from the table is
     # one the reader of the table cannot check.
-    assert set(h4["readers"]) == {"big-model", "tiny-model", "tiny-model-medium", "frontier-medium"}
+    assert set(h4["readers"]) == {"big-model", "tiny-model", "tiny-model-medium",
+                                  "frontier-medium", "frontier-low", "cheap-low"}
+
+    # H6 reads the effort step inside one model, H7 the price ladder at one effort. The fixture
+    # made the lower effort worse, so H6 must not be supported and must say so in both directions.
+    h6, h7 = across["h6"], across["h7"]
+    assert h6["more"] == "frontier-medium" and h6["less"] == "frontier-low"
+    assert h6["wins"] == 0 and h6["wins_for_more"] == 1 and h6["supported"] is False
+    assert h6["differences"]["toymnist"]["median"] < 0
+    assert h7["ladder"] == ["cheap-low", "frontier-low"]
+    assert h7["wins"] == 1 and h7["differences"]["toymnist"]["median"] > 0
+    assert set(h7["probe_auc"]["toymnist"]) == {"cheap-low", "frontier-low"}
     assert h4["probe_auc"]["toymnist"]["frontier-medium"] > h4["probe_auc"]["toymnist"]["tiny-model"]
 
     # The probe is fitted inside the images it scores, so it covers the prefix and not the sample.
@@ -323,7 +347,7 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
 
     stages.tables(config["tabdir"])
     stages.figures(config["figdir"])
-    for name in ("h1", "h2", "h3", "h4", "h5", "literature", "completeness", "features",
+    for name in ("h1", "h2", "h3", "h4", "h5", "h6h7", "literature", "completeness", "features",
                  "appendix_prompts", "numbers"):
         assert (Path(config["tabdir"]) / f"{name}.tex").stat().st_size > 0
     for name in ("curve", "n_b", "ladder", "readers", "thinking", "h5"):
@@ -369,6 +393,7 @@ def test_the_chain_runs_and_the_arms_come_out_where_the_fixture_put_them(workspa
     for name in ("hOneSupported", "hTwoSupported", "hThreeSupported", "cBeatsPWins", "bBeatsAWins",
                  "friedmanP", "medianNB", "numDatasets", "numArmBDatasets", "minWinsAll", "numModels",
                  "hFiveSupported", "hFiveWins", "hFiveN", "hFiveMedianGain",
+                 "hSixSupported", "hSixWins", "hSixWinsForMore", "hSevenSupported", "hSevenWins",
                  "litGapZeroMedian", "litGapConceptMedian", "litGapPixelMedian", "litLargestN",
                  "litPixelWithinTwoPoints", "litZeroWithinFivePoints", "aucLitToy"):
         assert f"\\newcommand{{\\{name}}}" in macros, name

@@ -135,6 +135,40 @@ vlm:
       max_tokens: 4096
       subsample: 200
 
+    # Added 2026-09-13 for H6 and H7 (WORKFLOW.md section 2), after H4 was decided and before any
+    # of their calls were bought. All three are the same gateway dialect as the reader above and
+    # differ from it only in the model name and the effort. `low` is the floor the gateway allows:
+    # it rejects `minimal`, which is why H4b could not be run against a no-reasoning frontier
+    # reader and why H6 asks the question the other way round, by lowering the effort rather than
+    # removing it.
+    gpt-5.6-terra-low:                      # H6: the H4b reader, asked to think less
+      model: gpt-5.6-terra
+      effort: low
+      api: gateway
+      service_tier: flex
+      temperature: null
+      cap: 12
+      max_tokens: 4096
+      subsample: 200
+    gpt-5.6-luna-low:                       # H7: the cheapest of the family, a tenth of terra's
+      model: gpt-5.6-luna                   # output price
+      effort: low
+      api: gateway
+      service_tier: flex
+      temperature: null
+      cap: 12
+      max_tokens: 4096
+      subsample: 200
+    gpt-5.6-sol-low:                        # H7: the most expensive model the service serves
+      model: gpt-5.6-sol
+      effort: low
+      api: gateway
+      service_tier: flex
+      temperature: null
+      cap: 12
+      max_tokens: 4096
+      subsample: 200
+
   base_url: https://llm.rcd.clemson.edu/v1
   key_file: ~/.config/rcd_llm/key  # owner-only; read by priors/llm.py and nowhere else
   temperature: 0.0
@@ -183,6 +217,24 @@ evaluate: {bootstrap: 10000, ci: 0.95, seed: 0, alpha: 0.05}
 # reported without deciding anything.
 h5:
   n: 50
+
+# H6 and H7, fixed here before a single call of either was bought (WORKFLOW.md section 2). Both are
+# read by the same cross-validated probe on the same 200-image prefix as H4, so every existing
+# reader joins them for nothing and every difference stays paired.
+#
+# H6 asks whether H4b's null is a statement about the frontier model or about the effort it was
+# asked for: same model, same prompt, same images, one setting changed. The overthinking reading
+# predicts `low` above `medium`; the opposite outcome is reported at the same threshold and read as
+# reasoning helping, and neither is `supported` unless it reaches the level every rule uses.
+h6:
+  more: gpt-5.6-terra-medium
+  less: gpt-5.6-terra-low
+
+# H7 is a capability ladder inside one family at one effort. The order is by price, which is the
+# only public ordering these closed models have: it is a proxy for capability and not a parameter
+# count, and section 2 says so rather than implying a size step.
+h7:
+  ladder: [gpt-5.6-luna-low, gpt-5.6-terra-low, gpt-5.6-sol-low]
 
 # H4's chain, fixed here before a single call of it was bought (WORKFLOW.md section 2). Each step
 # changes exactly one thing: baseline to thinking holds the model and changes the effort; thinking

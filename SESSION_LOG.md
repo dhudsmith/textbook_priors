@@ -667,3 +667,27 @@ follows from the evidence is two separate questions rather than one: effort with
 model (terra at `low` against terra at `medium`, which is the direct test of the overthinking
 hypothesis and re-reads H4b's step without the confound), and capability at matched low effort
 (luna, terra, sol). They would want the H5 treatment — rule and config committed before the calls.
+
+## 2026-09-13 21:00 — "Test the reasoning level idea on terra. Test the model capabilities at low reasoning for Luna, terra, and Sol"
+
+Approved after the costing of the previous turn, and with the caveat standing that the credit
+balance cannot be read from here — the service has no endpoint for it, so this is the owner's
+approved spend rather than a verified one.
+
+Registered as two hypotheses rather than one, because they ask different questions of the same
+calls. **H6** holds `gpt-5.6-terra` fixed and lowers the effort from `medium` to `low`, which is the
+direct test of whether H4b measured a capability or an operating point; it is one-sided toward the
+overthinking reading, and the count the other way is reported beside it. **H7** is a capability
+ladder inside the family at matched `low` — luna, terra, sol — ordered by price, because nothing
+public orders these closed models by size and the plan says so rather than implying a parameter
+step.
+
+This commit carries the rules, the three readers, the evaluate steps, the across-dataset verdicts,
+the table, the macros, the report sections and the tests, and no numbers: not one of the 6,468
+calls has been bought. The budget test caught the change and now pins 58,186 calls in 587 chunks,
+up from 51,718 in 521.
+
+Next, before the fan-out: one chunk per new reader, which is standing practice here and matters
+more than usual this time, because the service metadata lists no reasoning levels and no image
+support for any gateway model — it omits images even for terra, which demonstrably accepts them —
+so whether luna and sol can see an image at all is unverified until a call is made.

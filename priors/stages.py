@@ -599,6 +599,7 @@ def evaluate(dataset: str, out: str) -> None:
     arm_scores = {k: arrays[k] for k in arrays.files
                   if k != "labels" and not k.startswith("CV__")}
     cv_scores = {k[4:]: arrays[k] for k in arrays.files if k.startswith("CV__")}
+    h6 = h7 = None
     with Run("evaluate", dict(dataset=dataset, task=task, bootstrap=spec["bootstrap"],
                               ci=spec["ci"], multi_label=multi_label), seeds=[spec.get("seed", 0)]) as run:
         point = {k: metrics.auc(labels, v, task, n_classes) for k, v in arm_scores.items()}
@@ -686,6 +687,21 @@ def evaluate(dataset: str, out: str) -> None:
                                                   spec["ci"])}
             h4 = {"subsample": sub, "probe_auc": cv_point, "steps": steps}
 
+            # H6: the same frontier model at two efforts, and H7: three of its family at one.
+            # Both ride the bootstrap H4 already built over this prefix, so every difference is a
+            # difference of two columns of one matrix, as every other paired difference here is.
+            h6_spec, h7_spec = CONFIG["h6"], CONFIG["h7"]
+            h6 = {"more": h6_spec["more"], "less": h6_spec["less"],
+                  **metrics.interval(cv_reps[:, cv_column[h6_spec["less"]]]
+                                     - cv_reps[:, cv_column[h6_spec["more"]]], spec["ci"])}
+            ladder = list(h7_spec["ladder"])
+            h7 = {"ladder": ladder,
+                  "probe_auc": {r: cv_point[r] for r in ladder},
+                  "top_minus_bottom": {
+                      "from": ladder[0], "to": ladder[-1],
+                      **metrics.interval(cv_reps[:, cv_column[ladder[-1]]]
+                                         - cv_reps[:, cv_column[ladder[0]]], spec["ci"])}}
+
         # ---- arm C's control, for every task -------------------------------------------------
         for n in curve_n:
             permuted = np.mean([replicates[:, column[f"Cperm__n{n}__seed{s}"]]
@@ -704,7 +720,7 @@ def evaluate(dataset: str, out: str) -> None:
             controls=controls,
             n_b=n_b,
             arm_b_by_model=arm_b_by_model,
-            h4=h4,
+            h4=h4, h6=h6, h7=h7,
             complete_frac=summary["complete_frac"],
             incomplete_over_cap=summary["incomplete_over_cap"],
             bootstrap=spec["bootstrap"],
@@ -845,8 +861,33 @@ def evaluate_across(out: str) -> None:
             "supported": bool(sum(cp_beats_p.values()) >= need_all),
         }
 
+        # H6: does the frontier reader read better when asked to think less? Registered as the
+        # direct test of whether H4b's null is about the model or about its operating point, so it
+        # is one-sided in the direction the overthinking reading predicts; the count the other way
+        # is reported beside it and neither is supported below the level every rule uses.
+        h6_less = {d: per[d]["h6"]["median"] > 0 for d in arm_b}
+        h6 = {"more": per[arm_b[0]]["h6"]["more"], "less": per[arm_b[0]]["h6"]["less"],
+              "per_dataset": h6_less, "wins": sum(h6_less.values()),
+              "wins_for_more": sum(1 for d in arm_b if per[d]["h6"]["median"] < 0),
+              "differences": {d: per[d]["h6"] for d in arm_b},
+              "sign_test_p": metrics.sign_test(sum(h6_less.values()), len(arm_b)),
+              "min_wins": need_b, "n_datasets": len(arm_b),
+              "supported": bool(sum(h6_less.values()) >= need_b)}
+
+        # H7: a capability ladder inside one closed family at one effort, ordered by price because
+        # that is the only public ordering these models have.
+        ladder = per[arm_b[0]]["h7"]["ladder"]
+        h7_top = {d: per[d]["h7"]["top_minus_bottom"]["median"] > 0 for d in arm_b}
+        h7 = {"ladder": ladder,
+              "probe_auc": {d: per[d]["h7"]["probe_auc"] for d in arm_b},
+              "per_dataset": h7_top, "wins": sum(h7_top.values()),
+              "differences": {d: per[d]["h7"]["top_minus_bottom"] for d in arm_b},
+              "sign_test_p": metrics.sign_test(sum(h7_top.values()), len(arm_b)),
+              "min_wins": need_b, "n_datasets": len(arm_b),
+              "supported": bool(sum(h7_top.values()) >= need_b)}
+
         run.write(out, dict(datasets=datasets, arm_b_datasets=arm_b, alpha=alpha,
-                            h1=h1, h2=h2, h3=h3, h4=h4, h5=h5,
+                            h1=h1, h2=h2, h3=h3, h4=h4, h5=h5, h6=h6, h7=h7,
                             flagged_cells={d: [k for k, over in per[d]["incomplete_over_cap"].items() if over]
                                            for d in datasets}))
 
@@ -867,6 +908,7 @@ def tables(dest: str) -> None:
         reporting.table_h3(across, datasets, dest)
         reporting.table_h4(across, datasets, dest)
         reporting.table_h5(across, per, datasets, dest)
+        reporting.table_h6_h7(across, datasets, dest)
         reporting.table_literature(per, literature, datasets, curve, primary, dest)
         reporting.table_completeness(per, datasets, dest)
         reporting.table_features(classify_summaries, datasets, dest)

@@ -151,6 +151,48 @@ classifier and the same labelled subsets, by giving the regression **both** feat
   penalty would test a different, unregistered model. A null here therefore means "no detectable
   gain under the same classifier every other arm uses", not "no information".
 
+**H6 — Effort in the frontier model.** *H4b's null is a statement about the model, not about how
+hard it was asked to think.*
+
+H4b compared two readers at matched `medium` and found no clear difference. H4a had already shown
+that effort is not monotone: on this task thinking helps a model that reads the concepts badly and
+costs one that reads them well. Both readings leave one thing untested — whether `medium` is simply
+the wrong operating point for the frontier model, in which case H4b measured a handicap rather than
+a capability.
+
+- Same model, same prompt, same images, one setting changed: `gpt-5.6-terra` at `low` against the
+  archived `gpt-5.6-terra` at `medium`, read by the same cross-validated probe on the same
+  200-image prefix, so the four thinking-off readers and both H4 readers join for nothing.
+- `low` is the floor the gateway allows: it rejects `minimal`, which is why H4b could not be run
+  against a no-reasoning frontier reader, and why H6 lowers the effort rather than removing it.
+- One-sided in the direction the overthinking reading predicts, supported if `low` beats `medium`
+  on at least 9 of the 11 arm-B datasets. The count the other way is reported beside it and read as
+  reasoning helping; neither is *supported* below the level every other rule uses.
+- **The archive already rules out the crude failure and motivates the sharp one.** All 2,156 of the
+  `medium` reader's calls finished cleanly, with no truncation and no missing answer, so this is not
+  a budget problem. But its reasoning is 41% to 85% of its completion tokens, and on dermamnist —
+  where H4b loses hardest, and where a 12B open model at no reasoning beats it 0.741 to 0.554 — it
+  commits `pigment_network` to one level on 93% of images against 51% and 53% for the two qwen
+  readers. That is what a confidently wrong prior looks like, and only a second effort can say
+  whether reasoning produced it.
+- **The frontier reader is sampled, not deterministic** (below), so some of any difference H6 finds
+  is sampling noise the paired bootstrap cannot see. Two readers of the same model at two efforts
+  differ in their effort *and* in their draw. Stated, not corrected.
+
+**H7 — Capability inside the frontier family.** *A more capable closed model reads cited features
+better.*
+
+Three models of one family at one effort, `gpt-5.6-luna`, `gpt-5.6-terra` and `gpt-5.6-sol` at
+`low`, on the same prefix and the same probe. H3 asks this of open weights, where size is public;
+here nothing public orders the models by size, so the ladder is **ordered by price** — output
+tokens at 1.20, 12.00 and 20.00 dollars per million — which is the vendor's own ranking and a proxy
+for capability, not a parameter count. Supported if the top of the ladder beats the bottom on at
+least 9 of the 11 arm-B datasets; the middle rung is reported and decides nothing.
+
+Registered 2026-09-13, both of them, after H4 was decided and before a call of either was bought.
+Unlike H5 they are not free: 66 chunks and about 6,500 calls, costed at $53.59 at list and $26.79
+at `flex` in `docs/rcd_llm_service.md` before the owner approved the spend.
+
 **Two limits on H4b, both stated rather than analysed away.** The frontier model is closed and of
 unknown size, so the step is *capability* and not parameters; it cannot join H3's ladder and does
 not. And it **refuses `temperature: 0`** — only its served default is allowed — so it is the one
@@ -284,7 +326,8 @@ check — is recorded here and in `config/medmnist.yaml`; only a fetch re-verifi
 
 **47,406 calls** in 477 chunk jobs of 100 images, plus **4,312 for H4's two readers** in 44
 chunks — the 200-image prefix per dataset (156 for breastmnist), concept prompt only, no pool and
-no zero-shot, because H4 is read through the concept answers alone. **51,718 in total**, of which
+no zero-shot, because H4 is read through the concept answers alone — plus **6,468 for H6's and
+H7's three gateway readers** in 66 chunks, on the same prefix. **58,186 in total**, of which
 the talk's six datasets were 29,400 in 294 chunks and the six added on 2026-09-13 are 22,318 in
 227; the smoke tier pins both numbers. A further 3,000 were bought for arm D; their archive was
 deleted on 2026-09-13 (§10).
