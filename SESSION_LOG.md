@@ -712,3 +712,23 @@ cannot be bought here. The null is about that lever.
 The probe before the fan-out earned its place again: it confirmed luna and sol accept an image at
 all, which the service metadata could not answer, and it is where the small-lever measurement came
 from.
+
+## 2026-09-13 22:25 — A hyperlinked contents page
+
+Asked for one, and the report had grown to seventy-four pages, so it earned it. Three things had to
+change beyond adding `\tableofcontents`.
+
+Every results and methods heading was a starred `\subsection*`, and starred headings never reach a
+contents page, so a naive ToC would have listed six top-level sections and none of the seven
+hypotheses — the entries a reader actually wants. They are unstarred and therefore numbered now,
+which also makes them cross-referenceable; nothing else about them changed. The bibliography
+section was starred for the same reason and is now appendix C.
+
+The sampled-image appendix had no headings at all, only figures, so its generator now emits a
+subsection per dataset. Both appendices are navigable dataset by dataset: prompts under A, montages
+under B.
+
+`hyperref` was already loaded but its colour options need a colour model, which failed the first
+build with `Undefined color model HTML`; `xcolor` is loaded now and the link colour is a named
+navy. PDF bookmarks are on and numbered. `report/report.toc` joined the gitignore beside the other
+things pdflatex leaves behind.

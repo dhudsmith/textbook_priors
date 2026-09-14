@@ -724,6 +724,9 @@ def appendix_samples(outdir, datasets, dest):
     for dataset in datasets:
         rendered = json.loads(Path(f"{outdir}/prompts/{dataset}.json").read_text())
         kind = "finding" if rendered.get("multi_label") else "class"
+        # A heading per dataset, so the contents page can jump straight to one montage.
+        out.append(rf"\subsection{{{tex_escape(dataset)}}}")
+        out.append("")
         out.append(r"\begin{figure}[htbp]\centering")
         out.append(rf"  \includegraphics[width=0.86\textwidth,"
                    rf"height=0.86\textheight,keepaspectratio]{{fig_samples_{dataset}.png}}")
