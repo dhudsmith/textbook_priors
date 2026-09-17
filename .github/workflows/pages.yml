@@ -1,0 +1,65 @@
+# The talk website (talk/PLAN.md section 6) built and deployed to GitHub Pages.
+#
+# The build runs for `main` and for the `claude/**` working branches, so a branch says whether it
+# builds before it is merged; only `main` deploys. Nothing here computes a result: it npm-builds
+# `talk/`, whose data snapshot under `talk/public/` is committed precisely because `results/` does
+# not exist on GitHub's runners.
+name: talk site
+
+on:
+  push:
+    branches:
+      - main
+      - "claude/**"
+    paths:
+      - "talk/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deployment at a time; a queued run supersedes an older one but never cancels a run that is
+# already writing to Pages.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: talk/package-lock.json
+
+      - name: Install the pinned dependencies
+        run: npm ci
+        working-directory: talk
+
+      - name: Build the site
+        run: npm run build
+        working-directory: talk
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: talk/dist
+
+  deploy:
+    # Only the trunk deploys. A `claude/**` push proves the build and stops there.
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
