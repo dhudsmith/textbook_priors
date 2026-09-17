@@ -5,7 +5,8 @@
   "2026-09-12",
   "2026-09-13",
   "2026-09-14",
-  "2026-09-16"
+  "2026-09-16",
+  "2026-09-17"
  ],
  "entries": [
   {
@@ -287,6 +288,13 @@
    "title": "\"The talk as a website: science as the spine, reproducibility as callouts\"",
    "kind": "direct",
    "lead": "The talk is no longer a deck."
+  },
+  {
+   "date": "2026-09-17",
+   "time": "12:30",
+   "title": "Three reviews of the talk site, implemented",
+   "kind": "build",
+   "lead": "The user had the talk website read by three reviewers \u2014 one for the visuals, one for the text, one for the presentation flow \u2014 and handed the agent their merged, prioritised change list to implement, with the editorial\u2026"
   }
  ],
  "kinds": [
@@ -318,7 +326,7 @@
  "kind_note": "Only the kind of each entry was assigned by hand; the rest is the file's own heading and first paragraph.",
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-17T12:02:58Z",
+  "exported": "2026-09-17T12:19:47Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
    "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",

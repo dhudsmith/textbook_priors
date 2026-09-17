@@ -860,3 +860,34 @@ own, so a listener who has seen the PDF recognises them. It is deployed by
 `claude/**` pushes building but not deploying. A `?static=1` query freezes the page in its final
 state — data read in one pass, no entry animation, images eager — which is how the headless
 screenshots that checked this page were taken.
+
+## 2026-09-17 12:30 — Three reviews of the talk site, implemented
+
+The user had the talk website read by three reviewers — one for the visuals, one for the text, one
+for the presentation flow — and handed the agent their merged, prioritised change list to
+implement, with the editorial calls already made and a short list of things not to break.
+
+The blockers were the ones that would have shown in the room. The premise lede named the wrong
+weekdays and five day-slots for four days, and the weekday names left the copy rather than being
+corrected. The keyboard bound `Space`, `PageDown` and every arrow to a section jump and swallowed
+them all, so a presentation clicker moved one and a half to three screens a press and nothing
+scrolled a beat; those keys are now left to the browser and section jumps wear `]` and `[`.
+Presenter mode hid every `.note`, which took the H5 slider's guard, the verdict-board key and the
+ceiling takeaway off the projected page; it now hides only what carries `presenter-hide`, and
+scales the root rather than the body so chart ticks grow too. The H3 ladder drew one line per
+dataset across an axis that interleaved the two model families, so three of every four segments
+joined a qwen model to a gemma one while the note beneath said the families must not be compared —
+the axis is now ordered family first and each line is drawn as two paths that do not cross the
+divider. The reader chain's nine model ids overprinted each other and the caption; the axis now
+carries a stem plus an effort and the bottom margin is computed from the longest one.
+
+The rest followed the list: the refrain moved to one instance each at the open, the middle and the
+close; H1 leads with its verdict and defaults to two series with the others behind the legend; the
+close's seven-identical-bars chart became two stat tiles and a list; the contention chart became
+paired bars, because two measured points joined by a line assert a continuum nobody measured; both
+eleven-line ladders now colour and label only the datasets that move most and grey the rest; AUC,
+probe, reader and chunk are glossed where they are first used; one name is held per arm; charts
+keep a floor width so a phone scrolls them instead of squeezing them; and the page settled on two
+content widths. The export script was changed for two of its items only — timeline leads are
+stripped of Markdown, cut at a sentence boundary and sorted by timestamp — and re-run, so
+`timeline.json` is the one data file that moved.
