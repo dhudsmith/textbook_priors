@@ -73,15 +73,24 @@ export function ArmDiagram() {
           ))}
 
         <g stroke="var(--rule-strong)" strokeWidth={1.4} fill="none">
+          {/* image to the three encoders */}
           <path d="M90 116 C103 116 103 48 116 48" />
           <path d="M90 121 H116" />
           <path d="M90 126 C103 126 103 203 116 203" />
+          {/* encoders to their feature blocks; arm A straight to its circle */}
           <path d="M264 121 H296" />
-          <path d="M264 203 H400 C420 203 420 178 446 178" />
+          <path d="M264 203 H296" />
           <path d="M264 48 C540 48 560 42 611 42" />
-          <path d="M400 110 C420 110 430 96 446 150" />
-          <path d="M400 121 C430 121 430 76 611 76" stroke={armHue("B")} />
-          <path d="M568 162 H611" />
+          {/* the concept vector leaves by two ports: up to arm B, which needs no classifier,
+              and down into the shared classifier; the pixel block enters from below. Neither
+              path crosses the other or a box. */}
+          <path d="M400 110 C440 110 440 76 611 76" stroke={armHue("B")} />
+          <path d="M400 134 C423 134 423 150 446 150" />
+          <path d="M400 203 C423 203 423 176 446 176" />
+          {/* one classifier, three arms: fan out from three ports on its right edge */}
+          <path d="M568 150 C590 150 590 140 611 140" />
+          <path d="M568 162 C590 162 590 180 611 180" />
+          <path d="M568 174 C590 174 590 220 611 220" />
         </g>
       </g>
     </svg>
