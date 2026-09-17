@@ -107,6 +107,7 @@ export interface Study {
     calls: number; chunks: number; datasets: number; tests: number | null; hypotheses: number;
     supported: number; arms: number; readers: number; figures: number;
     session_log_entries: number;
+    work_dates: string[];
     catches: { what: string; caught_by: string; source: string }[];
   };
   figures: string[];

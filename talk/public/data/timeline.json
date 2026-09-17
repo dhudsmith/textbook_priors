@@ -285,7 +285,7 @@
    "date": "2026-09-16",
    "time": "23:25",
    "title": "\"The talk as a website: science as the spine, reproducibility as callouts\"",
-   "kind": "build",
+   "kind": "direct",
    "lead": "The talk is no longer a deck. Asked for a science talk about the medical-imaging-with-LLMs study with commentary throughout about reproducible research assisted by AI, delivered as a scrolling website with interactive elements, a QR code at the top so the room can follow on its own devices, and hosted on GitHub Pages. That inverts `TALK.md` \u00a75: the science is the talk, and the reproducibility-with-AI argument rides on it as on-slide callouts of three kinds \u2014 a blue **Principle** (a `WORKFLOW.md` \u00a75 principle stated as the failure it prevents), an amber **Near miss** (something that nearly\u2026"
   }
  ],
@@ -318,7 +318,7 @@
  "kind_note": "The kind of each entry is the one hand-assigned field in this export (talk/scripts/export_talk_data.py); everything else is the file's own heading and first paragraph.",
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-17T03:30:15Z",
+  "exported": "2026-09-17T03:36:05Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
    "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",

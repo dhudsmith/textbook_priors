@@ -1,7 +1,7 @@
 {
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-17T03:30:15Z",
+  "exported": "2026-09-17T03:36:05Z",
   "source_files": [
    "config/config.yaml",
    "config/medmnist.yaml",
@@ -45,6 +45,7 @@
    "data/concepts/organsmnist.yaml",
    "data/concepts/chestmnist.yaml",
    "logs/smoke.log",
+   "CHANGELOG.md",
    "results/prompts_txt/pathmnist.txt",
    "results/prompts_txt/dermamnist.txt",
    "results/prompts_txt/octmnist.txt",
@@ -8956,7 +8957,13 @@
   "arms": 5,
   "readers": 9,
   "figures": 20,
-  "session_log_entries": 39,
+  "session_log_entries": 40,
+  "work_dates": [
+   "2026-09-09",
+   "2026-09-11",
+   "2026-09-12",
+   "2026-09-13"
+  ],
   "catches": [
    {
     "what": "An unfair pixel baseline that would have made the headline claim true by construction",

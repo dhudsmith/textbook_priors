@@ -62,6 +62,7 @@ TIMELINE_KINDS = {
     "2026-09-13 12:45": "run",    "2026-09-13 14:25": "build",  "2026-09-13 20:05": "build",
     "2026-09-13 20:40": "decide", "2026-09-13 21:00": "direct", "2026-09-13 22:15": "run",
     "2026-09-13 22:25": "build",  "2026-09-13 23:05": "build",  "2026-09-14 06:55": "decide",
+    "2026-09-16 23:25": "direct",
 }
 
 # Transcribed from CHANGELOG.md 2026-09-12, "The service serialises us: concurrency buys no
@@ -492,6 +493,7 @@ def build_study(args) -> dict:
             "arms": len(ARM_STYLE), "readers": len(per[arm_b[0]]["h4"]["probe_auc"]),
             "figures": len(figures["files"]),
             "session_log_entries": len(TIMELINE_KINDS),
+            "work_dates": work_dates(),
             "catches": CATCHES,
         },
         "figures": figures["files"],
@@ -649,6 +651,17 @@ def export_timeline() -> dict:
             "kind_note": ("The kind of each entry is the one hand-assigned field in this export "
                           "(talk/scripts/export_talk_data.py); everything else is the file's own "
                           "heading and first paragraph.")}
+
+
+def work_dates() -> list[str]:
+    """The days the study was worked on, from CHANGELOG.md's own dated entries.
+
+    The change log is the owner's record of understanding and it ends at the report, so its
+    distinct dates are the study's working days - which the session log is not, because that file
+    keeps growing after the report (this export is written on one of those later days).
+    """
+    return sorted({m.group(1) for m in
+                   re.finditer(r"^## (\d{4}-\d{2}-\d{2})", read_text("CHANGELOG.md"), re.M)})
 
 
 def copy_figures() -> list[str]:

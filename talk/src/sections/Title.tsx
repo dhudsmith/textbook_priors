@@ -3,8 +3,6 @@ import { QRCodeSVG } from "qrcode.react";
 import { useTalk } from "../state";
 import { Band, CountTile, Header, Tile } from "../components/ui";
 import { title as copy } from "../content";
-import { useAsync } from "../hooks";
-import { loadTimeline } from "../data";
 
 /* The QR code is rendered client-side from the page's own URL, so it is right wherever the site
    is deployed and needs no image file. */
@@ -25,7 +23,6 @@ export { PageQR };
 
 export function Title() {
   const { study } = useTalk();
-  const { data: timeline } = useAsync(loadTimeline);
   const led = study.ledger;
 
   return (
@@ -39,7 +36,8 @@ export function Title() {
         <PageQR caption={copy.qr} />
       </div>
       <div className="tiles">
-        <Tile value={timeline ? timeline.days.length : "—"} unit="days, from the first prompt to the report" />
+        <Tile value={led.work_dates.length}
+              unit="days worked, from the first prompt to the report" />
         <CountTile value={led.calls} unit="raw model responses, archived and write-protected" />
         <Tile value={led.datasets} unit="MedMNIST 2D benchmarks, every one in the release" />
         <CountTile value={led.tests ?? 0} unit="tests that run before anything else is computed" />

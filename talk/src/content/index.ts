@@ -75,9 +75,9 @@ export const premise = {
     REFRAIN,
   ],
   stripCaption:
-    "One tick per prompt that materially directed the work, from SESSION_LOG.md. The kind of " +
-    "each entry is the one hand-assigned field in the export; the time and the title are the " +
-    "file's own.",
+    "The kind of each entry is the one hand-assigned field in the export; the time and the title " +
+    "are the file's own. The last tick is this page: the session log did not stop when the report " +
+    "was written.",
   callouts: [
     {
       kind: "agent",
