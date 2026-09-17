@@ -7,7 +7,7 @@
    "bank_sha256": "5fbe404bc1c22a653acc030b7d8ba235bec31283cec76db7a5de169dea817fae",
    "git_commit": "d5b1146848813f7bac0acec798ea0e4c1709862d",
    "slurm_job": "15811897",
-   "host": "node0046.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-12T03:17:10",
    "temperature": 0.0,
    "reasoning": "none",
@@ -51,7 +51,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0046.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15811897",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -80,7 +80,7 @@
    "bank_sha256": "5fbe404bc1c22a653acc030b7d8ba235bec31283cec76db7a5de169dea817fae",
    "git_commit": "d5b1146848813f7bac0acec798ea0e4c1709862d",
    "slurm_job": "15811909",
-   "host": "node0121.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-12T03:15:32",
    "temperature": 0.0,
    "reasoning": "none",
@@ -124,7 +124,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0121.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15811909",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -153,7 +153,7 @@
    "bank_sha256": "ca0e2ccbc92eeaa259855831dcf26ada233c79131ba4415789d59f48bf57a6b4",
    "git_commit": "d5b1146848813f7bac0acec798ea0e4c1709862d",
    "slurm_job": "15813614",
-   "host": "node0002.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-12T05:29:42",
    "temperature": 0.0,
    "reasoning": "none",
@@ -197,7 +197,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0002.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15813614",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -226,7 +226,7 @@
    "bank_sha256": "ca0e2ccbc92eeaa259855831dcf26ada233c79131ba4415789d59f48bf57a6b4",
    "git_commit": "d5b1146848813f7bac0acec798ea0e4c1709862d",
    "slurm_job": "15811913",
-   "host": "node0139.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-12T03:15:21",
    "temperature": 0.0,
    "reasoning": "none",
@@ -270,7 +270,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0139.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15811913",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -299,7 +299,7 @@
    "bank_sha256": "da72ca150dd4642d16ad6b2891b3d93b8dc0ebed6c44017409db54248fcc821f",
    "git_commit": "d5b1146848813f7bac0acec798ea0e4c1709862d",
    "slurm_job": "15813621",
-   "host": "node0042.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-12T05:29:16",
    "temperature": 0.0,
    "reasoning": "none",
@@ -343,7 +343,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0042.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15813621",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -372,7 +372,7 @@
    "bank_sha256": "da72ca150dd4642d16ad6b2891b3d93b8dc0ebed6c44017409db54248fcc821f",
    "git_commit": "d5b1146848813f7bac0acec798ea0e4c1709862d",
    "slurm_job": "15813642",
-   "host": "node0041.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-12T05:33:36",
    "temperature": 0.0,
    "reasoning": "none",
@@ -416,7 +416,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0041.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15813642",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -445,7 +445,7 @@
    "bank_sha256": "316d7b97ea793b23f033b425f6d0db51b8b178e8ffb495c559ded0e12dac5542",
    "git_commit": "4286cbd99ff6fad3f3205d3cdd32dec197fb903e",
    "slurm_job": "15806702",
-   "host": "node0002.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-11T22:16:07",
    "temperature": 0.0,
    "reasoning": "none",
@@ -489,7 +489,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0002.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15806702",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -518,7 +518,7 @@
    "bank_sha256": "316d7b97ea793b23f033b425f6d0db51b8b178e8ffb495c559ded0e12dac5542",
    "git_commit": "d5b1146848813f7bac0acec798ea0e4c1709862d",
    "slurm_job": "15814531",
-   "host": "node0002.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-12T06:49:36",
    "temperature": 0.0,
    "reasoning": "none",
@@ -562,7 +562,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0002.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15814531",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -591,7 +591,7 @@
    "bank_sha256": "3aa06e349610a1b7fbf1411dbd499721b5f0130b7c950a2ce388aa14ae8ae30e",
    "git_commit": "d5b1146848813f7bac0acec798ea0e4c1709862d",
    "slurm_job": "15814385",
-   "host": "node0042.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-12T06:37:37",
    "temperature": 0.0,
    "reasoning": "none",
@@ -635,7 +635,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0042.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15814385",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -664,7 +664,7 @@
    "bank_sha256": "3aa06e349610a1b7fbf1411dbd499721b5f0130b7c950a2ce388aa14ae8ae30e",
    "git_commit": "990a2a8d0e46956f1d2440bb328a82c241254e40",
    "slurm_job": "15814591",
-   "host": "node0041.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-12T07:02:12",
    "temperature": 0.0,
    "reasoning": "none",
@@ -708,7 +708,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0041.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15814591",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -737,7 +737,7 @@
    "bank_sha256": "e0947840f660b66d697922f1899489fd4e6204d5f08323ca94ae26abaf3ff4f8",
    "git_commit": "d5b1146848813f7bac0acec798ea0e4c1709862d",
    "slurm_job": "15814182",
-   "host": "node0042.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-12T06:23:45",
    "temperature": 0.0,
    "reasoning": "none",
@@ -781,7 +781,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0042.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15814182",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -810,7 +810,7 @@
    "bank_sha256": "e0947840f660b66d697922f1899489fd4e6204d5f08323ca94ae26abaf3ff4f8",
    "git_commit": "d5b1146848813f7bac0acec798ea0e4c1709862d",
    "slurm_job": "15814540",
-   "host": "node0041.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-12T06:51:27",
    "temperature": 0.0,
    "reasoning": "none",
@@ -854,7 +854,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0041.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15814540",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -883,7 +883,7 @@
    "bank_sha256": "b5a6520b745334a4f6870e7a6bf4156c6f13d1aeaab8ed7a77b83ba548808900",
    "git_commit": "c95c9e37f2b64e97c1063bfcbbfea025046e86b4",
    "slurm_job": "15833688",
-   "host": "node0041.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-13T09:32:51",
    "temperature": 0.0,
    "reasoning": "none",
@@ -931,7 +931,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0041.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15833688",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -960,7 +960,7 @@
    "bank_sha256": "b5a6520b745334a4f6870e7a6bf4156c6f13d1aeaab8ed7a77b83ba548808900",
    "git_commit": "c95c9e37f2b64e97c1063bfcbbfea025046e86b4",
    "slurm_job": "15833698",
-   "host": "node0046.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-13T09:31:27",
    "temperature": 0.0,
    "reasoning": "none",
@@ -1008,7 +1008,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0046.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15833698",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -1037,7 +1037,7 @@
    "bank_sha256": "9797b12c42d4254b5358cf8dcd626c58e6e55fa5928a9ce64841500a395339e2",
    "git_commit": "c95c9e37f2b64e97c1063bfcbbfea025046e86b4",
    "slurm_job": "15833392",
-   "host": "node0430.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-13T08:46:23",
    "temperature": 0.0,
    "reasoning": "none",
@@ -1085,7 +1085,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0430.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15833392",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -1114,7 +1114,7 @@
    "bank_sha256": "9797b12c42d4254b5358cf8dcd626c58e6e55fa5928a9ce64841500a395339e2",
    "git_commit": "c95c9e37f2b64e97c1063bfcbbfea025046e86b4",
    "slurm_job": "15833321",
-   "host": "node0042.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-13T08:33:36",
    "temperature": 0.0,
    "reasoning": "none",
@@ -1162,7 +1162,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0042.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15833321",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -1191,7 +1191,7 @@
    "bank_sha256": "d352b03a30d3faa065eed2efb50646f9a405f0f9e846177ce09a88162ae50cf8",
    "git_commit": "c95c9e37f2b64e97c1063bfcbbfea025046e86b4",
    "slurm_job": "15833648",
-   "host": "node0041.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-13T09:27:24",
    "temperature": 0.0,
    "reasoning": "none",
@@ -1239,7 +1239,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0041.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15833648",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -1268,7 +1268,7 @@
    "bank_sha256": "d352b03a30d3faa065eed2efb50646f9a405f0f9e846177ce09a88162ae50cf8",
    "git_commit": "c95c9e37f2b64e97c1063bfcbbfea025046e86b4",
    "slurm_job": "15833696",
-   "host": "node0043.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-13T09:33:08",
    "temperature": 0.0,
    "reasoning": "none",
@@ -1316,7 +1316,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0043.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15833696",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -1345,7 +1345,7 @@
    "bank_sha256": "219a94de93aa9bb7c642d51edf97e497ff50d09fbb7cc490d38635e3657e77cb",
    "git_commit": "c95c9e37f2b64e97c1063bfcbbfea025046e86b4",
    "slurm_job": "15833557",
-   "host": "node0054.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-13T09:23:07",
    "temperature": 0.0,
    "reasoning": "none",
@@ -1393,7 +1393,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0054.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15833557",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -1422,7 +1422,7 @@
    "bank_sha256": "219a94de93aa9bb7c642d51edf97e497ff50d09fbb7cc490d38635e3657e77cb",
    "git_commit": "c95c9e37f2b64e97c1063bfcbbfea025046e86b4",
    "slurm_job": "15833548",
-   "host": "node0052.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-13T09:23:11",
    "temperature": 0.0,
    "reasoning": "none",
@@ -1470,7 +1470,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0052.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15833548",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -1499,7 +1499,7 @@
    "bank_sha256": "e39a65050100b4ff708c079149e569c8aa80dcaf85d2a5dd2c0dedd5a73289fe",
    "git_commit": "c95c9e37f2b64e97c1063bfcbbfea025046e86b4",
    "slurm_job": "15833509",
-   "host": "node0054.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-13T09:00:43",
    "temperature": 0.0,
    "reasoning": "none",
@@ -1547,7 +1547,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0054.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15833509",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -1576,7 +1576,7 @@
    "bank_sha256": "e39a65050100b4ff708c079149e569c8aa80dcaf85d2a5dd2c0dedd5a73289fe",
    "git_commit": "c95c9e37f2b64e97c1063bfcbbfea025046e86b4",
    "slurm_job": "15833521",
-   "host": "node0139.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-13T09:00:18",
    "temperature": 0.0,
    "reasoning": "none",
@@ -1624,7 +1624,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0139.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15833521",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -1653,7 +1653,7 @@
    "bank_sha256": "adc12367b651d58c4058a073d8b5742ae73c5eb68c9791ab0ebb1af219c936af",
    "git_commit": "c95c9e37f2b64e97c1063bfcbbfea025046e86b4",
    "slurm_job": "15833322",
-   "host": "node0042.palmetto.clemson.edu",
+   "host": "a Palmetto2 compute node",
    "written": "2026-09-13T08:34:46",
    "temperature": 0.0,
    "reasoning": "none",
@@ -1701,7 +1701,7 @@
      "openai": "3.12.0",
      "medmnist": "3.0.2"
     },
-    "host": "node0042.palmetto.clemson.edu",
+    "host": "a Palmetto2 compute node",
     "slurm_job": "15833322",
     "threads": {
      "OMP_NUM_THREADS": "1",
@@ -3132,7 +3132,11 @@
  ],
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-17T02:25:32Z",
+  "exported": "2026-09-17T03:21:07Z",
+  "redactions": [
+   "the owner-only LLM key path (params.key_file) is dropped from every manifest",
+   "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)"
+  ],
   "source_files": [
    "results/score/*__test__concept__chunk00.json",
    "results/score/*__test__zero_shot__chunk00.json",

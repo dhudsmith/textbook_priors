@@ -1,7 +1,7 @@
 {
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-17T02:25:32Z",
+  "exported": "2026-09-17T03:21:07Z",
   "source_files": [
    "config/config.yaml",
    "config/medmnist.yaml",
@@ -94,13 +94,17 @@
    "results/score/chestmnist__qwen3.8-27b-fp8__test__concept__chunk00.json",
    "SESSION_LOG.md",
    "report/figs/*.png"
+  ],
+  "redactions": [
+   "the owner-only LLM key path (params.key_file) is dropped from every manifest",
+   "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)"
   ]
  },
  "run": {
   "git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
   "git_dirty": true,
   "written": "2026-09-13T22:53:21",
-  "host": "nodecchg.palmetto.clemson.edu",
+  "host": "a Palmetto2 compute node",
   "versions": {
    "python": "3.12.14",
    "numpy": "2.5.3",
@@ -316,7 +320,8 @@
     "val": 10004,
     "test": 7180
    },
-   "test_n": 98,
+   "test_n": 500,
+   "pool_n": 2000,
    "curve_n": [
     50,
     100,
@@ -331,49 +336,49 @@
    "marker": "circle",
    "samples": [
     {
-     "class": "0",
+     "class": "adipose",
      "position": 0,
-     "file": "img/samples/pathmnist/0_0.png"
+     "file": "img/samples/pathmnist/adipose_0.png"
     },
     {
-     "class": "1",
+     "class": "background",
      "position": 3,
-     "file": "img/samples/pathmnist/1_0.png"
+     "file": "img/samples/pathmnist/background_0.png"
     },
     {
-     "class": "2",
+     "class": "debris",
      "position": 17,
-     "file": "img/samples/pathmnist/2_0.png"
+     "file": "img/samples/pathmnist/debris_0.png"
     },
     {
-     "class": "3",
+     "class": "lymphocytes",
      "position": 2,
-     "file": "img/samples/pathmnist/3_0.png"
+     "file": "img/samples/pathmnist/lymphocytes_0.png"
     },
     {
-     "class": "4",
+     "class": "mucus",
      "position": 5,
-     "file": "img/samples/pathmnist/4_0.png"
+     "file": "img/samples/pathmnist/mucus_0.png"
     },
     {
-     "class": "5",
+     "class": "smooth muscle",
      "position": 19,
-     "file": "img/samples/pathmnist/5_0.png"
+     "file": "img/samples/pathmnist/smooth-muscle_0.png"
     },
     {
-     "class": "6",
+     "class": "normal colon mucosa",
      "position": 15,
-     "file": "img/samples/pathmnist/6_0.png"
+     "file": "img/samples/pathmnist/normal-colon-mucosa_0.png"
     },
     {
-     "class": "7",
+     "class": "cancer-associated stroma",
      "position": 1,
-     "file": "img/samples/pathmnist/7_0.png"
+     "file": "img/samples/pathmnist/cancer-associated-stroma_0.png"
     },
     {
-     "class": "8",
+     "class": "colorectal adenocarcinoma epithelium",
      "position": 6,
-     "file": "img/samples/pathmnist/8_0.png"
+     "file": "img/samples/pathmnist/colorectal-adenocarcinoma-epithelium_0.png"
     }
    ]
   },
@@ -401,7 +406,8 @@
     "val": 1003,
     "test": 2005
    },
-   "test_n": 98,
+   "test_n": 500,
+   "pool_n": 2000,
    "curve_n": [
     50,
     100,
@@ -416,74 +422,74 @@
    "marker": "square",
    "samples": [
     {
-     "class": "0",
+     "class": "actinic keratoses and intraepithelial carcinoma",
      "position": 45,
-     "file": "img/samples/dermamnist/0_0.png"
+     "file": "img/samples/dermamnist/actinic-keratoses-and-intraepithelial-carcinoma_0.png"
     },
     {
-     "class": "0",
+     "class": "actinic keratoses and intraepithelial carcinoma",
      "position": 74,
-     "file": "img/samples/dermamnist/0_1.png"
+     "file": "img/samples/dermamnist/actinic-keratoses-and-intraepithelial-carcinoma_1.png"
     },
     {
-     "class": "1",
+     "class": "basal cell carcinoma",
      "position": 46,
-     "file": "img/samples/dermamnist/1_0.png"
+     "file": "img/samples/dermamnist/basal-cell-carcinoma_0.png"
     },
     {
-     "class": "1",
+     "class": "basal cell carcinoma",
      "position": 96,
-     "file": "img/samples/dermamnist/1_1.png"
+     "file": "img/samples/dermamnist/basal-cell-carcinoma_1.png"
     },
     {
-     "class": "2",
+     "class": "benign keratosis-like lesions",
      "position": 4,
-     "file": "img/samples/dermamnist/2_0.png"
+     "file": "img/samples/dermamnist/benign-keratosis-like-lesions_0.png"
     },
     {
-     "class": "2",
+     "class": "benign keratosis-like lesions",
      "position": 8,
-     "file": "img/samples/dermamnist/2_1.png"
+     "file": "img/samples/dermamnist/benign-keratosis-like-lesions_1.png"
     },
     {
-     "class": "3",
+     "class": "dermatofibroma",
      "position": 27,
-     "file": "img/samples/dermamnist/3_0.png"
+     "file": "img/samples/dermamnist/dermatofibroma_0.png"
     },
     {
-     "class": "3",
+     "class": "dermatofibroma",
      "position": 153,
-     "file": "img/samples/dermamnist/3_1.png"
+     "file": "img/samples/dermamnist/dermatofibroma_1.png"
     },
     {
-     "class": "4",
+     "class": "melanoma",
      "position": 2,
-     "file": "img/samples/dermamnist/4_0.png"
+     "file": "img/samples/dermamnist/melanoma_0.png"
     },
     {
-     "class": "4",
+     "class": "melanoma",
      "position": 17,
-     "file": "img/samples/dermamnist/4_1.png"
+     "file": "img/samples/dermamnist/melanoma_1.png"
     },
     {
-     "class": "5",
+     "class": "melanocytic nevi",
      "position": 0,
-     "file": "img/samples/dermamnist/5_0.png"
+     "file": "img/samples/dermamnist/melanocytic-nevi_0.png"
     },
     {
-     "class": "5",
+     "class": "melanocytic nevi",
      "position": 1,
-     "file": "img/samples/dermamnist/5_1.png"
+     "file": "img/samples/dermamnist/melanocytic-nevi_1.png"
     },
     {
-     "class": "6",
+     "class": "vascular lesions",
      "position": 87,
-     "file": "img/samples/dermamnist/6_0.png"
+     "file": "img/samples/dermamnist/vascular-lesions_0.png"
     },
     {
-     "class": "6",
+     "class": "vascular lesions",
      "position": 184,
-     "file": "img/samples/dermamnist/6_1.png"
+     "file": "img/samples/dermamnist/vascular-lesions_1.png"
     }
    ]
   },
@@ -508,7 +514,8 @@
     "val": 10832,
     "test": 1000
    },
-   "test_n": 98,
+   "test_n": 500,
+   "pool_n": 2000,
    "curve_n": [
     50,
     100,
@@ -523,44 +530,44 @@
    "marker": "triangle",
    "samples": [
     {
-     "class": "0",
+     "class": "choroidal neovascularization",
      "position": 2,
-     "file": "img/samples/octmnist/0_0.png"
+     "file": "img/samples/octmnist/choroidal-neovascularization_0.png"
     },
     {
-     "class": "0",
+     "class": "choroidal neovascularization",
      "position": 5,
-     "file": "img/samples/octmnist/0_1.png"
+     "file": "img/samples/octmnist/choroidal-neovascularization_1.png"
     },
     {
-     "class": "1",
+     "class": "diabetic macular edema",
      "position": 4,
-     "file": "img/samples/octmnist/1_0.png"
+     "file": "img/samples/octmnist/diabetic-macular-edema_0.png"
     },
     {
-     "class": "1",
+     "class": "diabetic macular edema",
      "position": 8,
-     "file": "img/samples/octmnist/1_1.png"
+     "file": "img/samples/octmnist/diabetic-macular-edema_1.png"
     },
     {
-     "class": "2",
+     "class": "drusen",
      "position": 0,
-     "file": "img/samples/octmnist/2_0.png"
+     "file": "img/samples/octmnist/drusen_0.png"
     },
     {
-     "class": "2",
+     "class": "drusen",
      "position": 3,
-     "file": "img/samples/octmnist/2_1.png"
+     "file": "img/samples/octmnist/drusen_1.png"
     },
     {
-     "class": "3",
+     "class": "normal",
      "position": 1,
-     "file": "img/samples/octmnist/3_0.png"
+     "file": "img/samples/octmnist/normal_0.png"
     },
     {
-     "class": "3",
+     "class": "normal",
      "position": 10,
-     "file": "img/samples/octmnist/3_1.png"
+     "file": "img/samples/octmnist/normal_1.png"
     }
    ]
   },
@@ -583,7 +590,8 @@
     "val": 524,
     "test": 624
    },
-   "test_n": 98,
+   "test_n": 500,
+   "pool_n": 2000,
    "curve_n": [
     50,
     100,
@@ -598,24 +606,24 @@
    "marker": "diamond",
    "samples": [
     {
-     "class": "0",
+     "class": "normal",
      "position": 1,
-     "file": "img/samples/pneumoniamnist/0_0.png"
+     "file": "img/samples/pneumoniamnist/normal_0.png"
     },
     {
-     "class": "0",
+     "class": "normal",
      "position": 3,
-     "file": "img/samples/pneumoniamnist/0_1.png"
+     "file": "img/samples/pneumoniamnist/normal_1.png"
     },
     {
-     "class": "1",
+     "class": "pneumonia",
      "position": 0,
-     "file": "img/samples/pneumoniamnist/1_0.png"
+     "file": "img/samples/pneumoniamnist/pneumonia_0.png"
     },
     {
-     "class": "1",
+     "class": "pneumonia",
      "position": 2,
-     "file": "img/samples/pneumoniamnist/1_1.png"
+     "file": "img/samples/pneumoniamnist/pneumonia_1.png"
     }
    ]
   },
@@ -644,7 +652,8 @@
     "val": 1712,
     "test": 3421
    },
-   "test_n": 98,
+   "test_n": 500,
+   "pool_n": 2000,
    "curve_n": [
     50,
     100,
@@ -659,84 +668,84 @@
    "marker": "triangle-down",
    "samples": [
     {
-     "class": "0",
+     "class": "basophil",
      "position": 9,
-     "file": "img/samples/bloodmnist/0_0.png"
+     "file": "img/samples/bloodmnist/basophil_0.png"
     },
     {
-     "class": "0",
+     "class": "basophil",
      "position": 30,
-     "file": "img/samples/bloodmnist/0_1.png"
+     "file": "img/samples/bloodmnist/basophil_1.png"
     },
     {
-     "class": "1",
+     "class": "eosinophil",
      "position": 3,
-     "file": "img/samples/bloodmnist/1_0.png"
+     "file": "img/samples/bloodmnist/eosinophil_0.png"
     },
     {
-     "class": "1",
+     "class": "eosinophil",
      "position": 10,
-     "file": "img/samples/bloodmnist/1_1.png"
+     "file": "img/samples/bloodmnist/eosinophil_1.png"
     },
     {
-     "class": "2",
+     "class": "erythroblast",
      "position": 14,
-     "file": "img/samples/bloodmnist/2_0.png"
+     "file": "img/samples/bloodmnist/erythroblast_0.png"
     },
     {
-     "class": "2",
+     "class": "erythroblast",
      "position": 34,
-     "file": "img/samples/bloodmnist/2_1.png"
+     "file": "img/samples/bloodmnist/erythroblast_1.png"
     },
     {
-     "class": "3",
+     "class": "immature granulocytes(myelocytes, metamyelocytes and promyelocytes)",
      "position": 6,
-     "file": "img/samples/bloodmnist/3_0.png"
+     "file": "img/samples/bloodmnist/immature-granulocytes-myelocytes-metamyelocytes-and-promyelocytes-_0.png"
     },
     {
-     "class": "3",
+     "class": "immature granulocytes(myelocytes, metamyelocytes and promyelocytes)",
      "position": 7,
-     "file": "img/samples/bloodmnist/3_1.png"
+     "file": "img/samples/bloodmnist/immature-granulocytes-myelocytes-metamyelocytes-and-promyelocytes-_1.png"
     },
     {
-     "class": "4",
+     "class": "lymphocyte",
      "position": 1,
-     "file": "img/samples/bloodmnist/4_0.png"
+     "file": "img/samples/bloodmnist/lymphocyte_0.png"
     },
     {
-     "class": "4",
+     "class": "lymphocyte",
      "position": 17,
-     "file": "img/samples/bloodmnist/4_1.png"
+     "file": "img/samples/bloodmnist/lymphocyte_1.png"
     },
     {
-     "class": "5",
+     "class": "monocyte",
      "position": 8,
-     "file": "img/samples/bloodmnist/5_0.png"
+     "file": "img/samples/bloodmnist/monocyte_0.png"
     },
     {
-     "class": "5",
+     "class": "monocyte",
      "position": 58,
-     "file": "img/samples/bloodmnist/5_1.png"
+     "file": "img/samples/bloodmnist/monocyte_1.png"
     },
     {
-     "class": "6",
+     "class": "neutrophil",
      "position": 0,
-     "file": "img/samples/bloodmnist/6_0.png"
+     "file": "img/samples/bloodmnist/neutrophil_0.png"
     },
     {
-     "class": "6",
+     "class": "neutrophil",
      "position": 2,
-     "file": "img/samples/bloodmnist/6_1.png"
+     "file": "img/samples/bloodmnist/neutrophil_1.png"
     },
     {
-     "class": "7",
+     "class": "platelet",
      "position": 4,
-     "file": "img/samples/bloodmnist/7_0.png"
+     "file": "img/samples/bloodmnist/platelet_0.png"
     },
     {
-     "class": "7",
+     "class": "platelet",
      "position": 11,
-     "file": "img/samples/bloodmnist/7_1.png"
+     "file": "img/samples/bloodmnist/platelet_1.png"
     }
    ]
   },
@@ -768,7 +777,8 @@
     "val": 6491,
     "test": 17778
    },
-   "test_n": 98,
+   "test_n": 500,
+   "pool_n": 2000,
    "curve_n": [
     50,
     100,
@@ -783,59 +793,59 @@
    "marker": "plus",
    "samples": [
     {
-     "class": "0",
+     "class": "bladder",
      "position": 55,
-     "file": "img/samples/organamnist/0_0.png"
+     "file": "img/samples/organamnist/bladder_0.png"
     },
     {
-     "class": "1",
+     "class": "femur-left",
      "position": 109,
-     "file": "img/samples/organamnist/1_0.png"
+     "file": "img/samples/organamnist/femur-left_0.png"
     },
     {
-     "class": "2",
+     "class": "femur-right",
      "position": 38,
-     "file": "img/samples/organamnist/2_0.png"
+     "file": "img/samples/organamnist/femur-right_0.png"
     },
     {
-     "class": "3",
+     "class": "heart",
      "position": 15,
-     "file": "img/samples/organamnist/3_0.png"
+     "file": "img/samples/organamnist/heart_0.png"
     },
     {
-     "class": "4",
+     "class": "kidney-left",
      "position": 4,
-     "file": "img/samples/organamnist/4_0.png"
+     "file": "img/samples/organamnist/kidney-left_0.png"
     },
     {
-     "class": "5",
+     "class": "kidney-right",
      "position": 0,
-     "file": "img/samples/organamnist/5_0.png"
+     "file": "img/samples/organamnist/kidney-right_0.png"
     },
     {
-     "class": "6",
+     "class": "liver",
      "position": 3,
-     "file": "img/samples/organamnist/6_0.png"
+     "file": "img/samples/organamnist/liver_0.png"
     },
     {
-     "class": "7",
+     "class": "lung-left",
      "position": 23,
-     "file": "img/samples/organamnist/7_0.png"
+     "file": "img/samples/organamnist/lung-left_0.png"
     },
     {
-     "class": "8",
+     "class": "lung-right",
      "position": 6,
-     "file": "img/samples/organamnist/8_0.png"
+     "file": "img/samples/organamnist/lung-right_0.png"
     },
     {
-     "class": "9",
+     "class": "pancreas",
      "position": 9,
-     "file": "img/samples/organamnist/9_0.png"
+     "file": "img/samples/organamnist/pancreas_0.png"
     },
     {
-     "class": "10",
+     "class": "spleen",
      "position": 1,
-     "file": "img/samples/organamnist/10_0.png"
+     "file": "img/samples/organamnist/spleen_0.png"
     }
    ]
   },
@@ -858,7 +868,8 @@
     "val": 78,
     "test": 156
    },
-   "test_n": 74,
+   "test_n": 156,
+   "pool_n": 546,
    "curve_n": [
     50,
     100,
@@ -871,24 +882,24 @@
    "marker": "circle",
    "samples": [
     {
-     "class": "0",
+     "class": "malignant",
      "position": 0,
-     "file": "img/samples/breastmnist/0_0.png"
+     "file": "img/samples/breastmnist/malignant_0.png"
     },
     {
-     "class": "0",
+     "class": "malignant",
      "position": 6,
-     "file": "img/samples/breastmnist/0_1.png"
+     "file": "img/samples/breastmnist/malignant_1.png"
     },
     {
-     "class": "1",
+     "class": "normal, benign",
      "position": 1,
-     "file": "img/samples/breastmnist/1_0.png"
+     "file": "img/samples/breastmnist/normal-benign_0.png"
     },
     {
-     "class": "1",
+     "class": "normal, benign",
      "position": 2,
-     "file": "img/samples/breastmnist/1_1.png"
+     "file": "img/samples/breastmnist/normal-benign_1.png"
     }
    ]
   },
@@ -914,7 +925,8 @@
     "val": 120,
     "test": 400
    },
-   "test_n": 86,
+   "test_n": 400,
+   "pool_n": 1080,
    "curve_n": [
     50,
     100,
@@ -1004,7 +1016,8 @@
     "val": 23640,
     "test": 47280
    },
-   "test_n": 98,
+   "test_n": 500,
+   "pool_n": 2000,
    "curve_n": [
     50,
     100,
@@ -1019,84 +1032,84 @@
    "marker": "triangle",
    "samples": [
     {
-     "class": "0",
+     "class": "Collecting Duct, Connecting Tubule",
      "position": 2,
-     "file": "img/samples/tissuemnist/0_0.png"
+     "file": "img/samples/tissuemnist/collecting-duct-connecting-tubule_0.png"
     },
     {
-     "class": "0",
+     "class": "Collecting Duct, Connecting Tubule",
      "position": 3,
-     "file": "img/samples/tissuemnist/0_1.png"
+     "file": "img/samples/tissuemnist/collecting-duct-connecting-tubule_1.png"
     },
     {
-     "class": "1",
+     "class": "Distal Convoluted Tubule",
      "position": 13,
-     "file": "img/samples/tissuemnist/1_0.png"
+     "file": "img/samples/tissuemnist/distal-convoluted-tubule_0.png"
     },
     {
-     "class": "1",
+     "class": "Distal Convoluted Tubule",
      "position": 40,
-     "file": "img/samples/tissuemnist/1_1.png"
+     "file": "img/samples/tissuemnist/distal-convoluted-tubule_1.png"
     },
     {
-     "class": "2",
+     "class": "Glomerular endothelial cells",
      "position": 50,
-     "file": "img/samples/tissuemnist/2_0.png"
+     "file": "img/samples/tissuemnist/glomerular-endothelial-cells_0.png"
     },
     {
-     "class": "2",
+     "class": "Glomerular endothelial cells",
      "position": 83,
-     "file": "img/samples/tissuemnist/2_1.png"
+     "file": "img/samples/tissuemnist/glomerular-endothelial-cells_1.png"
     },
     {
-     "class": "3",
+     "class": "Interstitial endothelial cells",
      "position": 1,
-     "file": "img/samples/tissuemnist/3_0.png"
+     "file": "img/samples/tissuemnist/interstitial-endothelial-cells_0.png"
     },
     {
-     "class": "3",
+     "class": "Interstitial endothelial cells",
      "position": 5,
-     "file": "img/samples/tissuemnist/3_1.png"
+     "file": "img/samples/tissuemnist/interstitial-endothelial-cells_1.png"
     },
     {
-     "class": "4",
+     "class": "Leukocytes",
      "position": 0,
-     "file": "img/samples/tissuemnist/4_0.png"
+     "file": "img/samples/tissuemnist/leukocytes_0.png"
     },
     {
-     "class": "4",
+     "class": "Leukocytes",
      "position": 7,
-     "file": "img/samples/tissuemnist/4_1.png"
+     "file": "img/samples/tissuemnist/leukocytes_1.png"
     },
     {
-     "class": "5",
+     "class": "Podocytes",
      "position": 52,
-     "file": "img/samples/tissuemnist/5_0.png"
+     "file": "img/samples/tissuemnist/podocytes_0.png"
     },
     {
-     "class": "5",
+     "class": "Podocytes",
      "position": 56,
-     "file": "img/samples/tissuemnist/5_1.png"
+     "file": "img/samples/tissuemnist/podocytes_1.png"
     },
     {
-     "class": "6",
+     "class": "Proximal Tubule Segments",
      "position": 15,
-     "file": "img/samples/tissuemnist/6_0.png"
+     "file": "img/samples/tissuemnist/proximal-tubule-segments_0.png"
     },
     {
-     "class": "6",
+     "class": "Proximal Tubule Segments",
      "position": 17,
-     "file": "img/samples/tissuemnist/6_1.png"
+     "file": "img/samples/tissuemnist/proximal-tubule-segments_1.png"
     },
     {
-     "class": "7",
+     "class": "Thick Ascending Limb",
      "position": 6,
-     "file": "img/samples/tissuemnist/7_0.png"
+     "file": "img/samples/tissuemnist/thick-ascending-limb_0.png"
     },
     {
-     "class": "7",
+     "class": "Thick Ascending Limb",
      "position": 8,
-     "file": "img/samples/tissuemnist/7_1.png"
+     "file": "img/samples/tissuemnist/thick-ascending-limb_1.png"
     }
    ]
   },
@@ -1128,7 +1141,8 @@
     "val": 2392,
     "test": 8216
    },
-   "test_n": 98,
+   "test_n": 500,
+   "pool_n": 2000,
    "curve_n": [
     50,
     100,
@@ -1143,59 +1157,59 @@
    "marker": "diamond",
    "samples": [
     {
-     "class": "0",
+     "class": "bladder",
      "position": 2,
-     "file": "img/samples/organcmnist/0_0.png"
+     "file": "img/samples/organcmnist/bladder_0.png"
     },
     {
-     "class": "1",
+     "class": "femur-left",
      "position": 12,
-     "file": "img/samples/organcmnist/1_0.png"
+     "file": "img/samples/organcmnist/femur-left_0.png"
     },
     {
-     "class": "2",
+     "class": "femur-right",
      "position": 14,
-     "file": "img/samples/organcmnist/2_0.png"
+     "file": "img/samples/organcmnist/femur-right_0.png"
     },
     {
-     "class": "3",
+     "class": "heart",
      "position": 63,
-     "file": "img/samples/organcmnist/3_0.png"
+     "file": "img/samples/organcmnist/heart_0.png"
     },
     {
-     "class": "4",
+     "class": "kidney-left",
      "position": 19,
-     "file": "img/samples/organcmnist/4_0.png"
+     "file": "img/samples/organcmnist/kidney-left_0.png"
     },
     {
-     "class": "5",
+     "class": "kidney-right",
      "position": 13,
-     "file": "img/samples/organcmnist/5_0.png"
+     "file": "img/samples/organcmnist/kidney-right_0.png"
     },
     {
-     "class": "6",
+     "class": "liver",
      "position": 5,
-     "file": "img/samples/organcmnist/6_0.png"
+     "file": "img/samples/organcmnist/liver_0.png"
     },
     {
-     "class": "7",
+     "class": "lung-left",
      "position": 3,
-     "file": "img/samples/organcmnist/7_0.png"
+     "file": "img/samples/organcmnist/lung-left_0.png"
     },
     {
-     "class": "8",
+     "class": "lung-right",
      "position": 6,
-     "file": "img/samples/organcmnist/8_0.png"
+     "file": "img/samples/organcmnist/lung-right_0.png"
     },
     {
-     "class": "9",
+     "class": "pancreas",
      "position": 4,
-     "file": "img/samples/organcmnist/9_0.png"
+     "file": "img/samples/organcmnist/pancreas_0.png"
     },
     {
-     "class": "10",
+     "class": "spleen",
      "position": 0,
-     "file": "img/samples/organcmnist/10_0.png"
+     "file": "img/samples/organcmnist/spleen_0.png"
     }
    ]
   },
@@ -1227,7 +1241,8 @@
     "val": 2452,
     "test": 8827
    },
-   "test_n": 98,
+   "test_n": 500,
+   "pool_n": 2000,
    "curve_n": [
     50,
     100,
@@ -1242,59 +1257,59 @@
    "marker": "triangle-down",
    "samples": [
     {
-     "class": "0",
+     "class": "bladder",
      "position": 85,
-     "file": "img/samples/organsmnist/0_0.png"
+     "file": "img/samples/organsmnist/bladder_0.png"
     },
     {
-     "class": "1",
+     "class": "femur-left",
      "position": 26,
-     "file": "img/samples/organsmnist/1_0.png"
+     "file": "img/samples/organsmnist/femur-left_0.png"
     },
     {
-     "class": "2",
+     "class": "femur-right",
      "position": 3,
-     "file": "img/samples/organsmnist/2_0.png"
+     "file": "img/samples/organsmnist/femur-right_0.png"
     },
     {
-     "class": "3",
+     "class": "heart",
      "position": 1,
-     "file": "img/samples/organsmnist/3_0.png"
+     "file": "img/samples/organsmnist/heart_0.png"
     },
     {
-     "class": "4",
+     "class": "kidney-left",
      "position": 0,
-     "file": "img/samples/organsmnist/4_0.png"
+     "file": "img/samples/organsmnist/kidney-left_0.png"
     },
     {
-     "class": "5",
+     "class": "kidney-right",
      "position": 8,
-     "file": "img/samples/organsmnist/5_0.png"
+     "file": "img/samples/organsmnist/kidney-right_0.png"
     },
     {
-     "class": "6",
+     "class": "liver",
      "position": 2,
-     "file": "img/samples/organsmnist/6_0.png"
+     "file": "img/samples/organsmnist/liver_0.png"
     },
     {
-     "class": "7",
+     "class": "lung-left",
      "position": 11,
-     "file": "img/samples/organsmnist/7_0.png"
+     "file": "img/samples/organsmnist/lung-left_0.png"
     },
     {
-     "class": "8",
+     "class": "lung-right",
      "position": 6,
-     "file": "img/samples/organsmnist/8_0.png"
+     "file": "img/samples/organsmnist/lung-right_0.png"
     },
     {
-     "class": "9",
+     "class": "pancreas",
      "position": 5,
-     "file": "img/samples/organsmnist/9_0.png"
+     "file": "img/samples/organsmnist/pancreas_0.png"
     },
     {
-     "class": "10",
+     "class": "spleen",
      "position": 14,
-     "file": "img/samples/organsmnist/10_0.png"
+     "file": "img/samples/organsmnist/spleen_0.png"
     }
    ]
   },
@@ -1329,7 +1344,8 @@
     "val": 11219,
     "test": 22433
    },
-   "test_n": 72,
+   "test_n": 500,
+   "pool_n": 2000,
    "curve_n": [
     50,
     100,
@@ -8907,7 +8923,7 @@
   {
    "id": "features",
    "name": "Features",
-   "jobs": 0,
+   "jobs": 12,
    "unit": "datasets"
   },
   {

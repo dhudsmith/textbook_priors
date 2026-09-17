@@ -310,7 +310,11 @@
  "kind_note": "The kind of each entry is the one hand-assigned field in this export (talk/scripts/export_talk_data.py); everything else is the file's own heading and first paragraph.",
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-17T02:25:32Z",
+  "exported": "2026-09-17T03:21:07Z",
+  "redactions": [
+   "the owner-only LLM key path (params.key_file) is dropped from every manifest",
+   "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)"
+  ],
   "source_files": [
    "SESSION_LOG.md"
   ]

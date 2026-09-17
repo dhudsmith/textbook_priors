@@ -163,10 +163,30 @@ def git(*args: str) -> str:
     return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True).stdout.strip()
 
 
+# The cluster is named in the README; the individual compute node is not named anywhere the
+# project publishes, so the snapshot says which cluster ran the job and not which node.
+CLUSTER = "a Palmetto2 compute node"
+
+# The two things this snapshot deliberately does not carry out of the run's own files. Both are
+# stated here rather than left to be noticed, because the point of the snapshot is that it can be
+# checked against the archive it came from.
+REDACTIONS = [
+    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
+    f"the compute node's hostname is replaced by the cluster ({CLUSTER.strip()})",
+]
+
+
+def redact_host(_host: str | None) -> str:
+    """A manifest's host as the public snapshot may carry it: the cluster, not the node."""
+    return CLUSTER
+
+
 def strip_private(manifest: dict) -> dict:
-    """A manifest as the site may see it: the owner-only key path never leaves the archive."""
+    """A manifest as the site may see it: no owner-only key path, no compute node name."""
     out = json.loads(json.dumps(manifest))
     out.get("params", {}).pop("key_file", None)
+    if "host" in out:
+        out["host"] = redact_host(out.get("host"))
     return out
 
 
@@ -328,7 +348,8 @@ def build_study(args) -> dict:
             "classes": got["classes"],
             "n_channels": rel["n_channels"],
             "split_sizes": rel["n_samples"],
-            "test_n": len(classify[d]["index"]) if isinstance(classify[d].get("index"), list) else None,
+            "test_n": min(config["sample"]["test_n"], rel["n_samples"]["test"]),
+            "pool_n": min(config["sample"]["pool_n"], rel["n_samples"]["train"]),
             "curve_n": got["curve_n"],
             "n_concepts": len(banks[d]["concepts"]),
             "colour": DATASET_HUES[i % len(DATASET_HUES)],
@@ -397,7 +418,7 @@ def build_study(args) -> dict:
          "jobs": len(glob.glob(str(ROOT / "results/prompts/*.json"))) + len(chunks),
          "unit": "prompt renders + archived chunks"},
         {"id": "features", "name": "Features",
-         "jobs": len(glob.glob(str(ROOT / "results/features/*.npz"))), "unit": "datasets"},
+         "jobs": len(glob.glob(str(ROOT / "results/features/*.json"))), "unit": "datasets"},
         {"id": "classify", "name": "Classify",
          "jobs": len(glob.glob(str(ROOT / "results/classify/*.json"))), "unit": "datasets"},
         {"id": "evaluate", "name": "Evaluate", "jobs": len(datasets) + 1,
@@ -410,10 +431,12 @@ def build_study(args) -> dict:
             "run_git_commit": run["git_commit"],
             "exported": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "source_files": list(SOURCES),
+            "redactions": REDACTIONS,
         },
         "run": {
             "git_commit": run["git_commit"], "git_dirty": run.get("git_dirty"),
-            "written": run["written"], "host": run["host"], "versions": run["versions"],
+            "written": run["written"], "host": redact_host(run.get("host")),
+            "versions": run["versions"],
             "wall_seconds": run.get("wall_seconds"),
         },
         "study": {
@@ -480,7 +503,7 @@ def export_prompts(datasets: list[str]) -> None:
         (dest / f"{d}.txt").write_text(read_text(f"results/prompts_txt/{d}.txt"))
 
 
-def export_samples(datasets: list[str], per_class: int, cap: int) -> dict:
+def export_samples(datasets: list[str], per_class: int, cap: int, names: dict) -> dict:
     """Two test images per class, capped per dataset, straight out of the cached sample arrays.
 
     These are the images the arms were actually scored on - the same seeded sample, by position -
@@ -496,7 +519,8 @@ def export_samples(datasets: list[str], per_class: int, cap: int) -> dict:
             groups = {"any finding": np.flatnonzero(labels.any(axis=1)),
                       "no finding": np.flatnonzero(~labels.any(axis=1))}
         else:
-            groups = {str(c): np.flatnonzero(labels == c) for c in sorted(set(labels.tolist()))}
+            groups = {names[d][c]: np.flatnonzero(labels == c)
+                      for c in sorted(set(labels.tolist()))}
         budget = max(1, cap // max(1, len(groups)))
         for name, positions in groups.items():
             for k, pos in enumerate(positions[:min(per_class, budget)]):
@@ -531,7 +555,7 @@ def export_archive(datasets: list[str], per_dataset: int, primary: str) -> dict:
                 "bank_sha256": chunk["manifest"]["params"].get("bank_sha256"),
                 "git_commit": chunk["manifest"]["git_commit"],
                 "slurm_job": chunk["manifest"]["slurm_job"],
-                "host": chunk["manifest"]["host"],
+                "host": redact_host(chunk["manifest"].get("host")),
                 "written": chunk["manifest"]["written"],
                 "temperature": chunk["manifest"]["params"].get("temperature"),
                 "reasoning": chunk["manifest"]["params"].get("reasoning"),
@@ -668,7 +692,8 @@ def main() -> int:
 
     export_banks(datasets)
     export_prompts(datasets)
-    samples = export_samples(datasets, args.per_class, args.cap)
+    samples = export_samples(datasets, args.per_class, args.cap,
+                             {m["name"]: m["classes"] for m in study["datasets"]})
     archive = export_archive(datasets, args.archive_records, study["study"]["primary"])
     timeline = export_timeline()
     figures = copy_figures()
@@ -679,7 +704,8 @@ def main() -> int:
     study["provenance"]["source_files"] = list(SOURCES)
 
     prov = {"run_git_commit": study["provenance"]["run_git_commit"],
-            "exported": study["provenance"]["exported"]}
+            "exported": study["provenance"]["exported"],
+            "redactions": REDACTIONS}
     write_json("data/archive_sample.json", {**archive,
                                             "provenance": {**prov, "source_files": [
                                                 "results/score/*__test__concept__chunk00.json",
