@@ -70,7 +70,7 @@ export function Machine() {
           </tbody>
         </table>
         <p className="note">
-          The served model name is what the service said answered. It is the field that caught a
+          The served model name is what the service said answered. This field caught a
           rule running the wrong model's command.
         </p>
       </Deep>

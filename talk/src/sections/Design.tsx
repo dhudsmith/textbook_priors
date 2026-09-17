@@ -56,7 +56,7 @@ export function Design() {
         </tbody>
       </table>
 
-      <h3>Seven questions, each with a rule fixed before its numbers existed</h3>
+      <h3>Seven questions, each with a rule fixed before its numbers</h3>
       <p className="note">Click a card to turn it over.</p>
       <div className="cards">
         {study.verdicts.map((v) => {
@@ -90,7 +90,7 @@ export function Design() {
         })}
       </div>
 
-      <h3>Three limits the study states rather than analyses away</h3>
+      <h3>Three limits</h3>
       <ul style={{ maxWidth: "42rem", fontSize: "0.9rem", color: "var(--ink-secondary)" }}>
         {design.limits.map((l, i) => <li key={i}>{l}</li>)}
       </ul>

@@ -49,9 +49,8 @@ export function H4() {
         The thinking step wins on {h4.h4a.wins} of {h4.n_datasets}{" "}
         (p = {h4.h4a.sign_test_p.toFixed(4)}) and the capability step on {h4.h4b.wins}{" "}
         (p = {h4.h4b.sign_test_p.toFixed(4)}), against the {h4.min_wins} the rule asks for:{" "}
-        {v4.verdict}. Every reader is read by the same cross-validated probe on the same{" "}
-        {h4.subsample}-image prefix, so the {h4.readers.length} readers are paired and the four
-        existing archives joined by being subset rather than re-bought.
+        {v4.verdict}. One cross-validated probe reads all {h4.readers.length} readers on the same{" "}
+        {h4.subsample}-image prefix, so every difference is paired.
       </p>
       {copy.body.map((p, i) => <p key={i}>{p}</p>)}
 

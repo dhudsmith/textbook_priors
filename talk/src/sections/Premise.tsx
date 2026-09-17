@@ -33,7 +33,7 @@ export function Premise() {
       )}
       <p className="note">{premise.stripCaption}</p>
 
-      <h3>Three kinds of aside, and they run the whole way down</h3>
+      <h3>Three kinds of aside</h3>
       <div className="callouts">
         {(["principle", "nearmiss", "agent"] as const).map((kind) => (
           <aside key={kind} className={`callout ${kind}`} data-open="true">
