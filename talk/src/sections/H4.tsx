@@ -31,16 +31,6 @@ export function H4() {
     <Band id="h4">
       <Header id="h4" eyebrow="8">{copy.header}</Header>
       <p className="lede">{copy.lede}</p>
-      <p>
-        The thinking step wins on {h4.h4a.wins} of {h4.n_datasets}{" "}
-        (p = {h4.h4a.sign_test_p.toFixed(4)}) and the capability step on {h4.h4b.wins}{" "}
-        (p = {h4.h4b.sign_test_p.toFixed(4)}), against the {h4.min_wins} the rule asks for:{" "}
-        {v4.verdict}. Every reader is read by the same cross-validated probe on the same{" "}
-        {h4.subsample}-image prefix, so the {h4.readers.length} readers are paired and the four
-        existing archives joined by being subset rather than re-bought.
-      </p>
-      {copy.body.map((p, i) => <p key={i}>{p}</p>)}
-
       {timeline && (
         <ChartFrame
           caption="The day H4 was designed, run and decided. Click a tick for the entry."
@@ -55,6 +45,16 @@ export function H4() {
           <TimelineStrip timeline={timeline} days={["2026-09-12"]} height={110} />
         </ChartFrame>
       )}
+      <p>
+        The thinking step wins on {h4.h4a.wins} of {h4.n_datasets}{" "}
+        (p = {h4.h4a.sign_test_p.toFixed(4)}) and the capability step on {h4.h4b.wins}{" "}
+        (p = {h4.h4b.sign_test_p.toFixed(4)}), against the {h4.min_wins} the rule asks for:{" "}
+        {v4.verdict}. Every reader is read by the same cross-validated probe on the same{" "}
+        {h4.subsample}-image prefix, so the {h4.readers.length} readers are paired and the four
+        existing archives joined by being subset rather than re-bought.
+      </p>
+      {copy.body.map((p, i) => <p key={i}>{p}</p>)}
+
 
       <ChartFrame
         caption={`The reader chain: cross-validated probe AUC on the same ${h4.subsample}-image ` +
