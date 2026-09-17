@@ -29,3 +29,4 @@ __pycache__/
 # site is built on GitHub's runners where results/ does not exist (talk/PLAN.md section 4).
 talk/node_modules/
 talk/dist/
+talk/tsconfig.tsbuildinfo
