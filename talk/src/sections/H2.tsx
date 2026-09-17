@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Callouts, ChartFrame, Dots, Header } from "../components/ui";
+import { Band, Callouts, ChartFrame, Deep, Dots, Header } from "../components/ui";
 import { Dumbbell, PermutationDrops } from "../charts/Dumbbell";
 import { h2 as copy } from "../content";
 import { fmt3, signed } from "../charts/primitives";
@@ -24,11 +24,14 @@ export function H2() {
         arm B, {Object.values(h2.c_loses_under_permutation).filter(Boolean).length} of{" "}
         {study.study.datasets.length} for arm C.
       </p>
-      {copy.body.map((p, i) => <p key={i}>{p}</p>)}
       <p>
         On tissuemnist the model's own guess is {fmt3(tissue.auc["A"])} — at chance — while the
         textbook readout reaches {fmt3(tissue.auc[`B__${primary}`])}.
       </p>
+      <p>{copy.body[0]}</p>
+      <Deep summary="Why the comparison cannot be circular">
+        {copy.body.slice(1).map((p, i) => <p key={i}>{p}</p>)}
+      </Deep>
 
       <ChartFrame
         caption="Arm A against arm B on the same images. The letter at the right is which arm won."

@@ -61,9 +61,8 @@ export const title = {
 export const premise = {
   header: "This talk was built the way it is about",
   lede:
-    "The study was designed on a Tuesday, run on Thursday and Friday, extended on Saturday and " +
-    "reported on Sunday. An AI coding agent wrote most of the code. A workflow made its work " +
-    "inspectable.",
+    "The study was planned on one day and built, run, extended and reported over the next three. " +
+    "An AI coding agent wrote most of the code. A workflow made its work inspectable.",
   body: [
     "Speed raises a question. If an agent wrote the stage, submitted the jobs and filled the " +
       "table, how do you come to trust the result? In science the code is not the product. The " +
@@ -83,9 +82,6 @@ export const premise = {
       body: [
         "The agent wrote the rules, ran the jobs, measured the resources and recorded the " +
           "manifests. The human asked, read, decided and caught.",
-        "Every near miss on this page was caught by a person reading a plan, a chunk run before " +
-          "the rest, a probe at the wire or a manifest field. None was caught by the dependency " +
-          "graph.",
       ],
       source: "TALK.md §3; SESSION_LOG.md",
     },
@@ -100,7 +96,7 @@ export const question = {
   body: [
     "The concept bank is the study's prior knowledge, committed before any call was bought. Each " +
       "dataset gets a short list of visual features on ordered scales; each level carries the " +
-      "anchor text a reader would be shown, and its citation; each class gets a fingerprint over " +
+      "anchor text the model is shown, and its citation; each class gets a fingerprint over " +
       "the same features.",
     "The concept prompt never names a class. The zero-shot prompt never mentions a concept. We " +
       "ask what the model's answers are worth in the currency a practitioner cares about: " +
@@ -141,15 +137,16 @@ export const design = {
       "too: frozen ImageNet features under the same classifier, the same regularisation search " +
       "and the same nested subsets as the concept arm.",
     "Every arm predicts on the same seeded test sample, so every comparison is paired and " +
-      "carries a bootstrap interval. Across datasets, a one-sided sign test at one level decides " +
-      "each rule.",
+      "carries a bootstrap interval — 95% of resampled test sets. Across datasets, a one-sided " +
+      "sign test — count the datasets the arm won — decides each rule. AUC is the metric " +
+      "throughout: 1.0 ranks every case correctly, 0.5 is chance.",
   ],
   limits: [
     "The three organ datasets are one set of CT volumes in three planes, so twelve datasets are " +
       "at most ten independent units. The per-dataset differences are shown so a reader can " +
       "recount.",
     "chestmnist is multi-label, so a nearest fingerprint and a class distribution are undefined " +
-      "for it. It runs in the two labelled arms only.",
+      "for it. It runs in arms C, P and C+P only.",
     "The rules were restated for twelve datasets when six verdicts were already known. The level " +
       "reproduces the six-dataset rule exactly, so nothing decided moved; the twelve-dataset " +
       "thresholds are pre-registered only for the six new datasets.",
@@ -172,8 +169,8 @@ export const design = {
       title: "Pre-registration lives in git",
       body: [
         "A rule counts only if it precedes its numbers. Here that is checkable: the commit " +
-          "carrying each rule is an ancestor of the commit carrying its numbers, and the cards " +
-          "below show both.",
+          "carrying each rule is an ancestor of the commit carrying its numbers. Turn a card " +
+          "over and it names both.",
         "Prevents: an arm designed after the results, which decides nothing.",
       ],
       source: "WORKFLOW.md §2 and §10",
@@ -188,6 +185,8 @@ export const machine = {
     "the served model name and the prompt hash, and everything downstream is a function of that " +
     "archive.",
   body: [
+    "A chunk is one job's hundred images. A reader is a model plus a reasoning effort, so the " +
+      "same model asked to think harder counts as a second reader.",
     "The archive is write-protected once written, so re-querying the service is a decision, not " +
       "something a stale timestamp can trigger. Below is one archived call, drawn at random: " +
       "image, prompt, raw reply, parsed answer, and the manifest fields that make it checkable.",
@@ -222,8 +221,8 @@ export const machine = {
 export const h1 = {
   header: "H1 — Is the textbook worth labelled images?",
   lede:
-    "Arm B is a horizontal line drawn with no labels. n_B is how many labels the pixel probe " +
-    "needs to reach it: what the textbook was worth.",
+    "Arm B, the textbook readout, is a horizontal line drawn with no labels. n_B is how many " +
+    "labels the pixel arm needs to reach it: what the textbook was worth.",
   body: [
     "The rule was fixed before the numbers existed, and the numbers do not meet it. A negative " +
       "result you can stand behind is what the recipe is for.",
@@ -252,9 +251,8 @@ export const h2 = {
     "the fingerprints or the concept columns destroys both arms, so the concept answers carry " +
     "real class information. The readout loses it.",
   body: [
-    "On kidney tissue the model's own guess is at chance and the checklist still ranks. Where " +
-      "the model can name the class, asking for the name wins; where it cannot, the checklist " +
-      "does.",
+    "Where the model can name the class, asking for the name wins; where it cannot, the " +
+      "checklist does.",
     "The two arms are separate calls on separate prompts, so the comparison cannot be circular. " +
       "The first design returned both from one call, which would have let the concept answers " +
       "rationalise a class the model had already chosen.",
@@ -429,11 +427,10 @@ export const close = {
   lede: "The ledger, and what caught each mistake.",
   body: [
     "None was caught by the dependency graph. A person reading the plan; one chunk run before " +
-      "the rest; a probe at the wire; a timed call; a manifest field. The DAG shows that a stage " +
+      "the rest; a probe at the wire; a timed call; a manifest field. It shows that a stage " +
       "exists and what it depends on, not whether it computes the right thing.",
     "The workflow gives you half the record for free: what was done, in what order, from what, " +
       "with which code. The session log is the other half: why. You need both.",
-    REFRAIN,
   ],
   callouts: [
     {
@@ -460,10 +457,15 @@ export const explore = {
     "full size.",
 };
 
+/* Two lists, because two of these are what a room asks about and two are not. The first is on
+   the main scroll at #verdicts; the second waits in the explorer. */
 export const notClaimed = [
   "The concept scores are not clinically validated.",
-  "Simulated expert review is not a clinician's.",
-  "No arm here is state of the art.",
   "Every source dataset is public and labelled, so “the model carries textbook knowledge” " +
     "and “the model has seen this benchmark” cannot be told apart with these data.",
+];
+
+export const notClaimedMore = [
+  "Simulated expert review is not a clinician's.",
+  "No arm here is state of the art.",
 ];

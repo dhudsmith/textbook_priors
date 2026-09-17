@@ -12,12 +12,15 @@ import { AxisBottom, AxisLeft, Legend, MARGIN, fmt3, spreadLabels, useHover } fr
 
 const LABELLED = ["C", "P", "CP"] as const;
 
-export function LearningCurve({ height = 400 }: { height?: number }) {
+export function LearningCurve({ height = 400, initialHidden = [] }: {
+  height?: number; initialHidden?: string[];
+}) {
   const { study, dataset, meta, armHue, armDash } = useTalk();
   const per = study.per_dataset[dataset];
   const { ref, width } = useWidth<HTMLDivElement>(820);
   const { show, hide, tip } = useHover();
-  const [hidden, setHidden] = useState<Set<string>>(new Set());
+  // The series the speaker adds live start hidden; the legend still lists every one of them.
+  const [hidden, setHidden] = useState<Set<string>>(() => new Set(initialHidden));
 
   const ns = per.curve_n;
   const primary = study.study.primary;

@@ -31,13 +31,13 @@ export function Title() {
         <div>
           <Header id="top" eyebrow="Clemson HPC Day">Textbook priors over visual features</Header>
           <p className="lede">{copy.question}</p>
-          <p className="note" style={{ maxWidth: "34rem" }}>{copy.standfirst}</p>
+          <p className="note presenter-hide" style={{ maxWidth: "34rem" }}>{copy.standfirst}</p>
         </div>
         <PageQR caption={copy.qr} />
       </div>
       <div className="tiles">
         <Tile value={led.work_dates.length}
-              unit="days worked, from the first prompt to the report" />
+              unit="days of work, from the plan to the report" />
         <CountTile value={led.calls} unit="raw model responses, archived and write-protected" />
         <Tile value={led.datasets} unit="MedMNIST 2D benchmarks, every one in the release" />
         <CountTile value={led.tests ?? 0} unit="tests that run before anything else is computed" />

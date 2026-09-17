@@ -3,7 +3,8 @@ import { scalePoint, scaleLinear } from "d3-scale";
 import { line as d3line } from "d3-shape";
 import { useTalk } from "../state";
 import { useWidth } from "../hooks";
-import { AxisLeft, MARGIN, Marker, fmt3, short, spreadLabels, useHover } from "./primitives";
+import { AxisLeft, MARGIN, Marker, fmt3, readerTick, short, spreadLabels, useHover }
+  from "./primitives";
 
 /* One line per dataset across an ordered list of models or readers. Used three times - the open
    ladder (H3), the price ladder (H7) and the reader chain (H4) - because they are the same claim
@@ -27,7 +28,15 @@ export function Ladder({ order, values, yLabel, label, height = 380, divideAfter
   const datasets = Object.keys(values).filter((d) => order.some((m) => values[d]?.[m] != null));
   const all = datasets.flatMap((d) => order.map((m) => values[d][m]).filter((v) => v != null));
 
-  const margin = { ...MARGIN, bottom: 62, right: 108 };
+  // Tick text is the model stem, and the bottom margin is computed from the longest one at the
+  // tilt it is drawn at. Nothing here relies on `overflow: visible` for its room.
+  const ticks = order.map(readerTick);
+  const tilt = order.length > 4;
+  const longest = Math.max(...ticks.map((t) => t.length));
+  const bottom = tilt
+    ? Math.ceil(longest * 6.3 * Math.sin((22 * Math.PI) / 180)) + 30
+    : 46;
+  const margin = { ...MARGIN, bottom, right: 108 };
   const innerW = Math.max(220, width - margin.left - margin.right);
   const innerH = height - margin.top - margin.bottom;
   const x = scalePoint<string>().domain(order).range([margin.left, margin.left + innerW]).padding(0.5);
@@ -52,15 +61,14 @@ export function Ladder({ order, values, yLabel, label, height = 380, divideAfter
               stroke="var(--ink-muted)" strokeDasharray="1 4"
               opacity={y(0.5) > margin.top && y(0.5) < margin.top + innerH ? 1 : 0} />
         <g className="axis">
-          {order.map((m) => {
+          {order.map((m, i) => {
             const tx = x(m)!;
             const ty = margin.top + innerH + 18;
-            const tilt = order.length > 4;
             return (
               <text key={m} x={tx} y={ty} textAnchor={tilt ? "end" : "middle"}
                     transform={tilt ? `rotate(-22 ${tx} ${ty})` : undefined}
-                    style={{ fontFamily: "var(--mono)", fontSize: 10.5 }}>
-                {m}
+                    style={{ fontFamily: "var(--mono)", fontSize: "var(--chart-tick)" }}>
+                {ticks[i]}
               </text>
             );
           })}
@@ -76,10 +84,23 @@ export function Ladder({ order, values, yLabel, label, height = 380, divideAfter
           const pts = order.filter((m) => values[d][m] != null);
           const dim = isolate != null && isolate !== d;
           const series = d3line<string>().x((m) => x(m)!).y((m) => y(values[d][m]));
+          // The divider is a boundary the caption says not to read across, so the line is drawn
+          // as two paths rather than one that steps over it.
+          const segments = divideAfter == null
+            ? [pts]
+            : [pts.filter((m) => order.indexOf(m) <= divideAfter),
+               pts.filter((m) => order.indexOf(m) > divideAfter)].filter((s) => s.length);
           return (
             <g key={d} opacity={dim ? 0.13 : 1}
                onMouseEnter={() => setIsolate(d)} onMouseLeave={() => setIsolate(null)}>
-              <path d={series(pts) ?? undefined} fill="none" stroke={hue(d)} strokeWidth={1.8} />
+              {segments.map((seg, si) => (
+                <g key={si}>
+                  <path d={series(seg) ?? undefined} fill="none" stroke="transparent"
+                        strokeWidth={12} />
+                  <path d={series(seg) ?? undefined} fill="none" stroke={hue(d)}
+                        strokeWidth={1.8} />
+                </g>
+              ))}
               {pts.map((m) => (
                 <g key={m}
                    onMouseEnter={(e) => show(e, (

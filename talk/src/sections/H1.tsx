@@ -8,17 +8,34 @@ import { loadContention } from "../data";
 import { fmt3, signed } from "../charts/primitives";
 
 export function H1() {
-  const { study, dataset } = useTalk();
+  const { study, dataset, setDataset } = useTalk();
   const v = study.verdicts.find((x) => x.id === "h1")!;
   const h1 = study.across.h1;
   const { data: contention } = useAsync(loadContention);
   const per = study.per_dataset[dataset];
   const diff = per.differences["C_minus_P__n50"];
+  const firstN = study.study.curve.n[0];
+
+  // n_B is "<=50" wherever the pixel arm was already above arm B at the first grid point, so the
+  // count of non-numeric n_B values is the count of tasks the textbook was worth less than one
+  // grid step on. The datasets that do cross are the ones worth showing the idea on.
+  const nbs = h1.n_b as Record<string, string>;
+  const belowGrid = Object.values(nbs).filter((s) => !/^\d+$/.test(s)).length;
+  const crossing = study.study.arm_b_datasets
+    .filter((d) => /^\d+$/.test(study.per_dataset[d].n_b?.point ?? ""))
+    .sort((a, b) => Number(study.per_dataset[b].n_b!.point)
+                    - Number(study.per_dataset[a].n_b!.point));
+  const crosses = per.n_b != null && /^\d+$/.test(per.n_b.point);
+  const elsewhere = crossing.find((d) => d !== dataset);
 
   return (
     <Band id="h1">
       <Header id="h1" eyebrow="5">{copy.header}</Header>
-      <p className="lede">{copy.lede}</p>
+      <p className="lede">
+        Concept answers lose to pixel features at every labelled-set size we tried: the textbook
+        is worth fewer than {firstN} labels on {belowGrid} tasks of{" "}
+        {study.study.arm_b_datasets.length}. {copy.lede}
+      </p>
       <p>
         The pixel probe is already above the textbook arm at the first grid point on{" "}
         {h1.datasets_where_the_probe_starts_above_arm_b} of the{" "}
@@ -43,8 +60,17 @@ export function H1() {
             {per.ceiling.method}).
           </p>
         }>
-        <LearningCurve />
+        {/* Two series by default - the flat textbook arm and the rising pixel arm - and the rest
+            behind the legend, so the projected chart is one comparison the speaker builds on. */}
+        <LearningCurve height={440} initialHidden={["C", "CP", "A", "lit"]} />
       </ChartFrame>
+      {!crosses && elsewhere && (
+        <p className="note">
+          No crossing here: the pixel arm starts above the textbook arm. See{" "}
+          <button className="inline" onClick={() => setDataset(elsewhere)}>{elsewhere}</button>,
+          where it crosses at {study.per_dataset[elsewhere].n_b!.point}.
+        </p>
+      )}
 
       <h3>Where the concept arm beat the pixel arm at n = {study.study.curve.n[0]}</h3>
       <p>

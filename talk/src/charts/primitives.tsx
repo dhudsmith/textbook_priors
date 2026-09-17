@@ -17,6 +17,26 @@ export const signed = (v: number, digits = 3) =>
 export const pct = (v: number) => `${(v * 100).toFixed(1)}%`;
 export const short = (d: string) => d.replace("mnist", "");
 
+/** A model or reader as an axis tick: a stem plus its reasoning effort. The full identifiers are
+    thirteen to twenty-two characters and nine of them will not fit under one axis at any tilt, so
+    the axis wears the stem and the chart's text summary carries the exact names - which is where
+    a reader who needs to reproduce a number will look anyway. */
+const EFFORT = /-(minimal|low|medium|high)$/;
+export function readerTick(id: string): string {
+  const m = id.match(EFFORT);
+  const base = m ? id.slice(0, m.index) : id;
+  const closed = base.match(/^gpt-[\d.]+-([a-z]+)$/);
+  let stem: string;
+  if (closed) {
+    stem = closed[1];
+  } else {
+    const family = base.match(/^([a-z]+)/);
+    const size = base.match(/(\d+)b/i);
+    stem = size && family ? `${family[1]} ${size[1]}b` : base;
+  }
+  return m ? `${stem} · ${m[1]}` : stem;
+}
+
 /** One SVG marker per dataset, so no two datasets share both a colour and a marker. */
 export function Marker({ kind, x, y, r = 4, fill, stroke }: {
   kind: string; x: number; y: number; r?: number; fill: string; stroke?: string;
@@ -146,15 +166,21 @@ export function Legend({ items, onToggle, hidden }: {
             <svg width="18" height="10" aria-hidden="true">
               <line x1="0" y1="5" x2="18" y2="5" stroke={s.colour} strokeWidth="2.4"
                     strokeDasharray={s.dash} />
+              {off && <line x1="1" y1="9" x2="17" y2="1" stroke="var(--ink-muted)"
+                            strokeWidth="1.4" />}
             </svg>
             {s.label}
           </>
         );
+        /* A legend chip is not a picker. The picker's pressed state inverts the chip, and a
+           series colour drawn on the opposite-polarity ground fails contrast - every swatch did,
+           in dark. An active series wears the ordinary chip; a hidden one wears `.off` with its
+           swatch struck through, and every legend on the page then looks the same. */
         return onToggle ? (
-          <button key={s.id} className={`chip${off ? " off" : ""}`} aria-pressed={!off}
+          <button key={s.id} className={`chip legend${off ? " off" : ""}`} aria-pressed={!off}
                   onClick={() => onToggle(s.id)}>{inner}</button>
         ) : (
-          <span key={s.id} className="chip" style={{ cursor: "default" }}>{inner}</span>
+          <span key={s.id} className="chip legend" style={{ cursor: "default" }}>{inner}</span>
         );
       })}
     </div>

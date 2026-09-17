@@ -16,7 +16,16 @@ export function ArchiveCall({ sample, fixedDataset }: {
     () => sample.records.filter((r) => !fixedDataset || r.dataset === fixedDataset),
     [sample.records, fixedDataset]);
   const [i, setI] = useState(() => Math.floor(Math.random() * Math.max(1, pool.length)));
+  const [native, setNative] = useState<number | null>(null);
   const rec = pool[i % Math.max(1, pool.length)];
+  // "Another" means another: the draw skips the record already on screen.
+  const here = pool.length ? i % pool.length : 0;
+  const drawAnother = () => {
+    if (pool.length < 2) return;
+    let k = Math.floor(Math.random() * (pool.length - 1));
+    if (k >= here) k += 1;
+    setI(k);
+  };
   const manifest = rec ? sample.manifests[rec.manifest_key] : null;
   const redactions = sample.provenance?.redactions ?? [];
   const { data: prompt } = useAsync(
@@ -27,39 +36,46 @@ export function ArchiveCall({ sample, fixedDataset }: {
   return (
     <div>
       <div className="controls">
-        <button className="plain"
-                onClick={() => setI(Math.floor(Math.random() * pool.length))}>
-          Draw another archived call
-        </button>
+        <button className="plain" onClick={drawAnother}>Draw another archived call</button>
         <span className="note" style={{ margin: 0 }}>
           {pool.length} exported records{fixedDataset ? ` for ${fixedDataset}` : ""}
         </span>
       </div>
 
-      <div style={{ display: "grid", gap: "1rem",
-                    gridTemplateColumns: "minmax(150px, 210px) minmax(0, 1fr)" }}>
+      <div className="archivegrid">
         <div>
           <div className="imgcard">
             <img src={asset(rec.image)} alt={`${rec.dataset} test image ${rec.position}`}
-                 width={224} height={224} loading={LAZY} />
+                 width={224} height={224} loading={LAZY}
+                 onLoad={(e) => setNative(e.currentTarget.naturalWidth)} />
           </div>
           <p className="note" style={{ marginTop: "0.4rem" }}>
             {rec.dataset}, test position {rec.position} (release row {rec.index})
+            {native ? `. ${native} px native, shown larger — the blocks are the data.` : ""}
           </p>
         </div>
         <div>
           <h4>What came back, verbatim</h4>
-          <pre className="file">{rec.text ?? "(nothing readable)"}</pre>
-          <h4>What was parsed out of it</h4>
+          <pre className="file reply">{rec.text ?? "(nothing readable)"}</pre>
+          {/* The panel earns its space only where parsing added something. On a zero-shot draw it
+              says what actually happened instead of reading as a failure. */}
           {rec.answers && Object.keys(rec.answers).length ? (
-            <dl className="kv">
-              {Object.entries(rec.answers).map(([k, v]) => (
-                <div key={k} style={{ display: "contents" }}>
-                  <dt>{k}</dt><dd>{String(v)}</dd>
-                </div>
-              ))}
-            </dl>
-          ) : <p className="note">No parsed answer recorded.</p>}
+            <>
+              <h4>What was parsed out of it</h4>
+              <dl className="kv">
+                {Object.entries(rec.answers).map(([k, v]) => (
+                  <div key={k} style={{ display: "contents" }}>
+                    <dt>{k}</dt><dd>{String(v)}</dd>
+                  </div>
+                ))}
+              </dl>
+            </>
+          ) : (
+            <p className="note">
+              A zero-shot call carries no concept answers; the class distribution above is the
+              whole answer.
+            </p>
+          )}
         </div>
       </div>
 

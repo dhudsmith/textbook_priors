@@ -13,7 +13,24 @@ export function H3() {
   const v7 = study.verdicts.find((x) => x.id === "h7")!;
   const [which, setWhich] = useState<"open" | "closed">("open");
 
-  const openOrder: string[] = h3.model_order;
+  /* The axis is ordered family first, then size within it, so the dashed divider falls on the
+     real family boundary - which is the one the note says not to read across. The order the
+     snapshot ships interleaves the families, and drawn that way three of every four segments
+     joined a qwen model to a gemma one. Families keep the order they first appear in. */
+  const models = study.study.models;
+  const families: string[] = [];
+  for (const m of h3.model_order as string[]) {
+    const f = models[m].family;
+    if (!families.includes(f)) families.push(f);
+  }
+  const openOrder: string[] = [...(h3.model_order as string[])].sort((a, b) => {
+    const fa = families.indexOf(models[a].family);
+    const fb = families.indexOf(models[b].family);
+    return fa !== fb ? fa - fb : models[a].params_b - models[b].params_b;
+  });
+  const familyDivide = openOrder.findIndex(
+    (m, i) => i < openOrder.length - 1
+      && models[m].family !== models[openOrder[i + 1]].family);
   const openValues = h3.arm_b_auc as Record<string, Record<string, number>>;
   const closedOrder: string[] = h7.ladder;
   const closedValues = h7.probe_auc as Record<string, Record<string, number>>;
@@ -39,7 +56,7 @@ export function H3() {
         bottom on {h7.wins} of {h7.n_datasets} (p = {h7.sign_test_p.toFixed(4)}), which is{" "}
         {v7.verdict}.
       </p>
-      {copy.body.map((p, i) => <p key={i}>{p}</p>)}
+      {copy.body.slice(1).map((p, i) => <p key={i}>{p}</p>)}
 
       <div className="controls" role="group" aria-label="Which ladder">
         <span className="group-label">ladder</span>
@@ -79,7 +96,7 @@ export function H3() {
           label={which === "open"
             ? "Arm B AUC per dataset across the four open models"
             : "Probe AUC per dataset across the closed price ladder"}
-          divideAfter={which === "open" ? 1 : undefined}
+          divideAfter={which === "open" && familyDivide >= 0 ? familyDivide : undefined}
           note={which === "open"
             ? "The dashed divider separates the two families: size and training data are " +
               "confounded across them, so the comparison is read within family only."
@@ -87,14 +104,16 @@ export function H3() {
               "parameter count — nothing public orders these models by size."}
         />
       </ChartFrame>
+      {/* The paragraph that explains the divider now sits under the divider. */}
+      <p>{copy.body[0]}</p>
 
-      <p>
+      <p className="tally">
         <Dots per={v3.per_dataset} order={study.study.arm_b_datasets} label="H3 per dataset" />{" "}
         <span className="note" style={{ display: "inline" }}>
           H3, larger wins in both families: {v3.wins} of {v3.n_datasets} — {v3.verdict}.
         </span>
       </p>
-      <p>
+      <p className="tally">
         <Dots per={v7.per_dataset} order={study.study.arm_b_datasets} label="H7 per dataset" />{" "}
         <span className="note" style={{ display: "inline" }}>
           H7, the top of the price ladder over the bottom: {v7.wins} of {v7.n_datasets},{" "}

@@ -22,6 +22,12 @@ export function Verdicts() {
 
       <VerdictBoard />
 
+      <p className="takeaway">
+        The pixel probe is within two AUC points of the ceiling on{" "}
+        {study.ceiling.pixel_within_two_points} of {study.ceiling.rows.length} tasks and at or
+        above it on {study.ceiling.pixel_at_or_above}; the best zero-label arm is within five
+        points on {study.ceiling.zero_within_five_points}.
+      </p>
       <ChartFrame
         caption={`Each arm against the published ceiling. The pixel probe at n = ` +
                  `${study.ceiling.largest_n} sits a median ${fmt3(gap.pixel)} AUC below it; the ` +
@@ -49,11 +55,7 @@ export function Verdicts() {
         <CeilingDots />
       </ChartFrame>
       <p className="note">
-        The pixel probe is within two AUC points of the ceiling on{" "}
-        {study.ceiling.pixel_within_two_points} of {study.ceiling.rows.length} tasks and at or
-        above it on {study.ceiling.pixel_at_or_above}; the best zero-label arm is within five
-        points on {study.ceiling.zero_within_five_points}. Source:{" "}
-        {study.study.literature.title} ({study.study.literature.table}).
+        Ceiling source: {study.study.literature.title} ({study.study.literature.table}).
       </p>
 
       <h3>What this study does not claim</h3>

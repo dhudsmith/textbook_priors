@@ -1,6 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Callouts, ChartFrame, Header, Tile } from "../components/ui";
-import { CaughtBy } from "../charts/Verdicts";
+import { Band, Callouts, Header, Tile } from "../components/ui";
 import { PageQR } from "./Title";
 import { close as copy, LINKS, REFRAIN } from "../content";
 import { asset } from "../data";
@@ -11,6 +10,8 @@ export function Close() {
   const { study } = useTalk();
   const led = study.ledger;
   const { data: timeline } = useAsync(loadTimeline);
+  // The zero is counted, not asserted: no entry in the ledger names the graph as the catcher.
+  const byGraph = led.catches.filter((c) => /dependency graph|dag/i.test(c.caught_by)).length;
 
   return (
     <Band id="close">
@@ -20,29 +21,30 @@ export function Close() {
       <div className="tiles">
         <Tile value={led.calls.toLocaleString("en-US")} unit="model responses bought and archived" />
         <Tile value={led.chunks} unit="chunk jobs, each one file with a manifest" />
-        <Tile value={led.tests ?? "—"} unit="tests, run before anything else" />
-        <Tile value={led.hypotheses} unit="hypotheses registered, each with its rule in git" />
-        <Tile value={led.supported} unit="supported" />
+        <Tile value={`${led.supported} of ${led.hypotheses}`}
+              unit="hypotheses supported, every rule in git before its numbers" />
         <Tile value={timeline?.entries.length ?? led.session_log_entries}
               unit="prompts that materially directed the work" />
+        <Tile value={led.catches.length} unit="mistakes caught" />
+        <Tile value={byGraph} unit="caught by the dependency graph" />
       </div>
 
       {copy.body.map((p, i) => <p key={i}>{p}</p>)}
 
-      <ChartFrame
-        caption="What actually caught each mistake. The dependency graph's bar is the point."
-        source="public/data/study.json ← CHANGELOG.md and SESSION_LOG.md"
-        summary={
-          <ul>
-            {led.catches.map((c, i) => (
-              <li key={i}>{c.what} — caught by {c.caught_by} ({c.source})</li>
-            ))}
-          </ul>
-        }>
-        <CaughtBy />
-      </ChartFrame>
+      <h3>What caught each one</h3>
+      <ul className="catches">
+        {led.catches.map((c, i) => (
+          <li key={i}>
+            {c.what} — <em>{c.caught_by}</em>{" "}
+            <span className="mono file">({c.source})</span>
+          </li>
+        ))}
+      </ul>
+      <p className="note">
+        From <span className="file">public/data/study.json ← CHANGELOG.md and SESSION_LOG.md</span>.
+      </p>
 
-      <p style={{ fontSize: "1.2rem", fontWeight: 700, maxWidth: "36rem" }}>{REFRAIN}</p>
+      <p className="pullquote">{REFRAIN}</p>
 
       <div className="title-grid" style={{ marginTop: "2rem" }}>
         <div>

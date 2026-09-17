@@ -3,7 +3,7 @@ import { scaleLinear } from "d3-scale";
 import { useTalk } from "../state";
 import { useWidth } from "../hooks";
 import { Dots } from "../components/ui";
-import { MARGIN, fmt3, short, useHover } from "./primitives";
+import { MARGIN, Marker, fmt3, short, useHover } from "./primitives";
 
 /* The verdict board: seven rows, each with its rule, its count against the count the rule asks
    for, a dot per dataset, and the verdict. Nothing here decides anything - every field is copied
@@ -77,11 +77,15 @@ export function CeilingDots({ height }: { height?: number }) {
   const lo = Math.min(...rows.flatMap((r) => [r.pixel, r.concept, r.zero ?? 1])) - 0.03;
   const x = scaleLinear().domain([Math.max(0, lo), 1.0]).range([left, left + innerW]);
 
+  /* Four marks on one row, and three of them used to be the same circle in three hues - two of
+     which a deutan reader cannot separate. Each wears its own shape, as the arm diagram and the
+     dataset markers already do. */
   const marks = [
-    { key: "zero", label: "best zero-label arm", colour: armHue("B") },
-    { key: "concept", label: "arm C at the largest n", colour: armHue("C") },
-    { key: "pixel", label: "arm P at the largest n", colour: armHue("P") },
-    { key: "ceiling", label: "published, fully supervised", colour: armHue("lit") },
+    { key: "zero", label: "best zero-label arm", colour: armHue("B"), shape: "circle" },
+    { key: "concept", label: "arm C at the largest n", colour: armHue("C"), shape: "square" },
+    { key: "pixel", label: "arm P at the largest n", colour: armHue("P"), shape: "triangle" },
+    { key: "ceiling", label: "published, fully supervised", colour: armHue("lit"),
+      shape: "diamond" },
   ] as const;
 
   return (
@@ -110,7 +114,7 @@ export function CeilingDots({ height }: { height?: number }) {
               <text x={left - 12} y={y + 4} textAnchor="end" className="axis"
                     style={{ fontSize: 11.5, fill: "var(--ink-secondary)" }}>{short(r.dataset)}</text>
               <line x1={x(Math.min(r.pixel, r.concept, r.zero ?? r.pixel))} x2={x(r.ceiling)}
-                    y1={y} y2={y} stroke="var(--rule)" strokeWidth={1.5} />
+                    y1={y} y2={y} stroke="var(--rule-strong)" strokeWidth={1.5} />
               {marks.map((m) => {
                 const v = (r as unknown as Record<string, number | undefined>)[m.key];
                 if (v == null) return null;
@@ -124,11 +128,8 @@ export function CeilingDots({ height }: { height?: number }) {
                        </>
                      ))} onMouseLeave={hide}>
                     <circle cx={x(v)} cy={y} r={11} fill="transparent" />
-                    {m.key === "ceiling"
-                      ? <path d={`M${x(v)} ${y - 5} L${x(v) + 5} ${y} L${x(v)} ${y + 5} L${x(v) - 5} ${y} Z`}
-                              fill={m.colour} stroke="var(--surface)" strokeWidth={1.6} />
-                      : <circle cx={x(v)} cy={y} r={4} fill={m.colour} stroke="var(--surface)"
-                                strokeWidth={1.6} />}
+                    <Marker kind={m.shape} x={x(v)} y={y} r={5} fill={m.colour}
+                            stroke="var(--surface)" />
                   </g>
                 );
               })}
@@ -139,64 +140,14 @@ export function CeilingDots({ height }: { height?: number }) {
       {tip}
       <div className="controls" aria-label="Series">
         {marks.map((m) => (
-          <span key={m.key} className="chip" style={{ cursor: "default" }}>
-            <span className="swatch" style={{ background: m.colour,
-                     borderRadius: m.key === "ceiling" ? 0 : 9,
-                     transform: m.key === "ceiling" ? "rotate(45deg)" : undefined }} />
+          <span key={m.key} className="chip legend" style={{ cursor: "default" }}>
+            <svg width="14" height="14" aria-hidden="true">
+              <Marker kind={m.shape} x={7} y={7} r={5} fill={m.colour} />
+            </svg>
             {m.label}
           </span>
         ))}
       </div>
-    </div>
-  );
-}
-
-/* The close's tally: what actually caught each mistake. A bar per catcher, and the DAG's bar is
-   the point - it is empty. */
-export function CaughtBy() {
-  const { study } = useTalk();
-  const counts = new Map<string, string[]>();
-  for (const c of study.ledger.catches) {
-    counts.set(c.caught_by, [...(counts.get(c.caught_by) ?? []), c.what]);
-  }
-  const rows = [...counts.entries()].sort((a, b) => b[1].length - a[1].length);
-  rows.push(["the dependency graph", []]);
-  const max = Math.max(...rows.map((r) => r[1].length), 1);
-
-  return (
-    <div>
-      <table className="data">
-        <thead>
-          <tr>
-            <th>what caught it</th>
-            <th style={{ textAlign: "left" }}>count</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map(([who, what]) => (
-            <tr key={who}>
-              <td>{who}</td>
-              <td style={{ textAlign: "left" }}>
-                <svg width={Math.max(6, (what.length / max) * 160) + 26} height="14"
-                     role="img" aria-label={`${what.length}`}>
-                  <rect x="0" y="3" width={Math.max(2, (what.length / max) * 160)} height="8"
-                        rx="2" fill={what.length ? "var(--nearmiss)" : "var(--rule-strong)"} />
-                  <text x={Math.max(2, (what.length / max) * 160) + 6} y="11"
-                        style={{ fontSize: 11, fill: "var(--ink-muted)" }}>{what.length}</text>
-                </svg>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <ul style={{ fontSize: "0.85rem", color: "var(--ink-secondary)", maxWidth: "42rem" }}>
-        {study.ledger.catches.map((c, i) => (
-          <li key={i}>
-            {c.what} — <em>{c.caught_by}</em>{" "}
-            <span className="mono" style={{ color: "var(--ink-muted)" }}>({c.source})</span>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

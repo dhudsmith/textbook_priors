@@ -1,4 +1,5 @@
-import { Suspense, lazy, useEffect, useLayoutEffect } from "react";
+import { Suspense, lazy, useEffect, useLayoutEffect, useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { TalkProvider, useTalk } from "./state";
 import { STATIC, loadStudy } from "./data";
 import { useAsync, useInView } from "./hooks";
@@ -15,7 +16,7 @@ import { H4 } from "./sections/H4";
 import { H5 } from "./sections/H5";
 import { Verdicts } from "./sections/Verdicts";
 import { Close } from "./sections/Close";
-import { explore } from "./content";
+import { REFRAIN, explore } from "./content";
 
 /* The explorer is the one heavy part of the page and nobody sees it during the talk, so it is a
    separate chunk that loads when it first scrolls into view. */
@@ -24,7 +25,7 @@ const Explore = lazy(() => import("./sections/Explore"));
 function ExploreBand() {
   const { ref, seen } = useInView<HTMLDivElement>("400px");
   return (
-    <Band id="explore">
+    <Band id="explore" className="presenter-hide">
       <Header id="explore" eyebrow="12">{explore.header}</Header>
       <p className="lede">{explore.lede}</p>
       <div ref={ref}>
@@ -38,9 +39,24 @@ function ExploreBand() {
   );
 }
 
+/* The projector's corner flag, and the one QR that carries the hash: the speaker can send the
+   room to the section on screen, which is what the section ids are for. The title and close
+   codes still point at the page itself. */
 function ModeFlag() {
-  const { presenter } = useTalk();
-  return presenter ? <div className="modeflag">presenter mode · p to leave</div> : null;
+  const { presenter, active } = useTalk();
+  const [base, setBase] = useState("");
+  useEffect(() => setBase(window.location.href.split("#")[0].split("?")[0]), []);
+  if (!presenter) return null;
+  const href = base ? `${base}#${active}` : "";
+  return (
+    <div className="modeflag">
+      {href && (
+        <QRCodeSVG value={href} size={52} level="L" marginSize={0} bgColor="#ffffff"
+                   fgColor="#17171a" title={`QR code for ${href}`} />
+      )}
+      <span>presenter mode · p to leave · #{active}</span>
+    </div>
+  );
 }
 
 function Page() {
@@ -74,6 +90,9 @@ function Page() {
         <H2 />
         <H3 />
         <H4 />
+        {/* The refrain at the hinge of the talk: minute two, minute thirteen, minute twenty-four.
+            Projected, because it is the sentence the room should leave with. */}
+        <div className="refrain-band"><p className="pullquote">{REFRAIN}</p></div>
         <H5 />
         <Verdicts />
         <Close />

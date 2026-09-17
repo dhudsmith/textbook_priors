@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Callouts, ChartFrame, Dots, Header } from "../components/ui";
+import { Band, Callouts, ChartFrame, Deep, Dots, Header } from "../components/ui";
 import { Ladder } from "../charts/Ladder";
 import { ThinkingScatter } from "../charts/ThinkingScatter";
 import { Forest } from "../charts/Forest";
@@ -52,8 +52,10 @@ export function H4() {
         {v4.verdict}. One cross-validated probe reads all {h4.readers.length} readers on the same{" "}
         {h4.subsample}-image prefix, so every difference is paired.
       </p>
-      {copy.body.map((p, i) => <p key={i}>{p}</p>)}
-
+      {copy.body.slice(0, 2).map((p, i) => <p key={i}>{p}</p>)}
+      <Deep summary="Two limits on this reading">
+        {copy.body.slice(2).map((p, i) => <p key={i}>{p}</p>)}
+      </Deep>
 
       <ChartFrame
         caption={`The reader chain: cross-validated probe AUC on the same ${h4.subsample}-image ` +
@@ -78,8 +80,9 @@ export function H4() {
         }>
         <Ladder order={chain} values={h4.probe_auc} yLabel="cross-validated probe AUC"
                 label="Probe AUC per dataset across the nine readers" height={420}
-                note={"A reader is a model plus a reasoning effort. The first four are the same " +
-                      "four models with thinking off."} />
+                note={"The first four readers are the same four models with thinking off; the " +
+                      "axis names each reader's stem and effort, and the table below carries the " +
+                      "exact model identifiers."} />
       </ChartFrame>
 
       <ChartFrame
@@ -103,38 +106,40 @@ export function H4() {
         {v6.verdict}. Exactly {h6clear.length} interval of the {h6rows.length} clears zero, and it
         is {h6clear.map((r) => r.dataset).join(", ")} — the dataset the prediction was aimed at.
       </p>
-      <ChartFrame
-        caption="gpt-5.6-terra at low minus the same model at medium, by the same probe."
-        source="public/data/study.json ← results/evaluation.json (H6)"
-        summary={
-          <table className="data" style={{ maxWidth: "34rem" }}>
-            <thead><tr><th>dataset</th><th style={{ textAlign: "left" }}>low − medium, 95%</th></tr></thead>
-            <tbody>
-              {h6rows.map((r) => (
-                <tr key={r.dataset}>
-                  <td>{r.dataset}</td>
-                  <td style={{ textAlign: "left" }}>
-                    {signed(r.median)} [{fmt3(r.lo)}, {fmt3(r.hi)}]
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        }>
-        <Forest rows={h6rows} colour={armHue("C")}
-                label="gpt-5.6-terra: low minus medium, probe AUC" />
-      </ChartFrame>
+      <Deep summary={`Show the ${h6rows.length} intervals`}>
+        <ChartFrame
+          caption="gpt-5.6-terra at low minus the same model at medium, by the same probe."
+          source="public/data/study.json ← results/evaluation.json (H6)"
+          summary={
+            <table className="data" style={{ maxWidth: "34rem" }}>
+              <thead><tr><th>dataset</th><th style={{ textAlign: "left" }}>low − medium, 95%</th></tr></thead>
+              <tbody>
+                {h6rows.map((r) => (
+                  <tr key={r.dataset}>
+                    <td>{r.dataset}</td>
+                    <td style={{ textAlign: "left" }}>
+                      {signed(r.median)} [{fmt3(r.lo)}, {fmt3(r.hi)}]
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          }>
+          <Forest rows={h6rows} colour={armHue("C")}
+                  label="gpt-5.6-terra: low minus medium, probe AUC" />
+        </ChartFrame>
+        <p>
+          <Dots per={v6.per_dataset} order={study.study.arm_b_datasets} label="H6 per dataset" />{" "}
+          <span className="note" style={{ display: "inline" }}>
+            H6, low over medium: {v6.wins} of {v6.n_datasets} — {v6.verdict}.
+          </span>
+        </p>
+      </Deep>
 
-      <p>
+      <p className="tally">
         <Dots per={v4.per_dataset} order={study.study.arm_b_datasets} label="H4a per dataset" />{" "}
         <span className="note" style={{ display: "inline" }}>
           H4a, thinking over no thinking: {h4.h4a.wins} of {h4.n_datasets} — {v4.verdict}.
-        </span>
-      </p>
-      <p>
-        <Dots per={v6.per_dataset} order={study.study.arm_b_datasets} label="H6 per dataset" />{" "}
-        <span className="note" style={{ display: "inline" }}>
-          H6, low over medium: {v6.wins} of {v6.n_datasets} — {v6.verdict}.
         </span>
       </p>
 

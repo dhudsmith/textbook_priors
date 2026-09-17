@@ -33,13 +33,13 @@ export function Premise() {
       )}
       <p className="note">{premise.stripCaption}</p>
 
-      <h3>Three kinds of aside</h3>
-      <div className="callouts">
+      <h3>Three kinds of callout</h3>
+      <div className="controls" role="group" aria-label="Kinds of callout">
         {(["principle", "nearmiss", "agent"] as const).map((kind) => (
-          <aside key={kind} className={`callout ${kind}`} data-open="true">
-            <div className="label">{KIND_LABEL[kind]}</div>
-            <div className="body" style={{ marginTop: "0.2rem" }}>{KIND_BLURB[kind]}</div>
-          </aside>
+          <span key={kind} className={`chip legend kindchip ${kind}`}>
+            <span className="swatch" aria-hidden="true" />
+            <strong>{KIND_LABEL[kind]}</strong>&nbsp;— {KIND_BLURB[kind]}
+          </span>
         ))}
       </div>
 

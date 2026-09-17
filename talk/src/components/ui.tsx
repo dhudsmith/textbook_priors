@@ -8,7 +8,9 @@ import { STATIC } from "../data";
 
 /** One band of the scroll. Animates in on first entry and never again, and tells the rail it is
     the active section while it holds the middle of the viewport. */
-export function Band({ id, children }: { id: string; children: ReactNode }) {
+export function Band({ id, className, children }: {
+  id: string; className?: string; children: ReactNode;
+}) {
   const { setActive } = useTalk();
   const ref = useRef<HTMLElement | null>(null);
   // `?static=1` and reduced motion skip the entry animation entirely: the band is already in.
@@ -29,7 +31,8 @@ export function Band({ id, children }: { id: string; children: ReactNode }) {
   }, [id, setActive]);
 
   return (
-    <section id={id} ref={ref} className={`band${seen ? " seen" : ""}`}
+    <section id={id} ref={ref}
+             className={`band${seen ? " seen" : ""}${className ? ` ${className}` : ""}`}
              aria-labelledby={`${id}-h`}>
       {children}
     </section>
@@ -143,7 +146,7 @@ export function ChartFrame({ caption, source, summary, children }: {
     <figure className="chart">
       <div className="chart-scroll">{children}</div>
       <figcaption>
-        {caption} <span className="file">{source}</span>
+        {caption} <span className="file presenter-hide">{source}</span>
         <details className="a11y-summary">
           <summary>Read this chart as text</summary>
           {summary}
@@ -182,14 +185,28 @@ export function Dots({ per, order, label }: {
 
 export function Rail() {
   const { active, presenter, setPresenter } = useTalk();
+  // On a phone the rail is one sticky line naming the section on screen; tapping it opens the
+  // list. On a desktop the media query ignores `open` and the list is simply there.
+  const [open, setOpen] = useState(false);
+  const here = SECTIONS.find((s) => s.id === active) ?? SECTIONS[0];
+  const number = (id: string) => {
+    const i = SECTIONS.findIndex((s) => s.id === id);
+    return i > 0 ? String(i) : "";
+  };
   return (
-    <nav className="rail" aria-label="Sections">
+    <nav className={`rail${open ? " open" : ""}`} aria-label="Sections">
       <p className="railhead">Textbook priors</p>
+      <button className="railtoggle" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+        <span className="num">{number(here.id)}</span>
+        <span>{here.short}</span>
+        <span aria-hidden="true">{open ? "⌃" : "⌄"}</span>
+      </button>
       <ol>
         {SECTIONS.map((s) => (
-          <li key={s.id}>
-            <a href={`#${s.id}`} aria-current={active === s.id}>
+          <li key={s.id} className={s.id === "explore" ? "after" : undefined}>
+            <a href={`#${s.id}`} aria-current={active === s.id} onClick={() => setOpen(false)}>
               <span className="dot" aria-hidden="true" />
+              <span className="num">{number(s.id)}</span>
               <span>{s.short}</span>
             </a>
           </li>
@@ -197,7 +214,8 @@ export function Rail() {
       </ol>
       <div className="railfoot">
         <p>
-          <kbd>↑</kbd> <kbd>↓</kbd> move a section · <kbd>p</kbd> presenter mode
+          <kbd>space</kbd> <kbd>⇟</kbd> next screen · <kbd>[</kbd> <kbd>]</kbd> section ·{" "}
+          <kbd>p</kbd> presenter
         </p>
         <button className="plain" onClick={() => setPresenter(!presenter)}
                 aria-pressed={presenter}>

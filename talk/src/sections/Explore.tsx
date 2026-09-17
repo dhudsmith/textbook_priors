@@ -4,7 +4,7 @@ import { Callouts, DatasetPicker, Deep, Header } from "../components/ui";
 import { ArchiveCall } from "../components/ArchiveCall";
 import { LAZY, asset, loadArchive, loadBank, loadPrompt } from "../data";
 import { useAsync } from "../hooks";
-import { LINKS } from "../content";
+import { REPO, notClaimedMore } from "../content";
 import { fmt3, signed } from "../charts/primitives";
 
 /* Section 12: not presented. Everything for the audience on their own devices and for questions.
@@ -182,11 +182,15 @@ export default function Explore() {
         </figure>
       )}
 
-      <h4>The files behind all of it</h4>
-      <ul style={{ fontSize: "0.9rem" }}>
-        {LINKS.map((l) => <li key={l.href}><a href={l.href}>{l.label}</a></li>)}
-        <li><a href={asset("report.pdf")}>the technical report PDF</a></li>
+      <h4>What this study does not claim, continued</h4>
+      <ul style={{ maxWidth: "42rem", fontSize: "0.9rem", color: "var(--ink-secondary)" }}>
+        {notClaimedMore.map((c, i) => <li key={i}>{c}</li>)}
       </ul>
+
+      <h4>The files behind all of it</h4>
+      <p style={{ fontSize: "0.9rem" }}>
+        Everything is in <a href={REPO}>the repository</a>; the close lists each file by name.
+      </p>
       <Deep summary="What this snapshot was read from">
         <ul className="mono" style={{ fontSize: "0.72rem", color: "var(--ink-muted)" }}>
           {study.provenance.source_files.map((f) => <li key={f}>{f}</li>)}
