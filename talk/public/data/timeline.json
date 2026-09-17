@@ -4,7 +4,8 @@
   "2026-09-11",
   "2026-09-12",
   "2026-09-13",
-  "2026-09-14"
+  "2026-09-14",
+  "2026-09-16"
  ],
  "entries": [
   {
@@ -279,6 +280,13 @@
    "title": "\"Clean up hanging checkouts or branches that were never merged in\"",
    "kind": "decide",
    "lead": "The ask: one clean lineage for the talk, everything accounted for, and results that are always in the owner's checkout rather than somewhere a future session left them. Three things were wrong, and none of them was a branch. **The results were already only in `~/Code/textbook_priors`** \u2014 587 archive files, twelve each of sample / prompts / prompts_txt / scores / features / evaluate, twenty-four classify, twenty figures, twelve tables and the 15M PDF. The session worktree held no results at all. So nothing had to be moved; what had to change is that nothing can put them anywhere else again.\u2026"
+  },
+  {
+   "date": "2026-09-16",
+   "time": "23:25",
+   "title": "\"The talk as a website: science as the spine, reproducibility as callouts\"",
+   "kind": "build",
+   "lead": "The talk is no longer a deck. Asked for a science talk about the medical-imaging-with-LLMs study with commentary throughout about reproducible research assisted by AI, delivered as a scrolling website with interactive elements, a QR code at the top so the room can follow on its own devices, and hosted on GitHub Pages. That inverts `TALK.md` \u00a75: the science is the talk, and the reproducibility-with-AI argument rides on it as on-slide callouts of three kinds \u2014 a blue **Principle** (a `WORKFLOW.md` \u00a75 principle stated as the failure it prevents), an amber **Near miss** (something that nearly\u2026"
   }
  ],
  "kinds": [
@@ -310,10 +318,11 @@
  "kind_note": "The kind of each entry is the one hand-assigned field in this export (talk/scripts/export_talk_data.py); everything else is the file's own heading and first paragraph.",
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-17T03:21:07Z",
+  "exported": "2026-09-17T03:30:15Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
-   "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)"
+   "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",
+   "absolute paths are rewritten relative to the repository root"
   ],
   "source_files": [
    "SESSION_LOG.md"

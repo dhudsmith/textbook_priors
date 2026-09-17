@@ -59,7 +59,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "pathmnist",
      "qwen3.8-27b-fp8",
@@ -132,7 +132,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "pathmnist",
      "qwen3.8-27b-fp8",
@@ -205,7 +205,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "dermamnist",
      "qwen3.8-27b-fp8",
@@ -278,7 +278,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "dermamnist",
      "qwen3.8-27b-fp8",
@@ -351,7 +351,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "octmnist",
      "qwen3.8-27b-fp8",
@@ -424,7 +424,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "octmnist",
      "qwen3.8-27b-fp8",
@@ -497,7 +497,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "pneumoniamnist",
      "qwen3.8-27b-fp8",
@@ -570,7 +570,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "pneumoniamnist",
      "qwen3.8-27b-fp8",
@@ -643,7 +643,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "bloodmnist",
      "qwen3.8-27b-fp8",
@@ -716,7 +716,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "bloodmnist",
      "qwen3.8-27b-fp8",
@@ -789,7 +789,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "organamnist",
      "qwen3.8-27b-fp8",
@@ -862,7 +862,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "organamnist",
      "qwen3.8-27b-fp8",
@@ -939,7 +939,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "breastmnist",
      "qwen3.8-27b-fp8",
@@ -1016,7 +1016,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "breastmnist",
      "qwen3.8-27b-fp8",
@@ -1093,7 +1093,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "retinamnist",
      "qwen3.8-27b-fp8",
@@ -1170,7 +1170,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "retinamnist",
      "qwen3.8-27b-fp8",
@@ -1247,7 +1247,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "tissuemnist",
      "qwen3.8-27b-fp8",
@@ -1324,7 +1324,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "tissuemnist",
      "qwen3.8-27b-fp8",
@@ -1401,7 +1401,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "organcmnist",
      "qwen3.8-27b-fp8",
@@ -1478,7 +1478,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "organcmnist",
      "qwen3.8-27b-fp8",
@@ -1555,7 +1555,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "organsmnist",
      "qwen3.8-27b-fp8",
@@ -1632,7 +1632,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "organsmnist",
      "qwen3.8-27b-fp8",
@@ -1709,7 +1709,7 @@
      "OPENBLAS_NUM_THREADS": "1"
     },
     "argv": [
-     "/home/dane2/Code/textbook_priors/priors/stages.py",
+     "priors/stages.py",
      "score",
      "chestmnist",
      "qwen3.8-27b-fp8",
@@ -3132,10 +3132,11 @@
  ],
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-17T03:21:07Z",
+  "exported": "2026-09-17T03:30:15Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
-   "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)"
+   "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",
+   "absolute paths are rewritten relative to the repository root"
   ],
   "source_files": [
    "results/score/*__test__concept__chunk00.json",

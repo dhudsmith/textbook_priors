@@ -173,6 +173,7 @@ CLUSTER = "a Palmetto2 compute node"
 REDACTIONS = [
     "the owner-only LLM key path (params.key_file) is dropped from every manifest",
     f"the compute node's hostname is replaced by the cluster ({CLUSTER.strip()})",
+    "absolute paths are rewritten relative to the repository root",
 ]
 
 
@@ -181,9 +182,22 @@ def redact_host(_host: str | None) -> str:
     return CLUSTER
 
 
+def relative_paths(value):
+    """Rewrite this checkout's absolute paths as repo-relative ones, at any depth."""
+    prefix = str(ROOT) + "/"
+    if isinstance(value, str):
+        return value[len(prefix):] if value.startswith(prefix) else value
+    if isinstance(value, list):
+        return [relative_paths(v) for v in value]
+    if isinstance(value, dict):
+        return {k: relative_paths(v) for k, v in value.items()}
+    return value
+
+
 def strip_private(manifest: dict) -> dict:
-    """A manifest as the site may see it: no owner-only key path, no compute node name."""
-    out = json.loads(json.dumps(manifest))
+    """A manifest as the site may see it: no owner-only key path, no compute node name, and the
+    argv the near miss of 2026-09-11 was caught in, with this checkout's own location removed."""
+    out = relative_paths(json.loads(json.dumps(manifest)))
     out.get("params", {}).pop("key_file", None)
     if "host" in out:
         out["host"] = redact_host(out.get("host"))
