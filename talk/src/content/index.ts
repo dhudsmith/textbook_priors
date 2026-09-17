@@ -422,7 +422,7 @@ export const close = {
   header: "What four days cost",
   body: [
     "None was caught by the dependency graph. A person reading the plan; one chunk run before " +
-      "the rest; a probe at the wire; a timed call; a manifest field. It shows that a stage " +
+      "the rest; a probe at the wire; a timed call; a manifest field. The graph shows that a stage " +
       "exists and what it depends on, not whether it computes the right thing.",
     "The workflow gives you half the record for free: what was done, in what order, from what, " +
       "with which code. The session log is the other half: why. You need both.",
