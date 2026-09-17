@@ -90,7 +90,8 @@ export function ArchiveCall({ sample, fixedDataset }: {
       </dl>
       {redactions.length > 0 && (
         <p className="note">
-          Two fields are not the archive's own, and the export says so: {redactions.join("; ")}.
+          What the snapshot does not carry out of the archive, said rather than left to be
+          noticed: {redactions.join("; ")}.
         </p>
       )}
 
