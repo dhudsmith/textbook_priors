@@ -45,7 +45,7 @@ export function Close() {
 
       <p className="pullquote">{REFRAIN}</p>
 
-      <div className="title-grid" style={{ marginTop: "2rem" }}>
+      <div style={{ marginTop: "2rem" }}>
         <div>
           <h3>Everything behind this page</h3>
           <ul style={{ fontSize: "0.9rem" }}>
@@ -64,7 +64,7 @@ export function Close() {
             {study.provenance.exported.replace("T", " ").replace("Z", " UTC")}.
           </p>
         </div>
-        <PageQR caption="Take the page with you" />
+        <div className="qrblock"><PageQR caption="Take the page with you" /></div>
       </div>
 
       <Callouts items={copy.callouts} />

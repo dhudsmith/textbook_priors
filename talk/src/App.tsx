@@ -27,7 +27,7 @@ function ExploreBand() {
   return (
     <Band id="explore" className="presenter-hide">
       <Header id="explore" eyebrow="12">{explore.header}</Header>
-      <div ref={ref}>
+      <div ref={ref} className="explore-slot">
         {seen && (
           <Suspense fallback={<p className="note">Loading the explorer…</p>}>
             <Explore />
@@ -50,7 +50,7 @@ function ModeFlag() {
   return (
     <div className="modeflag">
       {href && (
-        <QRCodeSVG value={href} size={52} level="L" marginSize={0} bgColor="#ffffff"
+        <QRCodeSVG value={href} size={76} level="L" marginSize={0} bgColor="#ffffff"
                    fgColor="#17171a" title={`QR code for ${href}`} />
       )}
       <span>presenter mode · p to leave · #{active}</span>

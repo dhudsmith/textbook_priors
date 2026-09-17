@@ -75,7 +75,7 @@ export function H2() {
         <PermutationDrops />
       </ChartFrame>
 
-      <p>
+      <p className="tally">
         <Dots per={v.per_dataset} order={armB} label="H2 per dataset" />{" "}
         <span className="note" style={{ display: "inline" }}>
           arm B over arm A: {v.wins} of {v.n_datasets}, against {v.threshold} needed — {v.verdict}.

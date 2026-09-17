@@ -1,7 +1,8 @@
 import { scaleLinear } from "d3-scale";
 import { useTalk } from "../state";
 import { useWidth } from "../hooks";
-import { AxisBottom, AxisLeft, MARGIN, Marker, ZeroLine, fmt3, short, signed, useHover } from "./primitives";
+import { AxisBottom, AxisLeft, Marker, fmt3, plotBox, short, signed, spreadLabels, useHover }
+  from "./primitives";
 
 /* Thinking's effect against how well the model read the concepts without it. The slope is the
    claim: thinking rescues the tasks the model read badly and costs the ones it read well. One
@@ -9,7 +10,8 @@ import { AxisBottom, AxisLeft, MARGIN, Marker, ZeroLine, fmt3, short, signed, us
 
 export function ThinkingScatter({ height = 360 }: { height?: number }) {
   const { study, hue, metaOf } = useTalk();
-  const { ref, width } = useWidth<HTMLDivElement>(700);
+  const { ref, width: measured } = useWidth<HTMLDivElement>(700);
+  const { width, margin: MARGIN } = plotBox(measured);
   const { show, hide, tip } = useHover();
 
   const h4a = study.across.h4.h4a;
@@ -29,6 +31,14 @@ export function ThinkingScatter({ height = 360 }: { height?: number }) {
                                   Math.max(...rows.map((r) => r.diff.hi)) + 0.02])
     .range([MARGIN.top + innerH, MARGIN.top]);
 
+  const labels = spreadLabels(
+    rows.map((r) => ({
+      id: r.dataset, text: short(r.dataset), x: x(r.base) + 11,
+      ax: x(r.base), ay: y(r.diff.median), y: y(r.diff.median) + 4,
+    })),
+    13, MARGIN.top + 8, MARGIN.top + innerH,
+  );
+
   return (
     <div ref={ref}>
       <svg className="plot" width={width} height={height} role="img"
@@ -39,7 +49,6 @@ export function ThinkingScatter({ height = 360 }: { height?: number }) {
                     label="probe AUC with thinking off" format={(v) => v.toFixed(2)} />
         <line x1={MARGIN.left} x2={MARGIN.left + innerW} y1={y(0)} y2={y(0)}
               stroke="var(--ink-muted)" strokeWidth={1} strokeDasharray="1 3" />
-        <ZeroLine x={MARGIN.left} y1={MARGIN.top} y2={MARGIN.top} />
         {rows.map((r) => {
           const meta = metaOf(r.dataset);
           const clear = r.diff.lo > 0 || r.diff.hi < 0;
@@ -58,11 +67,20 @@ export function ThinkingScatter({ height = 360 }: { height?: number }) {
                     stroke={hue(r.dataset)} strokeWidth={1.4} opacity={0.6} />
               <Marker kind={meta.marker} x={x(r.base)} y={y(r.diff.median)} r={5}
                       fill={hue(r.dataset)} stroke="var(--surface)" />
-              <text x={x(r.base) + 9} y={y(r.diff.median) + 4} className="serieslabel"
-                    fill="var(--ink-secondary)">{short(r.dataset)}</text>
             </g>
           );
         })}
+        {/* The labels are placed last and pushed apart: at 1366 px three of them already sat
+            within twelve pixels of each other and at 390 px they ran together outright. */}
+        {labels.map((l) => (
+          <g key={l.id}>
+            <line x1={l.ax + 7} y1={l.ay} x2={l.x - 2} y2={l.y - 4} stroke="var(--rule-strong)"
+                  strokeWidth={1} />
+            <text x={l.x} y={l.y} className="serieslabel" fill="var(--ink-secondary)">
+              {l.text}
+            </text>
+          </g>
+        ))}
       </svg>
       {tip}
     </div>

@@ -5,8 +5,22 @@ import { useTalk } from "../state";
    than described because the shape is the point - in the arm diagram, that three arms share one
    classifier and differ only in the features that reach it. */
 
+/* A white letter on the arm's own light step measured 4.0:1 and its dark step 2.2 to 3.2 - all
+   of them under the floor. The letter wears the surface colour, which is white in light and near
+   black in dark, and in light the badge takes a darker step of the same hue so the letter has
+   something to sit on. The series colours themselves do not move: this is the badge only. */
+function step(colour: string, k: number): string {
+  const m = /^#([0-9a-f]{6})$/i.exec(colour);
+  if (!m) return colour;
+  const n = parseInt(m[1], 16);
+  const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+    .map((c) => Math.round(c * k).toString(16).padStart(2, "0"));
+  return `#${ch.join("")}`;
+}
+
 export function ArmDiagram() {
-  const { armHue } = useTalk();
+  const { armHue, dark } = useTalk();
+  const badge = (id: string) => (dark ? armHue(id) : step(armHue(id), 0.72));
   const box = (x: number, y: number, w: number, h: number, fill: string) =>
     <rect x={x} y={y} width={w} height={h} rx={6} fill={fill} stroke="var(--rule-strong)" />;
 
@@ -48,29 +62,24 @@ export function ArmDiagram() {
               style={{ fontSize: 10.5 }}>on n labels</text>
 
         {[
-          ["A", 28, "zero labels", armHue("A")],
-          ["B", 62, "zero labels", armHue("B")],
-        ].map(([id, y, sub, colour]) => (
-          <g key={id as string}>
-            <circle cx={624} cy={Number(y) + 14} r={13} fill={colour as string} />
-            <text x={624} y={Number(y) + 19} textAnchor="middle" fill="#fff"
-                  style={{ fontWeight: 700 }}>{id as string}</text>
-            <text x={646} y={Number(y) + 18} fill="var(--ink-muted)"
-                  style={{ fontSize: 10.5 }}>{sub as string}</text>
-          </g>
-        ))}
-        {[["C", 126, armHue("C")], ["P", 166, armHue("P")], ["C+P", 206, armHue("CP")]].map(
-          ([id, y, colour]) => (
+          ["A", 28, "zero labels"], ["B", 62, "zero labels"],
+          ["C", 126, "n labels"], ["P", 166, "n labels"], ["C+P", 206, "n labels"],
+        ].map(([id, y, sub]) => {
+          const wide = (id as string).length > 1;
+          const cy = Number(y) + 14;
+          return (
             <g key={id as string}>
-              <circle cx={624} cy={Number(y) + 14} r={13} fill={colour as string} />
-              <text x={624} y={Number(y) + 19} textAnchor="middle" fill="#fff"
-                    style={{ fontWeight: 700, fontSize: (id as string).length > 1 ? 10 : 12 }}>
-                {id as string}
-              </text>
-              <text x={646} y={Number(y) + 18} fill="var(--ink-muted)"
-                    style={{ fontSize: 10.5 }}>n labels</text>
+              {wide
+                ? <rect x={624 - 22} y={cy - 13} width={44} height={26} rx={13}
+                        fill={badge(id === "C+P" ? "CP" : (id as string))} />
+                : <circle cx={624} cy={cy} r={13} fill={badge(id as string)} />}
+              <text x={624} y={cy + 5} textAnchor="middle" fill="var(--surface)"
+                    style={{ fontWeight: 700 }}>{id as string}</text>
+              <text x={wide ? 652 : 646} y={cy + 4} fill="var(--ink-muted)"
+                    style={{ fontSize: 10.5 }}>{sub as string}</text>
             </g>
-          ))}
+          );
+        })}
 
         <g stroke="var(--rule-strong)" strokeWidth={1.4} fill="none">
           {/* image to the three encoders */}

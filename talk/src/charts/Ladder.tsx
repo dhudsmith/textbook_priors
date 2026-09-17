@@ -3,7 +3,7 @@ import { scalePoint, scaleLinear } from "d3-scale";
 import { line as d3line } from "d3-shape";
 import { useTalk } from "../state";
 import { useWidth } from "../hooks";
-import { AxisLeft, MARGIN, Marker, fmt3, readerTick, short, spreadLabels, useHover }
+import { AxisLeft, MARGIN, Marker, fmt3, plotBox, readerTick, short, spreadLabels, useHover }
   from "./primitives";
 
 /* One line per dataset across an ordered list of models or readers. Used three times - the open
@@ -11,7 +11,8 @@ import { AxisLeft, MARGIN, Marker, fmt3, readerTick, short, spreadLabels, useHov
    shape and a reader comparing them should be comparing one colour language, not three. Each
    dataset keeps the report's own colour AND its own marker, so no two share both. */
 
-export function Ladder({ order, values, yLabel, label, height = 380, divideAfter, note }: {
+export function Ladder({ order, values, yLabel, label, height = 380, divideAfter, note,
+                         named = [] }: {
   order: string[];
   values: Record<string, Record<string, number>>;
   yLabel: string;
@@ -19,13 +20,20 @@ export function Ladder({ order, values, yLabel, label, height = 380, divideAfter
   height?: number;
   divideAfter?: number;
   note?: string;
+  /** The datasets the paragraph beside the chart argues about. Those are drawn in their own
+      colour and directly labelled; the rest go to one grey band with a single label, because
+      eleven near-neighbour hues plus eleven displaced labels is not a chart a room can read.
+      Hovering any line still isolates it, named or not. */
+  named?: string[];
 }) {
   const { hue, metaOf } = useTalk();
-  const { ref, width } = useWidth<HTMLDivElement>(780);
+  const { ref, width: measured } = useWidth<HTMLDivElement>(780);
   const { show, hide, tip } = useHover();
   const [isolate, setIsolate] = useState<string | null>(null);
 
   const datasets = Object.keys(values).filter((d) => order.some((m) => values[d]?.[m] != null));
+  const isNamed = (d: string) => named.length === 0 || named.includes(d);
+  const anyGrey = datasets.some((d) => !isNamed(d));
   const all = datasets.flatMap((d) => order.map((m) => values[d][m]).filter((v) => v != null));
 
   // Tick text is the model stem, and the bottom margin is computed from the longest one at the
@@ -36,7 +44,8 @@ export function Ladder({ order, values, yLabel, label, height = 380, divideAfter
   const bottom = tilt
     ? Math.ceil(longest * 6.3 * Math.sin((22 * Math.PI) / 180)) + 30
     : 46;
-  const margin = { ...MARGIN, bottom, right: 108 };
+  const { width, margin: base } = plotBox(measured, { ...MARGIN, right: 108 });
+  const margin = { ...base, bottom };
   const innerW = Math.max(220, width - margin.left - margin.right);
   const innerH = height - margin.top - margin.bottom;
   const x = scalePoint<string>().domain(order).range([margin.left, margin.left + innerW]).padding(0.5);
@@ -45,11 +54,18 @@ export function Ladder({ order, values, yLabel, label, height = 380, divideAfter
 
   // Twelve lines end in a narrow band of AUC, so the direct labels have to be pushed apart or
   // half of them are unreadable. Order is kept, so a label still sits nearest its own line.
+  // Only the named lines are labelled, and each label keeps a leader line back to the end of the
+  // line it names - `spreadLabels` moves labels, and a moved label without a leader points at the
+  // wrong series.
+  const labelled = datasets.filter(isNamed);
+  const anchors = new Map(labelled.map((d) => {
+    const pts = order.filter((m) => values[d][m] != null);
+    return [d, y(values[d][pts[pts.length - 1]])];
+  }));
   const endLabels = spreadLabels(
-    datasets.map((d) => {
-      const pts = order.filter((m) => values[d][m] != null);
-      return { id: d, y: y(values[d][pts[pts.length - 1]]) + 3.5, colour: hue(d), text: short(d) };
-    }),
+    labelled.map((d) => ({
+      id: d, y: anchors.get(d)! + 3.5, colour: hue(d), text: short(d),
+    })),
     12, margin.top + 6, margin.top + innerH + 6,
   );
 
@@ -79,10 +95,12 @@ export function Ladder({ order, values, yLabel, label, height = 380, divideAfter
                 y1={margin.top} y2={margin.top + innerH} stroke="var(--rule-strong)"
                 strokeDasharray="4 4" />
         )}
-        {datasets.map((d) => {
+        {[...datasets].sort((a, b) => Number(isNamed(a)) - Number(isNamed(b))).map((d) => {
           const meta = metaOf(d);
           const pts = order.filter((m) => values[d][m] != null);
+          const grey = !isNamed(d);
           const dim = isolate != null && isolate !== d;
+          const stroke = grey && isolate !== d ? "var(--rule-strong)" : hue(d);
           const series = d3line<string>().x((m) => x(m)!).y((m) => y(values[d][m]));
           // The divider is a boundary the caption says not to read across, so the line is drawn
           // as two paths rather than one that steps over it.
@@ -97,8 +115,8 @@ export function Ladder({ order, values, yLabel, label, height = 380, divideAfter
                 <g key={si}>
                   <path d={series(seg) ?? undefined} fill="none" stroke="transparent"
                         strokeWidth={12} />
-                  <path d={series(seg) ?? undefined} fill="none" stroke={hue(d)}
-                        strokeWidth={1.8} />
+                  <path d={series(seg) ?? undefined} fill="none" stroke={stroke}
+                        strokeWidth={grey && isolate !== d ? 1 : 1.8} />
                 </g>
               ))}
               {pts.map((m) => (
@@ -111,8 +129,10 @@ export function Ladder({ order, values, yLabel, label, height = 380, divideAfter
                      </>
                    ))} onMouseLeave={hide}>
                   <circle cx={x(m)} cy={y(values[d][m])} r={12} fill="transparent" />
-                  <Marker kind={meta.marker} x={x(m)!} y={y(values[d][m])} r={4} fill={hue(d)}
-                          stroke="var(--surface)" />
+                  {(!grey || isolate === d) && (
+                    <Marker kind={meta.marker} x={x(m)!} y={y(values[d][m])} r={4} fill={hue(d)}
+                            stroke="var(--surface)" />
+                  )}
                 </g>
               ))}
             </g>
@@ -120,11 +140,21 @@ export function Ladder({ order, values, yLabel, label, height = 380, divideAfter
         })}
 
         {endLabels.map((l) => (
-          <text key={l.id} x={margin.left + innerW + 6} y={l.y} className="serieslabel"
-                fill={l.colour} opacity={isolate == null || isolate === l.id ? 1 : 0.13}>
-            {l.text}
-          </text>
+          <g key={l.id} opacity={isolate == null || isolate === l.id ? 1 : 0.13}>
+            <path d={`M${margin.left + innerW + 1} ${anchors.get(l.id)} ` +
+                     `L${margin.left + innerW + 5} ${l.y - 3.5}`}
+                  stroke={l.colour} strokeWidth={1} fill="none" opacity={0.7} />
+            <text x={margin.left + innerW + 8} y={l.y} className="serieslabel" fill={l.colour}>
+              {l.text}
+            </text>
+          </g>
         ))}
+        {anyGrey && (
+          <text x={margin.left + innerW + 8} y={margin.top + innerH + 4} className="serieslabel"
+                fill="var(--ink-muted)">
+            other datasets
+          </text>
+        )}
       </svg>
       {tip}
       {note && <p className="note">{note}</p>}

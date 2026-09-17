@@ -3,7 +3,7 @@ import { scaleLinear, scaleLog } from "d3-scale";
 import { line as d3line, area as d3area, curveMonotoneX } from "d3-shape";
 import { useTalk } from "../state";
 import { useWidth } from "../hooks";
-import { AxisBottom, AxisLeft, Legend, MARGIN, fmt3, spreadLabels, useHover } from "./primitives";
+import { AxisBottom, AxisLeft, Legend, fmt3, plotBox, spreadLabels, useHover } from "./primitives";
 
 /* H1's learning curve. Arms C, P and C+P move with n; arms A and B are horizontal lines, because
    they use no labels at all; the published ceiling is a fixed reference and deliberately not one
@@ -17,7 +17,8 @@ export function LearningCurve({ height = 400, initialHidden = [] }: {
 }) {
   const { study, dataset, meta, armHue, armDash } = useTalk();
   const per = study.per_dataset[dataset];
-  const { ref, width } = useWidth<HTMLDivElement>(820);
+  const { ref, width: measured } = useWidth<HTMLDivElement>(820);
+  const { width, margin: MARGIN } = plotBox(measured);
   const { show, hide, tip } = useHover();
   // The series the speaker adds live start hidden; the legend still lists every one of them.
   const [hidden, setHidden] = useState<Set<string>>(() => new Set(initialHidden));
@@ -144,9 +145,12 @@ export function LearningCurve({ height = 400, initialHidden = [] }: {
         ))}
 
         {/* Direct labels last and pushed apart, so a series that lands on another is still read. */}
+        {/* Text wears text ink: at 11 px bold on the light surface the arm B green measured
+            3.3:1 and the arm A grey 3.9:1. The line beside the label carries the identity, and
+            the legend's swatch carries it again. */}
         {endLabels.map((l) => (
           <text key={l.id} x={MARGIN.left + innerW + 6} y={l.y} className="serieslabel"
-                fill={l.colour}>{l.text}</text>
+                fill="var(--ink-secondary)">{l.text}</text>
         ))}
       </svg>
       {tip}

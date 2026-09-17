@@ -3,7 +3,7 @@ import { scaleLinear } from "d3-scale";
 import { useTalk } from "../state";
 import { useWidth } from "../hooks";
 import { Dots } from "../components/ui";
-import { MARGIN, Marker, fmt3, short, useHover } from "./primitives";
+import { MARGIN, Marker, fmt3, plotBox, rowLeft, short, useHover } from "./primitives";
 
 /* The verdict board: seven rows, each with its rule, its count against the count the rule asks
    for, a dot per dataset, and the verdict. Nothing here decides anything - every field is copied
@@ -16,13 +16,14 @@ export function VerdictBoard() {
 
   return (
     <div>
+      <div className="table-scroll">
       <table className="data">
         <thead>
           <tr>
             <th>hypothesis</th>
             <th>what it counted</th>
             <th>count</th>
-            <th>needed</th>
+            <th className="nowrap">needed</th>
             <th>p</th>
             <th style={{ textAlign: "left" }}>per dataset</th>
             <th style={{ textAlign: "left" }}>verdict</th>
@@ -40,12 +41,13 @@ export function VerdictBoard() {
                 {v.metric}
               </td>
               <td>{v.wins}</td>
-              <td>{v.threshold} of {v.n_datasets}</td>
+              <td className="nowrap">{v.threshold} of {v.n_datasets}</td>
               <td>{v.p.toFixed(4)}</td>
               <td style={{ textAlign: "left" }}>
                 <Dots per={v.per_dataset} order={order} label={`${v.id} per dataset`} />
               </td>
-              <td style={{ textAlign: "left",
+              <td className="nowrap"
+                  style={{ textAlign: "left",
                            color: v.supported ? "var(--good)" : "var(--ink-muted)",
                            fontWeight: 700 }}>
                 {v.supported ? "✓ supported" : "✕ not supported"}
@@ -54,6 +56,7 @@ export function VerdictBoard() {
           ))}
         </tbody>
       </table>
+      </div>
       <p className="note">
         A filled dot is a dataset the comparison won on; a cross is one it did not. Shape as well
         as fill, so the row reads without colour. Counts, p-values and verdicts come from
@@ -67,11 +70,12 @@ export function VerdictBoard() {
    not an arm, so it wears its own colour and its own marker and sits on its own row end. */
 export function CeilingDots({ height }: { height?: number }) {
   const { study, armHue } = useTalk();
-  const { ref, width } = useWidth<HTMLDivElement>(720);
+  const { ref, width: measured } = useWidth<HTMLDivElement>(720);
+  const { width } = plotBox(measured);
   const { show, hide, tip } = useHover();
   const rows = study.ceiling.rows;
-  const rowH = 24;
-  const left = 118;
+  const rowH = 26;
+  const left = rowLeft(measured);
   const innerW = Math.max(180, width - left - 26);
   const h = height ?? MARGIN.top + MARGIN.bottom + rows.length * rowH;
   const lo = Math.min(...rows.flatMap((r) => [r.pixel, r.concept, r.zero ?? 1])) - 0.03;
@@ -104,15 +108,17 @@ export function CeilingDots({ height }: { height?: number }) {
               {t.toFixed(2)}
             </text>
           ))}
-          <text x={left + innerW} y={MARGIN.top + rows.length * rowH + 33} textAnchor="end"
-                style={{ fontWeight: 600 }}>test AUC</text>
+          <text x={left + innerW / 2} y={MARGIN.top + rows.length * rowH + 33}
+                textAnchor="middle" style={{ fontWeight: 600 }}>test AUC</text>
         </g>
         {rows.map((r, i) => {
           const y = MARGIN.top + i * rowH + rowH / 2;
           return (
             <g key={r.dataset}>
               <text x={left - 12} y={y + 4} textAnchor="end" className="axis"
-                    style={{ fontSize: 11.5, fill: "var(--ink-secondary)" }}>{short(r.dataset)}</text>
+                    style={{ fontSize: "var(--chart-row)", fill: "var(--ink-secondary)" }}>
+                {short(r.dataset)}
+              </text>
               <line x1={x(Math.min(r.pixel, r.concept, r.zero ?? r.pixel))} x2={x(r.ceiling)}
                     y1={y} y2={y} stroke="var(--rule-strong)" strokeWidth={1.5} />
               {marks.map((m) => {

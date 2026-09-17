@@ -3,7 +3,7 @@ import { useTalk } from "../state";
 import { Band, Callouts, ChartFrame, Dots, Header } from "../components/ui";
 import { Ladder } from "../charts/Ladder";
 import { h3 as copy } from "../content";
-import { fmt3, signed } from "../charts/primitives";
+import { fmt3, signed, widestSpread } from "../charts/primitives";
 
 export function H3() {
   const { study } = useTalk();
@@ -92,6 +92,7 @@ export function H3() {
         <Ladder
           order={order}
           values={values}
+          named={widestSpread(values, order)}
           yLabel={which === "open"
             ? "arm B test AUC"
             : "probe AUC (one classifier reads every model's answers)"}
@@ -99,11 +100,13 @@ export function H3() {
             ? "Arm B AUC per dataset across the four open models"
             : "Probe AUC per dataset across the closed price ladder"}
           divideAfter={which === "open" && familyDivide >= 0 ? familyDivide : undefined}
-          note={which === "open"
+          note={(which === "open"
             ? "The dashed divider separates the two families: size and training data are " +
-              "confounded across them, so the comparison is read within family only."
+              "confounded across them, so the comparison is read within family only. "
             : "Price is the vendor's own ranking, used as a proxy for capability, not a " +
-              "parameter count — nothing public orders these models by size."}
+              "parameter count — nothing public orders these models by size. ") +
+            "The four datasets that move most across the ladder are drawn in their own colours " +
+            "and labelled; the rest are grey. Hover any line to isolate it."}
         />
       </ChartFrame>
       {/* The paragraph that explains the divider now sits under the divider. */}

@@ -10,6 +10,42 @@ import type { ScaleLinear } from "d3-scale";
 
 export const MARGIN = { top: 16, right: 92, bottom: 38, left: 52 };
 
+/* A plot has a floor width. Measuring the container and drawing to it meant `.chart-scroll` never
+   engaged, so at 390 px the fixed margins ate 45% of the frame and the labels overprinted each
+   other. Below the floor the plot keeps its width and the frame scrolls; the gutters are trimmed
+   as well, because a narrow screen has none to spare. */
+export const MIN_PLOT = 560;
+
+export function plotBox(measured: number, base = MARGIN) {
+  const tight = measured < 600;
+  return {
+    width: Math.max(measured, MIN_PLOT),
+    margin: tight
+      ? { ...base, left: Math.min(base.left, 40), right: Math.min(base.right, 64) }
+      : base,
+    tight,
+  };
+}
+
+/** The same trim for the charts that set their own row-label gutter. */
+export const rowLeft = (measured: number, wide = 118) => (measured < 600 ? 86 : wide);
+
+/** The few datasets a ladder can label: the ones whose value moves most across it, which are
+    also the ones the claim turns on. Everything else folds into one grey band. */
+export function widestSpread(
+  values: Record<string, Record<string, number>>, order: string[], keep = 4, always: string[] = [],
+): string[] {
+  const span = (d: string) => {
+    const vs = order.map((m) => values[d]?.[m]).filter((v) => v != null) as number[];
+    return vs.length ? Math.max(...vs) - Math.min(...vs) : 0;
+  };
+  const ranked = Object.keys(values)
+    .filter((d) => order.some((m) => values[d]?.[m] != null))
+    .sort((a, b) => span(b) - span(a))
+    .slice(0, keep);
+  return [...new Set([...always.filter((d) => d in values), ...ranked])];
+}
+
 export const fmt3 = (v: number) => v.toFixed(3);
 export const fmt2 = (v: number) => v.toFixed(2);
 export const signed = (v: number, digits = 3) =>
@@ -77,7 +113,7 @@ export function AxisBottom({ scale, y, ticks, label, format = String }: {
         </g>
       ))}
       {label && (
-        <text x={at(ticks[ticks.length - 1])} y={34} textAnchor="end"
+        <text x={(at(ticks[0]) + at(ticks[ticks.length - 1])) / 2} y={34} textAnchor="middle"
               style={{ fontWeight: 600 }}>{label}</text>
       )}
     </g>
@@ -100,8 +136,9 @@ export function AxisLeft({ scale, x, ticks, width, label, format = fmt2 }: {
           <text key={t} x={x - 8} y={scale(t) + 4} textAnchor="end">{format(t)}</text>
         ))}
         {label && (
-          <text transform={`translate(${x - 40} ${scale(ticks[ticks.length - 1])}) rotate(-90)`}
-                textAnchor="end" style={{ fontWeight: 600 }}>{label}</text>
+          <text transform={`translate(${x - 40} ` +
+                           `${(scale(ticks[0]) + scale(ticks[ticks.length - 1])) / 2}) rotate(-90)`}
+                textAnchor="middle" style={{ fontWeight: 600 }}>{label}</text>
         )}
       </g>
     </g>

@@ -1,7 +1,7 @@
 import { scaleLinear } from "d3-scale";
 import { useTalk } from "../state";
 import { useWidth } from "../hooks";
-import { MARGIN, fmt3, short, signed, useHover } from "./primitives";
+import { MARGIN, fmt3, plotBox, rowLeft, short, signed, useHover } from "./primitives";
 
 /* H2: AUC(A) against AUC(B), one dumbbell per dataset, in the arms' own colours. A dumbbell
    rather than two bars, because the claim is about two readings of the same images and a reader
@@ -9,7 +9,8 @@ import { MARGIN, fmt3, short, signed, useHover } from "./primitives";
 
 export function Dumbbell() {
   const { study, armHue } = useTalk();
-  const { ref, width } = useWidth<HTMLDivElement>(720);
+  const { ref, width: measured } = useWidth<HTMLDivElement>(720);
+  const { width } = plotBox(measured);
   const { show, hide, tip } = useHover();
   const primary = study.study.primary;
   const order = study.study.arm_b_datasets;
@@ -23,12 +24,16 @@ export function Dumbbell() {
   });
 
   const rowH = 26;
-  const left = 118;
+  const left = rowLeft(measured);
   const innerW = Math.max(180, width - left - 60);
-  const h = MARGIN.top + MARGIN.bottom + rows.length * rowH;
+  const h = MARGIN.top + MARGIN.bottom + rows.length * rowH + 14;
   const lo = Math.min(...rows.flatMap((r) => [r.a, r.b])) - 0.03;
   const hi = Math.max(...rows.flatMap((r) => [r.a, r.b])) + 0.03;
   const x = scaleLinear().domain([lo, hi]).range([left, left + innerW]);
+  // The winner letter sits just past the longest bar, not at a fixed far-right x half a screen
+  // from the row it belongs to.
+  const wonX = x(hi - 0.02) + 12;
+  const chance = 0.5;
 
   return (
     <div ref={ref}>
@@ -46,9 +51,19 @@ export function Dumbbell() {
               {t.toFixed(2)}
             </text>
           ))}
-          <text x={left + innerW} y={MARGIN.top + rows.length * rowH + 33} textAnchor="end"
-                style={{ fontWeight: 600 }}>test AUC</text>
+          <text x={left + innerW / 2} y={MARGIN.top + rows.length * rowH + 33}
+                textAnchor="middle" style={{ fontWeight: 600 }}>test AUC</text>
+          <text x={wonX} y={MARGIN.top - 4} textAnchor="start"
+                style={{ fontWeight: 600 }}>won</text>
         </g>
+        {chance > lo && chance < hi && (
+          <g className="axis">
+            <line x1={x(chance)} x2={x(chance)} y1={MARGIN.top - 6}
+                  y2={MARGIN.top + rows.length * rowH} stroke="var(--ink-muted)"
+                  strokeDasharray="1 3" />
+            <text x={x(chance) + 4} y={MARGIN.top + 2} textAnchor="start">chance</text>
+          </g>
+        )}
         {rows.map((r, i) => {
           const y = MARGIN.top + i * rowH + rowH / 2;
           const bWins = r.b > r.a;
@@ -65,7 +80,7 @@ export function Dumbbell() {
                ))} onMouseLeave={hide}>
               <rect x={0} y={y - rowH / 2} width={width} height={rowH} fill="transparent" />
               <text x={left - 12} y={y + 4} textAnchor="end" className="axis"
-                    style={{ fontSize: 11.5, fill: "var(--ink-secondary)" }}>
+                    style={{ fontSize: "var(--chart-row)", fill: "var(--ink-secondary)" }}>
                 {short(r.dataset)}
               </text>
               <line x1={x(Math.min(r.a, r.b))} x2={x(Math.max(r.a, r.b))} y1={y} y2={y}
@@ -74,7 +89,7 @@ export function Dumbbell() {
                       strokeWidth={2} />
               <rect x={x(r.b) - 4.2} y={y - 4.2} width={8.4} height={8.4} rx={1}
                     fill={armHue("B")} stroke="var(--surface)" strokeWidth={2} />
-              <text x={left + innerW + 8} y={y + 4} className="serieslabel"
+              <text x={wonX} y={y + 4} className="serieslabel"
                     fill={bWins ? "var(--good)" : "var(--ink-muted)"}>
                 {bWins ? "B" : "A"}
               </text>
@@ -84,13 +99,13 @@ export function Dumbbell() {
       </svg>
       {tip}
       <div className="controls" aria-label="Series">
-        <span className="chip" style={{ cursor: "default" }}>
+        <span className="chip legend" style={{ cursor: "default" }}>
           <svg width="12" height="12" aria-hidden="true">
             <circle cx="6" cy="6" r="4.5" fill={armHue("A")} />
           </svg>
           arm A: zero-shot, the model's own guess
         </span>
-        <span className="chip" style={{ cursor: "default" }}>
+        <span className="chip legend" style={{ cursor: "default" }}>
           <svg width="12" height="12" aria-hidden="true">
             <rect x="1.8" y="1.8" width="8.4" height="8.4" rx="1" fill={armHue("B")} />
           </svg>
@@ -106,7 +121,8 @@ export function Dumbbell() {
    and the reason the concept answers are known to carry real class information. */
 export function PermutationDrops() {
   const { study, armHue } = useTalk();
-  const { ref, width } = useWidth<HTMLDivElement>(720);
+  const { ref, width: measured } = useWidth<HTMLDivElement>(720);
+  const { width } = plotBox(measured);
   const { show, hide, tip } = useHover();
   const primary = study.study.primary;
 
@@ -119,9 +135,9 @@ export function PermutationDrops() {
     };
   });
 
-  const rowH = 24;
-  const left = 118;
-  const innerW = Math.max(180, width - left - 26);
+  const rowH = 26;
+  const left = rowLeft(measured);
+  const innerW = Math.max(180, width - left - 64);
   const h = MARGIN.top + MARGIN.bottom + rows.length * rowH;
   const hi = Math.max(...rows.flatMap((r) => [r.b?.hi ?? 0, r.c?.hi ?? 0])) * 1.05;
   const x = scaleLinear().domain([0, hi]).range([left, left + innerW]);
@@ -142,15 +158,17 @@ export function PermutationDrops() {
               {t.toFixed(2)}
             </text>
           ))}
-          <text x={left + innerW} y={MARGIN.top + rows.length * rowH + 33} textAnchor="end"
-                style={{ fontWeight: 600 }}>AUC lost when the structure is permuted</text>
+          <text x={left + innerW / 2} y={MARGIN.top + rows.length * rowH + 33}
+                textAnchor="middle" style={{ fontWeight: 600 }}>
+            AUC lost when the structure is permuted
+          </text>
         </g>
         {rows.map((r, i) => {
           const y = MARGIN.top + i * rowH;
           return (
             <g key={r.dataset}>
               <text x={left - 12} y={y + rowH / 2 + 4} textAnchor="end" className="axis"
-                    style={{ fontSize: 11.5, fill: "var(--ink-secondary)" }}>
+                    style={{ fontSize: "var(--chart-row)", fill: "var(--ink-secondary)" }}>
                 {short(r.dataset)}
               </text>
               {([["B", r.b], ["C", r.c]] as const).map(([arm, drop], k) =>
@@ -163,9 +181,12 @@ export function PermutationDrops() {
                          <span className="k">95% [{fmt3(drop.lo)}, {fmt3(drop.hi)}]</span>
                        </>
                      ))} onMouseLeave={hide}>
-                    <rect x={left} y={y + 3 + k * 9} width={Math.max(1, x(drop.median) - left)}
-                          height={7} rx={2} fill={armHue(arm)} />
-                    <rect x={left} y={y + 3 + k * 9} width={innerW} height={7} fill="transparent" />
+                    <rect x={left} y={y + 3 + k * 10} width={Math.max(1, x(drop.median) - left)}
+                          height={8} rx={4} fill={armHue(arm)} />
+                    <text x={x(drop.median) + 6} y={y + 11 + k * 10} className="serieslabel"
+                          fill="var(--ink-secondary)">{fmt3(drop.median)}</text>
+                    <rect x={left} y={y + 3 + k * 10} width={innerW} height={8}
+                          fill="transparent" />
                   </g>
                 ) : null)}
             </g>
@@ -174,15 +195,19 @@ export function PermutationDrops() {
       </svg>
       {tip}
       <div className="controls" aria-label="Series">
-        <span className="chip" style={{ cursor: "default" }}>
+        <span className="chip legend" style={{ cursor: "default" }}>
           <span className="swatch" style={{ background: armHue("B") }} /> arm B, fingerprints
           permuted across classes
         </span>
-        <span className="chip" style={{ cursor: "default" }}>
+        <span className="chip legend" style={{ cursor: "default" }}>
           <span className="swatch" style={{ background: armHue("C") }} /> arm C at n = 50,
           concept columns permuted across images
         </span>
       </div>
+      <p className="note">
+        A row with one bar is a dataset where the other arm is not defined: chestmnist is
+        multi-label, so it has no arm B.
+      </p>
     </div>
   );
 }

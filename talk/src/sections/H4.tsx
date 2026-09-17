@@ -7,7 +7,7 @@ import { TimelineStrip } from "../charts/TimelineStrip";
 import { h4 as copy } from "../content";
 import { useAsync } from "../hooks";
 import { loadTimeline } from "../data";
-import { fmt3, signed } from "../charts/primitives";
+import { fmt3, signed, widestSpread } from "../charts/primitives";
 
 export function H4() {
   const { study, armHue } = useTalk();
@@ -80,9 +80,12 @@ export function H4() {
         }>
         <Ladder order={chain} values={h4.probe_auc} yLabel="cross-validated probe AUC"
                 label="Probe AUC per dataset across the nine readers" height={420}
+                named={widestSpread(h4.probe_auc, chain, 4, ["dermamnist"])}
                 note={"The first four readers are the same four models with thinking off; the " +
                       "axis names each reader's stem and effort, and the table below carries the " +
-                      "exact model identifiers."} />
+                      "exact model identifiers. The datasets that move most across the chain are " +
+                      "drawn in their own colours and labelled; the rest are grey. Hover any " +
+                      "line to isolate it."} />
       </ChartFrame>
 
       <ChartFrame

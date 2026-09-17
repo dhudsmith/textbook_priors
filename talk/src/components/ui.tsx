@@ -120,7 +120,7 @@ export function CountTile({ value, unit, format = (n: number) => n.toLocaleStrin
 export function DatasetPicker({ only }: { only?: (name: string) => boolean }) {
   const { study, dataset, setDataset, hue } = useTalk();
   return (
-    <div className="controls" role="group" aria-label="Dataset">
+    <div className="controls picker" role="group" aria-label="Dataset">
       <span className="group-label">dataset</span>
       {study.datasets
         .filter((d) => !only || only(d.name))
@@ -170,12 +170,12 @@ export function Dots({ per, order, label }: {
           aria-label={`${label}: won on ${won.length} of ${shown.length} — ` +
                       `${won.join(", ") || "none"}`}>
       {shown.map((d) => (
-        <svg key={d} width="11" height="11" viewBox="0 0 11 11">
+        <svg key={d} width="13" height="13" viewBox="0 0 11 11">
           <title>{`${d}: ${per[d] ? "won" : "did not win"}`}</title>
           {per[d]
-            ? <circle cx="5.5" cy="5.5" r="4" fill="var(--good)" />
-            : <path d="M1.5 1.5 L9.5 9.5 M9.5 1.5 L1.5 9.5" stroke="var(--ink-muted)"
-                    strokeWidth="1.4" fill="none" />}
+            ? <circle cx="5.5" cy="5.5" r="4.2" fill="var(--good)" />
+            : <path d="M1.4 1.4 L9.6 9.6 M9.6 1.4 L1.4 9.6" stroke="var(--ink-muted)"
+                    strokeWidth="1.6" fill="none" />}
         </svg>
       ))}
     </span>

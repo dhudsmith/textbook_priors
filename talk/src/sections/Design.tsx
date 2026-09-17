@@ -27,7 +27,8 @@ export function Design() {
 
       <ArmDiagram />
 
-      <table className="data" style={{ maxWidth: "52rem", margin: "1.2rem 0" }}>
+      <div className="table-scroll" style={{ margin: "1.2rem 0" }}>
+      <table className="data" style={{ maxWidth: "52rem" }}>
         <thead>
           <tr>
             <th>arm</th>
@@ -55,6 +56,7 @@ export function Design() {
           ))}
         </tbody>
       </table>
+      </div>
       <p className="note">
         A probe is one logistic regression on frozen features. Arms C, P and C+P are the same
         probe on different feature blocks.
@@ -96,7 +98,7 @@ export function Design() {
       </div>
 
       <h3>Three limits</h3>
-      <ul style={{ maxWidth: "42rem", fontSize: "0.9rem", color: "var(--ink-secondary)" }}>
+      <ul style={{ fontSize: "0.9rem", color: "var(--ink-secondary)" }}>
         {design.limits.map((l, i) => <li key={i}>{l}</li>)}
       </ul>
 

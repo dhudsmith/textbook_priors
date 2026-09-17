@@ -75,14 +75,15 @@ export function H5() {
             </tbody>
           </table>
         }>
-        <Forest rows={rows} colour={armHue("CP")} label={`arm C+P minus arm P at n = ${n}`} />
+        <Forest rows={rows} colour={armHue("CP")} label={`arm C+P minus arm P at n = ${n}`}
+                annotate={["no gain", "gain"]} />
       </ChartFrame>
       <p className="note">
         {clear.length} of {rows.length} gains are clear of zero at n = {n}. Rows whose interval
         spans zero are drawn at half strength, the report's own convention.
       </p>
 
-      <p>
+      <p className="tally">
         <Dots per={v.per_dataset} order={study.study.datasets} label="H5 per dataset" />{" "}
         <span className="note" style={{ display: "inline" }}>
           {v.wins} of {v.n_datasets}, against {v.threshold} needed — {v.verdict}.

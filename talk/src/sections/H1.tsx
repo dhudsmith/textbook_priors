@@ -73,7 +73,7 @@ export function H1() {
       )}
 
       <h3>Where the concept arm beat the pixel arm at n = {study.study.curve.n[0]}</h3>
-      <p>
+      <p className="tally">
         <Dots per={v.per_dataset} order={study.study.datasets} label="H1 per dataset" />{" "}
         <span className="note" style={{ display: "inline" }}>
           {v.wins} of {v.n_datasets}, against {v.threshold} needed — {v.verdict}.
@@ -109,7 +109,7 @@ export function H1() {
       </div>
       {contention && (
         <ChartFrame
-          caption="Seconds per call against our own jobs in flight. Two points per series, not a curve."
+          caption="What our own load did to a call: one job in flight against a wave of them, per prompt."
           source="public/data/contention.json ← CHANGELOG.md 2026-09-12"
           summary={
             <>

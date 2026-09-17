@@ -59,7 +59,7 @@ export function Verdicts() {
       </p>
 
       <h3>What this study does not claim</h3>
-      <ul style={{ maxWidth: "42rem", fontSize: "0.9rem", color: "var(--ink-secondary)" }}>
+      <ul style={{ fontSize: "0.9rem", color: "var(--ink-secondary)" }}>
         {notClaimed.map((c, i) => <li key={i}>{c}</li>)}
       </ul>
 

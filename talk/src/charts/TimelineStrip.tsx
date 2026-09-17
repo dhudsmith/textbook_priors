@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { scaleLinear } from "d3-scale";
 import type { Timeline, TimelineEntry } from "../types";
 import { useWidth } from "../hooks";
-import { useHover, short as _short } from "./primitives";
+import { useHover, plotBox, short as _short } from "./primitives";
 
 void _short;
 
@@ -27,7 +27,8 @@ const minutes = (e: TimelineEntry) => {
 export function TimelineStrip({ timeline, days, height = 150 }: {
   timeline: Timeline; days?: string[]; height?: number;
 }) {
-  const { ref, width } = useWidth<HTMLDivElement>(760);
+  const { ref, width: measured } = useWidth<HTMLDivElement>(760);
+  const { width, tight } = plotBox(measured);
   const { show, hide, tip } = useHover();
   const [picked, setPicked] = useState<TimelineEntry | null>(null);
 
@@ -42,8 +43,9 @@ export function TimelineStrip({ timeline, days, height = 150 }: {
   const lo = Math.min(...entries.map(minutes)) - 25;
   const hi = Math.max(...entries.map(minutes)) + 25;
   const x = scaleLinear().domain([lo, hi]).range([margin.left, margin.left + inner]);
+  // Nine HH:MM labels sat edge to edge at 390 px with no gap between them.
   const hours = [];
-  for (let h = Math.ceil(lo / 60) ; h * 60 <= hi; h += 2) hours.push(h);
+  for (let h = Math.ceil(lo / 60); h * 60 <= hi; h += tight ? 4 : 2) hours.push(h);
 
   const kinds = timeline.kinds.filter((k) => entries.some((e) => e.kind === k.id));
 

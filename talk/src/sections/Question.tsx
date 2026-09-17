@@ -15,6 +15,13 @@ export function Question() {
   const { data: bank, error } = useAsync(() => loadBank(dataset), [dataset]);
   const [open, setOpen] = useState<string | null>(null);
 
+  // Two samples a class, and the class named once under the pair rather than under each image.
+  const byClass = meta.samples.reduce<[string, typeof meta.samples][]>((acc, s) => {
+    const row = acc.find(([name]) => name === s.class);
+    if (row) row[1].push(s); else acc.push([s.class, [s]]);
+    return acc;
+  }, []);
+
   return (
     <Band id="question">
       <Header id="question" eyebrow="2">{question.header}</Header>
@@ -32,14 +39,18 @@ export function Question() {
             {meta.split_sizes.test.toLocaleString("en-US")} images, of which this study scores{" "}
             {meta.test_n} · {meta.n_concepts} concepts in the bank
           </p>
-          <div className="gallery">
-            {meta.samples.map((s) => (
-              <figure key={s.file} style={{ margin: 0 }}>
-                <div className="imgcard">
-                  <img src={asset(s.file)} alt={`${dataset}, class ${s.class}`} loading={LAZY}
-                       width={224} height={224} />
+          <div className="classgrid">
+            {byClass.map(([name, shots]) => (
+              <figure key={name} style={{ margin: 0 }}>
+                <div className="classrow">
+                  {shots.map((s) => (
+                    <div className="imgcard" key={s.file}>
+                      <img src={asset(s.file)} alt={`${dataset}, class ${name}`} loading={LAZY}
+                           width={224} height={224} />
+                    </div>
+                  ))}
                 </div>
-                <figcaption>{s.class}</figcaption>
+                <figcaption>{name}</figcaption>
               </figure>
             ))}
           </div>
@@ -54,6 +65,7 @@ export function Question() {
           {error && <p className="note">Could not load the bank: {error}</p>}
           {bank && (
             <>
+              <div className="table-scroll">
               <table className="data">
                 <thead>
                   <tr>
@@ -73,6 +85,7 @@ export function Question() {
                   ))}
                 </tbody>
               </table>
+              </div>
               {open && (
                 <div className="card" style={{ maxWidth: "44rem", marginTop: "0.8rem",
                                                cursor: "default" }}>
