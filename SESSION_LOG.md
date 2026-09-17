@@ -812,3 +812,51 @@ Three stale documentation claims fell out of the audit and are fixed: WORKFLOW.m
 "Four" hypotheses, CLAUDE.md still said four, and the README still described four arms, four
 hypotheses and a 616-job clean-clone DAG. The DAG is 665 jobs from a clone (677 forced, including
 twelve fetches), 587 of them the scoring fan-out — counted from `-n --forceall`, not estimated.
+
+## 2026-09-16 23:25 — "The talk as a website: science as the spine, reproducibility as callouts"
+
+The talk is no longer a deck. Asked for a science talk about the medical-imaging-with-LLMs study
+with commentary throughout about reproducible research assisted by AI, delivered as a scrolling
+website with interactive elements, a QR code at the top so the room can follow on its own devices,
+and hosted on GitHub Pages. That inverts `TALK.md` §5: the science is the talk, and the
+reproducibility-with-AI argument rides on it as on-slide callouts of three kinds — a blue
+**Principle** (a `WORKFLOW.md` §5 principle stated as the failure it prevents), an amber **Near
+miss** (something that nearly went wrong and *what caught it*, dated to `CHANGELOG.md`), and a
+violet **Agent note** (what the agent did, what the human had to do, and the understanding debt it
+left or repaid, timestamped to this file). The plan is `talk/PLAN.md`; `TALK.md` now points at it
+and keeps §5 as the earlier deck plan.
+
+Three things this changed about the work rather than the prose. **The site hand-types no number.**
+`talk/scripts/export_talk_data.py` reads `results/evaluation.json`, the twelve evaluate records,
+the config, the pinned release, the literature table, the concept bank, the rendered prompts, a
+sample of the write-protected response archive and the cached test images, and writes a snapshot
+into `talk/public/`, which is committed — the one deliberate exception to "results are never
+committed", because the site is built on GitHub's runners where `results/` does not exist. Every
+file it writes carries the run's `git_commit`, the export date and the files it was read from, and
+the export checks three of its own numbers against `report/tables/*.tex` before it exits (H1's
+pneumoniamnist C−P at n = 50, H5's wins, H7's sol−luna on retinamnist), so the site and the PDF
+cannot quietly be different runs. Two fields are hand-authored and both say so in the output: each
+session-log entry's kind, and the contention measurements transcribed from `CHANGELOG.md`
+2026-09-12.
+
+**The export is a rule.** `rule talk_data` declares those inputs, sits outside `rule all` and in
+`localrules`, in the style of `prompts_txt`: opt-in, decides nothing, feeds no rule below it. Its
+script lives under `talk/` rather than `priors/`, so it is a code input of no result and adding it
+reruns nothing — the dry run plans exactly one job, `talk_data`, and no `score_`, `classify` or
+`evaluate` line.
+
+**The snapshot is public, so it says what it does not carry.** The owner-only key path was already
+dropped from every manifest; the compute node's hostname is now replaced by the cluster, since the
+project names Palmetto2 in its README and has never published a node name. Both redactions are
+listed in each file's `provenance` block and printed beside the manifest on the page itself,
+because a snapshot whose point is that it can be checked has to say where it differs from the
+archive it came from.
+
+The site is Vite + React + TypeScript with D3 for the marks, one scrolling page of twelve sections,
+a progress rail, presenter mode on `p`, a dataset picker whose choice is remembered all the way
+down, and light and dark by `prefers-color-scheme`; arm and dataset colours are `priors/report.py`'s
+own, so a listener who has seen the PDF recognises them. It is deployed by
+`.github/workflows/pages.yml` from `main` to https://dhudsmith.github.io/textbook_priors/, with
+`claude/**` pushes building but not deploying. A `?static=1` query freezes the page in its final
+state — data read in one pass, no entry animation, images eager — which is how the headless
+screenshots that checked this page were taken.

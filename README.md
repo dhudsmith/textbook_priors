@@ -67,6 +67,7 @@ report/                report.tex, references.bib, generated tables/ and figs/; 
                        holds the generated prompt appendix and the feature-width table
 logs/                  one log per job
 docs/                  reference notes on the LLM service: models, reasoning levels, throughput
+talk/                  the talk website: its plan, the export that feeds it, and its source
 CONCEPT_BANK.md        how the bank was built, and the rules the smoke tier enforces
 SESSION_LOG.md         timestamped record of how the work was directed
 ```

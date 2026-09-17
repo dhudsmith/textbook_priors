@@ -4,6 +4,11 @@ The talk narrative for Clemson HPC Day, using this repository as the running exa
 scientific and engineering plan is `WORKFLOW.md`; this file carries only the argument and the
 demo. Nothing here is a requirement on the workflow.
 
+**The talk's structure now lives in `talk/PLAN.md`**, which inverts this file's spine: the science
+is the talk and the reproducibility-with-AI commentary rides on it as callouts, delivered as a
+scrolling website rather than a deck. §1-§4 below still carry the argument the callouts are drawn
+from; **§5 is the earlier deck plan**, kept for the record and superseded by that file.
+
 ## 1. Before and after
 
 | before | now |
