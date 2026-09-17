@@ -8,7 +8,7 @@ import { title as copy } from "../content";
    is deployed and needs no image file. */
 function PageQR({ caption }: { caption: string }) {
   const [href, setHref] = useState("");
-  useEffect(() => setHref(window.location.href.split("#")[0]), []);
+  useEffect(() => setHref(window.location.href.split("#")[0].split("?")[0]), []);
   if (!href) return null;
   return (
     <div className="qr">
