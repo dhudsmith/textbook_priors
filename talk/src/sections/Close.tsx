@@ -16,7 +16,6 @@ export function Close() {
   return (
     <Band id="close">
       <Header id="close" eyebrow="11">{copy.header}</Header>
-      <p className="lede">{copy.lede}</p>
 
       <div className="tiles">
         <Tile value={led.calls.toLocaleString("en-US")} unit="model responses bought and archived" />
@@ -62,10 +61,10 @@ export function Close() {
           </ul>
           <p className="note">
             Run on {study.run.host}, written {study.run.written.replace("T", " ")}. Exported{" "}
-            {study.provenance.exported}.
+            {study.provenance.exported.replace("T", " ").replace("Z", " UTC")}.
           </p>
         </div>
-        <PageQR caption="This page" />
+        <PageQR caption="Take the page with you" />
       </div>
 
       <Callouts items={copy.callouts} />

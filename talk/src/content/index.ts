@@ -52,8 +52,8 @@ export const KIND_BLURB: Record<CalloutKind, string> = {
 export const title = {
   question: "Can a vision-language model's textbook knowledge of what pathology looks like stand in for labelled data?",
   standfirst:
-    "Twelve MedMNIST benchmarks. A cited bank of visual features. Five arms, two of them " +
-    "label-free, and seven hypotheses whose decision rules were written before their numbers " +
+    "Twelve MedMNIST benchmarks. A cited bank of visual features. Five arms, two of them using " +
+    "no labels, and seven hypotheses whose decision rules were written before their numbers " +
     "existed. One Snakemake workflow, from fixed inputs to the report.",
   qr: "Follow along on your own device",
 };
@@ -72,9 +72,7 @@ export const premise = {
       "claim.",
     REFRAIN,
   ],
-  stripCaption:
-    "Each tick is one prompt from the session log; its kind is the one hand-assigned field. The " +
-    "last tick is this page.",
+  stripCaption: "The last tick is this page.",
   callouts: [
     {
       kind: "agent",
@@ -105,7 +103,7 @@ export const question = {
   callouts: [
     {
       kind: "principle",
-      title: "Inputs are pinned",
+      title: "Pinned inputs",
       body: [
         "The bank, the MedMNIST release and the published benchmarks are fixed before the " +
           "workflow runs, with recorded checksums. No rule refetches or re-derives them.",
@@ -115,7 +113,7 @@ export const question = {
     },
     {
       kind: "agent",
-      title: "An LLM compiled the bank; no clinician has read it",
+      title: "A bank no clinician has read",
       body: [
         "Every feature and fingerprint carries a citation, and the smoke tests hold each file to " +
           "a schema. Expert review is simulated, and each file says so.",
@@ -130,8 +128,8 @@ export const question = {
 export const design = {
   header: "Five arms, seven hypotheses, rules before numbers",
   lede:
-    "Two arms use no labels. Three use n labels, one identical classifier and different features, " +
-    "so the features are the only thing that differs.",
+    "Two arms use no labels. Three use n labels and the same classifier, and differ only in the " +
+    "features that reach it.",
   body: [
     "A vision-language model is a large pretrained model, so the pixel baseline is pretrained " +
       "too: frozen ImageNet features under the same classifier, the same regularisation search " +
@@ -147,9 +145,9 @@ export const design = {
       "recount.",
     "chestmnist is multi-label, so a nearest fingerprint and a class distribution are undefined " +
       "for it. It runs in arms C, P and C+P only.",
-    "The rules were restated for twelve datasets when six verdicts were already known. The level " +
-      "reproduces the six-dataset rule exactly, so nothing decided moved; the twelve-dataset " +
-      "thresholds are pre-registered only for the six new datasets.",
+    "The rules were restated for twelve datasets when six verdicts were already known. The " +
+      "twelve-dataset threshold reproduces the six-dataset rule exactly, so nothing already " +
+      "decided moved; only the six new datasets are pre-registered at it.",
   ],
   callouts: [
     {
@@ -166,7 +164,7 @@ export const design = {
     },
     {
       kind: "principle",
-      title: "Pre-registration lives in git",
+      title: "Pre-registration in git",
       body: [
         "A rule counts only if it precedes its numbers. Here that is checkable: the commit " +
           "carrying each rule is an ancestor of the commit carrying its numbers. Turn a card " +
@@ -188,8 +186,8 @@ export const machine = {
     "A chunk is one job's hundred images. A reader is a model plus a reasoning effort, so the " +
       "same model asked to think harder counts as a second reader.",
     "The archive is write-protected once written, so re-querying the service is a decision, not " +
-      "something a stale timestamp can trigger. Below is one archived call, drawn at random: " +
-      "image, prompt, raw reply, parsed answer, and the manifest fields that make it checkable.",
+      "something a stale timestamp can trigger. The call below is drawn at random, so no two " +
+      "people in the room see the same one.",
   ],
   callouts: [
     {
@@ -207,7 +205,7 @@ export const machine = {
     },
     {
       kind: "principle",
-      title: "The model boundary is explicit",
+      title: "An explicit model boundary",
       body: [
         "Responses are archived raw, with the served model and the prompt hash. The archive is " +
           "write-protected. Everything downstream is deterministic given it.",
@@ -235,9 +233,9 @@ export const h1 = {
         "Forty-eight jobs ran for two hours and wrote no chunks. Each was killed at its time " +
           "limit, and a chunk that times out loses every call it made.",
         "A call that takes a second and a half alone took forty-three seconds under our own " +
-          "load. Latency grew in step with concurrency, so throughput was flat: on a saturated " +
-          "endpoint, concurrency buys nothing, and the runtime request decides whether anything " +
-          "is saved.",
+          "load. Latency grew almost in step with concurrency: forty-eight jobs bought about two " +
+          "and a half times the throughput of one. On an endpoint this close to saturation the " +
+          "cap is politeness, and the runtime request decides whether a chunk saves anything.",
       ],
       source: "CHANGELOG.md 2026-09-12",
     },
@@ -278,7 +276,7 @@ export const h3 = {
   header: "H3 and H7 — Does a bigger model read better?",
   lede:
     "Two open families, 9B to 27B and 12B to 31B: no trend. One closed family ordered only by " +
-    "price, luna to terra to sol: the top beats the bottom.",
+    "price — gpt-5.6-luna, then terra, then sol: the top beats the bottom.",
   body: [
     "Read within family. Size and training data are confounded across families, both size steps " +
       "also change quantisation, and the qwen step changes generation. Larger travels with newer.",
@@ -288,17 +286,18 @@ export const h3 = {
   callouts: [
     {
       kind: "principle",
-      title: "Name the model, never the alias",
+      title: "The exact model name, never an alias",
       body: [
         "The service's aliases point at whatever it considers best today. An archive bought " +
           "against an alias will answer differently next month, and nothing on disk will say so. " +
           "Every model here is named exactly, and the served name comes back in every manifest.",
+        "Prevents: an archive whose model quietly changed underneath it.",
       ],
       source: "docs/rcd_llm_service.md",
     },
     {
       kind: "agent",
-      title: "Read the metadata, not the wire",
+      title: "The service's metadata, not a probe call",
       body: [
         "Asked which models could see images and how hard each could think, the agent read the " +
           "service's model metadata rather than buying probe calls. That corrected the study's " +
@@ -336,6 +335,7 @@ export const h4 = {
         "An arm worth adding is worth pre-registering; anything that cannot be is a separate " +
           "study. The thinking step, the effort step and the price ladder each had a rule " +
           "committed before their calls were bought.",
+        "Prevents: an arm that can only be reported, never decided.",
       ],
       source: "WORKFLOW.md §10",
     },
@@ -354,11 +354,11 @@ export const h4 = {
     },
     {
       kind: "nearmiss",
-      title: "A runtime wrong in the way that costs everything",
+      title: "A runtime request that costs everything",
       body: [
         "Eleven thinking chunks went out at once, and a timed call came back at over two " +
           "minutes. The wave was cancelled and capped at four in flight: not for throughput, which " +
-          "is flat on this endpoint, but so that each chunk finishes inside its limit.",
+          "is flat for the thinking reader, but so that each chunk finishes inside its limit.",
         "A chunk that overruns writes nothing, and the archive cannot say how far it got.",
       ],
       source: "CHANGELOG.md 2026-09-12",
@@ -398,10 +398,8 @@ export const h5 = {
 
 export const verdicts = {
   header: "Seven verdicts",
-  lede: "Computed, not chosen. Each row shows its rule, its count against the count required, " +
-    "and a dot per dataset.",
   body: [
-    "Against the published fully supervised ceiling, the pixel probe at its largest labelled " +
+    "Against the published fully supervised ceiling, the pixel arm at its largest labelled " +
       "subset sits just below; the best zero-label arm sits far below. Labels close the gap. The " +
       "textbook does not, though it adds a little on top of them.",
     "The published numbers are a ceiling, not an arm: each was trained on a dataset's whole " +
@@ -410,12 +408,10 @@ export const verdicts = {
   callouts: [
     {
       kind: "principle",
-      title: "Every result carries a manifest",
+      title: "A manifest with every result",
       body: [
-        "Parameters, seeds, commit, versions, host and wall time travel with every result file. " +
-          "No number in the report or on this page is typed by hand: both are built from the same " +
-          "files, and the export checks three of its numbers against the report's tables before " +
-          "it finishes.",
+        "Parameters, seeds, commit, versions, host and wall time travel with every result file.",
+        "Prevents: a number nobody can trace to the run that made it.",
       ],
       source: "WORKFLOW.md §5, principle 5",
     },
@@ -423,8 +419,7 @@ export const verdicts = {
 };
 
 export const close = {
-  header: "What four days cost, and what caught the mistakes",
-  lede: "The ledger, and what caught each mistake.",
+  header: "What four days cost",
   body: [
     "None was caught by the dependency graph. A person reading the plan; one chunk run before " +
       "the rest; a probe at the wire; a timed call; a manifest field. It shows that a stage " +
@@ -438,9 +433,9 @@ export const close = {
       title: "Understanding debt, and what repaid it",
       body: [
         "Every stage the agent wrote faster than its owner could read it is a loan. Four " +
-          "practices repaid it here: read every rule before it runs at scale; run one cell first; " +
-          "have the agent explain the stage and judge the explanation, since a wrong explanation " +
-          "shows in a way a wrong line does not; keep the change log as the owner's record, not " +
+          "practices repaid it. Read every rule before it runs at scale. Run one cell first. " +
+          "Make the agent explain the stage, then judge the explanation — a wrong explanation " +
+          "shows where a wrong line does not. Keep the change log as the owner's record, not " +
           "the agent's.",
         "The agent produces the evidence. The claim remains the author's.",
       ],
@@ -451,10 +446,6 @@ export const close = {
 
 export const explore = {
   header: "Explore",
-  lede:
-    "For questions, and for the audience on their own devices: every row this study wrote about " +
-    "one dataset, its images, its prompts, its bank, the archived calls, and every figure at " +
-    "full size.",
 };
 
 /* Two lists, because two of these are what a room asks about and two are not. The first is on

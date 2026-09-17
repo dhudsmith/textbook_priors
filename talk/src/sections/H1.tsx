@@ -37,10 +37,10 @@ export function H1() {
         {study.study.arm_b_datasets.length}. {copy.lede}
       </p>
       <p>
-        The pixel probe is already above the textbook arm at the first grid point on{" "}
+        The pixel arm is already above the textbook arm at the first grid point on{" "}
         {h1.datasets_where_the_probe_starts_above_arm_b} of the{" "}
-        {study.study.arm_b_datasets.length} datasets that have one, and never fails to reach it on{" "}
-        any. The concept regression beats pixels at n = {study.study.curve.n[0]} on{" "}
+        {study.study.arm_b_datasets.length} datasets that have one, and reaches it on every
+        dataset. The concept arm beats the pixel arm at n = {study.study.curve.n[0]} on{" "}
         {h1.c_beats_p_wins} of {h1.n_datasets}, against the {h1.min_wins} the rule asks for
         (p = {h1.c_beats_p_sign_test_p.toFixed(4)}).
       </p>
@@ -54,7 +54,7 @@ export function H1() {
         summary={
           <p>
             On {dataset} the concept arm minus the pixel arm at n = 50 is {signed(diff.median)},
-            95% interval [{fmt3(diff.lo)}, {fmt3(diff.hi)}]. n_B, the labels the pixel probe needs
+            95% interval [{fmt3(diff.lo)}, {fmt3(diff.hi)}]. n_B, the labels the pixel arm needs
             to reach the zero-label textbook arm, is {per.n_b?.point ?? "not defined (no arm B)"}.
             The published fully supervised ceiling for this task is {fmt3(per.ceiling.auc)} (
             {per.ceiling.method}).
@@ -99,7 +99,7 @@ export function H1() {
           </tbody>
         </table>
         <p className="note">
-          <span className="mono">&lt;=50</span> means the pixel probe was already above arm B at
+          <span className="mono">&lt;=50</span> means the pixel arm was already above arm B at
           the first grid point; the resolution of n_B is the grid and nothing finer.
         </p>
       </Deep>

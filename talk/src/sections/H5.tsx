@@ -39,8 +39,8 @@ export function H5() {
       </p>
       {copy.body.map((p, i) => <p key={i}>{p}</p>)}
 
-      <div className="controls" role="group" aria-label="Labelled subset size">
-        <span className="group-label">read the gain at n =</span>
+      <div className="controls" role="group" aria-label="Labels (n)">
+        <span className="group-label">labels (n)</span>
         {ns.map((v2) => (
           <button key={v2} className="chip" aria-pressed={n === v2} onClick={() => setN(v2)}>
             {v2}{v2 === h5.n ? " (registered)" : ""}

@@ -51,7 +51,7 @@ export function ArchiveCall({ sample, fixedDataset }: {
           </div>
           <p className="note" style={{ marginTop: "0.4rem" }}>
             {rec.dataset}, test position {rec.position} (release row {rec.index})
-            {native ? `. ${native} px native, shown larger — the blocks are the data.` : ""}
+            {native ? `. ${native} px, the size the model was shown.` : ""}
           </p>
         </div>
         <div>
@@ -79,7 +79,7 @@ export function ArchiveCall({ sample, fixedDataset }: {
         </div>
       </div>
 
-      <h4 style={{ marginTop: "1rem" }}>The manifest, which is what makes it checkable</h4>
+      <h4 style={{ marginTop: "1rem" }}>What makes it checkable</h4>
       <dl className="kv" style={{ maxWidth: "46rem" }}>
         <dt>served_model</dt><dd>{manifest.served_model}</dd>
         <dt>prompt_sha256</dt><dd>{manifest.prompt_sha256}</dd>
@@ -106,8 +106,7 @@ export function ArchiveCall({ sample, fixedDataset }: {
       </dl>
       {redactions.length > 0 && (
         <p className="note">
-          What the snapshot does not carry out of the archive, said rather than left to be
-          noticed: {redactions.join("; ")}.
+          Removed from this snapshot: {redactions.join("; ")}.
         </p>
       )}
 

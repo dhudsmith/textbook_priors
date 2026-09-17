@@ -19,8 +19,8 @@ const BLURBS: Record<string, string> = {
     "images, with preprocessing that does not resize.",
   classify: "Per dataset: every arm at every n and seed, the two permutation controls, and each " +
     "reader's cross-validated probe on the shared prefix.",
-  evaluate: "AUC per arm, the paired bootstrap, n_B, and a second bootstrap over the prefix for " +
-    "the readers; then the sign tests, the ladder and the reader chain across datasets.",
+  evaluate: "Per dataset: an AUC for every arm, paired bootstrap intervals, and n_B. Then, " +
+    "across datasets: the sign tests, the model ladder and the reader chain.",
   report: "Every figure and table, the number macros, two generated appendices and the technical " +
     "report PDF. No number in it is typed by hand.",
 };
@@ -70,8 +70,7 @@ export function Machine() {
           </tbody>
         </table>
         <p className="note">
-          The served model name is what the service said answered. This field caught a
-          rule running the wrong model's command.
+          The served model name is what the service said answered.
         </p>
       </Deep>
 

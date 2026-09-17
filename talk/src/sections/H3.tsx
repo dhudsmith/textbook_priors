@@ -58,14 +58,14 @@ export function H3() {
       </p>
       {copy.body.slice(1).map((p, i) => <p key={i}>{p}</p>)}
 
-      <div className="controls" role="group" aria-label="Which ladder">
+      <div className="controls" role="group" aria-label="Ladder">
         <span className="group-label">ladder</span>
         <button className="chip" aria-pressed={which === "open"} onClick={() => setWhich("open")}>
-          open weights, by parameter count (arm B)
+          open models, by size
         </button>
         <button className="chip" aria-pressed={which === "closed"}
                 onClick={() => setWhich("closed")}>
-          closed family, by price (the probe)
+          closed models, by price
         </button>
       </div>
 
@@ -92,7 +92,9 @@ export function H3() {
         <Ladder
           order={order}
           values={values}
-          yLabel={which === "open" ? "arm B test AUC" : "cross-validated probe AUC"}
+          yLabel={which === "open"
+            ? "arm B test AUC"
+            : "probe AUC (one classifier reads every model's answers)"}
           label={which === "open"
             ? "Arm B AUC per dataset across the four open models"
             : "Probe AUC per dataset across the closed price ladder"}

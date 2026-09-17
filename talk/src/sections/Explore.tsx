@@ -134,7 +134,7 @@ export default function Explore() {
       </div>
 
       <Deep summary="Both rendered prompts, verbatim">
-        <pre className="file" style={{ maxHeight: "40rem" }}>{prompt ?? "loading…"}</pre>
+        <pre className="file" style={{ maxHeight: "40rem" }}>{prompt ?? "Loading the prompts…"}</pre>
       </Deep>
 
       <Deep summary="The concept bank for this dataset">
@@ -157,7 +157,7 @@ export default function Explore() {
               </div>
             ))}
           </div>
-        ) : "loading…"}
+        ) : "Loading the bank…"}
       </Deep>
 
       <h4>The archive</h4>

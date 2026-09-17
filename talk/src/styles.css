@@ -321,9 +321,6 @@ pre.file.reply { max-width: var(--measure); }
   background: var(--surface-sunken);
 }
 .imgcard img { display: block; width: 100%; height: auto; }
-/* A 28 px benchmark image scaled to 200 reads as noise when it is smoothed and as information
-   when it is not. */
-.archivegrid .imgcard img { image-rendering: pixelated; }
 .archivegrid { display: grid; gap: 1rem;
                grid-template-columns: minmax(150px, 210px) minmax(0, 1fr); }
 @media (max-width: 640px) { .archivegrid { grid-template-columns: minmax(0, 1fr); } }

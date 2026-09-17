@@ -55,6 +55,10 @@ export function Design() {
           ))}
         </tbody>
       </table>
+      <p className="note">
+        A probe is one logistic regression on frozen features. Arms C, P and C+P are the same
+        probe on different feature blocks.
+      </p>
 
       <h3>Seven questions, each with a rule fixed before its numbers</h3>
       <p className="note">Click a card to turn it over.</p>
@@ -80,8 +84,9 @@ export function Design() {
               ) : (
                 <>
                   <div className="claim">{v.question}</div>
-                  <div className="rule">Decided on {v.metric}, at{" "}
-                    {v.threshold} of {v.n_datasets} datasets.</div>
+                  <div className="rule">
+                    Decided on {v.metric}. Supported at {v.threshold} of {v.n_datasets} datasets.
+                  </div>
                   <div className="flip">turn over for the rule ›</div>
                 </>
               )}

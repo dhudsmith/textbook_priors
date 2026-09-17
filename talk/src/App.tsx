@@ -27,7 +27,6 @@ function ExploreBand() {
   return (
     <Band id="explore" className="presenter-hide">
       <Header id="explore" eyebrow="12">{explore.header}</Header>
-      <p className="lede">{explore.lede}</p>
       <div ref={ref}>
         {seen && (
           <Suspense fallback={<p className="note">Loading the explorer…</p>}>

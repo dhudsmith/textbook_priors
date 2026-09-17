@@ -92,14 +92,14 @@ export function H4() {
           <p>
             The step is negative on the datasets the model already read well and positive on the
             ones it read badly: {h4.h4a.wins} of {h4.n_datasets} gains, and the losses are
-            concentrated where the baseline probe was highest. That is what "conditional" means
+            concentrated where the baseline probe was highest. That is what “conditional” means
             here, and why a single sign test says {v4.verdict}.
           </p>
         }>
         <ThinkingScatter />
       </ChartFrame>
 
-      <h3>H6 — was medium simply the wrong operating point?</h3>
+      <h3>H6 — Was medium the wrong operating point?</h3>
       <p>
         Lowering the frontier model's effort wins on {h6.wins} of {h6.n_datasets} and the higher
         effort wins on {h6.wins_for_more}, against the {h6.min_wins} either direction would need:{" "}

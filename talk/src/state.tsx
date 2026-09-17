@@ -9,19 +9,19 @@ import { useDark } from "./hooks";
    clean while the QR audience on their own phones still sees everything. */
 
 export const SECTIONS = [
-  { id: "top", label: "Textbook priors", short: "Title" },
-  { id: "premise", label: "This talk was built the way it is about", short: "Premise" },
-  { id: "question", label: "The question", short: "The question" },
-  { id: "design", label: "Five arms, seven hypotheses", short: "The design" },
-  { id: "machine", label: "The machine", short: "The machine" },
-  { id: "h1", label: "H1 — Is the textbook worth labelled images?", short: "H1 substitution" },
-  { id: "h2", label: "H2 — The bank, or just the model?", short: "H2 the bank" },
-  { id: "h3", label: "H3 and H7 — Does a bigger model read better?", short: "H3 / H7 scale" },
-  { id: "h4", label: "H4 and H6 — What if the model thinks?", short: "H4 / H6 thinking" },
-  { id: "h5", label: "H5 — Does the textbook add anything?", short: "H5 complement" },
-  { id: "verdicts", label: "Seven verdicts", short: "Verdicts" },
-  { id: "close", label: "What the four days cost", short: "The close" },
-  { id: "explore", label: "Explore", short: "Explore" },
+  { id: "top", short: "Title" },
+  { id: "premise", short: "Premise" },
+  { id: "question", short: "Question" },
+  { id: "design", short: "Design" },
+  { id: "machine", short: "Machine" },
+  { id: "h1", short: "H1 substitution" },
+  { id: "h2", short: "H2 readout" },
+  { id: "h3", short: "H3/H7 scale" },
+  { id: "h4", short: "H4/H6 thinking" },
+  { id: "h5", short: "H5 complement" },
+  { id: "verdicts", short: "Verdicts" },
+  { id: "close", short: "Close" },
+  { id: "explore", short: "Explore" },
 ] as const;
 
 interface Ctx {

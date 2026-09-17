@@ -25,9 +25,10 @@ export function Question() {
 
       <div style={{ display: "grid", gap: "1.6rem", gridTemplateColumns: "minmax(0, 1fr)" }}>
         <div>
-          <h3>{meta.modality}</h3>
+          <h3>The images, as the model sees them</h3>
           <p className="note">
-            {meta.n_classes} classes · {meta.medmnist_task} · official test split{" "}
+            {meta.modality} · {meta.n_classes} classes · {meta.medmnist_task} · official test
+            split{" "}
             {meta.split_sizes.test.toLocaleString("en-US")} images, of which this study scores{" "}
             {meta.test_n} · {meta.n_concepts} concepts in the bank
           </p>

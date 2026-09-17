@@ -607,6 +607,35 @@ def export_archive(datasets: list[str], per_dataset: int, primary: str) -> dict:
 
 HEADING = re.compile(r"^## (\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}) — (.+)$")
 
+_MD_LINK = re.compile(r"\[([^\]]+)\]\([^)]*\)")
+_MD_MARK = re.compile(r"(\*\*|\*|`|__|_)")
+_SENTENCE = re.compile(r"(?<=[.!?])\s")
+
+
+def _lead(text: str) -> str:
+    """One plain sentence of a session-log entry, for the timeline card.
+
+    The log is Markdown and the card renders text, so backticks and asterisks would be printed
+    verbatim. Four to six hundred characters ending on an ellipsis is a wall on a phone, so the
+    lead is cut at a sentence boundary instead: the first sentence, or as many whole sentences as
+    fit in 220 characters.
+    """
+    plain = _MD_MARK.sub("", _MD_LINK.sub(r"\1", text)).strip()
+    if not plain:
+        return ""
+    parts = [s.strip() for s in _SENTENCE.split(plain)]
+    parts = [s for s in parts if s.strip(".…·-— ")]
+    if not parts:
+        return ""
+    out = parts[0]
+    for part in parts[1:]:
+        if len(out) + 1 + len(part) > 220:
+            break
+        out = f"{out} {part}"
+    if len(out) > 220:
+        out = out[:219].rsplit(" ", 1)[0].rstrip(",;:") + "…"
+    return out
+
 
 def export_timeline() -> dict:
     """Every timestamped SESSION_LOG.md heading, with its first paragraph.
@@ -638,8 +667,10 @@ def export_timeline() -> dict:
         entries.append(current)
     for e in entries:
         e.pop("_done", None)
-        lead = e["lead"]
-        e["lead"] = lead if len(lead) <= 600 else lead[:597].rsplit(" ", 1)[0] + "…"
+        e["lead"] = _lead(e["lead"])
+    # The log is written newest-appended but a day's entries are not always in clock order, and
+    # the strip and the screen-reader list both read it straight through.
+    entries.sort(key=lambda e: (e["date"], e["time"]))
     days = sorted({e["date"] for e in entries})
     return {"source": "SESSION_LOG.md", "days": days, "entries": entries,
             "kinds": [{"id": "direct", "label": "the user set the direction"},
@@ -648,9 +679,8 @@ def export_timeline() -> dict:
                       {"id": "decide", "label": "a choice was settled"},
                       {"id": "catch", "label": "something wrong was found"},
                       {"id": "rewind", "label": "work was removed"}],
-            "kind_note": ("The kind of each entry is the one hand-assigned field in this export "
-                          "(talk/scripts/export_talk_data.py); everything else is the file's own "
-                          "heading and first paragraph.")}
+            "kind_note": ("Only the kind of each entry was assigned by hand; the rest is the "
+                          "file's own heading and first paragraph.")}
 
 
 def work_dates() -> list[str]:

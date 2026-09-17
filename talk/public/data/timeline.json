@@ -13,280 +13,280 @@
    "time": "15:15",
    "title": "Session log started, at the user's direction",
    "kind": "direct",
-   "lead": "The user asked for a standing instruction so future sessions keep a timestamped log, including records of how they directed the agent through prompts, as a helpful record for building the talk. Added this file, a principle in `WORKFLOW.md` \u00a75, a layout entry in \u00a711, and a pointer in `CLAUDE.md` telling the agent to append here \u2014 separately from `CHANGELOG.md` \u2014 whenever a prompt materially directs the work."
+   "lead": "The user asked for a standing instruction so future sessions keep a timestamped log, including records of how they directed the agent through prompts, as a helpful record for building the talk."
   },
   {
    "date": "2026-09-11",
    "time": "15:26",
    "title": "Build the workflow one rule at a time, starting with the prompts",
    "kind": "direct",
-   "lead": "The user asked to start implementing `WORKFLOW.md`, but explicitly not all at once: first list the rules the workflow will have, then implement the first one and test it, then stop for review before proceeding. They named the first rule themselves \u2014 render the prompts. That changed the order of work in `WORKFLOW.md` \u00a79, which starts with the skeleton and the bank schema test (`smoke`). `render_prompts` needs no samples, no service and no labels, so it can go first and the skeleton it needs is small: `config/config.yaml` (paths, the dataset list, the anchors switch), `config/medmnist.yaml`\u2026"
+   "lead": "The user asked to start implementing WORKFLOW.md, but explicitly not all at once: first list the rules the workflow will have, then implement the first one and test it, then stop for review before proceeding."
   },
   {
    "date": "2026-09-11",
    "time": "16:05",
    "title": "Fix the octmnist collision rather than exempt it",
    "kind": "decide",
-   "lead": "Asked to fix the octmnist issue reported at the end of the previous turn, and to see a rendered prompt file in the session rather than only on disk. The choice was between renaming two scale levels in a reviewed input and recording an exemption in the smoke test; the user chose the first, so the bank changed and `data/concepts/README.md`, the file's own header and `CHANGELOG.md` all record the correction. The rule itself did not change."
+   "lead": "Asked to fix the octmnist issue reported at the end of the previous turn, and to see a rendered prompt file in the session rather than only on disk."
   },
   {
    "date": "2026-09-11",
    "time": "16:20",
    "title": "Smoke next, and show the artifacts in the chat",
    "kind": "build",
-   "lead": "The user asked for stage 0 next, and for representative artifacts and rule code to be linked in the session afterwards so that readiness for the next stage can be judged without hunting through the repository. The tests that had been run by hand at the end of the previous turn became `tests/`, and two tiers of stage 0 that WORKFLOW.md \u00a76 lists are deliberately absent because the code they test does not exist yet: the arm-B estimator fixture and the LLM client's retry. One design question came up that the plan does not settle, and the answer is in the Snakefile's stage-0 banner: a marker\u2026"
+   "lead": "The user asked for stage 0 next, and for representative artifacts and rule code to be linked in the session afterwards so that readiness for the next stage can be judged without hunting through the repository."
   },
   {
    "date": "2026-09-11",
    "time": "17:30",
    "title": "Stage 1, and the storage links as a script rather than a rule",
    "kind": "run",
-   "lead": "Asked to proceed to the next step, which the rule list puts at `sample_dataset`. Two choices in it are worth recording because neither is settled by `WORKFLOW.md`. The sampled images go to `data/cache/sample/<dataset>.npz` on the project filesystem rather than beside the result JSON in `results/`, which is what the `research-workflow` skill's sidecar convention would say. A quarter of a gigabyte of pixels per dataset is an input to the score and features stages, not a result anything reads, and `WORKFLOW.md` \u00a711 already reserves `data/cache` for exactly this. The JSON stays the unit of\u2026"
+   "lead": "Asked to proceed to the next step, which the rule list puts at sampledataset. Two choices in it are worth recording because neither is settled by WORKFLOW.md."
   },
   {
    "date": "2026-09-11",
    "time": "20:05",
    "title": "The probe, and a workspace that disappeared underneath it",
    "kind": "catch",
-   "lead": "Asked to continue, which the rule list puts at the `probe`. Wrote `priors/llm.py` (the boundary), `priors/score.py` (the deterministic half: image encoding, reply parsing, the retry policies), the `vlm:` config block, `rule probe` outside `rule all`, and 31 tests that hold all of it without calling the service. Mid-way through, the session's checkout was recreated and every gitignored path went with it \u2014 `results/`, `.snakemake/`, the storage symlinks. Committed work and the uncommitted new files survived. Recovery was `scripts/link_storage.sh` plus one workflow run; the 1.5 GB of sampled\u2026"
+   "lead": "Asked to continue, which the rule list puts at the probe."
   },
   {
    "date": "2026-09-11",
    "time": "21:20",
    "title": "Runs move to the owner's checkout",
    "kind": "decide",
-   "lead": "Asked to make sure the workflow runs from the persistent filesystem. It was worth checking what that meant: every path involved is on the same `/project/dane2` mount, so nothing here is about disks. What is ephemeral is the agent session's *worktree* under the runner's `_sessions/` tree, which is recreated without warning and takes every gitignored path with it \u2014 as happened earlier in this session. So runs move to `~/Code/textbook_priors`, the owner's own checkout, which was three commits behind and carried one local `.gitignore` edit (`.snakemake/`, already committed here, and\u2026"
+   "lead": "Asked to make sure the workflow runs from the persistent filesystem. It was worth checking what that meant: every path involved is on the same /project/dane2 mount, so nothing here is about disks."
   },
   {
    "date": "2026-09-11",
    "time": "21:45",
    "title": "Thin classes: keep the sample, document the limit",
    "kind": "decide",
-   "lead": "The user asked whether stratifying was not simply cheap and analysis-neutral. It is cheap; it is not neutral, and it is not one thing. The reply carried the measured allocations for both readings of \"stratify\", which showed that the proportional one changes nothing and the equal-as-possible one gains a factor of two to four while changing what each one-vs-rest column is measured against. On that evidence the user chose to keep the sample as drawn and document the limit, which is now in WORKFLOW.md \u00a73 and CHANGELOG.md. Work continues on the scoring rules."
+   "lead": "The user asked whether stratifying was not simply cheap and analysis-neutral. It is cheap; it is not neutral, and it is not one thing."
   },
   {
    "date": "2026-09-11",
    "time": "22:00",
    "title": "Go for the fan-out, and what the first chunk caught",
    "kind": "catch",
-   "lead": "The user said go for the 270-job fan-out. One chunk had been submitted first as a deliberate check of the archive format, `protected()` and the gather; it came back holding gemma-4-31b's answers under the primary model's file name, which is recorded in CHANGELOG.md as a finding rather than here, because it changes what the code has to look like and not merely what was asked for. Fixing it cost four explicit rules in place of a loop, a model wildcard so the command cannot disagree with the file name, and a guard in the stage that refuses the mismatch before the first call. The fan-out goes\u2026"
-  },
-  {
-   "date": "2026-09-12",
-   "time": "09:05",
-   "title": "A fifth arm, asked for after the results: the bank in the prompt",
-   "kind": "direct",
-   "lead": "\"I know it's not clean but I want to try an arm who we ask for a classification zero shot that we give all the concept information. Integrate this throughout.\" Not clean is the right description and worth recording as the user's own, because it is the only thing about arm D that needed a decision. The arm itself follows directly from the H2 result: the permutation controls say the bank carries class information while arm B loses to arm A, so the nearest-fingerprint readout is the suspect, and the cheapest way to test that without labels is to let the model do the integrating. What is not\u2026"
+   "lead": "The user said go for the 270-job fan-out."
   },
   {
    "date": "2026-09-12",
    "time": "09:02",
    "title": "Literature benchmarks, pulled and cited, not rerun",
    "kind": "build",
-   "lead": "\"I would like to pull results from the literature on these particular med mnist tasks and verify and add them as benchmarks in the paper. I don't want to rerun those results. I just want to pull the results from published works.\" Read as: a third fixed input beside the concept bank and the pinned release (WORKFLOW.md section 4), not a rule that recomputes anything. `data/literature/benchmarks.yaml` pins the AUC and ACC Yang et al. 2023 report (Table 3) for five fully supervised methods on these six tasks at 224 pixels \u2014 the same paper the concept bank already cites as its anchor,\u2026"
+   "lead": "\"I would like to pull results from the literature on these particular med mnist tasks and verify and add them as benchmarks in the paper. I don't want to rerun those results."
+  },
+  {
+   "date": "2026-09-12",
+   "time": "09:05",
+   "title": "A fifth arm, asked for after the results: the bank in the prompt",
+   "kind": "direct",
+   "lead": "\"I know it's not clean but I want to try an arm who we ask for a classification zero shot that we give all the concept information."
   },
   {
    "date": "2026-09-12",
    "time": "09:35",
    "title": "Arm D landed, and two estimates that were wrong",
    "kind": "catch",
-   "lead": "The run finished at 09:34, exit 0. Asked mid-run to estimate the total time, I gave 08:45\u201308:55 and it took until 09:34. The first estimate assumed contention would cost a factor of three or four on the per-call latency; it cost a factor of thirty. The second, made after the first had visibly failed, misread the job CPU counters \u2014 at 43 s per call, four minutes of real work rounds to under one second of CPU, which is indistinguishable from a stalled process \u2014 and briefly concluded the jobs were doing almost nothing. What settled it was one timed call through the same code path, costing one\u2026"
+   "lead": "The run finished at 09:34, exit 0. Asked mid-run to estimate the total time, I gave 08:45\u201308:55 and it took until 09:34."
   },
   {
    "date": "2026-09-12",
    "time": "14:40",
    "title": "Analysis stops here; attention turns to the talk",
    "kind": "direct",
-   "lead": "\"I think we have sufficient results for the talk. I will stop here on the analysis itself and turn attention to structuring the talk itself.\" The user attached the HPC Day 2026 agenda: the talk is the 1:15\u20131:45 keynote on Friday 2026-09-18 in McKissick Theater, directly after lunch, with a second keynote following and the same speaker on the 3:35 generative-AI workshop panel. Asked for a review of everything in the repository and an initial plan for a 30-minute talk, with scoping questions first rather than a finished outline. Stated preferences, recorded because they shape every later\u2026"
+   "lead": "\"I think we have sufficient results for the talk."
   },
   {
    "date": "2026-09-12",
    "time": "15:05",
    "title": "Stepping back: the question was about understanding, not substitution",
    "kind": "direct",
-   "lead": "\"I think I was more interested in the question, 'to what extent do VLMs understand visual features needed for medical image classification?' This is partly motivated by replacing labeled data, but also simply out of curiosity on its own. It also leans toward interpretable machine learning rather than merely classification performance.\" Asked whether that needs a return to the workflow design or can be served by what exists, and whether the scale ladder can be pushed higher. No rule changed. Two throwaway checks, neither citable: a per-concept reading of the existing archive for three\u2026"
+   "lead": "\"I think I was more interested in the question, 'to what extent do VLMs understand visual features needed for medical image classification?' This is partly motivated by replacing labeled data, but also simply out of\u2026"
   },
   {
    "date": "2026-09-12",
    "time": "15:20",
    "title": "Does thinking work, can we try an OpenAI model, and the service docs",
    "kind": "catch",
-   "lead": "Three directions in one turn. \"Were we able to get thinking to work? Looking at the rcd docs, most of these models should support thinking. Can you perform a simple test?\", then \"And does this allow me to try openai model? Should we do that?\" with a screenshot of the OpenAI credits page (10.00 project allocation, 648.79 in the shared pool), then the RCD *Available Models* page attached with \"Add it to the repo context\". The test was worth running and the answer changed a standing conclusion: thinking works, and the reason it appeared not to was `max_tokens: 512` in this workflow's own\u2026"
+   "lead": "Three directions in one turn. \"Were we able to get thinking to work? Looking at the rcd docs, most of these models should support thinking."
   },
   {
    "date": "2026-09-12",
    "time": "15:45",
    "title": "Scrub arm D, and propose a thinking arm and an OpenAI arm",
    "kind": "rewind",
-   "lead": "\"Can you propose how we could integrate a thinking arm and an openai arm, on more limited cases to keep overall calls relatively low while still giving bite? Also, I want to scrub the confusing arm D afterall from the entire repo.\" The scrub was done in full and is recorded in CHANGELOG.md as a decision with its reason. Two boundaries were drawn rather than assumed, both of which the user can overrule: - `CHANGELOG.md` and `SESSION_LOG.md` say of themselves that they are appended and never rewritten, so arm D was *not* edited out of either. The removal is a new entry. Rewriting the record\u2026"
+   "lead": "\"Can you propose how we could integrate a thinking arm and an openai arm, on more limited cases to keep overall calls relatively low while still giving bite?"
   },
   {
    "date": "2026-09-12",
    "time": "16:05",
    "title": "H4 joins the hypotheses, at medium effort, and the build goes out",
    "kind": "decide",
-   "lead": "\"Join the hypotheses in workflow. Let's do medium. Let's go!\" Both open questions from the proposal answered, so H4 is a hypothesis in WORKFLOW.md \u00a72 and not an extension, and both new readers run at `medium` \u2014 which also makes H4b a comparison at matched effort rather than a comparison of models and effort together. What the implementation actually settled, beyond what the proposal said: - **A reader is a model plus an effort, and it reuses the arm vocabulary rather than adding to it.** The four ladder models are readers at effort `none`, so they join H4 by being subset to the same\u2026"
+   "lead": "\"Join the hypotheses in workflow. Let's do medium."
   },
   {
    "date": "2026-09-12",
    "time": "17:40",
    "title": "\"What's left to run?\" \u2014 and what the answer turned up",
    "kind": "run",
-   "lead": "The user asked for a status. Answering it honestly meant measuring rather than reporting the job count, and the measurement found a real risk: eleven thinking chunks in flight at 134 s per call were on course to finish seventeen minutes inside a four-hour time limit, where overrunning writes nothing. Cancelled and resubmitted under a cap of four, at a cost of about 200 spent calls. The reasoning is in CHANGELOG.md; the numbers are in config and the profile beside the values they set. Nothing about H4's design changed. This was an operations decision, taken on a measurement, of exactly the\u2026"
+   "lead": "The user asked for a status."
   },
   {
    "date": "2026-09-12",
    "time": "21:25",
    "title": "The talk plan, fixed: workflow first, H4 as the follow-on",
    "kind": "decide",
-   "lead": "\"I would like to take your original talk plan and basically keep it. I don't want the talk to center around the hypothesis but the workflow, the basic spirit of the problem we're solving and what the evidence says. ... with the frontier and thinking incorporated as additional follow on 'what if we added reasoning?' directions, to demonstrate the real research workflow in practice. ... Let's target 25 minutes with 5 minutes for questions.\" Written into TALK.md \u00a75 as a slide-by-slide table with minutes and the picture for each slide, and \u00a74 rewritten from a live demo to two recorded clips.\u2026"
+   "lead": "\"I would like to take your original talk plan and basically keep it. I don't want the talk to center around the hypothesis but the workflow, the basic spirit of the problem we're solving and what the evidence says."
   },
   {
    "date": "2026-09-12",
    "time": "21:45",
    "title": "The H4 chain lands; the talk's scene 6 stands",
    "kind": "run",
-   "lead": "No prompt. The run launched at 17:42 under the cap of four finished at 21:40, 40 of 40, with every thinking chunk complete and no cell flagged. The evening's pattern held under the real estimator on the full 200 images, so TALK.md \u00a75 scene 6 is not rewritten. One number moved in the direction that justifies the preview having been marked uncitable: bloodmnist's thinking effect shrank from a clear loss on 100 images to noise on 200. The finding is in CHANGELOG.md."
+   "lead": "No prompt. The run launched at 17:42 under the cap of four finished at 21:40, 40 of 40, with every thinking chunk complete and no cell flagged."
   },
   {
    "date": "2026-09-12",
    "time": "22:30",
    "title": "Embeddings, and the redirect to the service's own embedding model",
    "kind": "direct",
-   "lead": "\"I would like to try using embeddings. Add this in in a principled fashion, run it, analyze the outputs, and put it in the report. Think about how it could (or couldn't) be put into the talk.\" Then, mid-design, with the RCD local-API documentation attached: \"I want to use the LLM based embeddings supported by the rcd llm service. Make sure you use that.\" The first design read \"embeddings\" as a contrastive image-text encoder run locally (BiomedCLIP) and had reached a written plan, a config block, a module and its tests before the redirect. None of it was committed and all of it was\u2026"
+   "lead": "\"I would like to try using embeddings. Add this in in a principled fashion, run it, analyze the outputs, and put it in the report."
   },
   {
    "date": "2026-09-12",
    "time": "23:05",
    "title": "\"If the embed API can't take pixels my idea is a no go\"",
    "kind": "catch",
-   "lead": "Checked at the wire rather than from the model listing: the embedding model rejects an `image_url` input with a validation error, the three OpenAI embedding models are text-only, and the vision chat models are not available at `/v1/embeddings` at all. Nothing on the service embeds pixels. The user's idea as stated cannot be built on this service. What exists at this point is the reinterpretation built in its place - H5, the same concept answers and the same bank read by a learned text distance - pre-registered, committed as a plan and a data layer, and run on one dataset for the hand-check\u2026"
+   "lead": "Checked at the wire rather than from the model listing: the embedding model rejects an imageurl input with a validation error, the three OpenAI embedding models are text-only, and the vision chat models are not\u2026"
   },
   {
    "date": "2026-09-12",
    "time": "23:15",
    "title": "\"Remove all the nonsense not using pixels. Just rewind.\"",
    "kind": "rewind",
-   "lead": "\"This idea doesn't make any sense going through the fingerprints.\" Done. WORKFLOW.md, config/config.yaml, the Snakefile, priors/stages.py, tests/test_score.py and the palmetto profile are restored byte-for-byte to the commit before H5 existed; priors/embed.py and tests/test_embed.py are deleted; 297 tests pass, the count before any of it. The one embedded dataset's outputs in the run checkout are removed with the rule that made them: they cost nothing and nothing reads them. Kept on purpose: the session-log entries above, because a record of how the work was directed is worth most exactly\u2026"
+   "lead": "\"This idea doesn't make any sense going through the fingerprints.\" Done."
   },
   {
    "date": "2026-09-13",
    "time": "07:00",
    "title": "Cleaning audit: everything the talk needs, and only that",
    "kind": "decide",
-   "lead": "\"Now that the workflow is set and all results are in, perform a cleaning audit to make sure we have everything needed and only everything needed for the talk workflow. Remove unused code files or other extraneous things we made. Also, make sure all the results are in my primary directory ... Don't do anything that would trigger running rules ... Don't add any new complexity. Just clean and simplify. Make sure all documentation is up to date, clear, and concise. Make sure talk.md has our clearest most up to date plan.\" What the audit found, before anything was changed: every function in\u2026"
+   "lead": "\"Now that the workflow is set and all results are in, perform a cleaning audit to make sure we have everything needed and only everything needed for the talk workflow."
   },
   {
    "date": "2026-09-13",
    "time": "07:30",
    "title": "\"Restore the txt rule. Update and recompile the tex. You can delete the D results\"",
    "kind": "direct",
-   "lead": "All three decisions the audit had left open, answered in one line. `render_prompts_txt` comes back exactly as d43a4d3 committed it (a clean cherry-pick: rule, module function, entry point, six tests, its README and WORKFLOW.md lines), and since `priors/stages.py` and `priors/prompts.py` were changing anyway, the four stale module docstrings the previous entry had left alone are fixed in the same commit. The 30 arm-D chunks, their logs and their benchmarks are deleted from the owner's checkout; WORKFLOW.md \u00a74 and \u00a710 and a CHANGELOG.md entry say so. The checkout is then brought back to\u2026"
+   "lead": "All three decisions the audit had left open, answered in one line."
   },
   {
    "date": "2026-09-13",
    "time": "08:05",
    "title": "\"Why don't I have a hypothesis that compares ... with zero shot?\"",
    "kind": "direct",
-   "lead": "The owner asked why no hypothesis sets the concept regression (arm C) against zero-shot (arm A); the answer - the plan paired arms by label budget, and H2's result made A the zero-label line that matters after the fact - and the reading of the curve it implies are in CHANGELOG.md. They asked for it in the talk without pre-registering it, so TALK.md scene 5 now names it as a reading of the figure, not a verdict. Then: how are arm B's class fingerprints determined, and should they be re-examined? They are set from cited literature by the rule each bank file's header states - commit only\u2026"
+   "lead": "The owner asked why no hypothesis sets the concept regression (arm C) against zero-shot (arm A); the answer - the plan paired arms by label budget, and H2's result made A the zero-label line that matters after the fact\u2026"
   },
   {
    "date": "2026-09-13",
    "time": "08:20",
    "title": "\"Expand the full analysis to all 12 MedMNIST. Follow it through from start to finish.\"",
    "kind": "direct",
-   "lead": "\"I know this is a long request that will involve many calls. Proceed until complete and documented.\" The talk version's six datasets become the twelve 2D benchmarks, the whole workflow run to the report. What the build settled before a call was bought: - **Eight release files were on disk; four were the full branch's half-finished byte-range segments** (chestmnist, organcmnist, organsmnist, tissuemnist). The full branch's resumable fetch script and rule come back as `rule fetch`, scoped to files not on disk, with the sizes and MD5s the release description now carries for all twelve. -\u2026"
+   "lead": "\"I know this is a long request that will involve many calls. Proceed until complete and documented.\" The talk version's six datasets become the twelve 2D benchmarks, the whole workflow run to the report."
   },
   {
    "date": "2026-09-13",
    "time": "10:15",
    "title": "Twelve datasets, start to finish, complete",
    "kind": "run",
-   "lead": "The expansion asked for at 08:20 ran to the report in under two hours of wall clock: four fetches in a minute each, six samples, 227 chunks in 66 minutes on an uncontended Sunday service, the analysis chain for twelve datasets in 25 minutes, and the owner's checkout back at \"Nothing to be done\". Mid-run the user asked for the hypothesis statements to be adjusted for the expansion; WORKFLOW.md \u00a72 now states each rule over the datasets it covers at one level (10 of 12, 9 of 11), says which six verdicts were known when it was written, and the report reads those counts from macros. The six\u2026"
+   "lead": "The expansion asked for at 08:20 ran to the report in under two hours of wall clock: four fetches in a minute each, six samples, 227 chunks in 66 minutes on an uncontended Sunday service, the analysis chain for twelve\u2026"
   },
   {
    "date": "2026-09-13",
    "time": "10:40",
    "title": "\"Hypothesize that P + C beats P. Register the hypothesis, then run it and integrate it\"",
    "kind": "direct",
-   "lead": "Asked alongside a question about whether the study is publishable (answered in the session, with the literature search behind it). The hypothesis is the one H1 does not answer: H1 shows the concept scores cannot replace the pixel features at equal labels, which is not the same as showing they add nothing on top of them. Registered as **H5** before any of its numbers existed, and this commit is the evidence: WORKFLOW.md \u00a72 states the arm, the primary grid point (n = 50, from `config.yaml h5.n`) and the rule (10 of 12, the same alpha every other rule uses); the code, the tests and the report\u2026"
+   "lead": "Asked alongside a question about whether the study is publishable (answered in the session, with the literature search behind it)."
   },
   {
    "date": "2026-09-13",
    "time": "12:25",
    "title": "A second session on the same task, and the damage it did",
    "kind": "catch",
-   "lead": "A second Claude session was given the P + C prompt at 11:45 without the owner intending two to run at once, and did not know the 10:40 session existed. It built the same arm (as `PC`, with a permutation control) on its own branch, `claude/p-plus-c-hypothesis-57k952`, then at 11:52:34 switched this checkout onto that branch to run, while the 10:40 session's chain had been submitted from here a minute earlier. Three things followed, each now undone; the owner's \"clean up any damage you caused\" at 12:05 directed the repair. - **Five classify outputs were written by the wrong code.** SLURM\u2026"
+   "lead": "A second Claude session was given the P + C prompt at 11:45 without the owner intending two to run at once, and did not know the 10:40 session existed."
   },
   {
    "date": "2026-09-13",
    "time": "12:45",
    "title": "H5 run and integrated, after a concurrent session disturbed the run",
    "kind": "run",
-   "lead": "The hypothesis registered at 10:40 ran and is **supported**: 11 of 12, p = 0.0032, every winning interval clear of zero, median gain 0.007 AUC. Integrated into the report as its own section, a table, a figure and seven macros; CHANGELOG.md carries the reading, and the literature position the publication question in the same message prompted. Three launches were aborted first, and the entry above this one, written by the second session, explains why: it switched this shared checkout onto its own branch mid-run, and its `--touch` reached the shared cache. My first diagnosis of the five wrong\u2026"
+   "lead": "The hypothesis registered at 10:40 ran and is supported: 11 of 12, p = 0.0032, every winning interval clear of zero, median gain 0.007 AUC."
   },
   {
    "date": "2026-09-13",
    "time": "14:25",
    "title": "An accuracy pass over the report, and the prompts as an appendix",
    "kind": "build",
-   "lead": "Asked to take a pass through the report for accuracy, add anything specific to the analysis that had been left out, add appendices showing the prompts, and make sure arm C+P's fusion is described. The Methods section was one paragraph covering five arms; it is now seven subsections and states what the run actually did rather than what it broadly did. What was missing and is now in: the call settings (temperature 0, the thinking-off switch, 512 tokens, chunks of 100, the one content retry at a doubled budget, four transport retries, the 120-second timeout, every attempt archived); the PNG\u2026"
+   "lead": "Asked to take a pass through the report for accuracy, add anything specific to the analysis that had been left out, add appendices showing the prompts, and make sure arm C+P's fusion is described."
   },
   {
    "date": "2026-09-13",
    "time": "20:05",
    "title": "Arm C+P on the learning curve, and a sampled-image appendix",
    "kind": "build",
-   "lead": "Two asks. First, put H5's arm on the plot of performance against number of training samples. It is there now as a dashed line with square markers, and deliberately without a confidence band: it tracks arm P within a few thousandths on every dataset, so a third ribbon would overlap arm P's almost exactly and read as a wider red band rather than a second series. The interval that decides H5 is on the paired difference and already has its own figure. Two things came out of drawing it that were not asked for and are worth recording. The palette validator rejected the purple the H5 forest plot\u2026"
+   "lead": "Two asks. First, put H5's arm on the plot of performance against number of training samples."
   },
   {
    "date": "2026-09-13",
    "time": "20:40",
    "title": "Four questions about the frontier reader, none of them bought",
    "kind": "decide",
-   "lead": "Asked whether the frontier model might be overthinking, whether to try luna, terra and sol at the lowest effort, whether the API offers `astra`, and whether the credits stretch to it. Answered from the archive and the service metadata rather than by running anything, because the last of those questions is the one that decides the first three and I cannot read the balance: the service has no credit endpoint and the figure lives only in its UI. The overthinking evidence, the dermamnist concept-collapse signal and the corrected costs are in CHANGELOG.md; the model family, the pricing table\u2026"
+   "lead": "Asked whether the frontier model might be overthinking, whether to try luna, terra and sol at the lowest effort, whether the API offers astra, and whether the credits stretch to it."
   },
   {
    "date": "2026-09-13",
    "time": "21:00",
    "title": "\"Test the reasoning level idea on terra. Test the model capabilities at low reasoning for Luna, terra, and Sol\"",
    "kind": "direct",
-   "lead": "Approved after the costing of the previous turn, and with the caveat standing that the credit balance cannot be read from here \u2014 the service has no endpoint for it, so this is the owner's approved spend rather than a verified one. Registered as two hypotheses rather than one, because they ask different questions of the same calls. **H6** holds `gpt-5.6-terra` fixed and lowers the effort from `medium` to `low`, which is the direct test of whether H4b measured a capability or an operating point; it is one-sided toward the overthinking reading, and the count the other way is reported beside\u2026"
+   "lead": "Approved after the costing of the previous turn, and with the caveat standing that the credit balance cannot be read from here \u2014 the service has no endpoint for it, so this is the owner's approved spend rather than a\u2026"
   },
   {
    "date": "2026-09-13",
    "time": "22:15",
    "title": "H6 and H7 decided",
    "kind": "run",
-   "lead": "Both ran to the report in about seventy minutes and cost $38.76 at list, $19.38 at `flex`, under the $53.59 / $26.79 quoted before the owner approved it. Findings are in CHANGELOG.md. Short version: **H6 not supported** \u2014 lowering the frontier model's effort helped on 3 of 11 datasets and hurt on 8 \u2014 but the one interval clear of zero anywhere in it is dermamnist at +0.128, which is the dataset the archive had singled out before any call was bought, from a concept the model was collapsing to a single answer. The general overthinking claim is wrong here and the specific one was right. **H7\u2026"
+   "lead": "Both ran to the report in about seventy minutes and cost $38.76 at list, $19.38 at flex, under the $53.59 / $26.79 quoted before the owner approved it. Findings are in CHANGELOG.md."
   },
   {
    "date": "2026-09-13",
    "time": "22:25",
    "title": "A hyperlinked contents page",
    "kind": "build",
-   "lead": "Asked for one, and the report had grown to seventy-four pages, so it earned it. Three things had to change beyond adding `\\tableofcontents`. Every results and methods heading was a starred `\\subsection*`, and starred headings never reach a contents page, so a naive ToC would have listed six top-level sections and none of the seven hypotheses \u2014 the entries a reader actually wants. They are unstarred and therefore numbered now, which also makes them cross-referenceable; nothing else about them changed. The bibliography section was starred for the same reason and is now appendix C. The\u2026"
+   "lead": "Asked for one, and the report had grown to seventy-four pages, so it earned it. Three things had to change beyond adding \\tableofcontents."
   },
   {
    "date": "2026-09-13",
    "time": "23:05",
    "title": "Visuals for H6 and H7",
    "kind": "build",
-   "lead": "Two figures, each shaped by what its hypothesis has to show rather than by reusing the forest plot the report already has twice. **H6 is a dumbbell**, one row per dataset, the two efforts joined, sorted by the higher effort's reading, with the difference and its interval printed at the right and only the clear intervals drawn solid. A forest plot of differences alone would have hidden the finding: what makes dermamnist interesting is not only that its difference is large but that it sits at the bottom of the AUC axis, and the sort makes the two facts one picture. The other ten datasets are\u2026"
+   "lead": "Two figures, each shaped by what its hypothesis has to show rather than by reusing the forest plot the report already has twice."
   },
   {
    "date": "2026-09-14",
    "time": "06:55",
    "title": "\"Clean up hanging checkouts or branches that were never merged in\"",
    "kind": "decide",
-   "lead": "The ask: one clean lineage for the talk, everything accounted for, and results that are always in the owner's checkout rather than somewhere a future session left them. Three things were wrong, and none of them was a branch. **The results were already only in `~/Code/textbook_priors`** \u2014 587 archive files, twelve each of sample / prompts / prompts_txt / scores / features / evaluate, twenty-four classify, twenty figures, twelve tables and the 15M PDF. The session worktree held no results at all. So nothing had to be moved; what had to change is that nothing can put them anywhere else again.\u2026"
+   "lead": "The ask: one clean lineage for the talk, everything accounted for, and results that are always in the owner's checkout rather than somewhere a future session left them."
   },
   {
    "date": "2026-09-16",
    "time": "23:25",
    "title": "\"The talk as a website: science as the spine, reproducibility as callouts\"",
    "kind": "direct",
-   "lead": "The talk is no longer a deck. Asked for a science talk about the medical-imaging-with-LLMs study with commentary throughout about reproducible research assisted by AI, delivered as a scrolling website with interactive elements, a QR code at the top so the room can follow on its own devices, and hosted on GitHub Pages. That inverts `TALK.md` \u00a75: the science is the talk, and the reproducibility-with-AI argument rides on it as on-slide callouts of three kinds \u2014 a blue **Principle** (a `WORKFLOW.md` \u00a75 principle stated as the failure it prevents), an amber **Near miss** (something that nearly\u2026"
+   "lead": "The talk is no longer a deck."
   }
  ],
  "kinds": [
@@ -315,10 +315,10 @@
    "label": "work was removed"
   }
  ],
- "kind_note": "The kind of each entry is the one hand-assigned field in this export (talk/scripts/export_talk_data.py); everything else is the file's own heading and first paragraph.",
+ "kind_note": "Only the kind of each entry was assigned by hand; the rest is the file's own heading and first paragraph.",
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-17T03:36:05Z",
+  "exported": "2026-09-17T12:02:58Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
    "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",

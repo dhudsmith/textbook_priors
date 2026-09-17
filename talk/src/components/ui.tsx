@@ -164,10 +164,11 @@ export function Dots({ per, order, label }: {
   per: Record<string, boolean>; order: string[]; label: string;
 }) {
   const shown = order.filter((d) => d in per);
+  const won = shown.filter((d) => per[d]);
   return (
     <span className="dots" role="img"
-          aria-label={`${label}: ${shown.filter((d) => per[d]).join(", ") || "none"} of ` +
-                      `${shown.length}`}>
+          aria-label={`${label}: won on ${won.length} of ${shown.length} — ` +
+                      `${won.join(", ") || "none"}`}>
       {shown.map((d) => (
         <svg key={d} width="11" height="11" viewBox="0 0 11 11">
           <title>{`${d}: ${per[d] ? "won" : "did not win"}`}</title>
