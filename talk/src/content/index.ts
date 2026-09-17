@@ -50,11 +50,36 @@ export const KIND_BLURB: Record<CalloutKind, string> = {
 /* ------------------------------------------------------------------------------------------ */
 
 export const title = {
+  header: "Reproducible Scientific Computing with AI Coding Agents",
+  /* The study's own question. Held out of the title band while the opening is re-cut: the intro
+     below poses the project in the room's words, and two questions under one header read as a
+     non-sequitur. Still the question the science answers. */
   question: "Can a vision-language model's textbook knowledge of what pathology looks like stand in for labelled data?",
   standfirst:
-    "Twelve MedMNIST benchmarks. A cited bank of visual features. Five arms, two of them using " +
-    "no labels, and seven hypotheses whose decision rules were written before their numbers " +
-    "existed. One Snakemake workflow, from fixed inputs to the report.",
+    "Here is a proposition much of this room will find reckless. Hand the machinery of a " +
+    "computational study to a generative AI agent — the code, the job submissions, the analysis, " +
+    "the figures, the report — and keep for yourself only the part that makes it science. The " +
+    "objection writes itself: how do you trust a result you did not compute yourself? This talk " +
+    "answers with a study rather than an opinion.",
+  intro: {
+    lede:
+      "To make that concrete, we start a new project — one that had been sitting at the back of " +
+      "my mind for a while.",
+    question: "Can out-of-the-box vision-language models (VLMs) classify medical images?",
+    body:
+      "We largely automated the answering of it. Largely is the honest word, and what the human " +
+      "still had to do is most of what this talk is about. Here is what came out.",
+  },
+  workflow: {
+    header: "The shape of the thing",
+    lede:
+      "Fixed inputs on the left, one workflow in the middle, generated outputs on the right. " +
+      "Two different machines wear the word AI here, and keeping them apart is the whole trick: " +
+      "the agent wrote the workflow, and the model under study is something the workflow calls.",
+    caption:
+      "Solid arrows are data. Dashed arrows are authorship — what the agent wrote, rather than " +
+      "what the workflow ran.",
+  },
   qr: "Follow along on your own device",
 };
 

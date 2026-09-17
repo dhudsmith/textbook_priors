@@ -891,3 +891,42 @@ keep a floor width so a phone scrolls them instead of squeezing them; and the pa
 content widths. The export script was changed for two of its items only — timeline leads are
 stripped of Markdown, cut at a sentence boundary and sorted by timestamp — and re-run, so
 `timeline.json` is the one data file that moved.
+
+## 2026-09-17 16:45 — The opening re-cut: the method is the talk, the study is the demonstration
+
+The user began a batch of copy edits on the talk site, delivered in conversation rather than as
+review comments on a branch, and the first batch moved the talk's centre of gravity. The title
+became *Reproducible Scientific Computing with AI Coding Agents*: the subject is now the method,
+and the medical-imaging study is what demonstrates it. The tagline had been a list of the study's
+apparatus — twelve benchmarks, five arms, seven hypotheses — and was asked to carry the
+proposition instead, stated as the audacious and possibly controversial thing it is: hand the
+machinery of a computational study to a generative agent and keep only the part that makes it
+science. The objection the room will raise is now named in the tagline rather than left implicit.
+
+The numbers needed a context they had lost. An intro was added between the tagline and the stat
+tiles that starts the project in front of the audience — *a project that had been sitting at the
+back of my mind* — poses it as "Can out-of-the-box vision-language models classify medical
+images?", and says the answering of it was largely automated, so that four days, 58,409 calls,
+twelve datasets and 379 tests read as the demonstration's cost rather than as credentials. No
+number entered `content/index.ts`: the tiles still assemble them from the snapshot.
+
+The study's own question — whether textbook knowledge stands in for labelled data — was held out
+of the title band rather than deleted. Two questions under one header read as a non-sequitur, and
+the user asked to leave that line for a later batch; it stays in the content file with a comment
+saying why it is not rendered.
+
+The user also asked for a workflow diagram of the code structure. `WorkflowDiagram` draws the
+fixed inputs, the one workflow and the generated outputs left to right, with the seven stages and
+their job counts inside the Snakemake box. Its point is the distinction the talk depends on and
+the room will not make unaided: two different machines wear the word AI here. The coding agent is
+an author — dashed violet arrows to the concept bank, to the workflow and to the report and this
+page — while the VLM under study authors nothing and hangs below the workflow as a service the
+score stage calls. Solid arrows are data, dashed arrows are authorship, and the legend says so.
+
+The diagram was checked by rendering the component headlessly with `react-dom/server` and
+`rsvg-convert`, there being no browser on the runner. The first render showed what a build cannot:
+a missing human-to-agent arrow, two dashed arrows struck through the column headers they crossed,
+and a twelve-pixel gap for a double-headed arrow. All three were fixed before the push.
+
+The premise section now opens on ground the title band has already covered. Grafting the two
+together is the user's next batch.

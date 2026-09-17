@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { useTalk } from "../state";
 import { Band, CountTile, Header, Tile } from "../components/ui";
+import { WorkflowDiagram } from "../components/diagrams";
 import { title as copy } from "../content";
 
 /* The QR code is rendered client-side from the page's own URL, so it is right wherever the site
@@ -29,12 +30,14 @@ export function Title() {
     <Band id="top">
       <div className="title-band title-grid">
         <div>
-          <Header id="top" eyebrow="Clemson HPC Day">Textbook priors over visual features</Header>
-          <p className="lede">{copy.question}</p>
-          <p className="note presenter-hide" style={{ maxWidth: "34rem" }}>{copy.standfirst}</p>
+          <Header id="top" eyebrow="Clemson HPC Day">{copy.header}</Header>
+          <p className="lede">{copy.standfirst}</p>
         </div>
         <PageQR caption={copy.qr} />
       </div>
+      <p>{copy.intro.lede}</p>
+      <p className="pullquote">{copy.intro.question}</p>
+      <p>{copy.intro.body}</p>
       <div className="tiles">
         <Tile value={led.work_dates.length}
               unit="days of work, from the plan to the report" />
@@ -47,6 +50,11 @@ export function Title() {
         <code>talk/scripts/export_talk_data.py</code> from commit{" "}
         <code>{study.provenance.run_git_commit.slice(0, 10)}</code>.
       </p>
+
+      <h3>{copy.workflow.header}</h3>
+      <p>{copy.workflow.lede}</p>
+      <WorkflowDiagram />
+      <p className="note">{copy.workflow.caption}</p>
     </Band>
   );
 }

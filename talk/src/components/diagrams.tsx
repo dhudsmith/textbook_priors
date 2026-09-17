@@ -106,6 +106,155 @@ export function ArmDiagram() {
   );
 }
 
+/* The opening diagram: what the agent built, and where the two different machines called AI sit.
+   The agent authored the bank, the workflow and the page - dashed, in the agent's own violet. The
+   model under study is not an author at all: it is a service one stage calls, on the data path
+   like any other tool, and it is drawn that way on purpose. */
+export function WorkflowDiagram() {
+  const { study } = useTalk();
+  const led = study.ledger;
+  const box = (x: number, y: number, w: number, h: number, fill: string, stroke?: string) =>
+    <rect x={x} y={y} width={w} height={h} rx={6} fill={fill}
+          stroke={stroke ?? "var(--rule-strong)"} />;
+  const head = (x: number, label: string) => (
+    <text x={x} y={76} textAnchor="middle" fill="var(--ink-muted)"
+          style={{ fontSize: 10, letterSpacing: "0.09em" }}>
+      {label}
+    </text>
+  );
+
+  return (
+    <svg className="plot" viewBox="0 0 760 400" width="100%" role="img" style={{ maxWidth: "52rem" }}
+         aria-label={
+           "A human directs an AI coding agent. The agent wrote three things: the concept bank, " +
+           "the Snakemake workflow, and the report and this page. The workflow takes two fixed " +
+           "inputs - the concept bank and the twelve MedMNIST datasets - runs seven stages, and " +
+           "produces the write-protected response archive, the tables and figures, and the " +
+           "report. The vision-language model under study is a service the score stage calls; it " +
+           "writes none of the code."}>
+      <defs>
+        <marker id="wf-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
+                markerHeight="6" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--rule-strong)" />
+        </marker>
+        <marker id="wf-arrow-back" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="6"
+                markerHeight="6" orient="auto">
+          <path d="M10 0 L0 5 L10 10 z" fill="var(--rule-strong)" />
+        </marker>
+        <marker id="wf-arrow-agent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
+                markerHeight="6" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--agent)" />
+        </marker>
+      </defs>
+
+      <g style={{ fontFamily: "var(--sans)", fontSize: 12 }}>
+        {/* who authored it */}
+        {box(8, 6, 160, 40, "var(--surface-sunken)")}
+        <text x={88} y={24} textAnchor="middle" fill="var(--ink)">human</text>
+        <text x={88} y={38} textAnchor="middle" fill="var(--ink-muted)"
+              style={{ fontSize: 10 }}>asks · reads · decides · catches</text>
+
+        {box(246, 6, 196, 40, "var(--agent-wash)", "var(--agent)")}
+        <text x={344} y={24} textAnchor="middle" fill="var(--ink)">AI coding agent</text>
+        <text x={344} y={38} textAnchor="middle" fill="var(--ink-muted)"
+              style={{ fontSize: 10 }}>writes · runs · records</text>
+
+        <text x={207} y={20} textAnchor="middle" fill="var(--ink-muted)"
+              style={{ fontSize: 10 }}>directs</text>
+
+        {head(88, "FIXED INPUTS")}
+        {head(360, "ONE WORKFLOW")}
+        {head(600, "GENERATED OUTPUTS")}
+
+        {/* fixed inputs */}
+        {box(8, 92, 160, 52, "var(--surface-raised)")}
+        <text x={88} y={114} textAnchor="middle" fill="var(--ink)">concept bank</text>
+        <text x={88} y={130} textAnchor="middle" fill="var(--ink-muted)"
+              style={{ fontSize: 10.5 }}>cited visual features</text>
+
+        {box(8, 168, 160, 52, "var(--surface-raised)")}
+        <text x={88} y={190} textAnchor="middle" fill="var(--ink)">
+          {led.datasets} MedMNIST datasets
+        </text>
+        <text x={88} y={206} textAnchor="middle" fill="var(--ink-muted)"
+              style={{ fontSize: 10.5 }}>images and labels</text>
+
+        {/* the workflow, and the stages it is made of */}
+        {box(246, 92, 196, 212, "var(--surface-sunken)")}
+        <text x={344} y={116} textAnchor="middle" fill="var(--ink)"
+              style={{ fontWeight: 700 }}>Snakemake</text>
+        <text x={344} y={131} textAnchor="middle" fill="var(--ink-muted)"
+              style={{ fontSize: 10 }}>one file, every number a rule</text>
+        {study.stages.map((s, i) => (
+          <g key={s.id}>
+            <text x={266} y={155 + i * 21} fill="var(--ink-secondary)"
+                  style={{ fontSize: 11 }}>{s.name}</text>
+            <text x={422} y={155 + i * 21} textAnchor="end" fill="var(--ink-muted)"
+                  style={{ fontFamily: "var(--mono)", fontSize: 10 }}>{s.jobs}</text>
+          </g>
+        ))}
+
+        {/* the model under study: called, not consulted about the code */}
+        {box(246, 344, 196, 44, "var(--surface-raised)", "var(--ink-muted)")}
+        <text x={344} y={364} textAnchor="middle" fill="var(--ink)">VLM service</text>
+        <text x={344} y={379} textAnchor="middle" fill="var(--ink-muted)"
+              style={{ fontSize: 10 }}>the object of study</text>
+        <text x={452} y={329} fill="var(--ink-muted)"
+              style={{ fontSize: 10 }}>the score stage calls it</text>
+
+        {/* generated outputs */}
+        {box(500, 92, 200, 56, "var(--surface-raised)")}
+        <text x={600} y={113} textAnchor="middle" fill="var(--ink)">response archive</text>
+        <text x={600} y={128} textAnchor="middle" fill="var(--ink-muted)"
+              style={{ fontSize: 10.5 }}>{led.calls.toLocaleString("en-US")} raw replies</text>
+        <text x={600} y={141} textAnchor="middle" fill="var(--ink-muted)"
+              style={{ fontSize: 10 }}>write-protected</text>
+
+        {box(500, 164, 200, 48, "var(--surface-raised)")}
+        <text x={600} y={186} textAnchor="middle" fill="var(--ink)">results</text>
+        <text x={600} y={201} textAnchor="middle" fill="var(--ink-muted)"
+              style={{ fontSize: 10.5 }}>tables, figures, intervals</text>
+
+        {box(500, 228, 200, 48, "var(--surface-raised)")}
+        <text x={600} y={250} textAnchor="middle" fill="var(--ink)">report, and this page</text>
+        <text x={600} y={265} textAnchor="middle" fill="var(--ink-muted)"
+              style={{ fontSize: 10.5 }}>generated, never typed</text>
+
+        {/* data, and the one line that is neither data nor authorship */}
+        <g stroke="var(--rule-strong)" strokeWidth={1.4} fill="none" markerEnd="url(#wf-arrow)">
+          <path d="M168 26 H240" />
+          <path d="M168 118 H240" />
+          <path d="M168 194 H240" />
+          <path d="M442 120 H494" />
+          <path d="M442 188 H494" />
+          <path d="M442 252 H494" />
+        </g>
+        <path d="M344 310 V338" stroke="var(--rule-strong)" strokeWidth={1.4} fill="none"
+              markerEnd="url(#wf-arrow)" markerStart="url(#wf-arrow-back)" />
+
+        {/* authorship. Both arrows off the agent's underside land clear of the column headers:
+            the bank is entered right of its own, the workflow left of its own. */}
+        <g stroke="var(--agent)" strokeWidth={1.4} fill="none" strokeDasharray="5 4"
+           markerEnd="url(#wf-arrow-agent)">
+          <path d="M268 46 C216 46 176 62 142 86" />
+          <path d="M280 46 C274 60 274 72 272 86" />
+          <path d="M442 26 H722 Q730 26 730 34 V244 Q730 252 722 252 H706" />
+        </g>
+
+        {/* legend */}
+        <g style={{ fontSize: 10 }}>
+          <path d="M8 336 H44" stroke="var(--rule-strong)" strokeWidth={1.4}
+                markerEnd="url(#wf-arrow)" />
+          <text x={52} y={340} fill="var(--ink-muted)">data</text>
+          <path d="M8 358 H44" stroke="var(--agent)" strokeWidth={1.4} strokeDasharray="5 4"
+                markerEnd="url(#wf-arrow-agent)" />
+          <text x={52} y={362} fill="var(--ink-muted)">written by the agent</text>
+        </g>
+      </g>
+    </svg>
+  );
+}
+
 export function StageStrip({ blurbs }: { blurbs: Record<string, string> }) {
   const { study } = useTalk();
   const [open, setOpen] = useState<string | null>(null);
