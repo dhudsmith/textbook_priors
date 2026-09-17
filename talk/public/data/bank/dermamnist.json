@@ -1,0 +1,759 @@
+{
+ "dataset": "dermamnist",
+ "modality": "3-channel colour dermatoscopic images of pigmented skin lesions",
+ "task": "multi-class",
+ "source_dataset": "HAM10000 (Tschandl et al. 2018)",
+ "provenance": {
+  "method": "literature review with a web-connected assistant",
+  "assistant": "Claude Opus 5 (claude-opus-5), 2026-09-09",
+  "reviewed_by": "simulated review by Claude Opus 5 (claude-opus-5), 2026-09-09; no clinician has reviewed this file",
+  "sources": [
+   {
+    "key": "yang2023",
+    "citation": "Yang J, Shi R, Wei D, Liu Z, Zhao L, Ke B, Pfister H, Ni B. MedMNIST v2 - A large-scale lightweight benchmark for 2D and 3D biomedical image classification. Scientific Data 2023;10:41.",
+    "doi": "10.1038/s41597-022-01721-8",
+    "used_for": []
+   },
+   {
+    "key": "tschandl2018",
+    "citation": "Tschandl P, Rosendahl C, Kittler H. The HAM10000 dataset, a large collection of multi-source dermatoscopic images of common pigmented skin lesions. Scientific Data 2018;5:180161.",
+    "doi": "10.1038/sdata.2018.161",
+    "used_for": []
+   },
+   {
+    "key": "nachbar1994",
+    "citation": "Nachbar F, Stolz W, Merkle T, Cognetta AB, Vogt T, Landthaler M, Bilek P, Braun-Falco O, Plewig G. The ABCD rule of dermatoscopy. High prospective value in the diagnosis of doubtful melanocytic skin lesions. Journal of the American Academy of Dermatology 1994;30(4):551-559.",
+    "doi": "10.1016/S0190-9622(94)70061-3",
+    "used_for": [
+     "asymmetry_and_border",
+     "colour_count"
+    ]
+   },
+   {
+    "key": "abbasi2004",
+    "citation": "Abbasi NR, Shaw HM, Rigel DS, Friedman RJ, McCarthy WH, Osman I, Kopf AW, Polsky D. Early diagnosis of cutaneous melanoma: revisiting the ABCD criteria. JAMA 2004;292(22):2771-2776.",
+    "doi": "10.1001/jama.292.22.2771",
+    "used_for": [
+     "asymmetry_and_border",
+     "colour_count"
+    ]
+   },
+   {
+    "key": "argenziano1998",
+    "citation": "Argenziano G, Fabbrocini G, Carli P, De Giorgi V, Sammarco E, Delfino M. Epiluminescence microscopy for the diagnosis of doubtful melanocytic skin lesions. Comparison of the ABCD rule of dermatoscopy and a new 7-point checklist based on pattern analysis. Archives of Dermatology 1998;134(12):1563-1570.",
+    "doi": "10.1001/archderm.134.12.1563",
+    "used_for": [
+     "pigment_network",
+     "network_atypia",
+     "blue_white_structures"
+    ]
+   },
+   {
+    "key": "argenziano2003",
+    "citation": "Argenziano G, Soyer HP, Chimenti S, Talamini R, Corona R, Sera F, et al. Dermoscopy of pigmented skin lesions: results of a consensus meeting via the Internet. Journal of the American Academy of Dermatology 2003;48(5):679-693.",
+    "doi": "10.1067/mjd.2003.281",
+    "used_for": [
+     "asymmetry_and_border",
+     "pigment_network",
+     "network_atypia",
+     "blue_white_structures",
+     "milia_like_cysts_and_comedo_openings",
+     "surface_keratin_or_scale"
+    ]
+   },
+   {
+    "key": "kittler2016",
+    "citation": "Kittler H, Marghoob AA, Argenziano G, Carrera C, Curiel-Lewandrowski C, Hofmann-Wellenhof R, et al. Standardization of terminology in dermoscopy/dermatoscopy: results of the third consensus conference of the International Society of Dermoscopy. Journal of the American Academy of Dermatology 2016;74(6):1093-1106.",
+    "doi": "10.1016/j.jaad.2015.12.038",
+    "used_for": [
+     "colour_count",
+     "pigment_network",
+     "network_atypia",
+     "blue_white_structures",
+     "arborizing_vessels",
+     "leaf_like_or_spoke_wheel_areas",
+     "milia_like_cysts_and_comedo_openings",
+     "surface_keratin_or_scale",
+     "red_lacunae",
+     "central_white_patch"
+    ]
+   },
+   {
+    "key": "menzies2000",
+    "citation": "Menzies SW, Westerhoff K, Rabinovitz H, Kopf AW, McCarthy WH, Katz B. Surface microscopy of pigmented basal cell carcinoma. Archives of Dermatology 2000;136(8):1012-1016.",
+    "doi": "10.1001/archderm.136.8.1012",
+    "used_for": [
+     "pigment_network",
+     "blue_white_structures",
+     "arborizing_vessels",
+     "leaf_like_or_spoke_wheel_areas"
+    ]
+   },
+   {
+    "key": "braun2002",
+    "citation": "Braun RP, Rabinovitz HS, Krischer J, Kreusch J, Oliviero M, Naldi L, Kopf AW, Saurat JH. Dermoscopy of pigmented seborrheic keratosis: a morphological study. Archives of Dermatology 2002;138(12):1556-1560.",
+    "doi": "10.1001/archderm.138.12.1556",
+    "used_for": [
+     "pigment_network",
+     "network_atypia",
+     "arborizing_vessels",
+     "milia_like_cysts_and_comedo_openings",
+     "surface_keratin_or_scale"
+    ]
+   },
+   {
+    "key": "zaballos2008",
+    "citation": "Zaballos P, Puig S, Llambrich A, Malvehy J. Dermoscopy of dermatofibromas: a prospective morphological study of 412 cases. Archives of Dermatology 2008;144(1):75-83.",
+    "doi": "10.1001/archdermatol.2007.8",
+    "used_for": [
+     "colour_count",
+     "pigment_network",
+     "network_atypia",
+     "central_white_patch"
+    ]
+   },
+   {
+    "key": "zaballos2007a",
+    "citation": "Zaballos P, Daufi C, Puig S, Argenziano G, Moreno-Ramirez D, Cabo H, Marghoob AA, Llambrich A, Zalaudek I, Malvehy J. Dermoscopy of solitary angiokeratomas: a morphological study. Archives of Dermatology 2007;143(3):318-325.",
+    "doi": "10.1001/archderm.143.3.318",
+    "used_for": [
+     "red_lacunae",
+     "background_erythema",
+     "surface_keratin_or_scale"
+    ]
+   },
+   {
+    "key": "zalaudek2012",
+    "citation": "Zalaudek I, Giacomel J, Schmid K, Bondino S, Rosendahl C, Cavicchini S, et al. Dermatoscopy of facial actinic keratosis, intraepidermal carcinoma, and invasive squamous cell carcinoma: a progression model. Journal of the American Academy of Dermatology 2012;66(4):589-597.",
+    "doi": "10.1016/j.jaad.2011.02.011",
+    "used_for": [
+     "background_erythema",
+     "surface_keratin_or_scale",
+     "pigment_network"
+    ]
+   },
+   {
+    "key": "altamura2010",
+    "citation": "Altamura D, Menzies SW, Argenziano G, Zalaudek I, Soyer HP, Sera F, Avramidis M, DeAmbrosis K, Fargnoli MC, Peris K. Dermatoscopy of basal cell carcinoma: morphologic variability of global and local features and accuracy of diagnosis. Journal of the American Academy of Dermatology 2010;62(1):67-75.",
+    "doi": "10.1016/j.jaad.2009.05.035",
+    "used_for": [
+     "arborizing_vessels",
+     "blue_white_structures",
+     "leaf_like_or_spoke_wheel_areas",
+     "pigment_network"
+    ]
+   },
+   {
+    "key": "elgart2001",
+    "citation": "Elgart GW. Seborrheic keratoses, solar lentigines, and lichenoid keratoses. Dermatoscopic features and correlation to histology and clinical signs. Dermatologic Clinics 2001;19(2):347-357.",
+    "doi": "10.1016/S0733-8635(05)70272-2",
+    "used_for": [
+     "milia_like_cysts_and_comedo_openings",
+     "surface_keratin_or_scale",
+     "pigment_network"
+    ]
+   },
+   {
+    "key": "sahin2004",
+    "citation": "Sahin MT, Ozturkcan S, Ermertcan AT, Gunes AT. A comparison of dermoscopic features among lentigo senilis/initial seborrheic keratosis, seborrheic keratosis, lentigo maligna and lentigo maligna melanoma on the face. The Journal of Dermatology 2004;31(11):884-889.",
+    "doi": "10.1111/j.1346-8138.2004.tb00621.x",
+    "used_for": [
+     "milia_like_cysts_and_comedo_openings",
+     "surface_keratin_or_scale",
+     "pigment_network"
+    ]
+   },
+   {
+    "key": "zaballos2007b",
+    "citation": "Zaballos P, Blazquez S, Puig S, Salsench E, Rodero J, Vives JM, Malvehy J. Dermoscopic pattern of intermediate stage in seborrhoeic keratosis regressing to lichenoid keratosis: report of 24 cases. British Journal of Dermatology 2007;157(2):266-272.",
+    "doi": "10.1111/j.1365-2133.2007.07963.x",
+    "used_for": [
+     "milia_like_cysts_and_comedo_openings",
+     "blue_white_structures",
+     "surface_keratin_or_scale"
+    ]
+   },
+   {
+    "key": "bugatti2007",
+    "citation": "Bugatti L, Filosa G. Dermoscopy of lichen planus-like keratosis: a model of inflammatory regression. Journal of the European Academy of Dermatology and Venereology 2007;21(10):1392-1397.",
+    "doi": "10.1111/j.1468-3083.2007.02296.x",
+    "used_for": [
+     "blue_white_structures",
+     "background_erythema",
+     "central_white_patch"
+    ]
+   }
+  ]
+ },
+ "concepts": [
+  {
+   "id": "asymmetry_and_border",
+   "question": "Taken together, is the lesion asymmetric about one or both of its axes, and does its pigment stop abruptly at the edge rather than fading evenly into the surrounding skin?",
+   "scale": [
+    "absent",
+    "mild",
+    "marked"
+   ],
+   "sources": [
+    "nachbar1994",
+    "abbasi2004",
+    "argenziano2003"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "The halves match across both perpendicular axes, and pigment fades gradually into the skin around the whole rim.",
+     "sources": [
+      "nachbar1994"
+     ]
+    },
+    "mild": {
+     "text": "Asymmetry across one of the two axes only, or an abrupt pigment cut-off in up to about three of the eight perimeter segments.",
+     "sources": [
+      "nachbar1994"
+     ]
+    },
+    "marked": {
+     "text": "Asymmetry across both perpendicular axes, or an abrupt cut-off over four or more of the eight segments, half the rim.",
+     "sources": [
+      "nachbar1994"
+     ]
+    }
+   }
+  },
+  {
+   "id": "colour_count",
+   "question": "How many clearly different colours are present in the lesion, counting light brown, dark brown, black, red, white and blue-grey?",
+   "scale": [
+    "one",
+    "two",
+    "three_or_more"
+   ],
+   "sources": [
+    "nachbar1994",
+    "abbasi2004",
+    "kittler2016",
+    "zaballos2008"
+   ],
+   "anchors": {
+    "one": {
+     "text": "A single one of the six hues covers the lesion; lighter and darker shading of that same hue is not a second colour.",
+     "sources": [
+      "nachbar1994"
+     ]
+    },
+    "two": {
+     "text": "Two of the six each hold their own area, told apart where they meet rather than blending as one gradient.",
+     "sources": [
+      "nachbar1994",
+      "kittler2016"
+     ]
+    },
+    "three_or_more": {
+     "text": "Three or more of the six each hold an area; white counts only where it is paler than the skin around the lesion.",
+     "sources": [
+      "nachbar1994"
+     ]
+    }
+   }
+  },
+  {
+   "id": "pigment_network",
+   "question": "Is a net-like grid of pigmented lines over a lighter background visible over any part of the lesion?",
+   "scale": [
+    "absent",
+    "present"
+   ],
+   "sources": [
+    "argenziano1998",
+    "argenziano2003",
+    "kittler2016",
+    "menzies2000",
+    "braun2002",
+    "zaballos2008",
+    "zalaudek2012",
+    "elgart2001",
+    "sahin2004",
+    "altamura2010"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "No grid of pigmented lines over a lighter background; pigment is structureless, blotchy, or made of separate globules.",
+     "sources": [
+      "kittler2016",
+      "argenziano2003"
+     ]
+    },
+    "present": {
+     "text": "A meshwork of brown lines enclosing lighter holes covers at least part of the lesion.",
+     "sources": [
+      "kittler2016",
+      "argenziano2003"
+     ]
+    }
+   }
+  },
+  {
+   "id": "network_atypia",
+   "question": "Where a net-like grid of pigmented lines is visible, are its lines thickened, darkened and broken and its holes uneven in size, rather than uniform and evenly spaced?",
+   "scale": [
+    "absent",
+    "present"
+   ],
+   "sources": [
+    "argenziano1998",
+    "argenziano2003",
+    "kittler2016",
+    "braun2002",
+    "zaballos2008"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "Lines even in thickness and colour, holes near-uniform in size and thinning gradually at the rim; or no grid at all.",
+     "sources": [
+      "argenziano2003",
+      "argenziano1998"
+     ]
+    },
+    "present": {
+     "text": "Lines thickened, darkened and broken, holes varying widely in size and shape, the grid ending abruptly at the edge.",
+     "sources": [
+      "argenziano1998",
+      "argenziano2003"
+     ]
+    }
+   }
+  },
+  {
+   "id": "blue_white_structures",
+   "question": "Are blue-grey or blue-white areas present in the lesion, as a hazy structureless veil, rounded grey-blue nests or globules, or fine grey dots?",
+   "scale": [
+    "absent",
+    "present"
+   ],
+   "sources": [
+    "argenziano1998",
+    "argenziano2003",
+    "kittler2016",
+    "menzies2000",
+    "bugatti2007",
+    "zaballos2007b",
+    "altamura2010"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "No blue, blue-grey or blue-white tone anywhere; the colours present are browns, tan, red or white only.",
+     "sources": [
+      "argenziano2003",
+      "kittler2016"
+     ]
+    },
+    "present": {
+     "text": "A confluent blue-grey veil, rounded blue-grey nests larger than globules, or a cluster of fine grey dots.",
+     "sources": [
+      "argenziano1998",
+      "menzies2000",
+      "kittler2016"
+     ]
+    }
+   }
+  },
+  {
+   "id": "arborizing_vessels",
+   "question": "Are large, sharply focused red vessels that branch repeatedly into progressively thinner branches visible over the lesion?",
+   "scale": [
+    "absent",
+    "present"
+   ],
+   "sources": [
+    "menzies2000",
+    "kittler2016",
+    "braun2002",
+    "altamura2010"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "No branching red vessel stands out in sharp focus; any redness is diffuse or too fine to follow as a line.",
+     "sources": [
+      "menzies2000",
+      "kittler2016"
+     ]
+    },
+    "present": {
+     "text": "At least one thick, sharply focused red vessel dividing two or more times into progressively finer branches.",
+     "sources": [
+      "menzies2000",
+      "altamura2010"
+     ]
+    }
+   }
+  },
+  {
+   "id": "leaf_like_or_spoke_wheel_areas",
+   "question": "Are brown-grey leaf-shaped lobules, or wheel-shaped areas with spokes radiating from a darker hub, present towards the edge of the lesion?",
+   "scale": [
+    "absent",
+    "present"
+   ],
+   "sources": [
+    "menzies2000",
+    "kittler2016",
+    "altamura2010"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "The periphery carries no discrete bulbous brown-grey lobules and no radial spokes converging on a darker hub.",
+     "sources": [
+      "menzies2000",
+      "kittler2016"
+     ]
+    },
+    "present": {
+     "text": "Discrete bulbous brown-grey extensions at the rim, or radial projections meeting at a darker central hub.",
+     "sources": [
+      "menzies2000",
+      "altamura2010"
+     ]
+    }
+   }
+  },
+  {
+   "id": "milia_like_cysts_and_comedo_openings",
+   "question": "Are small round whitish-yellow spots resembling tiny cysts, or dark round plugged openings, scattered over the lesion surface?",
+   "scale": [
+    "absent",
+    "few",
+    "many"
+   ],
+   "sources": [
+    "braun2002",
+    "argenziano2003",
+    "kittler2016",
+    "elgart2001",
+    "sahin2004",
+    "zaballos2007b"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "The surface carries no round whitish-yellow spots and no dark round plugged openings.",
+     "sources": [
+      "braun2002",
+      "kittler2016"
+     ]
+    },
+    "few": {
+     "text": "One to about three such spots or plugs, isolated against an otherwise plain lesion surface.",
+     "sources": [
+      "braun2002"
+     ]
+    },
+    "many": {
+     "text": "More than about three scattered over the lesion, the whitish spots giving a starry-sky look.",
+     "sources": [
+      "braun2002",
+      "elgart2001"
+     ]
+    }
+   }
+  },
+  {
+   "id": "surface_keratin_or_scale",
+   "question": "Does the surface look keratotic - dry white-to-yellow scale, a rough brain-like (cerebriform) surface, or deep fissures separating raised ridges?",
+   "scale": [
+    "absent",
+    "mild",
+    "marked"
+   ],
+   "sources": [
+    "braun2002",
+    "zalaudek2012",
+    "kittler2016",
+    "argenziano2003",
+    "zaballos2007a",
+    "elgart2001",
+    "sahin2004",
+    "zaballos2007b"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "The surface looks smooth and glossy: no white-yellow scale, no fissures, no ridged brain-like texture.",
+     "sources": [
+      "braun2002",
+      "kittler2016"
+     ]
+    },
+    "mild": {
+     "text": "Fine white scale in patches, or a few shallow fissures between ridges, over part of the surface only.",
+     "sources": [
+      "braun2002",
+      "elgart2001"
+     ]
+    },
+    "marked": {
+     "text": "Opaque yellow-white scale, or deep fissures and ridges, over most of the surface, hiding the colour beneath.",
+     "sources": [
+      "zalaudek2012",
+      "braun2002"
+     ]
+    }
+   }
+  },
+  {
+   "id": "red_lacunae",
+   "question": "Are sharply outlined round or oval lagoon-like areas of red, purple, blue or black colour present within the lesion?",
+   "scale": [
+    "absent",
+    "present"
+   ],
+   "sources": [
+    "zaballos2007a",
+    "kittler2016"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "No sharply outlined round or oval lagoons; any red present is diffuse and has no defined edge.",
+     "sources": [
+      "zaballos2007a",
+      "kittler2016"
+     ]
+    },
+    "present": {
+     "text": "One or more round-to-oval areas with a sharp border, red or purple, or blue to near-black where thrombosed.",
+     "sources": [
+      "zaballos2007a"
+     ]
+    }
+   }
+  },
+  {
+   "id": "central_white_patch",
+   "question": "Is there a structureless white or scar-like patch in the centre of the lesion, with the pigmentation confined to a ring around it?",
+   "scale": [
+    "absent",
+    "present"
+   ],
+   "sources": [
+    "zaballos2008",
+    "kittler2016",
+    "bugatti2007"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "No structureless pale zone at the middle; colour or pigment runs across the centre of the lesion.",
+     "sources": [
+      "zaballos2008"
+     ]
+    },
+    "present": {
+     "text": "A structureless white scar-like zone at the centre, with the pigment confined to a ring outside it.",
+     "sources": [
+      "zaballos2008",
+      "kittler2016"
+     ]
+    }
+   }
+  },
+  {
+   "id": "background_erythema",
+   "question": "Is the background of the lesion predominantly red or pink, rather than brown, tan or the colour of surrounding skin?",
+   "scale": [
+    "absent",
+    "mild",
+    "marked"
+   ],
+   "sources": [
+    "zalaudek2012",
+    "zaballos2007a",
+    "bugatti2007"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "The ground is brown, tan or the same colour as the skin around it, with no pink cast.",
+     "sources": [
+      "zalaudek2012"
+     ]
+    },
+    "mild": {
+     "text": "A pink cast over part of the ground, the remainder still brown, tan or the colour of the skin around it.",
+     "sources": [
+      "zalaudek2012",
+      "bugatti2007"
+     ]
+    },
+    "marked": {
+     "text": "A red-to-pink ground over most of the lesion, clearly redder than the skin around it.",
+     "sources": [
+      "zalaudek2012",
+      "zaballos2007a"
+     ]
+    }
+   }
+  }
+ ],
+ "classes": {
+  "actinic keratoses and intraepithelial carcinoma": {
+   "fingerprint": {
+    "asymmetry_and_border": "any",
+    "colour_count": "any",
+    "pigment_network": "absent",
+    "network_atypia": "absent",
+    "blue_white_structures": "absent",
+    "arborizing_vessels": "absent",
+    "leaf_like_or_spoke_wheel_areas": "absent",
+    "milia_like_cysts_and_comedo_openings": "absent",
+    "surface_keratin_or_scale": "marked",
+    "red_lacunae": "absent",
+    "central_white_patch": "absent",
+    "background_erythema": "marked"
+   },
+   "sources": [
+    "zalaudek2012",
+    "argenziano2003",
+    "tschandl2018",
+    "yang2023"
+   ]
+  },
+  "basal cell carcinoma": {
+   "fingerprint": {
+    "asymmetry_and_border": "any",
+    "colour_count": "any",
+    "pigment_network": "absent",
+    "network_atypia": "absent",
+    "blue_white_structures": "present",
+    "arborizing_vessels": "present",
+    "leaf_like_or_spoke_wheel_areas": "any",
+    "milia_like_cysts_and_comedo_openings": "absent",
+    "surface_keratin_or_scale": "absent",
+    "red_lacunae": "absent",
+    "central_white_patch": "absent",
+    "background_erythema": "any"
+   },
+   "sources": [
+    "menzies2000",
+    "altamura2010",
+    "kittler2016",
+    "argenziano2003",
+    "tschandl2018",
+    "yang2023"
+   ]
+  },
+  "benign keratosis-like lesions": {
+   "fingerprint": {
+    "asymmetry_and_border": "any",
+    "colour_count": "any",
+    "pigment_network": "any",
+    "network_atypia": "any",
+    "blue_white_structures": "any",
+    "arborizing_vessels": "absent",
+    "leaf_like_or_spoke_wheel_areas": "absent",
+    "milia_like_cysts_and_comedo_openings": "few",
+    "surface_keratin_or_scale": "mild",
+    "red_lacunae": "absent",
+    "central_white_patch": "absent",
+    "background_erythema": "any"
+   },
+   "sources": [
+    "braun2002",
+    "elgart2001",
+    "sahin2004",
+    "zaballos2007b",
+    "bugatti2007",
+    "tschandl2018",
+    "yang2023"
+   ]
+  },
+  "dermatofibroma": {
+   "fingerprint": {
+    "asymmetry_and_border": "absent",
+    "colour_count": "any",
+    "pigment_network": "present",
+    "network_atypia": "absent",
+    "blue_white_structures": "absent",
+    "arborizing_vessels": "absent",
+    "leaf_like_or_spoke_wheel_areas": "absent",
+    "milia_like_cysts_and_comedo_openings": "absent",
+    "surface_keratin_or_scale": "any",
+    "red_lacunae": "absent",
+    "central_white_patch": "present",
+    "background_erythema": "absent"
+   },
+   "sources": [
+    "zaballos2008",
+    "kittler2016",
+    "tschandl2018",
+    "yang2023"
+   ]
+  },
+  "melanoma": {
+   "fingerprint": {
+    "asymmetry_and_border": "marked",
+    "colour_count": "three_or_more",
+    "pigment_network": "present",
+    "network_atypia": "present",
+    "blue_white_structures": "present",
+    "arborizing_vessels": "absent",
+    "leaf_like_or_spoke_wheel_areas": "absent",
+    "milia_like_cysts_and_comedo_openings": "absent",
+    "surface_keratin_or_scale": "absent",
+    "red_lacunae": "absent",
+    "central_white_patch": "absent",
+    "background_erythema": "any"
+   },
+   "sources": [
+    "nachbar1994",
+    "abbasi2004",
+    "argenziano1998",
+    "argenziano2003",
+    "menzies2000",
+    "tschandl2018",
+    "yang2023"
+   ]
+  },
+  "melanocytic nevi": {
+   "fingerprint": {
+    "asymmetry_and_border": "absent",
+    "colour_count": "two",
+    "pigment_network": "present",
+    "network_atypia": "absent",
+    "blue_white_structures": "absent",
+    "arborizing_vessels": "absent",
+    "leaf_like_or_spoke_wheel_areas": "absent",
+    "milia_like_cysts_and_comedo_openings": "absent",
+    "surface_keratin_or_scale": "absent",
+    "red_lacunae": "absent",
+    "central_white_patch": "absent",
+    "background_erythema": "absent"
+   },
+   "sources": [
+    "nachbar1994",
+    "abbasi2004",
+    "argenziano2003",
+    "elgart2001",
+    "tschandl2018",
+    "yang2023"
+   ]
+  },
+  "vascular lesions": {
+   "fingerprint": {
+    "asymmetry_and_border": "any",
+    "colour_count": "any",
+    "pigment_network": "absent",
+    "network_atypia": "absent",
+    "blue_white_structures": "any",
+    "arborizing_vessels": "absent",
+    "leaf_like_or_spoke_wheel_areas": "absent",
+    "milia_like_cysts_and_comedo_openings": "absent",
+    "surface_keratin_or_scale": "any",
+    "red_lacunae": "present",
+    "central_white_patch": "absent",
+    "background_erythema": "marked"
+   },
+   "sources": [
+    "zaballos2007a",
+    "kittler2016",
+    "argenziano2003",
+    "tschandl2018",
+    "yang2023"
+   ]
+  }
+ }
+}

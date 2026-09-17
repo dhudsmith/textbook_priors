@@ -1,0 +1,464 @@
+{
+ "dataset": "pneumoniamnist",
+ "modality": "1-channel greyscale paediatric frontal chest radiographs",
+ "task": "binary",
+ "source_dataset": "Paediatric chest X-ray collection (Kermany et al. 2018)",
+ "provenance": {
+  "method": "literature review with a web-connected assistant",
+  "assistant": "Claude Opus 5 (claude-opus-5), 2026-09-09",
+  "reviewed_by": "simulated review by Claude Opus 5 (claude-opus-5), 2026-09-09; no clinician has reviewed this file",
+  "sources": [
+   {
+    "key": "yang2023",
+    "citation": "Yang J, Shi R, Wei D, Liu Z, Zhao L, Ke B, Pfister H, Ni B. MedMNIST v2 - A large-scale lightweight benchmark for 2D and 3D biomedical image classification. Scientific Data 2023;10:41.",
+    "doi": "10.1038/s41597-022-01721-8",
+    "used_for": [
+     "parenchymal_opacity"
+    ]
+   },
+   {
+    "key": "kermany2018",
+    "citation": "Kermany DS, Goldbaum M, Cai W, et al. Identifying medical diagnoses and treatable diseases by image-based deep learning. Cell 2018;172(5):1122-1131.e9.",
+    "doi": "10.1016/j.cell.2018.02.010",
+    "used_for": [
+     "parenchymal_opacity"
+    ]
+   },
+   {
+    "key": "who2001",
+    "citation": "World Health Organization Pneumonia Vaccine Trial Investigators' Group. Standardization of interpretation of chest radiographs for the diagnosis of pneumonia in children. Geneva: World Health Organization; 2001. WHO/V&B/01.35.",
+    "url": "https://iris.who.int/handle/10665/66956",
+    "used_for": [
+     "parenchymal_opacity",
+     "opacity_extent",
+     "opacity_density",
+     "linear_streaky_markings",
+     "air_bronchogram",
+     "peribronchial_thickening",
+     "costophrenic_angle_blunting"
+    ]
+   },
+   {
+    "key": "cherian2005",
+    "citation": "Cherian T, Mulholland EK, Carlin JB, et al. Standardized interpretation of paediatric chest radiographs for the diagnosis of pneumonia in epidemiological studies. Bulletin of the World Health Organization 2005;83:353-359.",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2626240/",
+    "used_for": [
+     "parenchymal_opacity",
+     "opacity_extent",
+     "opacity_density",
+     "linear_streaky_markings",
+     "air_bronchogram",
+     "peribronchial_thickening",
+     "costophrenic_angle_blunting"
+    ]
+   },
+   {
+    "key": "fancourt2017",
+    "citation": "Fancourt N, Deloria Knoll M, Barger-Kamate B, et al. Standardized Interpretation of Chest Radiographs in Cases of Pediatric Pneumonia From the PERCH Study. Clinical Infectious Diseases 2017;64(Suppl 3):S253-S261.",
+    "doi": "10.1093/cid/cix082",
+    "used_for": [
+     "parenchymal_opacity",
+     "opacity_extent",
+     "opacity_density",
+     "linear_streaky_markings",
+     "air_bronchogram",
+     "peribronchial_thickening",
+     "border_obscuration",
+     "costophrenic_angle_blunting"
+    ]
+   },
+   {
+    "key": "hansell2008",
+    "citation": "Hansell DM, Bankier AA, MacMahon H, McLoud TC, Muller NL, Remy J. Fleischner Society: glossary of terms for thoracic imaging. Radiology 2008;246(3):697-722.",
+    "doi": "10.1148/radiol.2462070712",
+    "used_for": [
+     "parenchymal_opacity",
+     "opacity_density",
+     "linear_streaky_markings",
+     "air_bronchogram",
+     "border_obscuration"
+    ]
+   },
+   {
+    "key": "bradley2011",
+    "citation": "Bradley JS, Byington CL, Shah SS, et al. The management of community-acquired pneumonia in infants and children older than 3 months of age: clinical practice guidelines by the Pediatric Infectious Diseases Society and the Infectious Diseases Society of America. Clinical Infectious Diseases 2011;53:e25-e76.",
+    "doi": "10.1093/cid/cir531",
+    "used_for": [
+     "parenchymal_opacity",
+     "opacity_extent",
+     "costophrenic_angle_blunting"
+    ]
+   },
+   {
+    "key": "andronikou2017",
+    "citation": "Andronikou S, Lambert E, Halton J, Hilder L, Crumley I, Lyttle MD, Kosack C. Guidelines for the use of chest radiographs in community-acquired pneumonia in children and adolescents. Pediatric Radiology 2017;47:1405-1411.",
+    "doi": "10.1007/s00247-017-3944-4",
+    "used_for": [
+     "parenchymal_opacity",
+     "opacity_density",
+     "linear_streaky_markings",
+     "costophrenic_angle_blunting"
+    ]
+   }
+  ]
+ },
+ "concepts": [
+  {
+   "id": "parenchymal_opacity",
+   "question": "Is any part of either lung field whiter than the surrounding dark, air-filled lung?",
+   "scale": [
+    "absent",
+    "subtle",
+    "definite"
+   ],
+   "sources": [
+    "yang2023",
+    "kermany2018",
+    "who2001",
+    "cherian2005",
+    "fancourt2017",
+    "hansell2008",
+    "bradley2011",
+    "andronikou2017"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "both lung fields read uniformly dark from apex to base apart from ribs, vessels and the heart shadow",
+     "sources": [
+      "who2001",
+      "cherian2005"
+     ]
+    },
+    "subtle": {
+     "text": "a faintly paler zone hard to separate from overlying rib or vessel shadow",
+     "sources": [
+      "fancourt2017",
+      "hansell2008"
+     ]
+    },
+    "definite": {
+     "text": "an area plainly whiter than the matching region of the opposite lung, with a discernible edge",
+     "sources": [
+      "hansell2008",
+      "who2001"
+     ]
+    }
+   }
+  },
+  {
+   "id": "opacity_extent",
+   "question": "How much of the combined lung area is taken up by whiter, less dark regions?",
+   "scale": [
+    "none",
+    "small_patch",
+    "lobe_sized",
+    "most_of_both_lungs"
+   ],
+   "sources": [
+    "who2001",
+    "cherian2005",
+    "fancourt2017",
+    "bradley2011"
+   ],
+   "anchors": {
+    "none": {
+     "text": "no zone is whiter than the surrounding lung; whiteness is confined to ribs, heart and hilar vessels",
+     "sources": [
+      "who2001",
+      "cherian2005"
+     ]
+    },
+    "small_patch": {
+     "text": "patchy whiteness too small to fill a lobe, below the magnitude WHO requires for primary-endpoint consolidation",
+     "sources": [
+      "who2001",
+      "cherian2005",
+      "fancourt2017"
+     ]
+    },
+    "lobe_sized": {
+     "text": "a dense or fluffy opacity occupying a portion or the whole of one lobe",
+     "sources": [
+      "who2001",
+      "cherian2005",
+      "fancourt2017"
+     ]
+    },
+    "most_of_both_lungs": {
+     "text": "whiteness covering an entire lung, or spread through the greater part of both lung fields",
+     "sources": [
+      "who2001",
+      "fancourt2017",
+      "bradley2011"
+     ]
+    }
+   }
+  },
+  {
+   "id": "opacity_density",
+   "question": "Where the lung looks whiter, are the fine vessel lines still visible through it, or completely hidden by solid whiteness?",
+   "scale": [
+    "none",
+    "hazy_lines_visible",
+    "solid_lines_hidden"
+   ],
+   "sources": [
+    "who2001",
+    "cherian2005",
+    "fancourt2017",
+    "hansell2008",
+    "andronikou2017"
+   ],
+   "anchors": {
+    "none": {
+     "text": "vessel and airway margins stay as crisp as those in the opposite lung throughout",
+     "sources": [
+      "hansell2008",
+      "andronikou2017"
+     ]
+    },
+    "hazy_lines_visible": {
+     "text": "a veil of added whiteness through which vessel and airway margins can still be traced",
+     "sources": [
+      "hansell2008",
+      "who2001"
+     ]
+    },
+    "solid_lines_hidden": {
+     "text": "homogeneous whiteness that hides vessel margins and airway walls, dense or fluffy rather than lacy",
+     "sources": [
+      "hansell2008",
+      "who2001",
+      "cherian2005"
+     ]
+    }
+   }
+  },
+  {
+   "id": "linear_streaky_markings",
+   "question": "Are fine linear, streaky or net-like white lines spread through both lung fields?",
+   "scale": [
+    "absent",
+    "mild",
+    "marked"
+   ],
+   "sources": [
+    "who2001",
+    "cherian2005",
+    "fancourt2017",
+    "hansell2008",
+    "andronikou2017"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "only smoothly tapering vessel branches; no extra streaky or net-like white lines",
+     "sources": [
+      "who2001",
+      "cherian2005"
+     ]
+    },
+    "mild": {
+     "text": "a few extra streaky lines beyond the tapering vessels, limited to one lung or to a couple of zones",
+     "sources": [
+      "fancourt2017",
+      "andronikou2017"
+     ]
+    },
+    "marked": {
+     "text": "linear and patchy densities in a lacy net-like pattern involving both lungs",
+     "sources": [
+      "who2001",
+      "cherian2005",
+      "fancourt2017",
+      "hansell2008"
+     ]
+    }
+   }
+  },
+  {
+   "id": "air_bronchogram",
+   "question": "Inside a whiter region, are branching dark tube-like lines visible against the white?",
+   "scale": [
+    "absent",
+    "present"
+   ],
+   "sources": [
+    "who2001",
+    "cherian2005",
+    "fancourt2017",
+    "hansell2008"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "no dark branching tubes stand out within any whiter region of lung",
+     "sources": [
+      "hansell2008",
+      "who2001"
+     ]
+    },
+    "present": {
+     "text": "one or more dark air-filled bronchi traced against surrounding white airless lung",
+     "sources": [
+      "hansell2008",
+      "cherian2005"
+     ]
+    }
+   }
+  },
+  {
+   "id": "peribronchial_thickening",
+   "question": "Around the central root of each lung, do the branching markings look thickened, cuffed or ring-shaped rather than fine and tapering?",
+   "scale": [
+    "absent",
+    "mild",
+    "marked"
+   ],
+   "sources": [
+    "who2001",
+    "cherian2005",
+    "fancourt2017"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "bronchial walls beside the hilar vessels are hairline thin and end-on bronchi show no ring",
+     "sources": [
+      "who2001",
+      "fancourt2017"
+     ]
+    },
+    "mild": {
+     "text": "a few hilar branches carry a visible cuff or ring wall, the rest still fine and tapering",
+     "sources": [
+      "cherian2005",
+      "fancourt2017"
+     ]
+    },
+    "marked": {
+     "text": "coarse cuffed walls and ring shadows on most branches radiating from both hila",
+     "sources": [
+      "who2001",
+      "cherian2005",
+      "fancourt2017"
+     ]
+    }
+   }
+  },
+  {
+   "id": "border_obscuration",
+   "question": "Is the outline of the lower heart edge, or of either dome of the diaphragm, blurred or lost where lung meets it?",
+   "scale": [
+    "absent",
+    "partial",
+    "complete"
+   ],
+   "sources": [
+    "hansell2008",
+    "fancourt2017"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "the lower heart edge and both diaphragm domes are traced as sharp unbroken lines",
+     "sources": [
+      "hansell2008",
+      "fancourt2017"
+     ]
+    },
+    "partial": {
+     "text": "part of the lower cardiac edge or of one diaphragm dome is blurred while the rest stays traceable",
+     "sources": [
+      "hansell2008"
+     ]
+    },
+    "complete": {
+     "text": "the lower cardiac edge or a whole diaphragm dome is not depicted where opaque lung abuts it",
+     "sources": [
+      "hansell2008",
+      "fancourt2017"
+     ]
+    }
+   }
+  },
+  {
+   "id": "costophrenic_angle_blunting",
+   "question": "Is either lower outer angle between the diaphragm and the chest wall filled in or rounded rather than a sharp point?",
+   "scale": [
+    "absent",
+    "mild",
+    "marked"
+   ],
+   "sources": [
+    "who2001",
+    "cherian2005",
+    "fancourt2017",
+    "bradley2011",
+    "andronikou2017"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "both outer angles between diaphragm and chest wall taper to a sharp point",
+     "sources": [
+      "who2001",
+      "cherian2005"
+     ]
+    },
+    "mild": {
+     "text": "one angle is rounded or shallowly filled so that its apex is no longer a point",
+     "sources": [
+      "cherian2005",
+      "fancourt2017"
+     ]
+    },
+    "marked": {
+     "text": "fluid fills the angle and tracks up the lateral chest wall well above the diaphragm",
+     "sources": [
+      "who2001",
+      "fancourt2017",
+      "andronikou2017"
+     ]
+    }
+   }
+  }
+ ],
+ "classes": {
+  "normal": {
+   "fingerprint": {
+    "parenchymal_opacity": "absent",
+    "opacity_extent": "none",
+    "opacity_density": "none",
+    "linear_streaky_markings": "absent",
+    "air_bronchogram": "absent",
+    "peribronchial_thickening": "absent",
+    "border_obscuration": "absent",
+    "costophrenic_angle_blunting": "absent"
+   },
+   "sources": [
+    "who2001",
+    "cherian2005",
+    "fancourt2017",
+    "hansell2008",
+    "kermany2018"
+   ]
+  },
+  "pneumonia": {
+   "fingerprint": {
+    "parenchymal_opacity": "definite",
+    "opacity_extent": "small_patch",
+    "opacity_density": "hazy_lines_visible",
+    "linear_streaky_markings": "any",
+    "air_bronchogram": "any",
+    "peribronchial_thickening": "any",
+    "border_obscuration": "any",
+    "costophrenic_angle_blunting": "any"
+   },
+   "sources": [
+    "who2001",
+    "cherian2005",
+    "fancourt2017",
+    "hansell2008",
+    "bradley2011",
+    "andronikou2017",
+    "kermany2018"
+   ]
+  }
+ }
+}

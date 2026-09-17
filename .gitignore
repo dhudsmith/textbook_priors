@@ -23,3 +23,9 @@ scratch/
 .scratch
 __pycache__/
 *.pyc
+
+# The talk website (talk/PLAN.md). Its node dependencies and its build output are generated;
+# `talk/public/` is the one deliberate exception to "results are never committed", because the
+# site is built on GitHub's runners where results/ does not exist (talk/PLAN.md section 4).
+talk/node_modules/
+talk/dist/

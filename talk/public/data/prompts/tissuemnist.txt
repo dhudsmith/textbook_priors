@@ -1,0 +1,114 @@
+tissuemnist
+===========
+
+--- arm A: zero_shot prompt (sha256 ae4e7be8c9b399aa9b8a00f479d48d9b2c57c7cad415652eec90c1247d1bb5c3) ---
+
+[system]
+You are an expert reader of medical images. You answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of greyscale 2D projections of segmented single cells from 3D confocal fluorescence microscopy of nuclear-stained human kidney cortex. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+The image belongs to exactly one of these 8 categories:
+  1. Collecting Duct, Connecting Tubule
+  2. Distal Convoluted Tubule
+  3. Glomerular endothelial cells
+  4. Interstitial endothelial cells
+  5. Leukocytes
+  6. Podocytes
+  7. Proximal Tubule Segments
+  8. Thick Ascending Limb
+
+How likely is each category for this image? Give every category a probability between 0 and 1, and make the 8 probabilities sum to 1.
+
+Reply with one JSON object and nothing else: exactly 8 keys, the category names above copied exactly as written, each value a number.
+
+{
+  "Collecting Duct, Connecting Tubule": <probability>,
+  "Distal Convoluted Tubule": <probability>,
+  "Glomerular endothelial cells": <probability>,
+  "Interstitial endothelial cells": <probability>,
+  "Leukocytes": <probability>,
+  "Podocytes": <probability>,
+  "Proximal Tubule Segments": <probability>,
+  "Thick Ascending Limb": <probability>
+}
+
+--- arm B, C: concept prompt (sha256 f18c15764a8dcd3fd0e552dc558462061605436a07136ded04520441f672c9a7) ---
+
+[system]
+You are an expert reader of medical images. You report only what is visible in the image, and you answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of greyscale 2D projections of segmented single cells from 3D confocal fluorescence microscopy of nuclear-stained human kidney cortex. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+Answer all 8 questions below about what is visible in this image. Each question lists its levels in order. For every question choose the one level that best fits this image.
+
+1. nucleus_size
+   How large is the single bright object at the centre of the image compared with the width of the whole image?
+   Levels, in order, and what each looks like:
+     small: occupies less than about a third of the frame width, with wide dark margins on every side
+     medium: spans roughly half the frame width, the crop being about two nucleus-widths across
+     large: spans more than about two thirds of the frame width and nearly reaches opposite edges
+
+2. nucleus_elongation
+   Is the central bright object about as wide as it is tall, moderately longer in one direction, or clearly long and narrow?
+   Levels, in order, and what each looks like:
+     round: about as wide as it is tall; no direction is clearly the longer one
+     oval: clearly longer one way than the other, but still blunt and rounded at both ends
+     elongated: a narrow strip whose long axis runs far across the frame while staying thin along its whole length
+
+3. outline_regularity
+   Is the outline of the central bright object smooth and unbroken, or is it notched, indented, or split into separate lobes?
+   Levels, in order, and what each looks like:
+     smooth: the bright edge runs unbroken all the way round, with no notch cutting into it
+     indented: one or two dark notches bite into the edge without dividing the object in two
+     lobed: two or more bright blobs joined by thin bridges; a neutrophil nucleus carries three to five such lobes
+
+4. chromatin_texture
+   Inside the central bright object, is the signal even across it, or is it broken up into brighter and darker patches?
+   Levels, in order, and what each looks like:
+     uniform: brightness is even across the object; no patch stands out against its surroundings
+     mottled: faint lighter and darker patches show, but they blend into each other without sharp edges
+     coarsely_clumped: a few distinctly bright blocks sit against clearly darker gaps, with abrupt borders between them
+
+5. staining_intensity
+   How bright is the central object compared with the darkest background in the image?
+   Levels, in order, and what each looks like:
+     dim: grey rather than white, only modestly above the dark background even at its centre
+     moderate: solidly bright over most of its area, with only the middle approaching white
+     bright: close to white and near-saturated over most of its area, the strongest signal in the frame
+
+6. neighbouring_nuclei
+   Apart from the central object, how many other bright objects or parts of them are visible anywhere in the image, including at the edges?
+   Levels, in order, and what each looks like:
+     none: the central object is the only bright thing; all four frame edges stay dark
+     one_or_two: one or two further bright areas appear, typically cut off by the frame edge
+     several: three or more separate bright areas, so several frame edges carry a partial nucleus
+
+7. neighbour_variety
+   Do the other bright objects in the image look like near-copies of one another in size and shape, or a mixture of clearly different sizes and shapes?
+   Levels, in order, and what each looks like:
+     uniform: the other bright areas match one another closely in both size and shape
+     somewhat_mixed: the other bright areas differ noticeably in size or in shape, but not in both
+     markedly_mixed: the other bright areas differ in size and in shape at once: round, narrow and broad ones together
+
+8. size_versus_neighbours
+   Compared with the other bright objects visible in the image, is the central one smaller, about the same size, or larger?
+   Levels, in order, and what each looks like:
+     smaller: visibly narrower than the partial bright areas showing at the frame edge
+     similar: the same width as the partial nuclei at the frame edge, as far as one can tell
+     larger: clearly wider than any partial nucleus visible at the frame edge
+
+Reply with one JSON object and nothing else: exactly 8 keys, the question names above, each value one of that question's levels copied exactly as written.
+
+{
+  "nucleus_size": "small|medium|large",
+  "nucleus_elongation": "round|oval|elongated",
+  "outline_regularity": "smooth|indented|lobed",
+  "chromatin_texture": "uniform|mottled|coarsely_clumped",
+  "staining_intensity": "dim|moderate|bright",
+  "neighbouring_nuclei": "none|one_or_two|several",
+  "neighbour_variety": "uniform|somewhat_mixed|markedly_mixed",
+  "size_versus_neighbours": "smaller|similar|larger"
+}

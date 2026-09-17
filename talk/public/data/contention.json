@@ -1,0 +1,86 @@
+{
+ "source": "CHANGELOG.md 2026-09-12",
+ "note": "Measured on qwen3.8-27b-fp8 through the same code path, not modelled. Two points per series rather than a curve; the service is shared, so some of the change may be other users' load.",
+ "series": [
+  {
+   "id": "zero_shot_thinking_off",
+   "label": "zero-shot prompt, thinking off",
+   "model": "qwen3.8-27b-fp8",
+   "points": [
+    {
+     "jobs": 1,
+     "s_per_call": 1.5,
+     "calls_per_s": 0.67
+    },
+    {
+     "jobs": 24,
+     "s_per_call": 42.8,
+     "calls_per_s": 0.56
+    }
+   ]
+  },
+  {
+   "id": "concept_thinking_off",
+   "label": "concept prompt, thinking off",
+   "model": "qwen3.8-27b-fp8",
+   "points": [
+    {
+     "jobs": 1,
+     "s_per_call": 4.5,
+     "calls_per_s": 0.22
+    },
+    {
+     "jobs": 48,
+     "s_per_call": 89.0,
+     "calls_per_s": 0.54
+    }
+   ]
+  },
+  {
+   "id": "concept_thinking_medium",
+   "label": "concept prompt, thinking at medium",
+   "model": "qwen3.8-27b-fp8-medium",
+   "points": [
+    {
+     "jobs": 1,
+     "s_per_call": 1.5,
+     "calls_per_s": 0.67
+    },
+    {
+     "jobs": 11,
+     "s_per_call": 134.0,
+     "calls_per_s": 0.08
+    }
+   ]
+  }
+ ],
+ "ladder_models": [
+  {
+   "model": "qwen3.5-9b",
+   "cap": 96,
+   "s_per_call": 2.8
+  },
+  {
+   "model": "gemma-4-12b",
+   "cap": 24,
+   "s_per_call": 3.4
+  },
+  {
+   "model": "gemma-4-31b",
+   "cap": 12,
+   "s_per_call": 5.0
+  },
+  {
+   "model": "qwen3.8-27b-fp8",
+   "cap": 48,
+   "s_per_call": 89.0
+  }
+ ],
+ "provenance": {
+  "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
+  "exported": "2026-09-17T02:25:32Z",
+  "source_files": [
+   "CHANGELOG.md"
+  ]
+ }
+}

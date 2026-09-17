@@ -1,0 +1,137 @@
+dermamnist
+==========
+
+--- arm A: zero_shot prompt (sha256 6bd31912d04a0a0e42b83744fdbee12ed91a3530dd588857fa90b5a1323c1096) ---
+
+[system]
+You are an expert reader of medical images. You answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of 3-channel colour dermatoscopic images of pigmented skin lesions. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+The image belongs to exactly one of these 7 categories:
+  1. actinic keratoses and intraepithelial carcinoma
+  2. basal cell carcinoma
+  3. benign keratosis-like lesions
+  4. dermatofibroma
+  5. melanoma
+  6. melanocytic nevi
+  7. vascular lesions
+
+How likely is each category for this image? Give every category a probability between 0 and 1, and make the 7 probabilities sum to 1.
+
+Reply with one JSON object and nothing else: exactly 7 keys, the category names above copied exactly as written, each value a number.
+
+{
+  "actinic keratoses and intraepithelial carcinoma": <probability>,
+  "basal cell carcinoma": <probability>,
+  "benign keratosis-like lesions": <probability>,
+  "dermatofibroma": <probability>,
+  "melanoma": <probability>,
+  "melanocytic nevi": <probability>,
+  "vascular lesions": <probability>
+}
+
+--- arm B, C: concept prompt (sha256 a4a8088519e9d45cc25fec30e1cef9f797d77bd6bf1b18051256487afd8aaa6e) ---
+
+[system]
+You are an expert reader of medical images. You report only what is visible in the image, and you answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of 3-channel colour dermatoscopic images of pigmented skin lesions. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+Answer all 12 questions below about what is visible in this image. Each question lists its levels in order. For every question choose the one level that best fits this image.
+
+1. asymmetry_and_border
+   Taken together, is the lesion asymmetric about one or both of its axes, and does its pigment stop abruptly at the edge rather than fading evenly into the surrounding skin?
+   Levels, in order, and what each looks like:
+     absent: The halves match across both perpendicular axes, and pigment fades gradually into the skin around the whole rim.
+     mild: Asymmetry across one of the two axes only, or an abrupt pigment cut-off in up to about three of the eight perimeter segments.
+     marked: Asymmetry across both perpendicular axes, or an abrupt cut-off over four or more of the eight segments, half the rim.
+
+2. colour_count
+   How many clearly different colours are present in the lesion, counting light brown, dark brown, black, red, white and blue-grey?
+   Levels, in order, and what each looks like:
+     one: A single one of the six hues covers the lesion; lighter and darker shading of that same hue is not a second colour.
+     two: Two of the six each hold their own area, told apart where they meet rather than blending as one gradient.
+     three_or_more: Three or more of the six each hold an area; white counts only where it is paler than the skin around the lesion.
+
+3. pigment_network
+   Is a net-like grid of pigmented lines over a lighter background visible over any part of the lesion?
+   Levels, in order, and what each looks like:
+     absent: No grid of pigmented lines over a lighter background; pigment is structureless, blotchy, or made of separate globules.
+     present: A meshwork of brown lines enclosing lighter holes covers at least part of the lesion.
+
+4. network_atypia
+   Where a net-like grid of pigmented lines is visible, are its lines thickened, darkened and broken and its holes uneven in size, rather than uniform and evenly spaced?
+   Levels, in order, and what each looks like:
+     absent: Lines even in thickness and colour, holes near-uniform in size and thinning gradually at the rim; or no grid at all.
+     present: Lines thickened, darkened and broken, holes varying widely in size and shape, the grid ending abruptly at the edge.
+
+5. blue_white_structures
+   Are blue-grey or blue-white areas present in the lesion, as a hazy structureless veil, rounded grey-blue nests or globules, or fine grey dots?
+   Levels, in order, and what each looks like:
+     absent: No blue, blue-grey or blue-white tone anywhere; the colours present are browns, tan, red or white only.
+     present: A confluent blue-grey veil, rounded blue-grey nests larger than globules, or a cluster of fine grey dots.
+
+6. arborizing_vessels
+   Are large, sharply focused red vessels that branch repeatedly into progressively thinner branches visible over the lesion?
+   Levels, in order, and what each looks like:
+     absent: No branching red vessel stands out in sharp focus; any redness is diffuse or too fine to follow as a line.
+     present: At least one thick, sharply focused red vessel dividing two or more times into progressively finer branches.
+
+7. leaf_like_or_spoke_wheel_areas
+   Are brown-grey leaf-shaped lobules, or wheel-shaped areas with spokes radiating from a darker hub, present towards the edge of the lesion?
+   Levels, in order, and what each looks like:
+     absent: The periphery carries no discrete bulbous brown-grey lobules and no radial spokes converging on a darker hub.
+     present: Discrete bulbous brown-grey extensions at the rim, or radial projections meeting at a darker central hub.
+
+8. milia_like_cysts_and_comedo_openings
+   Are small round whitish-yellow spots resembling tiny cysts, or dark round plugged openings, scattered over the lesion surface?
+   Levels, in order, and what each looks like:
+     absent: The surface carries no round whitish-yellow spots and no dark round plugged openings.
+     few: One to about three such spots or plugs, isolated against an otherwise plain lesion surface.
+     many: More than about three scattered over the lesion, the whitish spots giving a starry-sky look.
+
+9. surface_keratin_or_scale
+   Does the surface look keratotic - dry white-to-yellow scale, a rough brain-like (cerebriform) surface, or deep fissures separating raised ridges?
+   Levels, in order, and what each looks like:
+     absent: The surface looks smooth and glossy: no white-yellow scale, no fissures, no ridged brain-like texture.
+     mild: Fine white scale in patches, or a few shallow fissures between ridges, over part of the surface only.
+     marked: Opaque yellow-white scale, or deep fissures and ridges, over most of the surface, hiding the colour beneath.
+
+10. red_lacunae
+   Are sharply outlined round or oval lagoon-like areas of red, purple, blue or black colour present within the lesion?
+   Levels, in order, and what each looks like:
+     absent: No sharply outlined round or oval lagoons; any red present is diffuse and has no defined edge.
+     present: One or more round-to-oval areas with a sharp border, red or purple, or blue to near-black where thrombosed.
+
+11. central_white_patch
+   Is there a structureless white or scar-like patch in the centre of the lesion, with the pigmentation confined to a ring around it?
+   Levels, in order, and what each looks like:
+     absent: No structureless pale zone at the middle; colour or pigment runs across the centre of the lesion.
+     present: A structureless white scar-like zone at the centre, with the pigment confined to a ring outside it.
+
+12. background_erythema
+   Is the background of the lesion predominantly red or pink, rather than brown, tan or the colour of surrounding skin?
+   Levels, in order, and what each looks like:
+     absent: The ground is brown, tan or the same colour as the skin around it, with no pink cast.
+     mild: A pink cast over part of the ground, the remainder still brown, tan or the colour of the skin around it.
+     marked: A red-to-pink ground over most of the lesion, clearly redder than the skin around it.
+
+Reply with one JSON object and nothing else: exactly 12 keys, the question names above, each value one of that question's levels copied exactly as written.
+
+{
+  "asymmetry_and_border": "absent|mild|marked",
+  "colour_count": "one|two|three_or_more",
+  "pigment_network": "absent|present",
+  "network_atypia": "absent|present",
+  "blue_white_structures": "absent|present",
+  "arborizing_vessels": "absent|present",
+  "leaf_like_or_spoke_wheel_areas": "absent|present",
+  "milia_like_cysts_and_comedo_openings": "absent|few|many",
+  "surface_keratin_or_scale": "absent|mild|marked",
+  "red_lacunae": "absent|present",
+  "central_white_patch": "absent|present",
+  "background_erythema": "absent|mild|marked"
+}

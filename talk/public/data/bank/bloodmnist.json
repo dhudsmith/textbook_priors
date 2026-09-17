@@ -1,0 +1,676 @@
+{
+ "dataset": "bloodmnist",
+ "modality": "three-channel colour microscopy images of individual normal peripheral-blood cells, May-Grunwald-Giemsa stained, captured on a CellaVision DM96 analyser",
+ "task": "multi-class",
+ "source_dataset": "Peripheral blood cell images, Hospital Clinic of Barcelona (Acevedo et al. 2020)",
+ "provenance": {
+  "method": "literature review with a web-connected assistant",
+  "assistant": "Claude Opus 5 (claude-opus-5), 2026-09-09",
+  "reviewed_by": "simulated review by Claude Opus 5 (claude-opus-5), 2026-09-09; no clinician has reviewed this file",
+  "sources": [
+   {
+    "key": "acevedo2020",
+    "citation": "Acevedo A, Merino A, Alferez S, Molina A, Boldu L, Rodellar J. A dataset of microscopic peripheral blood cell images for development of automatic recognition systems. Data in Brief 2020;30:105474.",
+    "doi": "10.1016/j.dib.2020.105474",
+    "used_for": [
+     "nucleus_present",
+     "granule_colour"
+    ]
+   },
+   {
+    "key": "acevedo2019",
+    "citation": "Acevedo A, Alferez S, Merino A, Puigvi L, Rodellar J. Recognition of peripheral blood cell images using convolutional neural networks. Computer Methods and Programs in Biomedicine 2019;180:105020.",
+    "doi": "10.1016/j.cmpb.2019.105020",
+    "used_for": []
+   },
+   {
+    "key": "yang2023",
+    "citation": "Yang J, Shi R, Wei D, Liu Z, Zhao L, Ke B, Pfister H, Ni B. MedMNIST v2 - A large-scale lightweight benchmark for 2D and 3D biomedical image classification. Scientific Data 2023;10:41.",
+    "doi": "10.1038/s41597-022-01721-8",
+    "used_for": [
+     "nucleus_present",
+     "cell_size"
+    ]
+   },
+   {
+    "key": "palmer2015",
+    "citation": "Palmer L, Briggs C, McFadden S, Zini G, Burthem J, Rozenberg G, Proytcheva M, Machin SJ. ICSH recommendations for the standardization of nomenclature and grading of peripheral blood cell morphological features. International Journal of Laboratory Hematology 2015;37:287-303.",
+    "doi": "10.1111/ijlh.12327",
+    "used_for": [
+     "cell_size",
+     "nuclear_lobation",
+     "granule_abundance",
+     "granule_colour"
+    ]
+   },
+   {
+    "key": "rodellar2018",
+    "citation": "Rodellar J, Alferez S, Acevedo A, Molina A, Merino A. Image processing and machine learning in the morphological analysis of blood cells. International Journal of Laboratory Hematology 2018;40(S1):46-53.",
+    "doi": "10.1111/ijlh.12818",
+    "used_for": [
+     "cell_size",
+     "nuclear_lobation",
+     "chromatin_density",
+     "nucleus_to_cytoplasm_ratio",
+     "cytoplasm_basophilia",
+     "granule_abundance",
+     "granule_colour"
+    ]
+   },
+   {
+    "key": "tigner2026",
+    "citation": "Tigner A, Ibrahim SA, Murray IV. Histology, White Blood Cell. In: StatPearls. Treasure Island (FL): StatPearls Publishing; updated 14 February 2026. Bookshelf NBK563148.",
+    "url": "https://www.ncbi.nlm.nih.gov/books/NBK563148/",
+    "used_for": [
+     "nucleus_present",
+     "cell_size",
+     "nuclear_lobation",
+     "chromatin_density",
+     "nucleus_to_cytoplasm_ratio",
+     "cytoplasm_basophilia",
+     "granule_abundance",
+     "granule_colour",
+     "granules_obscure_nucleus"
+    ]
+   },
+   {
+    "key": "espinoza2023",
+    "citation": "Espinoza VE, Emmady PD. Histology, Monocytes. In: StatPearls. Treasure Island (FL): StatPearls Publishing; updated 24 April 2023. Bookshelf NBK557618.",
+    "url": "https://www.ncbi.nlm.nih.gov/books/NBK557618/",
+    "used_for": [
+     "cell_size",
+     "nuclear_lobation",
+     "chromatin_density",
+     "nucleus_to_cytoplasm_ratio",
+     "cytoplasm_basophilia",
+     "granule_abundance"
+    ]
+   },
+   {
+    "key": "williams2022",
+    "citation": "Williams O, Sergent SR. Histology, Platelets. In: StatPearls. Treasure Island (FL): StatPearls Publishing; updated 14 November 2022. Bookshelf NBK557800.",
+    "url": "https://www.ncbi.nlm.nih.gov/books/NBK557800/",
+    "used_for": [
+     "nucleus_present",
+     "cell_size",
+     "cytoplasm_basophilia",
+     "granule_abundance"
+    ]
+   },
+   {
+    "key": "chapman2023",
+    "citation": "Chapman J, Zhang Y. Histology, Hematopoiesis. In: StatPearls. Treasure Island (FL): StatPearls Publishing; updated 1 May 2023. Bookshelf NBK534246.",
+    "url": "https://www.ncbi.nlm.nih.gov/books/NBK534246/",
+    "used_for": [
+     "chromatin_density",
+     "cytoplasm_basophilia",
+     "cell_size"
+    ]
+   },
+   {
+    "key": "constantino2000",
+    "citation": "Constantino BT, Cogionis B. Nucleated RBCs - significance in the peripheral blood film. Laboratory Medicine 2000;31(4):223-229.",
+    "doi": "10.1309/D70F-HCC1-XX1T-4ETE",
+    "used_for": [
+     "nucleus_present",
+     "chromatin_density",
+     "nucleus_to_cytoplasm_ratio"
+    ]
+   },
+   {
+    "key": "migliaccio2010",
+    "citation": "Migliaccio AR. Erythroblast enucleation. Haematologica 2010;95(12):1985-1988.",
+    "doi": "10.3324/haematol.2010.033225",
+    "used_for": [
+     "chromatin_density",
+     "cell_size"
+    ]
+   }
+  ]
+ },
+ "concepts": [
+  {
+   "id": "nucleus_present",
+   "question": "Does the cell in the centre of the image contain a nucleus, that is a distinct darker internal body, or is the whole cell body uniform with no nucleus at all?",
+   "scale": [
+    "absent",
+    "present"
+   ],
+   "sources": [
+    "tigner2026",
+    "williams2022",
+    "constantino2000",
+    "acevedo2020",
+    "yang2023"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "the cell body is one even mass throughout, with no darker internal patch standing out from the rest",
+     "sources": [
+      "williams2022",
+      "tigner2026"
+     ]
+    },
+    "present": {
+     "text": "a distinctly darker, sharply bounded internal body sits inside the cell and contrasts with the paler cytoplasm",
+     "sources": [
+      "tigner2026",
+      "constantino2000"
+     ]
+    }
+   }
+  },
+  {
+   "id": "cell_size",
+   "question": "How large is the central cell compared with the surrounding red blood cells: clearly smaller than one red cell, about the same size, or clearly larger?",
+   "scale": [
+    "much_smaller",
+    "similar",
+    "larger"
+   ],
+   "sources": [
+    "tigner2026",
+    "espinoza2023",
+    "williams2022",
+    "chapman2023",
+    "migliaccio2010",
+    "palmer2015",
+    "rodellar2018",
+    "yang2023"
+   ],
+   "anchors": {
+    "much_smaller": {
+     "text": "the cell spans about a quarter of a neighbouring red cell, near 2 um across",
+     "sources": [
+      "williams2022",
+      "palmer2015"
+     ]
+    },
+    "similar": {
+     "text": "the cell matches a nearby red cell in width to within about a fifth of that width",
+     "sources": [
+      "tigner2026",
+      "palmer2015"
+     ]
+    },
+    "larger": {
+     "text": "the cell is plainly wider than every red cell around it, up to about twice a red cell across",
+     "sources": [
+      "espinoza2023",
+      "tigner2026",
+      "palmer2015"
+     ]
+    }
+   }
+  },
+  {
+   "id": "nuclear_lobation",
+   "question": "What is the shape of the nucleus: no nucleus at all, a single round or oval mass, a single indented, kidney-shaped or band-like mass, two lobes joined by a strand, or three or more lobes joined by thin strands?",
+   "scale": [
+    "none",
+    "round",
+    "indented",
+    "bilobed",
+    "multilobed"
+   ],
+   "sources": [
+    "tigner2026",
+    "espinoza2023",
+    "palmer2015",
+    "rodellar2018"
+   ],
+   "anchors": {
+    "none": {
+     "text": "the cell carries no internal outline at all, so neither a lobe nor an indentation can be sought",
+     "sources": [
+      "williams2022"
+     ]
+    },
+    "round": {
+     "text": "a single unbroken circular or oval mass with a smooth convex edge and no notch in it",
+     "sources": [
+      "tigner2026",
+      "rodellar2018"
+     ]
+    },
+    "indented": {
+     "text": "one mass whose edge is notched, kidney- or band-shaped, the notch cutting less than half way across",
+     "sources": [
+      "espinoza2023",
+      "palmer2015"
+     ]
+    },
+    "bilobed": {
+     "text": "two rounded segments of similar size joined by a single narrow thread of chromatin",
+     "sources": [
+      "palmer2015",
+      "tigner2026"
+     ]
+    },
+    "multilobed": {
+     "text": "three to five rounded segments strung in a chain, each joined to the next by a thin thread",
+     "sources": [
+      "palmer2015"
+     ]
+    }
+   }
+  },
+  {
+   "id": "chromatin_density",
+   "question": "How dense is the nuclear material: there is no nuclear material at all, open and finely textured with pale areas, moderately clumped, densely clumped but with a visible coarse pattern of light and dark, or so uniformly dark and structureless that no internal pattern can be seen at all?",
+   "scale": [
+    "no_nucleus",
+    "open_fine",
+    "moderately_clumped",
+    "dense_clumped",
+    "pyknotic_structureless"
+   ],
+   "sources": [
+    "tigner2026",
+    "espinoza2023",
+    "chapman2023",
+    "migliaccio2010",
+    "constantino2000",
+    "rodellar2018"
+   ],
+   "anchors": {
+    "no_nucleus": {
+     "text": "the cell holds no nuclear material anywhere, so there is no interior texture to judge for density",
+     "sources": [
+      "williams2022",
+      "tigner2026"
+     ]
+    },
+    "open_fine": {
+     "text": "the nuclear interior is mostly pale with an even fine stipple and no dark clump larger than a dot",
+     "sources": [
+      "chapman2023",
+      "rodellar2018"
+     ]
+    },
+    "moderately_clumped": {
+     "text": "dark clumps cover under about half the nuclear area and the pale gaps between them stay plainly visible",
+     "sources": [
+      "espinoza2023",
+      "rodellar2018"
+     ]
+    },
+    "dense_clumped": {
+     "text": "coarse violet clumps cover most of the nucleus, leaving only thin pale seams between them",
+     "sources": [
+      "palmer2015",
+      "tigner2026"
+     ]
+    },
+    "pyknotic_structureless": {
+     "text": "the nucleus reads as one uniformly dark blot in which no lighter area or pattern can be made out",
+     "sources": [
+      "migliaccio2010",
+      "chapman2023"
+     ]
+    }
+   }
+  },
+  {
+   "id": "nucleus_to_cytoplasm_ratio",
+   "question": "About what fraction of the cell area is nucleus: none of it, because there is no nucleus, less than a third (low), between a third and two thirds (moderate), or more than two thirds (high)?",
+   "scale": [
+    "no_nucleus",
+    "low",
+    "moderate",
+    "high"
+   ],
+   "sources": [
+    "tigner2026",
+    "espinoza2023",
+    "constantino2000",
+    "rodellar2018"
+   ],
+   "anchors": {
+    "no_nucleus": {
+     "text": "no nuclear area is present to measure, so the cell body reads as cytoplasm from edge to edge",
+     "sources": [
+      "williams2022",
+      "tigner2026"
+     ]
+    },
+    "low": {
+     "text": "cytoplasm forms a broad rim and the nucleus covers less than a third of the cell area",
+     "sources": [
+      "espinoza2023",
+      "rodellar2018"
+     ]
+    },
+    "moderate": {
+     "text": "the nucleus covers between a third and two thirds of the cell, with a clear rim of cytoplasm all round",
+     "sources": [
+      "tigner2026",
+      "rodellar2018"
+     ]
+    },
+    "high": {
+     "text": "the nucleus fills more than two thirds of the cell and cytoplasm survives only as a thin crescent",
+     "sources": [
+      "tigner2026",
+      "constantino2000"
+     ]
+    }
+   }
+  },
+  {
+   "id": "cytoplasm_basophilia",
+   "question": "What colour is the cytoplasm around the nucleus: pink or almost colourless, pale grey-blue, plainly blue, or deep intense blue?",
+   "scale": [
+    "pink_or_colourless",
+    "pale_grey_blue",
+    "blue",
+    "deep_blue"
+   ],
+   "sources": [
+    "tigner2026",
+    "espinoza2023",
+    "chapman2023",
+    "williams2022",
+    "rodellar2018"
+   ],
+   "anchors": {
+    "pink_or_colourless": {
+     "text": "the cytoplasm is pink or almost clear, no bluer than the red cells lying around the cell",
+     "sources": [
+      "palmer2015",
+      "tigner2026"
+     ]
+    },
+    "pale_grey_blue": {
+     "text": "a faint grey-blue wash, bluer than the red cells but much paler than the nucleus",
+     "sources": [
+      "espinoza2023",
+      "tigner2026"
+     ]
+    },
+    "blue": {
+     "text": "an even mid-blue read at a glance, clearly stronger than a grey wash but lighter than the nucleus",
+     "sources": [
+      "williams2022",
+      "rodellar2018"
+     ]
+    },
+    "deep_blue": {
+     "text": "an intense navy blue nearly as dark as the nucleus, the strongest blue anywhere in the frame",
+     "sources": [
+      "chapman2023",
+      "rodellar2018"
+     ]
+    }
+   }
+  },
+  {
+   "id": "granule_abundance",
+   "question": "How prominent are granules, that is small discrete dots, in the cytoplasm: none visible, fine and sparse or dust-like, or coarse and abundant so that they fill the cytoplasm?",
+   "scale": [
+    "absent",
+    "fine_sparse",
+    "coarse_abundant"
+   ],
+   "sources": [
+    "tigner2026",
+    "espinoza2023",
+    "williams2022",
+    "palmer2015",
+    "rodellar2018"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "the cytoplasm is smooth and even, showing no discrete dots against its own colour",
+     "sources": [
+      "tigner2026",
+      "rodellar2018"
+     ]
+    },
+    "fine_sparse": {
+     "text": "dots are dust-like and not separately countable, so the cytoplasm looks faintly textured rather than dotted",
+     "sources": [
+      "tigner2026",
+      "palmer2015"
+     ]
+    },
+    "coarse_abundant": {
+     "text": "dots are separately countable at the cell edge and pack the cytoplasm so that little clear ground shows",
+     "sources": [
+      "palmer2015",
+      "tigner2026"
+     ]
+    }
+   }
+  },
+  {
+   "id": "granule_colour",
+   "question": "If granules are visible, what colour are they, from palest to darkest: none visible, pale lilac or neutral, orange-red, or dark purple to black?",
+   "scale": [
+    "none_visible",
+    "pale_neutral",
+    "orange_red",
+    "dark_purple"
+   ],
+   "sources": [
+    "tigner2026",
+    "palmer2015",
+    "rodellar2018",
+    "acevedo2020"
+   ],
+   "anchors": {
+    "none_visible": {
+     "text": "no dots of any colour stand out from the even tint of the cytoplasm",
+     "sources": [
+      "tigner2026",
+      "rodellar2018"
+     ]
+    },
+    "pale_neutral": {
+     "text": "dots are pale lilac or grey, barely different in hue from the cytoplasm carrying them",
+     "sources": [
+      "palmer2015",
+      "tigner2026"
+     ]
+    },
+    "orange_red": {
+     "text": "dots are plainly orange to red, warmer than the cytoplasm and than the violet of the nucleus",
+     "sources": [
+      "palmer2015",
+      "tigner2026"
+     ]
+    },
+    "dark_purple": {
+     "text": "dots are dark purple to nearly black, darker than the nucleus they frequently lie across",
+     "sources": [
+      "palmer2015",
+      "tigner2026"
+     ]
+    }
+   }
+  },
+  {
+   "id": "granules_obscure_nucleus",
+   "question": "Do the cytoplasmic granules lie over the nucleus and hide it: not at all, partly, or so completely that the nuclear outline cannot be traced?",
+   "scale": [
+    "absent",
+    "partial",
+    "marked"
+   ],
+   "sources": [
+    "tigner2026"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "every part of the nuclear outline can be followed; the dots lie beside the nucleus, not across it",
+     "sources": [
+      "tigner2026"
+     ]
+    },
+    "partial": {
+     "text": "dots cross the nucleus and blur one stretch of its edge, while the remainder stays traceable",
+     "sources": [
+      "tigner2026",
+      "palmer2015"
+     ]
+    },
+    "marked": {
+     "text": "dots cover the nucleus so densely that no stretch of its outline can be followed at all",
+     "sources": [
+      "palmer2015",
+      "tigner2026"
+     ]
+    }
+   }
+  }
+ ],
+ "classes": {
+  "neutrophil": {
+   "fingerprint": {
+    "nucleus_present": "present",
+    "cell_size": "larger",
+    "nuclear_lobation": "multilobed",
+    "chromatin_density": "dense_clumped",
+    "nucleus_to_cytoplasm_ratio": "moderate",
+    "cytoplasm_basophilia": "pink_or_colourless",
+    "granule_abundance": "fine_sparse",
+    "granule_colour": "pale_neutral",
+    "granules_obscure_nucleus": "absent"
+   },
+   "sources": [
+    "tigner2026",
+    "palmer2015",
+    "yang2023"
+   ]
+  },
+  "eosinophil": {
+   "fingerprint": {
+    "nucleus_present": "present",
+    "cell_size": "larger",
+    "nuclear_lobation": "bilobed",
+    "chromatin_density": "dense_clumped",
+    "nucleus_to_cytoplasm_ratio": "moderate",
+    "cytoplasm_basophilia": "any",
+    "granule_abundance": "coarse_abundant",
+    "granule_colour": "orange_red",
+    "granules_obscure_nucleus": "absent"
+   },
+   "sources": [
+    "tigner2026",
+    "palmer2015",
+    "yang2023"
+   ]
+  },
+  "basophil": {
+   "fingerprint": {
+    "nucleus_present": "present",
+    "cell_size": "larger",
+    "nuclear_lobation": "any",
+    "chromatin_density": "any",
+    "nucleus_to_cytoplasm_ratio": "any",
+    "cytoplasm_basophilia": "any",
+    "granule_abundance": "coarse_abundant",
+    "granule_colour": "dark_purple",
+    "granules_obscure_nucleus": "marked"
+   },
+   "sources": [
+    "tigner2026",
+    "palmer2015",
+    "yang2023"
+   ]
+  },
+  "erythroblast": {
+   "fingerprint": {
+    "nucleus_present": "present",
+    "cell_size": "larger",
+    "nuclear_lobation": "round",
+    "chromatin_density": "pyknotic_structureless",
+    "nucleus_to_cytoplasm_ratio": "high",
+    "cytoplasm_basophilia": "any",
+    "granule_abundance": "absent",
+    "granule_colour": "none_visible",
+    "granules_obscure_nucleus": "absent"
+   },
+   "sources": [
+    "migliaccio2010",
+    "chapman2023",
+    "constantino2000",
+    "palmer2015",
+    "yang2023"
+   ]
+  },
+  "immature granulocytes(myelocytes, metamyelocytes and promyelocytes)": {
+   "fingerprint": {
+    "nucleus_present": "present",
+    "cell_size": "larger",
+    "nuclear_lobation": "any",
+    "chromatin_density": "open_fine",
+    "nucleus_to_cytoplasm_ratio": "any",
+    "cytoplasm_basophilia": "any",
+    "granule_abundance": "fine_sparse",
+    "granule_colour": "any",
+    "granules_obscure_nucleus": "absent"
+   },
+   "sources": [
+    "chapman2023",
+    "acevedo2020",
+    "acevedo2019",
+    "palmer2015",
+    "yang2023"
+   ]
+  },
+  "lymphocyte": {
+   "fingerprint": {
+    "nucleus_present": "present",
+    "cell_size": "similar",
+    "nuclear_lobation": "round",
+    "chromatin_density": "dense_clumped",
+    "nucleus_to_cytoplasm_ratio": "high",
+    "cytoplasm_basophilia": "blue",
+    "granule_abundance": "absent",
+    "granule_colour": "none_visible",
+    "granules_obscure_nucleus": "absent"
+   },
+   "sources": [
+    "tigner2026",
+    "yang2023"
+   ]
+  },
+  "monocyte": {
+   "fingerprint": {
+    "nucleus_present": "present",
+    "cell_size": "larger",
+    "nuclear_lobation": "indented",
+    "chromatin_density": "moderately_clumped",
+    "nucleus_to_cytoplasm_ratio": "low",
+    "cytoplasm_basophilia": "pale_grey_blue",
+    "granule_abundance": "fine_sparse",
+    "granule_colour": "any",
+    "granules_obscure_nucleus": "absent"
+   },
+   "sources": [
+    "espinoza2023",
+    "tigner2026",
+    "yang2023"
+   ]
+  },
+  "platelet": {
+   "fingerprint": {
+    "nucleus_present": "absent",
+    "cell_size": "much_smaller",
+    "nuclear_lobation": "none",
+    "chromatin_density": "no_nucleus",
+    "nucleus_to_cytoplasm_ratio": "no_nucleus",
+    "cytoplasm_basophilia": "blue",
+    "granule_abundance": "fine_sparse",
+    "granule_colour": "any",
+    "granules_obscure_nucleus": "absent"
+   },
+   "sources": [
+    "williams2022",
+    "palmer2015",
+    "yang2023"
+   ]
+  }
+ }
+}

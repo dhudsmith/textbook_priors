@@ -1,0 +1,400 @@
+{
+ "dataset": "breastmnist",
+ "modality": "1-channel greyscale breast ultrasound images",
+ "task": "binary",
+ "source_dataset": "BUSI, Breast Ultrasound Images (Al-Dhabyani et al. 2020)",
+ "provenance": {
+  "method": "literature review with a web-connected assistant",
+  "assistant": "Claude Opus 5 (claude-opus-5), 2026-09-09",
+  "reviewed_by": "simulated review by Claude Opus 5 (claude-opus-5), 2026-09-09; no clinician has reviewed this file",
+  "sources": [
+   {
+    "key": "yang2023",
+    "citation": "Yang J, Shi R, Wei D, Liu Z, Zhao L, Ke B, Pfister H, Ni B. MedMNIST v2 - A large-scale lightweight benchmark for 2D and 3D biomedical image classification. Scientific Data 2023;10:41.",
+    "doi": "10.1038/s41597-022-01721-8",
+    "used_for": [
+     "focal_lesion_present"
+    ]
+   },
+   {
+    "key": "aldhabyani2020",
+    "citation": "Al-Dhabyani W, Gomaa M, Khaled H, Fahmy A. Dataset of breast ultrasound images. Data in Brief 2020;28:104863.",
+    "doi": "10.1016/j.dib.2019.104863",
+    "used_for": [
+     "focal_lesion_present"
+    ]
+   },
+   {
+    "key": "dorsi2013",
+    "citation": "D'Orsi CJ, Sickles EA, Mendelson EB, Morris EA. ACR BI-RADS Atlas, Breast Imaging Reporting and Data System. 5th ed. Reston, VA: American College of Radiology; 2013.",
+    "url": "https://www.acr.org/Clinical-Resources/Clinical-Tools-and-Reference/Reporting-and-Data-Systems/Bi-Rads",
+    "used_for": [
+     "focal_lesion_present"
+    ]
+   },
+   {
+    "key": "mendelson2013",
+    "citation": "Mendelson EB, Bohm-Velez M, Berg WA, et al. ACR BI-RADS Ultrasound. In: ACR BI-RADS Atlas, Breast Imaging Reporting and Data System. 5th ed. Reston, VA: American College of Radiology; 2013.",
+    "url": "https://www.acr.org/Clinical-Resources/Clinical-Tools-and-Reference/Reporting-and-Data-Systems/Bi-Rads",
+    "used_for": [
+     "focal_lesion_present",
+     "shape_irregularity",
+     "margin_circumscription",
+     "taller_than_wide",
+     "posterior_shadowing",
+     "tissue_plane_distortion"
+    ]
+   },
+   {
+    "key": "stavros1995",
+    "citation": "Stavros AT, Thickman D, Rapp CL, Dennis MA, Parker SH, Sisney GA. Solid breast nodules: use of sonography to distinguish between benign and malignant lesions. Radiology 1995;196:123-34.",
+    "doi": "10.1148/radiology.196.1.7784555",
+    "used_for": [
+     "shape_irregularity",
+     "margin_circumscription",
+     "taller_than_wide",
+     "posterior_shadowing",
+     "thick_echogenic_halo",
+     "tissue_plane_distortion"
+    ]
+   },
+   {
+    "key": "hong2005",
+    "citation": "Hong AS, Rosen EL, Soo MS, Baker JA. BI-RADS for sonography: positive and negative predictive values of sonographic features. AJR Am J Roentgenol 2005;184:1260-5.",
+    "doi": "10.2214/ajr.184.4.01841260",
+    "used_for": [
+     "shape_irregularity",
+     "margin_circumscription",
+     "taller_than_wide"
+    ]
+   },
+   {
+    "key": "lee2017",
+    "citation": "Lee J. Practical and illustrated summary of updated BI-RADS for ultrasonography. Ultrasonography 2017;36:71-81.",
+    "doi": "10.14366/usg.16034",
+    "used_for": [
+     "focal_lesion_present",
+     "posterior_shadowing"
+    ]
+   },
+   {
+    "key": "rao2016",
+    "citation": "Rao AA, Feneis J, Lalonde C, Ojeda-Fournier H. A pictorial review of changes in the BI-RADS fifth edition. RadioGraphics 2016;36:623-39.",
+    "doi": "10.1148/rg.2016150178",
+    "used_for": [
+     "margin_circumscription",
+     "tissue_plane_distortion"
+    ]
+   }
+  ]
+ },
+ "concepts": [
+  {
+   "id": "focal_lesion_present",
+   "question": "Is a discrete focal area standing out from the surrounding layered tissue visible?",
+   "scale": [
+    "absent",
+    "equivocal",
+    "present"
+   ],
+   "sources": [
+    "yang2023",
+    "aldhabyani2020",
+    "dorsi2013",
+    "mendelson2013",
+    "lee2017"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "only smooth parallel layers of fat, fibroglandular tissue and muscle, with nothing standing out from them",
+     "sources": [
+      "mendelson2013",
+      "aldhabyani2020"
+     ]
+    },
+    "equivocal": {
+     "text": "a faint textural variation whose outline cannot be traced all the way round on this single view",
+     "sources": [
+      "mendelson2013",
+      "dorsi2013"
+     ]
+    },
+    "present": {
+     "text": "a discrete area whose full outline can be traced, occupying space and pushing the layers aside",
+     "sources": [
+      "mendelson2013",
+      "dorsi2013",
+      "lee2017"
+     ]
+    }
+   }
+  },
+  {
+   "id": "shape_irregularity",
+   "question": "If a focal area stands out, is its outline oval, gently lobulated, or jagged?",
+   "scale": [
+    "no_focal_area",
+    "oval_or_round",
+    "gently_lobulated",
+    "irregular"
+   ],
+   "sources": [
+    "stavros1995",
+    "mendelson2013",
+    "hong2005"
+   ],
+   "anchors": {
+    "no_focal_area": {
+     "text": "no traceable outline anywhere in the frame; the fibroglandular layers run uninterrupted across it",
+     "sources": [
+      "mendelson2013"
+     ]
+    },
+    "oval_or_round": {
+     "text": "a smooth ellipse or circle whose outline curves evenly, with no bulges and no corners",
+     "sources": [
+      "mendelson2013",
+      "hong2005"
+     ]
+    },
+    "gently_lobulated": {
+     "text": "two or three broad rounded bulges on an otherwise smooth ellipse, each bulge wide and shallow",
+     "sources": [
+      "mendelson2013",
+      "stavros1995"
+     ]
+    },
+    "irregular": {
+     "text": "outline neither round nor oval: jagged or angular, or studded with many tiny 1-2 mm lobulations",
+     "sources": [
+      "stavros1995",
+      "mendelson2013"
+     ]
+    }
+   }
+  },
+  {
+   "id": "margin_circumscription",
+   "question": "If a focal area stands out, is its boundary sharp, blurred, or angular and spiky?",
+   "scale": [
+    "no_focal_area",
+    "circumscribed",
+    "indistinct",
+    "angular_or_spiculated"
+   ],
+   "sources": [
+    "stavros1995",
+    "mendelson2013",
+    "hong2005",
+    "rao2016"
+   ],
+   "anchors": {
+    "no_focal_area": {
+     "text": "nothing stands out from the tissue layers, so there is no boundary anywhere to judge",
+     "sources": [
+      "mendelson2013"
+     ]
+    },
+    "circumscribed": {
+     "text": "the whole circumference is a sharp line with an abrupt transition to the tissue around it",
+     "sources": [
+      "mendelson2013",
+      "hong2005"
+     ]
+    },
+    "indistinct": {
+     "text": "part of the edge fades into the surrounding tissue with no sharp line separating the two",
+     "sources": [
+      "mendelson2013",
+      "rao2016"
+     ]
+    },
+    "angular_or_spiculated": {
+     "text": "the edge forms sharp corners, or fine straight lines radiate outward from it into the tissue",
+     "sources": [
+      "stavros1995",
+      "mendelson2013"
+     ]
+    }
+   }
+  },
+  {
+   "id": "taller_than_wide",
+   "question": "Does any focal area reach deeper below the skin than it measures across?",
+   "scale": [
+    "absent",
+    "borderline",
+    "present"
+   ],
+   "sources": [
+    "stavros1995",
+    "mendelson2013",
+    "hong2005"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "width across the image clearly exceeds depth, or nothing discrete stands out to measure at all",
+     "sources": [
+      "stavros1995",
+      "mendelson2013"
+     ]
+    },
+    "borderline": {
+     "text": "depth below the skin line and width across it look about equal, neither axis clearly the longer",
+     "sources": [
+      "stavros1995"
+     ]
+    },
+    "present": {
+     "text": "the area reaches further in depth from the skin line than it measures across, standing upright",
+     "sources": [
+      "stavros1995",
+      "hong2005"
+     ]
+    }
+   }
+  },
+  {
+   "id": "posterior_shadowing",
+   "question": "Is tissue directly beneath a focal area darker than tissue beside it at that depth?",
+   "scale": [
+    "absent",
+    "mild",
+    "marked"
+   ],
+   "sources": [
+    "stavros1995",
+    "mendelson2013",
+    "lee2017"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "tissue just deep to the area is as bright as tissue at the same depth beside it",
+     "sources": [
+      "stavros1995",
+      "mendelson2013"
+     ]
+    },
+    "mild": {
+     "text": "narrow dark lines trail from the area's edges only; tissue directly behind it stays visible",
+     "sources": [
+      "stavros1995",
+      "lee2017"
+     ]
+    },
+    "marked": {
+     "text": "a broad dark band deep to the whole area hides the tissue behind it toward the image bottom",
+     "sources": [
+      "stavros1995",
+      "lee2017"
+     ]
+    }
+   }
+  },
+  {
+   "id": "thick_echogenic_halo",
+   "question": "Is a broad bright rim, thicker than a fine line, present around a focal area?",
+   "scale": [
+    "absent",
+    "mild",
+    "marked"
+   ],
+   "sources": [
+    "stavros1995"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "no bright rim, or only a hairline bright capsule no thicker than the surrounding tissue lines",
+     "sources": [
+      "stavros1995"
+     ]
+    },
+    "mild": {
+     "text": "a bright rim clearly thicker than a hairline but present around only part of the circumference",
+     "sources": [
+      "stavros1995"
+     ]
+    },
+    "marked": {
+     "text": "a broad bright zone right around the area, its outer edge fading gradually into surrounding tissue",
+     "sources": [
+      "stavros1995"
+     ]
+    }
+   }
+  },
+  {
+   "id": "tissue_plane_distortion",
+   "question": "Are the horizontal tissue layers around a focal area pulled in or interrupted?",
+   "scale": [
+    "absent",
+    "mild",
+    "marked"
+   ],
+   "sources": [
+    "stavros1995",
+    "mendelson2013",
+    "rao2016"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "the horizontal tissue layers run straight past the area, neither bent toward it nor broken",
+     "sources": [
+      "stavros1995",
+      "mendelson2013"
+     ]
+    },
+    "mild": {
+     "text": "layers next to the area bow or angle toward it but remain continuous along their length",
+     "sources": [
+      "stavros1995",
+      "rao2016"
+     ]
+    },
+    "marked": {
+     "text": "layers are broken where they meet the area, with straight strands running radially out from it",
+     "sources": [
+      "stavros1995",
+      "rao2016"
+     ]
+    }
+   }
+  }
+ ],
+ "classes": {
+  "malignant": {
+   "fingerprint": {
+    "focal_lesion_present": "present",
+    "shape_irregularity": "irregular",
+    "margin_circumscription": "angular_or_spiculated",
+    "taller_than_wide": "any",
+    "posterior_shadowing": "any",
+    "thick_echogenic_halo": "any",
+    "tissue_plane_distortion": "any"
+   },
+   "sources": [
+    "stavros1995",
+    "mendelson2013",
+    "hong2005",
+    "rao2016"
+   ]
+  },
+  "normal, benign": {
+   "fingerprint": {
+    "focal_lesion_present": "any",
+    "shape_irregularity": "oval_or_round",
+    "margin_circumscription": "circumscribed",
+    "taller_than_wide": "absent",
+    "posterior_shadowing": "absent",
+    "thick_echogenic_halo": "absent",
+    "tissue_plane_distortion": "absent"
+   },
+   "sources": [
+    "stavros1995",
+    "mendelson2013",
+    "hong2005",
+    "aldhabyani2020"
+   ]
+  }
+ }
+}

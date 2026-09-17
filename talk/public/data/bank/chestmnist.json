@@ -1,0 +1,819 @@
+{
+ "dataset": "chestmnist",
+ "modality": "frontal chest radiographs, single-channel greyscale",
+ "task": "multi-label",
+ "source_dataset": "NIH ChestX-ray14 (Wang et al. 2017)",
+ "provenance": {
+  "method": "literature review with a web-connected assistant",
+  "assistant": "Claude Opus 5 (claude-opus-5), 2026-09-09",
+  "reviewed_by": "simulated review by Claude Opus 5 (claude-opus-5), 2026-09-09; no clinician has reviewed this file",
+  "sources": [
+   {
+    "key": "yang2023",
+    "citation": "Yang J, Shi R, Wei D, Liu Z, Zhao L, Ke B, Pfister H, Ni B. MedMNIST v2 - A large-scale lightweight benchmark for 2D and 3D biomedical image classification. Scientific Data 2023;10:41.",
+    "doi": "10.1038/s41597-022-01721-8",
+    "used_for": []
+   },
+   {
+    "key": "wang2017",
+    "citation": "Wang X, Peng Y, Lu L, Lu Z, Bagheri M, Summers RM. ChestX-ray8: hospital-scale chest X-ray database and benchmarks on weakly-supervised classification and localization of common thorax diseases. Proc IEEE Conf Comput Vis Pattern Recognit (CVPR) 2017:3462-71.",
+    "doi": "10.1109/CVPR.2017.369",
+    "used_for": [
+     "hazy_opacity",
+     "airspace_opacity"
+    ]
+   },
+   {
+    "key": "hansell2008",
+    "citation": "Hansell DM, Bankier AA, MacMahon H, McLoud TC, Muller NL, Remy J. Fleischner Society: glossary of terms for thoracic imaging. Radiology 2008;246(3):697-722.",
+    "doi": "10.1148/radiol.2462070712",
+    "used_for": [
+     "airspace_opacity",
+     "hazy_opacity",
+     "interstitial_markings",
+     "opacity_basal_predominance",
+     "costophrenic_angle_blunting",
+     "peripheral_pleural_density",
+     "discrete_rounded_opacity",
+     "pleural_line_with_avascular_zone",
+     "lung_inflation",
+     "supradiaphragmatic_gas_structure"
+    ]
+   },
+   {
+    "key": "bankier2024",
+    "citation": "Bankier AA, MacMahon H, Colby T, Gevenois PA, Goo JM, Leung ANC, Lynch DA, Schaefer-Prokop CM, Tomiyama N, Travis WD, Verschakelen JA, White CS, Naidich DP. Fleischner Society: glossary of terms for thoracic imaging. Radiology 2024;310(2):e232558.",
+    "doi": "10.1148/radiol.232558",
+    "used_for": [
+     "airspace_opacity",
+     "hazy_opacity",
+     "interstitial_markings",
+     "opacity_basal_predominance",
+     "peripheral_pleural_density",
+     "discrete_rounded_opacity"
+    ]
+   },
+   {
+    "key": "hassan2024",
+    "citation": "Hassan M, Touman AA, Grabczak EM, Skaarup SH, Faber K, Blyth KG, Pochepnia S. Imaging of pleural disease. Breathe (Sheff) 2024;20(1):230172.",
+    "doi": "10.1183/20734735.0172-2023",
+    "used_for": [
+     "opacity_basal_predominance",
+     "costophrenic_angle_blunting",
+     "peripheral_pleural_density",
+     "pleural_line_with_avascular_zone",
+     "mediastinal_shift_direction"
+    ]
+   },
+   {
+    "key": "truszkiewicz2021",
+    "citation": "Truszkiewicz K, Poreba R, Gac P. Radiological cardiothoracic ratio in evidence-based medicine. J Clin Med 2021;10(9):2016.",
+    "doi": "10.3390/jcm10092016",
+    "used_for": [
+     "cardiac_silhouette_width"
+    ]
+   },
+   {
+    "key": "gluecker1999",
+    "citation": "Gluecker T, Capasso P, Schnyder P, Gudinchet F, Schaller MD, Revelly JP, Chiolero R, Vock P, Wicky S. Clinical and radiologic features of pulmonary edema. RadioGraphics 1999;19(6):1507-31.",
+    "doi": "10.1148/radiographics.19.6.g99no211507",
+    "used_for": [
+     "interstitial_markings",
+     "cardiac_silhouette_width"
+    ]
+   },
+   {
+    "key": "woodring1996",
+    "citation": "Woodring JH, Reed JC. Radiographic manifestations of lobar atelectasis. J Thorac Imaging 1996;11(2):109-44.",
+    "doi": "10.1097/00005382-199621000-00003",
+    "used_for": [
+     "lung_inflation",
+     "mediastinal_shift_direction"
+    ]
+   },
+   {
+    "key": "thurlbeck1978",
+    "citation": "Thurlbeck WM, Simon G. Radiographic appearance of the chest in emphysema. AJR Am J Roentgenol 1978;130(3):429-40.",
+    "doi": "10.2214/ajr.130.3.429",
+    "used_for": [
+     "lung_inflation",
+     "cardiac_silhouette_width"
+    ]
+   },
+   {
+    "key": "nason2012",
+    "citation": "Nason LK, Walker CM, McNeeley MF, Burivong W, Fligner CL, Godwin JD. Imaging of the diaphragm: anatomy and function. RadioGraphics 2012;32(2):E51-70.",
+    "doi": "10.1148/rg.322115127",
+    "used_for": [
+     "supradiaphragmatic_gas_structure",
+     "lung_inflation"
+    ]
+   }
+  ]
+ },
+ "concepts": [
+  {
+   "id": "airspace_opacity",
+   "question": "Is there a homogeneous white opacity filling part of the lung, dense enough that the vessels running through that region can no longer be traced?",
+   "scale": [
+    "absent",
+    "patchy",
+    "confluent"
+   ],
+   "sources": [
+    "hansell2008",
+    "bankier2024",
+    "wang2017"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "vessels can be followed from the hilum out to the periphery against dark lung, with no region of uniform added whiteness",
+     "sources": [
+      "hansell2008",
+      "bankier2024"
+     ]
+    },
+    "patchy": {
+     "text": "one or more ill-defined white areas, each under about a quarter of a lung, obscuring the margins of the vessels inside them",
+     "sources": [
+      "hansell2008",
+      "wang2017"
+     ]
+    },
+    "confluent": {
+     "text": "one uniform white region obscuring vessel and airway margins across most of a lobe or a whole half of the chest",
+     "sources": [
+      "hansell2008",
+      "bankier2024"
+     ]
+    }
+   }
+  },
+  {
+   "id": "hazy_opacity",
+   "question": "Is there a hazy, veil-like increase in whiteness of the lung through which the vessel and airway margins can still be seen?",
+   "scale": [
+    "absent",
+    "mild",
+    "marked"
+   ],
+   "sources": [
+    "hansell2008",
+    "bankier2024",
+    "wang2017"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "the lung is uniformly dark between the vessels, with no veil of added grey over any zone",
+     "sources": [
+      "hansell2008",
+      "bankier2024"
+     ]
+    },
+    "mild": {
+     "text": "a faint veil of grey over part of one lung through which vessel margins stay traceable, only less sharp",
+     "sources": [
+      "hansell2008",
+      "bankier2024"
+     ]
+    },
+    "marked": {
+     "text": "a dense veil over most of both lungs, vessels only just discernible through it but still not wholly obscured",
+     "sources": [
+      "hansell2008",
+      "wang2017"
+     ]
+    }
+   }
+  },
+  {
+   "id": "interstitial_markings",
+   "question": "How prominent are the fine linear, net-like markings of the lung, over and above the normal smoothly branching vessels?",
+   "scale": [
+    "normal",
+    "increased",
+    "coarse_reticular"
+   ],
+   "sources": [
+    "hansell2008",
+    "bankier2024",
+    "gluecker1999"
+   ],
+   "anchors": {
+    "normal": {
+     "text": "only smoothly branching vessels that taper outwards and fade before reaching the chest wall",
+     "sources": [
+      "hansell2008",
+      "bankier2024"
+     ]
+    },
+    "increased": {
+     "text": "thin lines persist out to the chest wall, including short horizontal lines at the bases meeting the ribs at right angles",
+     "sources": [
+      "gluecker1999",
+      "hansell2008"
+     ]
+    },
+    "coarse_reticular": {
+     "text": "innumerable small linear opacities cross one another into a visible net, coarser and more angular than any vessel",
+     "sources": [
+      "hansell2008",
+      "bankier2024"
+     ]
+    }
+   }
+  },
+  {
+   "id": "opacity_basal_predominance",
+   "question": "If any increased whiteness is present, how strongly is it concentrated in the lower zones near the diaphragm rather than spread evenly or set in the upper zones?",
+   "scale": [
+    "absent",
+    "mild",
+    "marked"
+   ],
+   "sources": [
+    "hansell2008",
+    "bankier2024",
+    "hassan2024"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "any added whiteness is spread evenly between upper and lower zones, or sits mainly above the hila",
+     "sources": [
+      "hansell2008",
+      "hassan2024"
+     ]
+    },
+    "mild": {
+     "text": "the lower zones are visibly whiter than the upper zones, but the same change still reaches above the hila",
+     "sources": [
+      "hassan2024",
+      "bankier2024"
+     ]
+    },
+    "marked": {
+     "text": "the whiteness is confined below the hila and the upper zones are as dark as normal lung",
+     "sources": [
+      "hassan2024",
+      "hansell2008"
+     ]
+    }
+   }
+  },
+  {
+   "id": "costophrenic_angle_blunting",
+   "question": "Is the sharp angle where the diaphragm meets the chest wall blunted or filled in, with an upward-curving upper edge against the chest wall?",
+   "scale": [
+    "absent",
+    "mild",
+    "marked"
+   ],
+   "sources": [
+    "hassan2024",
+    "hansell2008"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "on both sides the diaphragm meets the chest wall in a sharp acute point",
+     "sources": [
+      "hansell2008",
+      "hassan2024"
+     ]
+    },
+    "mild": {
+     "text": "the angle is rounded off and filled in, but the whole curve of the diaphragm dome is still visible",
+     "sources": [
+      "hassan2024"
+     ]
+    },
+    "marked": {
+     "text": "whiteness fills the angle and climbs the chest wall with a concave upper edge, hiding part of the dome",
+     "sources": [
+      "hassan2024",
+      "hansell2008"
+     ]
+    }
+   }
+  },
+  {
+   "id": "peripheral_pleural_density",
+   "question": "Is there a band or plaque of soft-tissue whiteness lying along the inner chest wall or capping a lung apex, following the surface of the lung rather than a vessel?",
+   "scale": [
+    "absent",
+    "mild",
+    "marked"
+   ],
+   "sources": [
+    "hassan2024",
+    "hansell2008",
+    "bankier2024"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "lung markings reach the ribs, with only rib shadows along the inner chest wall and no band of soft-tissue grey",
+     "sources": [
+      "hansell2008",
+      "hassan2024"
+     ]
+    },
+    "mild": {
+     "text": "a thin grey band, or a cap over one lung apex, follows the chest wall and is narrower than one rib",
+     "sources": [
+      "hassan2024",
+      "bankier2024"
+     ]
+    },
+    "marked": {
+     "text": "a rind of soft-tissue whiteness wider than a rib follows the chest wall over several rib spaces",
+     "sources": [
+      "hassan2024",
+      "hansell2008"
+     ]
+    }
+   }
+  },
+  {
+   "id": "cardiac_silhouette_width",
+   "question": "How wide is the heart shadow compared with the widest inner diameter of the chest, a ratio of about one half being the usual upper limit?",
+   "scale": [
+    "narrow",
+    "normal",
+    "wide"
+   ],
+   "sources": [
+    "truszkiewicz2021",
+    "thurlbeck1978",
+    "gluecker1999"
+   ],
+   "anchors": {
+    "narrow": {
+     "text": "the heart shadow spans under about a third of the widest inner chest diameter and looks tall and vertical",
+     "sources": [
+      "thurlbeck1978"
+     ]
+    },
+    "normal": {
+     "text": "the heart shadow spans between about a third and one half of the widest inner chest diameter",
+     "sources": [
+      "truszkiewicz2021"
+     ]
+    },
+    "wide": {
+     "text": "the heart shadow spans more than half of the widest inner chest diameter",
+     "sources": [
+      "truszkiewicz2021",
+      "gluecker1999"
+     ]
+    }
+   }
+  },
+  {
+   "id": "discrete_rounded_opacity",
+   "question": "Is there a discrete, roughly round, sharply outlined white lesion inside the lung, and if so is it small (under about one fifth the width of one lung, roughly 3 cm) or larger?",
+   "scale": [
+    "absent",
+    "small",
+    "large"
+   ],
+   "sources": [
+    "hansell2008",
+    "bankier2024"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "no rounded, sharply outlined white spot stands out from the branching pattern of the vessels",
+     "sources": [
+      "hansell2008",
+      "bankier2024"
+     ]
+    },
+    "small": {
+     "text": "a rounded opacity up to about a fifth of one hemithorax wide (3 cm); at 1 cm it is near 6 pixels here and unreliable",
+     "sources": [
+      "hansell2008",
+      "bankier2024"
+     ]
+    },
+    "large": {
+     "text": "a rounded opacity wider than about a fifth of one hemithorax, that is, over 3 cm across",
+     "sources": [
+      "hansell2008",
+      "bankier2024"
+     ]
+    }
+   }
+  },
+  {
+   "id": "pleural_line_with_avascular_zone",
+   "question": "Is a thin white line visible running parallel to the chest wall, with completely blank lung beyond it and no vessel markings reaching out to the ribs?",
+   "scale": [
+    "absent",
+    "present"
+   ],
+   "sources": [
+    "hassan2024",
+    "hansell2008"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "vessel markings run out to the ribs all round, with no thin white line running parallel to the chest wall",
+     "sources": [
+      "hassan2024",
+      "hansell2008"
+     ]
+    },
+    "present": {
+     "text": "a thin white line parallels the chest wall with blank, vessel-free lung between it and the ribs",
+     "sources": [
+      "hassan2024",
+      "hansell2008"
+     ]
+    }
+   }
+  },
+  {
+   "id": "lung_inflation",
+   "question": "How inflated do the lungs look: short with high domed diaphragms, normal, or tall and dark with low flattened diaphragms and widely spaced ribs?",
+   "scale": [
+    "reduced",
+    "normal",
+    "increased"
+   ],
+   "sources": [
+    "thurlbeck1978",
+    "woodring1996",
+    "hansell2008",
+    "nason2012"
+   ],
+   "anchors": {
+    "reduced": {
+     "text": "the diaphragm domes sit high and steeply curved, the rib spaces are narrowed and the lungs look short",
+     "sources": [
+      "woodring1996",
+      "hansell2008"
+     ]
+    },
+    "normal": {
+     "text": "gently domed diaphragms near the tenth posterior rib, with evenly and moderately spread rib spaces",
+     "sources": [
+      "nason2012",
+      "thurlbeck1978"
+     ]
+    },
+    "increased": {
+     "text": "diaphragm outlines flat or concave upward, rib spaces widened, dark lung reaching below the tenth posterior rib",
+     "sources": [
+      "thurlbeck1978",
+      "nason2012"
+     ]
+    }
+   }
+  },
+  {
+   "id": "mediastinal_shift_direction",
+   "question": "Is the trachea or the heart shadow off the midline, and if so is it pulled towards the whiter (more opaque) half of the chest or pushed away from it?",
+   "scale": [
+    "towards_whiter_side",
+    "none",
+    "away_from_whiter_side"
+   ],
+   "sources": [
+    "woodring1996",
+    "hassan2024"
+   ],
+   "anchors": {
+    "towards_whiter_side": {
+     "text": "the tracheal air column and heart shadow are displaced into the whiter half of the chest, the darker half looking larger",
+     "sources": [
+      "woodring1996"
+     ]
+    },
+    "none": {
+     "text": "the tracheal air column runs down the middle of the frame and the heart shadow sits centred between the lungs",
+     "sources": [
+      "woodring1996",
+      "hassan2024"
+     ]
+    },
+    "away_from_whiter_side": {
+     "text": "the tracheal air column and heart shadow are pushed into the darker half, away from the whiter one",
+     "sources": [
+      "hassan2024"
+     ]
+    }
+   }
+  },
+  {
+   "id": "supradiaphragmatic_gas_structure",
+   "question": "Is there an abnormal rounded structure projected behind the heart or above the diaphragm that contains gas or a gas-fluid level and distorts the diaphragm outline?",
+   "scale": [
+    "absent",
+    "present"
+   ],
+   "sources": [
+    "nason2012",
+    "hansell2008"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "the diaphragm outline is a smooth unbroken curve with no gas pocket above it behind the heart",
+     "sources": [
+      "nason2012",
+      "hansell2008"
+     ]
+    },
+    "present": {
+     "text": "a rounded gas-containing pocket, sometimes with a flat fluid level, projects above the diaphragm behind the heart",
+     "sources": [
+      "nason2012",
+      "hansell2008"
+     ]
+    }
+   }
+  }
+ ],
+ "classes": {
+  "atelectasis": {
+   "fingerprint": {
+    "airspace_opacity": "confluent",
+    "hazy_opacity": "any",
+    "interstitial_markings": "any",
+    "opacity_basal_predominance": "any",
+    "costophrenic_angle_blunting": "absent",
+    "peripheral_pleural_density": "any",
+    "cardiac_silhouette_width": "any",
+    "discrete_rounded_opacity": "any",
+    "pleural_line_with_avascular_zone": "any",
+    "lung_inflation": "reduced",
+    "mediastinal_shift_direction": "towards_whiter_side",
+    "supradiaphragmatic_gas_structure": "any"
+   },
+   "sources": [
+    "woodring1996",
+    "hansell2008"
+   ]
+  },
+  "cardiomegaly": {
+   "fingerprint": {
+    "airspace_opacity": "any",
+    "hazy_opacity": "any",
+    "interstitial_markings": "any",
+    "opacity_basal_predominance": "any",
+    "costophrenic_angle_blunting": "any",
+    "peripheral_pleural_density": "any",
+    "cardiac_silhouette_width": "wide",
+    "discrete_rounded_opacity": "any",
+    "pleural_line_with_avascular_zone": "any",
+    "lung_inflation": "any",
+    "mediastinal_shift_direction": "any",
+    "supradiaphragmatic_gas_structure": "any"
+   },
+   "sources": [
+    "truszkiewicz2021",
+    "hansell2008"
+   ]
+  },
+  "effusion": {
+   "fingerprint": {
+    "airspace_opacity": "confluent",
+    "hazy_opacity": "any",
+    "interstitial_markings": "any",
+    "opacity_basal_predominance": "marked",
+    "costophrenic_angle_blunting": "marked",
+    "peripheral_pleural_density": "any",
+    "cardiac_silhouette_width": "any",
+    "discrete_rounded_opacity": "any",
+    "pleural_line_with_avascular_zone": "any",
+    "lung_inflation": "any",
+    "mediastinal_shift_direction": "away_from_whiter_side",
+    "supradiaphragmatic_gas_structure": "any"
+   },
+   "sources": [
+    "hassan2024",
+    "hansell2008",
+    "woodring1996"
+   ]
+  },
+  "infiltration": {
+   "fingerprint": {
+    "airspace_opacity": "patchy",
+    "hazy_opacity": "marked",
+    "interstitial_markings": "increased",
+    "opacity_basal_predominance": "any",
+    "costophrenic_angle_blunting": "any",
+    "peripheral_pleural_density": "any",
+    "cardiac_silhouette_width": "any",
+    "discrete_rounded_opacity": "any",
+    "pleural_line_with_avascular_zone": "any",
+    "lung_inflation": "any",
+    "mediastinal_shift_direction": "any",
+    "supradiaphragmatic_gas_structure": "any"
+   },
+   "sources": [
+    "wang2017",
+    "hansell2008"
+   ]
+  },
+  "mass": {
+   "fingerprint": {
+    "airspace_opacity": "any",
+    "hazy_opacity": "any",
+    "interstitial_markings": "any",
+    "opacity_basal_predominance": "any",
+    "costophrenic_angle_blunting": "any",
+    "peripheral_pleural_density": "any",
+    "cardiac_silhouette_width": "any",
+    "discrete_rounded_opacity": "large",
+    "pleural_line_with_avascular_zone": "any",
+    "lung_inflation": "any",
+    "mediastinal_shift_direction": "any",
+    "supradiaphragmatic_gas_structure": "any"
+   },
+   "sources": [
+    "hansell2008",
+    "bankier2024"
+   ]
+  },
+  "nodule": {
+   "fingerprint": {
+    "airspace_opacity": "any",
+    "hazy_opacity": "any",
+    "interstitial_markings": "any",
+    "opacity_basal_predominance": "any",
+    "costophrenic_angle_blunting": "any",
+    "peripheral_pleural_density": "any",
+    "cardiac_silhouette_width": "any",
+    "discrete_rounded_opacity": "small",
+    "pleural_line_with_avascular_zone": "any",
+    "lung_inflation": "any",
+    "mediastinal_shift_direction": "any",
+    "supradiaphragmatic_gas_structure": "any"
+   },
+   "sources": [
+    "hansell2008",
+    "bankier2024"
+   ]
+  },
+  "pneumonia": {
+   "fingerprint": {
+    "airspace_opacity": "confluent",
+    "hazy_opacity": "any",
+    "interstitial_markings": "any",
+    "opacity_basal_predominance": "any",
+    "costophrenic_angle_blunting": "any",
+    "peripheral_pleural_density": "any",
+    "cardiac_silhouette_width": "any",
+    "discrete_rounded_opacity": "any",
+    "pleural_line_with_avascular_zone": "any",
+    "lung_inflation": "normal",
+    "mediastinal_shift_direction": "none",
+    "supradiaphragmatic_gas_structure": "any"
+   },
+   "sources": [
+    "hansell2008",
+    "bankier2024"
+   ]
+  },
+  "pneumothorax": {
+   "fingerprint": {
+    "airspace_opacity": "absent",
+    "hazy_opacity": "absent",
+    "interstitial_markings": "normal",
+    "opacity_basal_predominance": "absent",
+    "costophrenic_angle_blunting": "any",
+    "peripheral_pleural_density": "any",
+    "cardiac_silhouette_width": "any",
+    "discrete_rounded_opacity": "any",
+    "pleural_line_with_avascular_zone": "present",
+    "lung_inflation": "any",
+    "mediastinal_shift_direction": "any",
+    "supradiaphragmatic_gas_structure": "any"
+   },
+   "sources": [
+    "hassan2024",
+    "hansell2008"
+   ]
+  },
+  "consolidation": {
+   "fingerprint": {
+    "airspace_opacity": "confluent",
+    "hazy_opacity": "any",
+    "interstitial_markings": "any",
+    "opacity_basal_predominance": "any",
+    "costophrenic_angle_blunting": "any",
+    "peripheral_pleural_density": "any",
+    "cardiac_silhouette_width": "any",
+    "discrete_rounded_opacity": "any",
+    "pleural_line_with_avascular_zone": "any",
+    "lung_inflation": "normal",
+    "mediastinal_shift_direction": "none",
+    "supradiaphragmatic_gas_structure": "any"
+   },
+   "sources": [
+    "hansell2008",
+    "bankier2024"
+   ]
+  },
+  "edema": {
+   "fingerprint": {
+    "airspace_opacity": "patchy",
+    "hazy_opacity": "marked",
+    "interstitial_markings": "coarse_reticular",
+    "opacity_basal_predominance": "mild",
+    "costophrenic_angle_blunting": "any",
+    "peripheral_pleural_density": "any",
+    "cardiac_silhouette_width": "wide",
+    "discrete_rounded_opacity": "any",
+    "pleural_line_with_avascular_zone": "any",
+    "lung_inflation": "any",
+    "mediastinal_shift_direction": "any",
+    "supradiaphragmatic_gas_structure": "any"
+   },
+   "sources": [
+    "gluecker1999",
+    "hansell2008"
+   ]
+  },
+  "emphysema": {
+   "fingerprint": {
+    "airspace_opacity": "absent",
+    "hazy_opacity": "absent",
+    "interstitial_markings": "normal",
+    "opacity_basal_predominance": "absent",
+    "costophrenic_angle_blunting": "any",
+    "peripheral_pleural_density": "any",
+    "cardiac_silhouette_width": "narrow",
+    "discrete_rounded_opacity": "any",
+    "pleural_line_with_avascular_zone": "any",
+    "lung_inflation": "increased",
+    "mediastinal_shift_direction": "any",
+    "supradiaphragmatic_gas_structure": "any"
+   },
+   "sources": [
+    "thurlbeck1978",
+    "hansell2008"
+   ]
+  },
+  "fibrosis": {
+   "fingerprint": {
+    "airspace_opacity": "absent",
+    "hazy_opacity": "any",
+    "interstitial_markings": "coarse_reticular",
+    "opacity_basal_predominance": "marked",
+    "costophrenic_angle_blunting": "any",
+    "peripheral_pleural_density": "any",
+    "cardiac_silhouette_width": "any",
+    "discrete_rounded_opacity": "any",
+    "pleural_line_with_avascular_zone": "any",
+    "lung_inflation": "reduced",
+    "mediastinal_shift_direction": "any",
+    "supradiaphragmatic_gas_structure": "any"
+   },
+   "sources": [
+    "hansell2008",
+    "bankier2024"
+   ]
+  },
+  "pleural": {
+   "fingerprint": {
+    "airspace_opacity": "any",
+    "hazy_opacity": "any",
+    "interstitial_markings": "any",
+    "opacity_basal_predominance": "any",
+    "costophrenic_angle_blunting": "mild",
+    "peripheral_pleural_density": "marked",
+    "cardiac_silhouette_width": "any",
+    "discrete_rounded_opacity": "any",
+    "pleural_line_with_avascular_zone": "any",
+    "lung_inflation": "any",
+    "mediastinal_shift_direction": "any",
+    "supradiaphragmatic_gas_structure": "any"
+   },
+   "sources": [
+    "hassan2024",
+    "hansell2008",
+    "yang2023"
+   ]
+  },
+  "hernia": {
+   "fingerprint": {
+    "airspace_opacity": "any",
+    "hazy_opacity": "any",
+    "interstitial_markings": "any",
+    "opacity_basal_predominance": "any",
+    "costophrenic_angle_blunting": "any",
+    "peripheral_pleural_density": "any",
+    "cardiac_silhouette_width": "any",
+    "discrete_rounded_opacity": "any",
+    "pleural_line_with_avascular_zone": "any",
+    "lung_inflation": "any",
+    "mediastinal_shift_direction": "any",
+    "supradiaphragmatic_gas_structure": "present"
+   },
+   "sources": [
+    "nason2012",
+    "hansell2008"
+   ]
+  }
+ }
+}

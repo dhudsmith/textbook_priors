@@ -1,0 +1,102 @@
+pneumoniamnist
+==============
+
+--- arm A: zero_shot prompt (sha256 d3285ebf39882934e707c19513fa72d2c8757c9690caa75c02da8328b8fec1ca) ---
+
+[system]
+You are an expert reader of medical images. You answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of 1-channel greyscale paediatric frontal chest radiographs. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+The image belongs to exactly one of these 2 categories:
+  1. normal
+  2. pneumonia
+
+How likely is each category for this image? Give every category a probability between 0 and 1, and make the 2 probabilities sum to 1.
+
+Reply with one JSON object and nothing else: exactly 2 keys, the category names above copied exactly as written, each value a number.
+
+{
+  "normal": <probability>,
+  "pneumonia": <probability>
+}
+
+--- arm B, C: concept prompt (sha256 5cabc4d848c7c30556a15c25e65b1889863ef1abc2700126ecc337427b62965e) ---
+
+[system]
+You are an expert reader of medical images. You report only what is visible in the image, and you answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of 1-channel greyscale paediatric frontal chest radiographs. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+Answer all 8 questions below about what is visible in this image. Each question lists its levels in order. For every question choose the one level that best fits this image.
+
+1. parenchymal_opacity
+   Is any part of either lung field whiter than the surrounding dark, air-filled lung?
+   Levels, in order, and what each looks like:
+     absent: both lung fields read uniformly dark from apex to base apart from ribs, vessels and the heart shadow
+     subtle: a faintly paler zone hard to separate from overlying rib or vessel shadow
+     definite: an area plainly whiter than the matching region of the opposite lung, with a discernible edge
+
+2. opacity_extent
+   How much of the combined lung area is taken up by whiter, less dark regions?
+   Levels, in order, and what each looks like:
+     none: no zone is whiter than the surrounding lung; whiteness is confined to ribs, heart and hilar vessels
+     small_patch: patchy whiteness too small to fill a lobe, below the magnitude WHO requires for primary-endpoint consolidation
+     lobe_sized: a dense or fluffy opacity occupying a portion or the whole of one lobe
+     most_of_both_lungs: whiteness covering an entire lung, or spread through the greater part of both lung fields
+
+3. opacity_density
+   Where the lung looks whiter, are the fine vessel lines still visible through it, or completely hidden by solid whiteness?
+   Levels, in order, and what each looks like:
+     none: vessel and airway margins stay as crisp as those in the opposite lung throughout
+     hazy_lines_visible: a veil of added whiteness through which vessel and airway margins can still be traced
+     solid_lines_hidden: homogeneous whiteness that hides vessel margins and airway walls, dense or fluffy rather than lacy
+
+4. linear_streaky_markings
+   Are fine linear, streaky or net-like white lines spread through both lung fields?
+   Levels, in order, and what each looks like:
+     absent: only smoothly tapering vessel branches; no extra streaky or net-like white lines
+     mild: a few extra streaky lines beyond the tapering vessels, limited to one lung or to a couple of zones
+     marked: linear and patchy densities in a lacy net-like pattern involving both lungs
+
+5. air_bronchogram
+   Inside a whiter region, are branching dark tube-like lines visible against the white?
+   Levels, in order, and what each looks like:
+     absent: no dark branching tubes stand out within any whiter region of lung
+     present: one or more dark air-filled bronchi traced against surrounding white airless lung
+
+6. peribronchial_thickening
+   Around the central root of each lung, do the branching markings look thickened, cuffed or ring-shaped rather than fine and tapering?
+   Levels, in order, and what each looks like:
+     absent: bronchial walls beside the hilar vessels are hairline thin and end-on bronchi show no ring
+     mild: a few hilar branches carry a visible cuff or ring wall, the rest still fine and tapering
+     marked: coarse cuffed walls and ring shadows on most branches radiating from both hila
+
+7. border_obscuration
+   Is the outline of the lower heart edge, or of either dome of the diaphragm, blurred or lost where lung meets it?
+   Levels, in order, and what each looks like:
+     absent: the lower heart edge and both diaphragm domes are traced as sharp unbroken lines
+     partial: part of the lower cardiac edge or of one diaphragm dome is blurred while the rest stays traceable
+     complete: the lower cardiac edge or a whole diaphragm dome is not depicted where opaque lung abuts it
+
+8. costophrenic_angle_blunting
+   Is either lower outer angle between the diaphragm and the chest wall filled in or rounded rather than a sharp point?
+   Levels, in order, and what each looks like:
+     absent: both outer angles between diaphragm and chest wall taper to a sharp point
+     mild: one angle is rounded or shallowly filled so that its apex is no longer a point
+     marked: fluid fills the angle and tracks up the lateral chest wall well above the diaphragm
+
+Reply with one JSON object and nothing else: exactly 8 keys, the question names above, each value one of that question's levels copied exactly as written.
+
+{
+  "parenchymal_opacity": "absent|subtle|definite",
+  "opacity_extent": "none|small_patch|lobe_sized|most_of_both_lungs",
+  "opacity_density": "none|hazy_lines_visible|solid_lines_hidden",
+  "linear_streaky_markings": "absent|mild|marked",
+  "air_bronchogram": "absent|present",
+  "peribronchial_thickening": "absent|mild|marked",
+  "border_obscuration": "absent|partial|complete",
+  "costophrenic_angle_blunting": "absent|mild|marked"
+}

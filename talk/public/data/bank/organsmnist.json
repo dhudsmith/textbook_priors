@@ -1,0 +1,824 @@
+{
+ "dataset": "organsmnist",
+ "modality": "1-channel greyscale abdominal CT crops at a fixed abdominal window; each image is a 2D bounding-box crop around one organ taken from a CT volume in the sagittal plane",
+ "task": "multi-class",
+ "source_dataset": "Liver Tumor Segmentation Benchmark, LiTS (Bilic et al. 2023), with the eleven-organ bounding-box annotations of Xu et al. 2019",
+ "provenance": {
+  "method": "literature review with a web-connected assistant",
+  "assistant": "Claude Opus 5 (claude-opus-5), 2026-09-09",
+  "reviewed_by": "simulated review by Claude Opus 5 (claude-opus-5), 2026-09-09; no clinician has reviewed this file",
+  "sources": [
+   {
+    "key": "yang2023",
+    "citation": "Yang J, Shi R, Wei D, Liu Z, Zhao L, Ke B, Pfister H, Ni B. MedMNIST v2 - A large-scale lightweight benchmark for 2D and 3D biomedical image classification. Scientific Data 2023;10:41.",
+    "doi": "10.1038/s41597-022-01721-8",
+    "used_for": [
+     "relative_size"
+    ]
+   },
+   {
+    "key": "bilic2023",
+    "citation": "Bilic P, Christ P, Li HB, et al. The Liver Tumor Segmentation Benchmark (LiTS). Medical Image Analysis 2023;84:102680.",
+    "doi": "10.1016/j.media.2022.102680",
+    "used_for": [
+     "relative_attenuation",
+     "interior_homogeneity"
+    ]
+   },
+   {
+    "key": "xu2019",
+    "citation": "Xu X, Zhou F, Liu B, Fu D, Bai X. Efficient multiple organ localization in CT image using 3D region proposal network. IEEE Transactions on Medical Imaging 2019;38(8):1885-1898.",
+    "doi": "10.1109/TMI.2019.2894854",
+    "used_for": [
+     "relative_size",
+     "adjacent_bone"
+    ]
+   },
+   {
+    "key": "moeller2013",
+    "citation": "Moeller TB, Reif E. Pocket Atlas of Sectional Anatomy: Computed Tomography and Magnetic Resonance Imaging. Volume II: Thorax, Heart, Abdomen and Pelvis. 4th ed. Stuttgart: Thieme; 2013. ISBN 9783131256041.",
+    "url": "https://shop.thieme.com/Pocket-Atlas-of-Sectional-Anatomy-Vol.-II-Thorax-Heart-Abdomen-and-Pelvis/9783131256041",
+    "used_for": [
+     "body_side",
+     "craniocaudal_level",
+     "anteroposterior_position",
+     "relative_size",
+     "elongation",
+     "hilar_notch",
+     "adjacent_bone"
+    ]
+   },
+   {
+    "key": "spratt2016",
+    "citation": "Spratt JD, Salkowski LR, Loukas M, Turmezei T, Weir J, Abrahams PH. Weir & Abrahams' Imaging Atlas of Human Anatomy. 5th ed. Edinburgh: Elsevier; 2016. ISBN 9780723438267.",
+    "url": "https://shop.elsevier.com/books/weir-and-abrahams-imaging-atlas-of-human-anatomy/spratt/978-0-7234-3826-7",
+    "used_for": [
+     "body_side",
+     "craniocaudal_level",
+     "anteroposterior_position",
+     "elongation",
+     "contour_lobulation",
+     "hilar_notch",
+     "bright_cortical_rim",
+     "adjacent_bone"
+    ]
+   },
+   {
+    "key": "denotter2023",
+    "citation": "DenOtter TD, Schubert J. Hounsfield Unit. In: StatPearls. Treasure Island (FL): StatPearls Publishing; updated 2023 Mar 6.",
+    "url": "https://www.ncbi.nlm.nih.gov/books/NBK547721/",
+    "used_for": [
+     "relative_attenuation",
+     "interior_homogeneity",
+     "bright_cortical_rim"
+    ]
+   },
+   {
+    "key": "hansell2008",
+    "citation": "Hansell DM, Bankier AA, MacMahon H, McLoud TC, Muller NL, Remy J. Fleischner Society: glossary of terms for thoracic imaging. Radiology 2008;246(3):697-722.",
+    "doi": "10.1148/radiol.2462070712",
+    "used_for": [
+     "relative_attenuation",
+     "interior_homogeneity",
+     "boundary_definition"
+    ]
+   },
+   {
+    "key": "bae2010",
+    "citation": "Bae KT. Intravenous contrast medium administration and scan timing at CT: considerations and approaches. Radiology 2010;256(1):32-61.",
+    "doi": "10.1148/radiol.10090908",
+    "used_for": [
+     "relative_attenuation",
+     "interior_homogeneity"
+    ]
+   },
+   {
+    "key": "sheth2004",
+    "citation": "Sheth S, Fishman EK. Multi-detector row CT of the kidneys and urinary tract: techniques and applications in the diagnosis of benign diseases. RadioGraphics 2004;24(2):e20.",
+    "doi": "10.1148/rg.e20",
+    "used_for": [
+     "relative_attenuation",
+     "interior_homogeneity",
+     "hilar_notch"
+    ]
+   },
+   {
+    "key": "borghei2013",
+    "citation": "Borghei P, Sokhandon F, Shirkhoda A, Morgan DE. Anomalies, anatomic variants, and sources of diagnostic pitfalls in pancreatic imaging. Radiology 2013;266(1):28-36.",
+    "doi": "10.1148/radiol.12112469",
+    "used_for": [
+     "elongation",
+     "contour_lobulation",
+     "interior_homogeneity",
+     "boundary_definition"
+    ]
+   }
+  ]
+ },
+ "concepts": [
+  {
+   "id": "body_side",
+   "question": "Judging from the surrounding structures caught in the crop (spine, body wall, midline vessels), does the main structure lie on the patient's right, near the midline, or on the patient's left? Remember that in a cross-sectional image the patient's left is shown on the right of the picture.",
+   "scale": [
+    "patient_right",
+    "midline",
+    "patient_left"
+   ],
+   "sources": [
+    "moeller2013",
+    "spratt2016"
+   ],
+   "anchors": {
+    "patient_right": {
+     "text": "the spine or the aorta sits toward the image-right of the crop, with the structure lying to the left of it on screen",
+     "sources": [
+      "moeller2013",
+      "spratt2016"
+     ]
+    },
+    "midline": {
+     "text": "body wall or paired muscles lie about equally far from the structure on both sides of the image, with no side landmark nearer than the other",
+     "sources": [
+      "moeller2013",
+      "spratt2016"
+     ]
+    },
+    "patient_left": {
+     "text": "the spine or the aorta sits toward the image-left of the crop, with the structure lying to the right of it on screen",
+     "sources": [
+      "moeller2013",
+      "spratt2016"
+     ]
+    }
+   }
+  },
+  {
+   "id": "craniocaudal_level",
+   "question": "From the surroundings visible in the crop, at what level of the trunk was this section taken: the pelvis, the lower abdomen, the upper abdomen, or the chest?",
+   "scale": [
+    "pelvic",
+    "lower_abdominal",
+    "upper_abdominal",
+    "thoracic"
+   ],
+   "sources": [
+    "moeller2013",
+    "spratt2016"
+   ],
+   "anchors": {
+    "pelvic": {
+     "text": "an iliac wing, pubic bone or rounded femoral head borders the crop, and no rib is present",
+     "sources": [
+      "moeller2013",
+      "spratt2016"
+     ]
+    },
+    "lower_abdominal": {
+     "text": "gas- or contrast-filled bowel loops and psoas muscle border the crop, with neither rib nor pelvic bone in view",
+     "sources": [
+      "moeller2013",
+      "spratt2016"
+     ]
+    },
+    "upper_abdominal": {
+     "text": "the lowest ribs border the crop alongside solid parenchymal organs, with no pelvic bone in view",
+     "sources": [
+      "moeller2013",
+      "spratt2016"
+     ]
+    },
+    "thoracic": {
+     "text": "ribs surround the crop and nearly black air-filled lung borders the structure",
+     "sources": [
+      "moeller2013",
+      "spratt2016"
+     ]
+    }
+   }
+  },
+  {
+   "id": "anteroposterior_position",
+   "question": "Do the surroundings place the main structure toward the back of the body (against the spine and the back muscles), in the middle, or toward the front body wall?",
+   "scale": [
+    "posterior",
+    "central",
+    "anterior"
+   ],
+   "sources": [
+    "moeller2013",
+    "spratt2016"
+   ],
+   "anchors": {
+    "posterior": {
+     "text": "a vertebral body and the thick paraspinal back muscles lie immediately against the structure",
+     "sources": [
+      "moeller2013",
+      "spratt2016"
+     ]
+    },
+    "central": {
+     "text": "neither the spine nor the front body wall touches the structure; both lie beyond it at the crop edge",
+     "sources": [
+      "moeller2013",
+      "spratt2016"
+     ]
+    },
+    "anterior": {
+     "text": "the front body wall, with its strap-like rectus muscle or the sternum, lies immediately against the structure",
+     "sources": [
+      "moeller2013",
+      "spratt2016"
+     ]
+    }
+   }
+  },
+  {
+   "id": "relative_size",
+   "question": "Compared with the landmarks caught at the edge of the crop (a vertebral body, a rib, the thickness of the body wall), is the main structure small, medium or large?",
+   "scale": [
+    "small",
+    "medium",
+    "large"
+   ],
+   "sources": [
+    "moeller2013",
+    "xu2019",
+    "yang2023"
+   ],
+   "anchors": {
+    "small": {
+     "text": "a single landmark at the crop edge - one vertebra or one rib - appears magnified and fills much of that edge",
+     "sources": [
+      "moeller2013",
+      "xu2019"
+     ]
+    },
+    "medium": {
+     "text": "two or three separate landmarks fit along the crop edge, each still plainly resolved",
+     "sources": [
+      "moeller2013",
+      "xu2019"
+     ]
+    },
+    "large": {
+     "text": "many small landmarks crowd the crop edge at once - several ribs, vertebrae or bowel loops together",
+     "sources": [
+      "moeller2013",
+      "xu2019"
+     ]
+    }
+   }
+  },
+  {
+   "id": "elongation",
+   "question": "Is the outline of the main structure roughly circular, moderately oval, or markedly elongated and strip-like?",
+   "scale": [
+    "round",
+    "oval",
+    "elongated"
+   ],
+   "sources": [
+    "moeller2013",
+    "spratt2016",
+    "borghei2013"
+   ],
+   "anchors": {
+    "round": {
+     "text": "the two widths of the outline differ by less than about a quarter, and the shape fills most of the frame",
+     "sources": [
+      "moeller2013",
+      "spratt2016"
+     ]
+    },
+    "oval": {
+     "text": "the long width is roughly one and a half to three times the short one, leaving the frame corners empty",
+     "sources": [
+      "moeller2013",
+      "spratt2016"
+     ]
+    },
+    "elongated": {
+     "text": "the long axis runs more than about three times the short one, a strip that leaves most of the frame as background",
+     "sources": [
+      "borghei2013",
+      "spratt2016"
+     ]
+    }
+   }
+  },
+  {
+   "id": "contour_lobulation",
+   "question": "Is the outline smooth and even, mildly lobulated or wavy, or markedly irregular and feathery?",
+   "scale": [
+    "smooth",
+    "mildly_lobulated",
+    "markedly_irregular"
+   ],
+   "sources": [
+    "spratt2016",
+    "borghei2013"
+   ],
+   "anchors": {
+    "smooth": {
+     "text": "the border runs as an unbroken curve, with no bump deeper than the thickness of the border line itself",
+     "sources": [
+      "spratt2016"
+     ]
+    },
+    "mildly_lobulated": {
+     "text": "one or two shallow bulges or gentle waves interrupt an otherwise continuous curve",
+     "sources": [
+      "spratt2016",
+      "borghei2013"
+     ]
+    },
+    "markedly_irregular": {
+     "text": "many bumps and clefts break the border, or it dissolves into a feathery fringe against the surrounding fat",
+     "sources": [
+      "borghei2013"
+     ]
+    }
+   }
+  },
+  {
+   "id": "hilar_notch",
+   "question": "Is there a single distinct indentation, notch or wedge cut into one side of the outline where vessels appear to enter?",
+   "scale": [
+    "absent",
+    "subtle",
+    "prominent"
+   ],
+   "sources": [
+    "moeller2013",
+    "spratt2016",
+    "sheth2004"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "the border runs continuously round the structure with no indentation on any side",
+     "sources": [
+      "moeller2013",
+      "spratt2016"
+     ]
+    },
+    "subtle": {
+     "text": "one side is flattened or dimpled, but the dent is shallower than about a tenth of the structure's width",
+     "sources": [
+      "moeller2013",
+      "spratt2016"
+     ]
+    },
+    "prominent": {
+     "text": "a wedge deeper than about a tenth of the width is cut into one side, with vessels or fat running into it",
+     "sources": [
+      "sheth2004",
+      "spratt2016"
+     ]
+    }
+   }
+  },
+  {
+   "id": "relative_attenuation",
+   "question": "Overall, how bright is the main structure compared with the ordinary soft tissue and muscle visible around it?",
+   "scale": [
+    "much_darker",
+    "slightly_darker",
+    "similar",
+    "brighter",
+    "much_brighter"
+   ],
+   "sources": [
+    "bilic2023",
+    "bae2010",
+    "sheth2004",
+    "denotter2023",
+    "hansell2008"
+   ],
+   "anchors": {
+    "much_darker": {
+     "text": "nearly black at this window, clearly the darkest tissue in the crop and far below the muscle at the frame edge",
+     "sources": [
+      "hansell2008",
+      "denotter2023"
+     ]
+    },
+    "slightly_darker": {
+     "text": "a shade below the muscle at the frame edge, but plainly mid-grey rather than black",
+     "sources": [
+      "denotter2023",
+      "bae2010"
+     ]
+    },
+    "similar": {
+     "text": "no step in grey level against the muscle at the frame edge; only the outline separates the two",
+     "sources": [
+      "denotter2023",
+      "bae2010"
+     ]
+    },
+    "brighter": {
+     "text": "a clear step above the muscle at the frame edge, yet still well short of the white of bone",
+     "sources": [
+      "bae2010",
+      "bilic2023"
+     ]
+    },
+    "much_brighter": {
+     "text": "among the brightest things in the crop, approaching the white of cortical bone or of dense contrast",
+     "sources": [
+      "bae2010",
+      "sheth2004"
+     ]
+    }
+   }
+  },
+  {
+   "id": "interior_homogeneity",
+   "question": "Is the inside of the structure uniform in brightness, or does it contain clearly different regions, internal branching lines or pockets?",
+   "scale": [
+    "homogeneous",
+    "mildly_heterogeneous",
+    "markedly_heterogeneous"
+   ],
+   "sources": [
+    "bilic2023",
+    "bae2010",
+    "sheth2004",
+    "denotter2023",
+    "hansell2008",
+    "borghei2013"
+   ],
+   "anchors": {
+    "homogeneous": {
+     "text": "one even grey fills the interior, broken by nothing more than a few thin vessel lines",
+     "sources": [
+      "hansell2008",
+      "bilic2023"
+     ]
+    },
+    "mildly_heterogeneous": {
+     "text": "faint mottling or a few branching lines cross the interior, but no region differs sharply from the rest",
+     "sources": [
+      "hansell2008",
+      "denotter2023",
+      "borghei2013"
+     ]
+    },
+    "markedly_heterogeneous": {
+     "text": "two or more distinct zones, one clearly brighter than the other, meet at sharp internal borders",
+     "sources": [
+      "sheth2004",
+      "bae2010"
+     ]
+    }
+   }
+  },
+  {
+   "id": "bright_cortical_rim",
+   "question": "Is the structure outlined by a thin rim of the very brightest, calcium-density material, brighter than any soft tissue in the crop?",
+   "scale": [
+    "absent",
+    "partial",
+    "complete"
+   ],
+   "sources": [
+    "spratt2016",
+    "denotter2023"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "no calcium-white line follows the border anywhere; the edge is grey meeting grey",
+     "sources": [
+      "spratt2016",
+      "denotter2023"
+     ]
+    },
+    "partial": {
+     "text": "a calcium-white line brighter than any soft tissue follows part of the border and then breaks off",
+     "sources": [
+      "spratt2016",
+      "denotter2023"
+     ]
+    },
+    "complete": {
+     "text": "an unbroken calcium-white line rings the whole border, the brightest thing in the crop",
+     "sources": [
+      "spratt2016",
+      "denotter2023"
+     ]
+    }
+   }
+  },
+  {
+   "id": "boundary_definition",
+   "question": "How clearly is the edge of the main structure separated from what surrounds it: barely distinguishable, moderately defined, or crisp along most of its circumference?",
+   "scale": [
+    "indistinct",
+    "moderate",
+    "sharp"
+   ],
+   "sources": [
+    "hansell2008",
+    "borghei2013"
+   ],
+   "anchors": {
+    "indistinct": {
+     "text": "the edge merges into the surrounding tissue over most of its length; you could not trace it confidently",
+     "sources": [
+      "hansell2008",
+      "borghei2013"
+     ]
+    },
+    "moderate": {
+     "text": "the edge is traceable over roughly half the circumference and blurred or interrupted over the rest",
+     "sources": [
+      "hansell2008"
+     ]
+    },
+    "sharp": {
+     "text": "a crisp step in brightness follows almost the whole circumference, often with a dark fat line beside it",
+     "sources": [
+      "hansell2008",
+      "borghei2013"
+     ]
+    }
+   }
+  },
+  {
+   "id": "adjacent_bone",
+   "question": "Are very bright, calcium-density structures such as vertebrae, ribs or pelvic bone visible at the edge of the crop, and if so how much of the edge do they occupy?",
+   "scale": [
+    "absent",
+    "small",
+    "prominent"
+   ],
+   "sources": [
+    "moeller2013",
+    "spratt2016",
+    "xu2019"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "nothing of calcium-white density appears anywhere along the crop edge",
+     "sources": [
+      "moeller2013",
+      "spratt2016"
+     ]
+    },
+    "small": {
+     "text": "one small patch of calcium-white touches the crop edge and occupies a minor part of it",
+     "sources": [
+      "moeller2013",
+      "xu2019"
+     ]
+    },
+    "prominent": {
+     "text": "calcium-white runs along a long stretch of the crop edge, or several bony pieces border the crop at once",
+     "sources": [
+      "spratt2016",
+      "xu2019"
+     ]
+    }
+   }
+  }
+ ],
+ "classes": {
+  "bladder": {
+   "fingerprint": {
+    "body_side": "midline",
+    "craniocaudal_level": "pelvic",
+    "anteroposterior_position": "anterior",
+    "relative_size": "medium",
+    "elongation": "round",
+    "contour_lobulation": "smooth",
+    "hilar_notch": "absent",
+    "relative_attenuation": "slightly_darker",
+    "interior_homogeneity": "homogeneous",
+    "bright_cortical_rim": "absent",
+    "boundary_definition": "sharp",
+    "adjacent_bone": "prominent"
+   },
+   "sources": [
+    "moeller2013",
+    "spratt2016",
+    "denotter2023",
+    "bae2010"
+   ]
+  },
+  "femur-left": {
+   "fingerprint": {
+    "body_side": "any",
+    "craniocaudal_level": "pelvic",
+    "anteroposterior_position": "central",
+    "relative_size": "small",
+    "elongation": "elongated",
+    "contour_lobulation": "smooth",
+    "hilar_notch": "absent",
+    "relative_attenuation": "much_brighter",
+    "interior_homogeneity": "mildly_heterogeneous",
+    "bright_cortical_rim": "complete",
+    "boundary_definition": "sharp",
+    "adjacent_bone": "prominent"
+   },
+   "sources": [
+    "moeller2013",
+    "spratt2016",
+    "denotter2023"
+   ]
+  },
+  "femur-right": {
+   "fingerprint": {
+    "body_side": "any",
+    "craniocaudal_level": "pelvic",
+    "anteroposterior_position": "central",
+    "relative_size": "small",
+    "elongation": "elongated",
+    "contour_lobulation": "smooth",
+    "hilar_notch": "absent",
+    "relative_attenuation": "much_brighter",
+    "interior_homogeneity": "mildly_heterogeneous",
+    "bright_cortical_rim": "complete",
+    "boundary_definition": "sharp",
+    "adjacent_bone": "prominent"
+   },
+   "sources": [
+    "moeller2013",
+    "spratt2016",
+    "denotter2023"
+   ]
+  },
+  "heart": {
+   "fingerprint": {
+    "body_side": "midline",
+    "craniocaudal_level": "thoracic",
+    "anteroposterior_position": "anterior",
+    "relative_size": "large",
+    "elongation": "oval",
+    "contour_lobulation": "smooth",
+    "hilar_notch": "absent",
+    "relative_attenuation": "brighter",
+    "interior_homogeneity": "mildly_heterogeneous",
+    "bright_cortical_rim": "absent",
+    "boundary_definition": "sharp",
+    "adjacent_bone": "small"
+   },
+   "sources": [
+    "moeller2013",
+    "spratt2016",
+    "hansell2008",
+    "bae2010"
+   ]
+  },
+  "kidney-left": {
+   "fingerprint": {
+    "body_side": "any",
+    "craniocaudal_level": "upper_abdominal",
+    "anteroposterior_position": "posterior",
+    "relative_size": "medium",
+    "elongation": "oval",
+    "contour_lobulation": "smooth",
+    "hilar_notch": "prominent",
+    "relative_attenuation": "much_brighter",
+    "interior_homogeneity": "markedly_heterogeneous",
+    "bright_cortical_rim": "absent",
+    "boundary_definition": "sharp",
+    "adjacent_bone": "small"
+   },
+   "sources": [
+    "moeller2013",
+    "spratt2016",
+    "sheth2004",
+    "bae2010"
+   ]
+  },
+  "kidney-right": {
+   "fingerprint": {
+    "body_side": "any",
+    "craniocaudal_level": "upper_abdominal",
+    "anteroposterior_position": "posterior",
+    "relative_size": "medium",
+    "elongation": "oval",
+    "contour_lobulation": "smooth",
+    "hilar_notch": "prominent",
+    "relative_attenuation": "much_brighter",
+    "interior_homogeneity": "markedly_heterogeneous",
+    "bright_cortical_rim": "absent",
+    "boundary_definition": "sharp",
+    "adjacent_bone": "small"
+   },
+   "sources": [
+    "moeller2013",
+    "spratt2016",
+    "sheth2004",
+    "bae2010"
+   ]
+  },
+  "liver": {
+   "fingerprint": {
+    "body_side": "any",
+    "craniocaudal_level": "upper_abdominal",
+    "anteroposterior_position": "any",
+    "relative_size": "large",
+    "elongation": "oval",
+    "contour_lobulation": "smooth",
+    "hilar_notch": "subtle",
+    "relative_attenuation": "brighter",
+    "interior_homogeneity": "homogeneous",
+    "bright_cortical_rim": "absent",
+    "boundary_definition": "moderate",
+    "adjacent_bone": "small"
+   },
+   "sources": [
+    "moeller2013",
+    "spratt2016",
+    "bilic2023",
+    "bae2010"
+   ]
+  },
+  "lung-left": {
+   "fingerprint": {
+    "body_side": "any",
+    "craniocaudal_level": "thoracic",
+    "anteroposterior_position": "any",
+    "relative_size": "large",
+    "elongation": "oval",
+    "contour_lobulation": "smooth",
+    "hilar_notch": "subtle",
+    "relative_attenuation": "much_darker",
+    "interior_homogeneity": "mildly_heterogeneous",
+    "bright_cortical_rim": "absent",
+    "boundary_definition": "sharp",
+    "adjacent_bone": "prominent"
+   },
+   "sources": [
+    "moeller2013",
+    "hansell2008",
+    "denotter2023"
+   ]
+  },
+  "lung-right": {
+   "fingerprint": {
+    "body_side": "any",
+    "craniocaudal_level": "thoracic",
+    "anteroposterior_position": "any",
+    "relative_size": "large",
+    "elongation": "oval",
+    "contour_lobulation": "smooth",
+    "hilar_notch": "subtle",
+    "relative_attenuation": "much_darker",
+    "interior_homogeneity": "mildly_heterogeneous",
+    "bright_cortical_rim": "absent",
+    "boundary_definition": "sharp",
+    "adjacent_bone": "prominent"
+   },
+   "sources": [
+    "moeller2013",
+    "hansell2008",
+    "denotter2023"
+   ]
+  },
+  "pancreas": {
+   "fingerprint": {
+    "body_side": "midline",
+    "craniocaudal_level": "upper_abdominal",
+    "anteroposterior_position": "central",
+    "relative_size": "medium",
+    "elongation": "oval",
+    "contour_lobulation": "markedly_irregular",
+    "hilar_notch": "absent",
+    "relative_attenuation": "brighter",
+    "interior_homogeneity": "mildly_heterogeneous",
+    "bright_cortical_rim": "absent",
+    "boundary_definition": "indistinct",
+    "adjacent_bone": "small"
+   },
+   "sources": [
+    "moeller2013",
+    "spratt2016",
+    "borghei2013",
+    "bae2010"
+   ]
+  },
+  "spleen": {
+   "fingerprint": {
+    "body_side": "any",
+    "craniocaudal_level": "upper_abdominal",
+    "anteroposterior_position": "posterior",
+    "relative_size": "medium",
+    "elongation": "oval",
+    "contour_lobulation": "smooth",
+    "hilar_notch": "subtle",
+    "relative_attenuation": "brighter",
+    "interior_homogeneity": "homogeneous",
+    "bright_cortical_rim": "absent",
+    "boundary_definition": "moderate",
+    "adjacent_bone": "small"
+   },
+   "sources": [
+    "moeller2013",
+    "spratt2016",
+    "bae2010"
+   ]
+  }
+ }
+}

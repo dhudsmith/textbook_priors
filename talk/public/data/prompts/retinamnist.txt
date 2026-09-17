@@ -1,0 +1,125 @@
+retinamnist
+===========
+
+--- arm A: zero_shot prompt (sha256 fcff0f33d29a1d9df47446c8ffc67deb22b13be632c4cd4105913636418a30b4) ---
+
+[system]
+You are an expert reader of medical images. You answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of 3-channel colour retinal fundus photographs. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+The image belongs to exactly one of these 5 categories:
+  1. 0 (no apparent diabetic retinopathy)
+  2. 1 (mild non-proliferative diabetic retinopathy)
+  3. 2 (moderate non-proliferative diabetic retinopathy)
+  4. 3 (severe non-proliferative diabetic retinopathy)
+  5. 4 (proliferative diabetic retinopathy)
+
+How likely is each category for this image? Give every category a probability between 0 and 1, and make the 5 probabilities sum to 1.
+
+Reply with one JSON object and nothing else: exactly 5 keys, the category names above copied exactly as written, each value a number.
+
+{
+  "0": <probability>,
+  "1": <probability>,
+  "2": <probability>,
+  "3": <probability>,
+  "4": <probability>
+}
+
+--- arm B, C: concept prompt (sha256 3d5e29b1e6101da5ab273cbdbeb01b422e31ca4e3c978e74945dffb37f22be80) ---
+
+[system]
+You are an expert reader of medical images. You report only what is visible in the image, and you answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of 3-channel colour retinal fundus photographs. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+Answer all 10 questions below about what is visible in this image. Each question lists its levels in order. For every question choose the one level that best fits this image.
+
+1. microaneurysms_dot_haemorrhages
+   How many small, sharply outlined round red dots, each far smaller than the width of a main retinal vessel, are scattered over the orange retinal background?
+   Levels, in order, and what each looks like:
+     none: no red dots anywhere on the orange background; the only red structures are the branching vessels themselves
+     few: a handful of red dots, roughly one to five, all lying within one part of the visible retina
+     moderate: red dots easily found in more than one quarter of the retina but still countable, roughly six to twenty in all
+     many: red dots in every quarter of the retina and too many to count singly, more than about twenty per quarter
+
+2. blot_haemorrhages
+   How many larger red patches with blurred or irregular outlines, clearly bigger than the small round dots, are visible in the retina?
+   Levels, in order, and what each looks like:
+     none: no red patch is larger or blurrier than the fine round dots; the retina shows dots or nothing at all
+     few: one to about five blurred red patches, confined to one quarter of the visible retina
+     moderate: blurred red patches in two or three quarters of the retina, fewer than about twenty in any one of them
+     many: more than about twenty blurred red patches in each of the four quarters of the retina
+
+3. hard_exudates
+   How much sharply outlined bright yellow-white deposit, sometimes in clusters, lines or rings, is visible in the retina?
+   Levels, in order, and what each looks like:
+     none: no yellow-white deposit on the retina; the brightest structure in the frame is the pale optic disc itself
+     few: one or two small yellow-white specks or a single short line, together well under one optic-disc area
+     moderate: several sharp-edged yellow-white clusters or a partial ring, together about one optic-disc area
+     many: yellow-white deposit in rings or confluent sheets covering more than about two optic-disc areas
+
+4. cotton_wool_spots
+   How many pale greyish-white patches with soft, feathery, ill-defined edges are visible, distinct from the sharply outlined yellow deposits?
+   Levels, in order, and what each looks like:
+     none: no soft-edged pale patch; any bright lesion present has a crisp yellow border rather than a fuzzy white one
+     few: anything from one up to about five fluffy white patches with feathery margins, however widely they are scattered
+     many: more than about five fluffy white patches with feathery margins, too many to count on one hand
+
+5. venous_beading
+   Do the larger dark retinal veins vary in calibre along their course, looking like a string of sausages rather than a smoothly tapering tube?
+   Levels, in order, and what each looks like:
+     absent: every large vein tapers smoothly from the disc outwards with no local widening or pinching
+     mild: one vein shows a short stretch of alternating widening and narrowing, in one quarter of the retina only
+     marked: definite sausage-string calibre change in veins in two or more of the four quarters of the retina
+
+6. irma
+   Are there fine, irregular, tortuous vessel segments lying within the retina, often near red lesions, that do not follow the orderly branching of the main vessels?
+   Levels, in order, and what each looks like:
+     absent: all visible vessels branch and taper in orderly fashion; no tangled segment sits between them
+     mild: a faint or doubtful tangle of fine intraretinal vessels, hard to tell from a normal small branch
+     marked: prominent tangles of fine irregular intraretinal vessels in one or more of the four quarters of the retina
+
+7. lesion_quadrant_spread
+   Taking the optic disc as the centre, in how many quadrants of the visible retina are red lesions present?
+   Levels, in order, and what each looks like:
+     none: no red dot or patch in any quarter of the retina that the frame actually shows
+     one_quadrant: red lesions in one quarter only, quartering about the disc or, if it is off-frame, the image centre
+     two_or_three_quadrants: red lesions in two or three of the four quarters, with at least one quarter free of them
+     four_quadrants: red lesions in every one of the four quarters of the visible retina, none spared
+
+8. neovascularisation
+   Is there a fine net, tuft or frond of thin new vessels on or beside the optic disc, or elsewhere along the vascular arcades, distinct from the normal branching vessels?
+   Levels, in order, and what each looks like:
+     absent: every vessel runs out from the disc along the arcades and tapers; no extra net lies on the disc or retinal surface
+     present: a fine tangled net, tuft or frond of thin vessels lies on the disc or the retinal surface, finer than the arcade it sits on
+
+9. preretinal_or_vitreous_haemorrhage
+   Is there a dense sheet or pool of blood lying in front of the retina that hides the vessels beneath it, or a diffuse red haze obscuring part of the fundus?
+   Levels, in order, and what each looks like:
+     absent: the retinal vessels can be followed across the whole frame; nothing dense lies in front of them
+     present: a dense blood sheet, often with a flat upper level, hides the vessels under it, or a red haze veils part of the view
+
+10. fibrous_proliferation
+   Is there white or grey fibrous, sheet-like or membranous tissue lying on the retinal surface, often over the disc or along the vascular arcades?
+   Levels, in order, and what each looks like:
+     absent: the retinal surface shows only vessels and orange background, with no opaque sheet lying over it
+     present: an opaque white or grey membranous sheet lies on the retinal surface, often bridging the disc and the arcades
+
+Reply with one JSON object and nothing else: exactly 10 keys, the question names above, each value one of that question's levels copied exactly as written.
+
+{
+  "microaneurysms_dot_haemorrhages": "none|few|moderate|many",
+  "blot_haemorrhages": "none|few|moderate|many",
+  "hard_exudates": "none|few|moderate|many",
+  "cotton_wool_spots": "none|few|many",
+  "venous_beading": "absent|mild|marked",
+  "irma": "absent|mild|marked",
+  "lesion_quadrant_spread": "none|one_quadrant|two_or_three_quadrants|four_quadrants",
+  "neovascularisation": "absent|present",
+  "preretinal_or_vitreous_haemorrhage": "absent|present",
+  "fibrous_proliferation": "absent|present"
+}

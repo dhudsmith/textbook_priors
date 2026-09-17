@@ -1,0 +1,752 @@
+{
+ "dataset": "pathmnist",
+ "modality": "haematoxylin-and-eosin-stained colorectal histology patches, 3-channel colour, 224 x 224 pixels at about 0.5 microns per pixel",
+ "task": "multi-class",
+ "source_dataset": "NCT-CRC-HE-100K (Kather et al. 2019)",
+ "provenance": {
+  "method": "literature review with a web-connected assistant",
+  "assistant": "Claude Opus 5 (claude-opus-5), 2026-09-09",
+  "reviewed_by": "simulated review by Claude Opus 5 (claude-opus-5), 2026-09-09; no clinician has reviewed this file",
+  "sources": [
+   {
+    "key": "yang2023",
+    "citation": "Yang J, Shi R, Wei D, Liu Z, Zhao L, Ke B, Pfister H, Ni B. MedMNIST v2 - A large-scale lightweight benchmark for 2D and 3D biomedical image classification. Scientific Data 2023;10:41.",
+    "doi": "10.1038/s41597-022-01721-8",
+    "used_for": [
+     "tissue_content"
+    ]
+   },
+   {
+    "key": "kather2019",
+    "citation": "Kather JN, Krisam J, Charoentong P, Luedde T, Herpel E, et al. Predicting survival from colorectal cancer histology slides using deep learning: a retrospective multicenter study. PLoS Medicine 2019;16(1):e1002730.",
+    "doi": "10.1371/journal.pmed.1002730",
+    "used_for": [
+     "tissue_content",
+     "nuclear_density",
+     "nuclear_pleomorphism",
+     "gland_regularity",
+     "fibre_alignment"
+    ]
+   },
+   {
+    "key": "kather2016",
+    "citation": "Kather JN, Weis CA, Bianconi F, Melchers SM, Schad LR, Gaiser T, Marx A, Zollner FG. Multi-class texture analysis in colorectal cancer histology. Scientific Reports 2016;6:27988.",
+    "doi": "10.1038/srep27988",
+    "used_for": [
+     "tissue_content",
+     "extracellular_mucin",
+     "fat_vacuoles",
+     "small_round_cell_infiltrate",
+     "necrotic_debris"
+    ]
+   },
+   {
+    "key": "fleming2012",
+    "citation": "Fleming M, Ravula S, Tatishchev SF, Wang HL. Colorectal carcinoma: pathologic aspects. Journal of Gastrointestinal Oncology 2012;3(3):153-73.",
+    "doi": "10.3978/j.issn.2078-6891.2012.030",
+    "used_for": [
+     "nuclear_pleomorphism",
+     "gland_formation",
+     "gland_regularity",
+     "goblet_cells",
+     "extracellular_mucin",
+     "necrotic_debris"
+    ]
+   },
+   {
+    "key": "ueno2021",
+    "citation": "Ueno H, Kajiwara Y, Ajioka Y, Sugai T, Sekine S, Ishiguro M, Takashima A, Kanemitsu Y. Histopathological atlas of desmoplastic reaction characterization in colorectal cancer. Japanese Journal of Clinical Oncology 2021;51(6):1004-12.",
+    "doi": "10.1093/jjco/hyab040",
+    "used_for": [
+     "fibre_alignment",
+     "cytoplasm_eosinophilia",
+     "extracellular_mucin"
+    ]
+   },
+   {
+    "key": "klintrup2005",
+    "citation": "Klintrup K, Makinen JM, Kauppila S, Vare PO, Melkko J, Tuominen H, Tuppurainen K, Makela J, Karttunen TJ, Makinen MJ. Inflammation and prognosis in colorectal cancer. European Journal of Cancer 2005;41(17):2645-54.",
+    "doi": "10.1016/j.ejca.2005.07.017",
+    "used_for": [
+     "small_round_cell_infiltrate"
+    ]
+   },
+   {
+    "key": "pollheimer2010",
+    "citation": "Pollheimer MJ, Kornprat P, Lindtner RA, Harbaum L, Schlemmer A, Rehak P, Langner C. Tumor necrosis is a new promising prognostic factor in colorectal cancer. Human Pathology 2010;41(12):1749-57.",
+    "doi": "10.1016/j.humpath.2010.04.018",
+    "used_for": [
+     "necrotic_debris"
+    ]
+   },
+   {
+    "key": "mescher2021",
+    "citation": "Mescher AL. Junqueira's Basic Histology: Text and Atlas. 16th ed. New York: McGraw Hill; 2021.",
+    "url": "https://openlibrary.org/isbn/9781260462982",
+    "used_for": [
+     "nuclear_density",
+     "gland_formation",
+     "goblet_cells",
+     "fibre_alignment",
+     "cytoplasm_eosinophilia",
+     "fat_vacuoles"
+    ]
+   }
+  ]
+ },
+ "concepts": [
+  {
+   "id": "tissue_content",
+   "question": "How much of the field is filled with recognisable stained tissue structure rather than plain, featureless white space?",
+   "scale": [
+    "none",
+    "sparse",
+    "moderate",
+    "abundant"
+   ],
+   "sources": [
+    "kather2016",
+    "kather2019",
+    "yang2023"
+   ],
+   "anchors": {
+    "none": {
+     "text": "no stained material anywhere: flat, even white or very pale grey across the whole field",
+     "sources": [
+      "kather2019",
+      "kather2016"
+     ]
+    },
+    "sparse": {
+     "text": "stained structure covers under about a quarter of the field; the pale rest holds no outlines",
+     "sources": [
+      "kather2016",
+      "kather2019"
+     ]
+    },
+    "moderate": {
+     "text": "a quarter to two thirds is stained, or empty spaces fill the field but each one is walled",
+     "sources": [
+      "kather2016",
+      "kather2019"
+     ]
+    },
+    "abundant": {
+     "text": "stained cells, fibres and nuclei fill the field, leaving no white gap wider than a nucleus",
+     "sources": [
+      "kather2019",
+      "kather2016"
+     ]
+    }
+   }
+  },
+  {
+   "id": "nuclear_density",
+   "question": "How densely packed are the cell nuclei, seen as small dark blue-purple bodies?",
+   "scale": [
+    "none",
+    "few",
+    "moderate",
+    "many",
+    "very_many"
+   ],
+   "sources": [
+    "kather2019",
+    "mescher2021"
+   ],
+   "anchors": {
+    "none": {
+     "text": "not a single dark blue-purple nuclear body anywhere in the field",
+     "sources": [
+      "kather2019"
+     ]
+    },
+    "few": {
+     "text": "fewer than about twenty nuclei, most lying more than several nuclear widths from the next",
+     "sources": [
+      "kather2019",
+      "mescher2021"
+     ]
+    },
+    "moderate": {
+     "text": "nuclei roughly one to three nuclear widths apart, together covering well under a quarter of the field",
+     "sources": [
+      "mescher2021",
+      "kather2019"
+     ]
+    },
+    "many": {
+     "text": "nuclei frequently touching, together covering roughly a third to a half of the field",
+     "sources": [
+      "mescher2021",
+      "kather2019"
+     ]
+    },
+    "very_many": {
+     "text": "nuclei almost confluent, covering over half the field with little visible material between them",
+     "sources": [
+      "kather2019"
+     ]
+    }
+   }
+  },
+  {
+   "id": "nuclear_pleomorphism",
+   "question": "Do the nuclei vary in size, shape and darkness, or are they all much alike?",
+   "scale": [
+    "uniform",
+    "mildly_variable",
+    "markedly_variable"
+   ],
+   "sources": [
+    "fleming2012",
+    "kather2019"
+   ],
+   "anchors": {
+    "uniform": {
+     "text": "nuclei alike in size, shape and darkness, lying with their long axes similarly oriented",
+     "sources": [
+      "fleming2012",
+      "kather2019"
+     ]
+    },
+    "mildly_variable": {
+     "text": "largest nuclei about twice the smallest; staining slightly uneven; most still share one orientation",
+     "sources": [
+      "fleming2012"
+     ]
+    },
+    "markedly_variable": {
+     "text": "largest nuclei three or more times the smallest, with coarse dark chromatin, prominent nucleoli and lost polarity",
+     "sources": [
+      "fleming2012",
+      "kather2019"
+     ]
+    }
+   }
+  },
+  {
+   "id": "gland_formation",
+   "question": "Are there gland-like structures, that is rings or tubes of cells enclosing an open lumen?",
+   "scale": [
+    "absent",
+    "few",
+    "many"
+   ],
+   "sources": [
+    "fleming2012",
+    "mescher2021"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "no ring or tube of cells enclosing an open lumen anywhere in the field",
+     "sources": [
+      "mescher2021",
+      "fleming2012"
+     ]
+    },
+    "few": {
+     "text": "gland-like rings occupy less than half the field; the rest is solid sheets, cords or fibrous tissue",
+     "sources": [
+      "fleming2012"
+     ]
+    },
+    "many": {
+     "text": "gland-like rings occupy more than half the field",
+     "sources": [
+      "fleming2012",
+      "mescher2021"
+     ]
+    }
+   }
+  },
+  {
+   "id": "gland_regularity",
+   "question": "If gland-like structures are present, are they evenly sized, evenly spaced and smoothly outlined, or crowded, angulated and irregular in size and shape?",
+   "scale": [
+    "no_glands",
+    "regular",
+    "mildly_irregular",
+    "markedly_irregular"
+   ],
+   "sources": [
+    "fleming2012",
+    "kather2019"
+   ],
+   "anchors": {
+    "no_glands": {
+     "text": "no ring or tube of cells encloses a lumen anywhere, so there is no gland outline to compare",
+     "sources": [
+      "mescher2021",
+      "kather2019"
+     ]
+    },
+    "regular": {
+     "text": "glands alike in size, round or oval, evenly spaced, smoothly outlined, each with an open lumen",
+     "sources": [
+      "mescher2021",
+      "fleming2012"
+     ]
+    },
+    "mildly_irregular": {
+     "text": "glands differ up to about twofold in size, some branched or angulated, lumina still open and separate",
+     "sources": [
+      "fleming2012"
+     ]
+    },
+    "markedly_irregular": {
+     "text": "glands back-to-back or cribriform, sharply angulated, lumina slit-like or absent, sizes differing several-fold",
+     "sources": [
+      "fleming2012",
+      "kather2019"
+     ]
+    }
+   }
+  },
+  {
+   "id": "goblet_cells",
+   "question": "Within any cell lining, are there clear rounded mucin droplets that push the nucleus to one side of the cell?",
+   "scale": [
+    "absent",
+    "few",
+    "many"
+   ],
+   "sources": [
+    "mescher2021",
+    "fleming2012"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "no clear rounded vacuole in the lining; every nucleus sits at the same level",
+     "sources": [
+      "mescher2021"
+     ]
+    },
+    "few": {
+     "text": "clear vacuoles in under about a quarter of the lining cells, scattered singly",
+     "sources": [
+      "mescher2021",
+      "fleming2012"
+     ]
+    },
+    "many": {
+     "text": "clear vacuoles in over half the lining cells, each pushing its nucleus against the cell base",
+     "sources": [
+      "fleming2012",
+      "mescher2021"
+     ]
+    }
+   }
+  },
+  {
+   "id": "fibre_alignment",
+   "question": "Where elongated fibre-like structures are present, do they run in tightly packed parallel bundles, or are they wavy, loose and haphazardly oriented?",
+   "scale": [
+    "no_fibres",
+    "uniformly_parallel",
+    "mixed",
+    "loose_and_haphazard"
+   ],
+   "sources": [
+    "kather2019",
+    "mescher2021",
+    "ueno2021"
+   ],
+   "anchors": {
+    "no_fibres": {
+     "text": "no elongated fibre-like structure anywhere; the field holds only round cells, granular material or empty space",
+     "sources": [
+      "kather2019",
+      "kather2016"
+     ]
+    },
+    "uniformly_parallel": {
+     "text": "almost every fibre runs on one axis, tightly packed, with no gaps or crossing bundles",
+     "sources": [
+      "mescher2021",
+      "kather2019"
+     ]
+    },
+    "mixed": {
+     "text": "two or three fibre directions present, or hyalinised bands over a fifth of the field wide crossing looser fibres",
+     "sources": [
+      "ueno2021"
+     ]
+    },
+    "loose_and_haphazard": {
+     "text": "wavy fibres share no direction and are separated by pale amorphous ground substance",
+     "sources": [
+      "ueno2021",
+      "kather2019"
+     ]
+    }
+   }
+  },
+  {
+   "id": "cytoplasm_eosinophilia",
+   "question": "Is the material between the nuclei mostly deep pink or red, or mostly pale, grey or blue-purple?",
+   "scale": [
+    "pale_or_basophilic",
+    "mixed",
+    "strongly_eosinophilic"
+   ],
+   "sources": [
+    "mescher2021",
+    "ueno2021"
+   ],
+   "anchors": {
+    "pale_or_basophilic": {
+     "text": "material between nuclei is pale grey, blue or violet, with no saturated pink anywhere",
+     "sources": [
+      "ueno2021",
+      "mescher2021"
+     ]
+    },
+    "mixed": {
+     "text": "pink and pale blue-grey areas both present, neither covering more than about two thirds of the field",
+     "sources": [
+      "ueno2021",
+      "mescher2021"
+     ]
+    },
+    "strongly_eosinophilic": {
+     "text": "deep saturated pink fills over two thirds of the field between nuclei, with no blue-grey zones",
+     "sources": [
+      "mescher2021",
+      "ueno2021"
+     ]
+    }
+   }
+  },
+  {
+   "id": "extracellular_mucin",
+   "question": "Are there pools or wisps of pale blue-grey, structureless mucinous material lying outside cells?",
+   "scale": [
+    "absent",
+    "focal",
+    "extensive"
+   ],
+   "sources": [
+    "kather2016",
+    "fleming2012",
+    "ueno2021"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "no pale blue-grey structureless material lies outside cells anywhere in the field",
+     "sources": [
+      "kather2016"
+     ]
+    },
+    "focal": {
+     "text": "pale blue-grey pools cover between about a tenth and half the field",
+     "sources": [
+      "fleming2012"
+     ]
+    },
+    "extensive": {
+     "text": "pale blue-grey structureless material covers more than half the field",
+     "sources": [
+      "fleming2012",
+      "kather2016"
+     ]
+    }
+   }
+  },
+  {
+   "id": "fat_vacuoles",
+   "question": "Does the field show large empty round or polygonal spaces bounded by thin walls, in a honeycomb arrangement?",
+   "scale": [
+    "absent",
+    "few",
+    "many"
+   ],
+   "sources": [
+    "mescher2021",
+    "kather2016"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "no large empty rounded space; any white area is unwalled or no wider than a nucleus",
+     "sources": [
+      "mescher2021",
+      "kather2016"
+     ]
+    },
+    "few": {
+     "text": "one to three large empty rounded spaces, each many times wider than a nucleus",
+     "sources": [
+      "mescher2021"
+     ]
+    },
+    "many": {
+     "text": "empty walled spaces in a honeycomb cover over half the field, their walls thinner than a nucleus",
+     "sources": [
+      "mescher2021",
+      "kather2016"
+     ]
+    }
+   }
+  },
+  {
+   "id": "small_round_cell_infiltrate",
+   "question": "Are there collections of small, round, uniformly dark nuclei with almost no visible cytoplasm around them?",
+   "scale": [
+    "absent",
+    "scattered",
+    "dense"
+   ],
+   "sources": [
+    "klintrup2005",
+    "kather2016"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "no small dark round nuclei; nuclei present are elongated, pale or vesicular",
+     "sources": [
+      "klintrup2005"
+     ]
+    },
+    "scattered": {
+     "text": "a mild, patchy increase of small dark round nuclei, singly or in small groups, not confluent",
+     "sources": [
+      "klintrup2005"
+     ]
+    },
+    "dense": {
+     "text": "small dark round nuclei form a confluent band or sheet over about a third of the field",
+     "sources": [
+      "klintrup2005",
+      "kather2016"
+     ]
+    }
+   }
+  },
+  {
+   "id": "necrotic_debris",
+   "question": "Is there granular, fragmented material with broken nuclear dust and no intact cell outlines?",
+   "scale": [
+    "absent",
+    "focal",
+    "extensive"
+   ],
+   "sources": [
+    "pollheimer2010",
+    "fleming2012",
+    "kather2016"
+   ],
+   "anchors": {
+    "absent": {
+     "text": "every cell has an intact outline and a whole nucleus; no granular fragmented material",
+     "sources": [
+      "pollheimer2010"
+     ]
+    },
+    "focal": {
+     "text": "granular fragmented material in patches under about a third of the field, mostly inside gland lumina",
+     "sources": [
+      "fleming2012",
+      "pollheimer2010"
+     ]
+    },
+    "extensive": {
+     "text": "granular fragmented material with scattered nuclear dust covers over a third of the field",
+     "sources": [
+      "pollheimer2010",
+      "kather2016"
+     ]
+    }
+   }
+  }
+ ],
+ "classes": {
+  "adipose": {
+   "fingerprint": {
+    "tissue_content": "moderate",
+    "nuclear_density": "few",
+    "nuclear_pleomorphism": "uniform",
+    "gland_formation": "absent",
+    "gland_regularity": "no_glands",
+    "goblet_cells": "absent",
+    "fibre_alignment": "any",
+    "cytoplasm_eosinophilia": "pale_or_basophilic",
+    "extracellular_mucin": "absent",
+    "fat_vacuoles": "many",
+    "small_round_cell_infiltrate": "absent",
+    "necrotic_debris": "absent"
+   },
+   "sources": [
+    "mescher2021",
+    "kather2016",
+    "kather2019"
+   ]
+  },
+  "background": {
+   "fingerprint": {
+    "tissue_content": "none",
+    "nuclear_density": "none",
+    "nuclear_pleomorphism": "any",
+    "gland_formation": "absent",
+    "gland_regularity": "no_glands",
+    "goblet_cells": "absent",
+    "fibre_alignment": "no_fibres",
+    "cytoplasm_eosinophilia": "any",
+    "extracellular_mucin": "absent",
+    "fat_vacuoles": "absent",
+    "small_round_cell_infiltrate": "absent",
+    "necrotic_debris": "absent"
+   },
+   "sources": [
+    "kather2016",
+    "kather2019"
+   ]
+  },
+  "debris": {
+   "fingerprint": {
+    "tissue_content": "moderate",
+    "nuclear_density": "few",
+    "nuclear_pleomorphism": "any",
+    "gland_formation": "absent",
+    "gland_regularity": "no_glands",
+    "goblet_cells": "absent",
+    "fibre_alignment": "any",
+    "cytoplasm_eosinophilia": "mixed",
+    "extracellular_mucin": "any",
+    "fat_vacuoles": "absent",
+    "small_round_cell_infiltrate": "any",
+    "necrotic_debris": "extensive"
+   },
+   "sources": [
+    "kather2016",
+    "pollheimer2010",
+    "fleming2012"
+   ]
+  },
+  "lymphocytes": {
+   "fingerprint": {
+    "tissue_content": "abundant",
+    "nuclear_density": "very_many",
+    "nuclear_pleomorphism": "uniform",
+    "gland_formation": "absent",
+    "gland_regularity": "no_glands",
+    "goblet_cells": "absent",
+    "fibre_alignment": "any",
+    "cytoplasm_eosinophilia": "pale_or_basophilic",
+    "extracellular_mucin": "absent",
+    "fat_vacuoles": "absent",
+    "small_round_cell_infiltrate": "dense",
+    "necrotic_debris": "absent"
+   },
+   "sources": [
+    "klintrup2005",
+    "kather2016",
+    "mescher2021"
+   ]
+  },
+  "mucus": {
+   "fingerprint": {
+    "tissue_content": "sparse",
+    "nuclear_density": "few",
+    "nuclear_pleomorphism": "any",
+    "gland_formation": "absent",
+    "gland_regularity": "no_glands",
+    "goblet_cells": "absent",
+    "fibre_alignment": "no_fibres",
+    "cytoplasm_eosinophilia": "pale_or_basophilic",
+    "extracellular_mucin": "extensive",
+    "fat_vacuoles": "absent",
+    "small_round_cell_infiltrate": "any",
+    "necrotic_debris": "absent"
+   },
+   "sources": [
+    "fleming2012",
+    "kather2016",
+    "kather2019"
+   ]
+  },
+  "smooth muscle": {
+   "fingerprint": {
+    "tissue_content": "abundant",
+    "nuclear_density": "moderate",
+    "nuclear_pleomorphism": "uniform",
+    "gland_formation": "absent",
+    "gland_regularity": "no_glands",
+    "goblet_cells": "absent",
+    "fibre_alignment": "uniformly_parallel",
+    "cytoplasm_eosinophilia": "strongly_eosinophilic",
+    "extracellular_mucin": "absent",
+    "fat_vacuoles": "absent",
+    "small_round_cell_infiltrate": "absent",
+    "necrotic_debris": "absent"
+   },
+   "sources": [
+    "mescher2021",
+    "kather2019",
+    "ueno2021"
+   ]
+  },
+  "normal colon mucosa": {
+   "fingerprint": {
+    "tissue_content": "abundant",
+    "nuclear_density": "many",
+    "nuclear_pleomorphism": "uniform",
+    "gland_formation": "many",
+    "gland_regularity": "regular",
+    "goblet_cells": "many",
+    "fibre_alignment": "any",
+    "cytoplasm_eosinophilia": "mixed",
+    "extracellular_mucin": "focal",
+    "fat_vacuoles": "absent",
+    "small_round_cell_infiltrate": "scattered",
+    "necrotic_debris": "absent"
+   },
+   "sources": [
+    "mescher2021",
+    "fleming2012",
+    "kather2019"
+   ]
+  },
+  "cancer-associated stroma": {
+   "fingerprint": {
+    "tissue_content": "abundant",
+    "nuclear_density": "moderate",
+    "nuclear_pleomorphism": "mildly_variable",
+    "gland_formation": "absent",
+    "gland_regularity": "no_glands",
+    "goblet_cells": "absent",
+    "fibre_alignment": "loose_and_haphazard",
+    "cytoplasm_eosinophilia": "mixed",
+    "extracellular_mucin": "focal",
+    "fat_vacuoles": "absent",
+    "small_round_cell_infiltrate": "scattered",
+    "necrotic_debris": "absent"
+   },
+   "sources": [
+    "ueno2021",
+    "kather2016",
+    "kather2019"
+   ]
+  },
+  "colorectal adenocarcinoma epithelium": {
+   "fingerprint": {
+    "tissue_content": "abundant",
+    "nuclear_density": "many",
+    "nuclear_pleomorphism": "markedly_variable",
+    "gland_formation": "many",
+    "gland_regularity": "markedly_irregular",
+    "goblet_cells": "few",
+    "fibre_alignment": "any",
+    "cytoplasm_eosinophilia": "mixed",
+    "extracellular_mucin": "any",
+    "fat_vacuoles": "absent",
+    "small_round_cell_infiltrate": "any",
+    "necrotic_debris": "focal"
+   },
+   "sources": [
+    "fleming2012",
+    "kather2019",
+    "kather2016"
+   ]
+  }
+ }
+}

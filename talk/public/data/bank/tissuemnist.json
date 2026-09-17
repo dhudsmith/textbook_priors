@@ -1,0 +1,669 @@
+{
+ "dataset": "tissuemnist",
+ "modality": "greyscale 2D projections of segmented single cells from 3D confocal fluorescence microscopy of nuclear-stained human kidney cortex",
+ "task": "multi-class",
+ "source_dataset": "BBBC051 (Woloshuk et al. 2021)",
+ "provenance": {
+  "method": "literature review with a web-connected assistant",
+  "assistant": "Claude Opus 5 (claude-opus-5), 2026-09-09",
+  "reviewed_by": "simulated review by Claude Opus 5 (claude-opus-5), 2026-09-09; no clinician has reviewed this file",
+  "sources": [
+   {
+    "key": "yang2023",
+    "citation": "Yang J, Shi R, Wei D, Liu Z, Lin L, Ke B, Pfister H, Ni B. MedMNIST v2 - a large-scale lightweight benchmark for 2D and 3D biomedical image classification. Scientific Data 2023;10:41.",
+    "doi": "10.1038/s41597-022-01721-8",
+    "used_for": [
+     "nucleus_size",
+     "neighbouring_nuclei",
+     "staining_intensity"
+    ]
+   },
+   {
+    "key": "woloshuk2021",
+    "citation": "Woloshuk A, Khochare S, Almulhim AF, McNutt AT, Dean D, Barwinska D, Ferkowicz MJ, Eadon MT, Kelly KJ, Dunn KW, Hasan MA, El-Achkar TM, Winfree S. In situ classification of cell types in human kidney tissue using 3D nuclear staining. Cytometry Part A 2021;99(7):707-721.",
+    "doi": "10.1002/cyto.a.24274",
+    "used_for": [
+     "nucleus_size",
+     "nucleus_elongation",
+     "chromatin_texture",
+     "staining_intensity",
+     "neighbouring_nuclei",
+     "neighbour_variety"
+    ]
+   },
+   {
+    "key": "arman2026",
+    "citation": "Arman M, Rahat MMA, Thithi MA, Khan JU, Kabir SM, Islam MI, Hasan M, Shakib MN, Lim HS. A lightweight deep learning model with channel attention for kidney cell classification from microscopy images. Scientific Reports 2026;16:24754.",
+    "doi": "10.1038/s41598-026-55088-6",
+    "used_for": [
+     "chromatin_texture",
+     "staining_intensity"
+    ]
+   },
+   {
+    "key": "ljosa2012",
+    "citation": "Ljosa V, Sokolnicki KL, Carpenter AE. Annotated high-throughput microscopy image sets for validation. Nature Methods 2012;9(7):637.",
+    "doi": "10.1038/nmeth.2083",
+    "used_for": [
+     "nucleus_size",
+     "neighbouring_nuclei"
+    ]
+   },
+   {
+    "key": "murray2023",
+    "citation": "Murray IV, Paolini MA. Histology, kidney and glomerulus. StatPearls [Internet]. Treasure Island (FL): StatPearls Publishing; updated 17 April 2023. Bookshelf ID NBK554544.",
+    "url": "https://www.ncbi.nlm.nih.gov/books/NBK554544/",
+    "used_for": [
+     "nucleus_size",
+     "outline_regularity",
+     "chromatin_texture",
+     "staining_intensity",
+     "neighbouring_nuclei",
+     "neighbour_variety",
+     "size_versus_neighbours"
+    ]
+   },
+   {
+    "key": "brelje2026",
+    "citation": "Brelje TC, Sorenson RL. Urinary system: nephrons and renal corpuscle. HistologyGuide, Department of Genetics, Cell Biology and Development, University of Minnesota; copyright 2005-2026.",
+    "url": "https://histologyguide.com/slideview/MH-141a-kidney/16-slide-1.html",
+    "used_for": [
+     "nucleus_size",
+     "nucleus_elongation",
+     "outline_regularity",
+     "neighbour_variety",
+     "size_versus_neighbours"
+    ]
+   },
+   {
+    "key": "pavenstadt2003",
+    "citation": "Pavenstadt H, Kriz W, Kretzler M. Cell biology of the glomerular podocyte. Physiological Reviews 2003;83(1):253-307.",
+    "doi": "10.1152/physrev.00020.2002",
+    "used_for": [
+     "nucleus_size",
+     "size_versus_neighbours"
+    ]
+   },
+   {
+    "key": "madrazoibarra2023",
+    "citation": "Madrazo-Ibarra A, Vaitla P. Histology, nephron. StatPearls [Internet]. Treasure Island (FL): StatPearls Publishing; updated 17 February 2023. Bookshelf ID NBK554411.",
+    "url": "https://www.ncbi.nlm.nih.gov/books/NBK554411/",
+    "used_for": [
+     "nucleus_elongation",
+     "outline_regularity",
+     "neighbour_variety",
+     "size_versus_neighbours"
+    ]
+   },
+   {
+    "key": "king2022",
+    "citation": "King DW. Kidney: epithelium and connective tissue (page RN006c, updated 8 June 2022) and Renal cortex: proximal and distal tubules (page RN008b, updated 30 May 2022). Histology at SIU, Southern Illinois University School of Medicine.",
+    "url": "https://histology.siu.edu/intro/RN006c.htm",
+    "used_for": [
+     "nucleus_elongation",
+     "outline_regularity",
+     "neighbouring_nuclei"
+    ]
+   },
+   {
+    "key": "king2025",
+    "citation": "King DW. Renal system: guide to the identification of renal tubules. Histology at SIU, Southern Illinois University School of Medicine; updated 12 November 2025.",
+    "url": "https://histology.siu.edu/crr/rnguide.htm",
+    "used_for": [
+     "neighbouring_nuclei"
+    ]
+   },
+   {
+    "key": "kirkwood2017",
+    "citation": "Kirkwood L. Kidney: normal renal histology. Pathologia, University of Edinburgh; undated, image credits dated 2017.",
+    "url": "https://pathologia.ed.ac.uk/topic/renal-normal-histology/",
+    "used_for": [
+     "nucleus_size",
+     "neighbouring_nuclei"
+    ]
+   },
+   {
+    "key": "walavalkar2019",
+    "citation": "Walavalkar V. Kidney biopsy of the month - the tubulointerstitium part 1: the cortex. Renal Fellow Network; 11 February 2019.",
+    "url": "https://www.renalfellow.org/2019/02/11/kidney-biopsy-of-the-month-the-tubulointerstitium-part-1-the-cortex/",
+    "used_for": [
+     "nucleus_size",
+     "nucleus_elongation",
+     "neighbouring_nuclei"
+    ]
+   },
+   {
+    "key": "kaissling2008",
+    "citation": "Kaissling B, Le Hir M. The renal cortical interstitium: morphological and functional aspects. Histochemistry and Cell Biology 2008;130(2):247-262.",
+    "doi": "10.1007/s00418-008-0452-5",
+    "used_for": [
+     "nucleus_size",
+     "neighbouring_nuclei",
+     "neighbour_variety",
+     "size_versus_neighbours"
+    ]
+   },
+   {
+    "key": "kawasaki2021",
+    "citation": "Kawasaki Y, Hosoyamada Y, Miyaki T, Yamaguchi J, Kakuta S, Sakai T, Ichimura K. Three-dimensional architecture of glomerular endothelial cells revealed by FIB-SEM tomography. Frontiers in Cell and Developmental Biology 2021;9:653472.",
+    "doi": "10.3389/fcell.2021.653472",
+    "used_for": [
+     "nucleus_elongation",
+     "outline_regularity"
+    ]
+   },
+   {
+    "key": "flaherty1972",
+    "citation": "Flaherty JT, Pierce JE, Ferrans VJ, Patel DJ, Tucker WK, Fry DL. Endothelial nuclear patterns in the canine arterial tree with particular reference to hemodynamic events. Circulation Research 1972;30(1):23-33.",
+    "doi": "10.1161/01.res.30.1.23",
+    "used_for": [
+     "nucleus_elongation",
+     "outline_regularity"
+    ]
+   },
+   {
+    "key": "tigner2026",
+    "citation": "Tigner A, Ibrahim SA, Murray IV. Histology, white blood cell. StatPearls [Internet]. Treasure Island (FL): StatPearls Publishing; updated 14 February 2026. Bookshelf ID NBK563148.",
+    "url": "https://www.ncbi.nlm.nih.gov/books/NBK563148/",
+    "used_for": [
+     "nucleus_size",
+     "nucleus_elongation",
+     "outline_regularity",
+     "chromatin_texture",
+     "staining_intensity",
+     "size_versus_neighbours"
+    ]
+   },
+   {
+    "key": "manley2018",
+    "citation": "Manley HR, Keightley MC, Lieschke GJ. The neutrophil nucleus: an important influence on neutrophil migration and function. Frontiers in Immunology 2018;9:2867.",
+    "doi": "10.3389/fimmu.2018.02867",
+    "used_for": [
+     "outline_regularity",
+     "chromatin_texture",
+     "staining_intensity"
+    ]
+   }
+  ]
+ },
+ "concepts": [
+  {
+   "id": "nucleus_size",
+   "question": "How large is the single bright object at the centre of the image compared with the width of the whole image?",
+   "scale": [
+    "small",
+    "medium",
+    "large"
+   ],
+   "sources": [
+    "yang2023",
+    "ljosa2012",
+    "woloshuk2021",
+    "murray2023",
+    "brelje2026",
+    "pavenstadt2003",
+    "walavalkar2019",
+    "kirkwood2017",
+    "tigner2026",
+    "kaissling2008"
+   ],
+   "anchors": {
+    "small": {
+     "text": "occupies less than about a third of the frame width, with wide dark margins on every side",
+     "sources": [
+      "woloshuk2021",
+      "ljosa2012",
+      "tigner2026"
+     ]
+    },
+    "medium": {
+     "text": "spans roughly half the frame width, the crop being about two nucleus-widths across",
+     "sources": [
+      "woloshuk2021",
+      "ljosa2012"
+     ]
+    },
+    "large": {
+     "text": "spans more than about two thirds of the frame width and nearly reaches opposite edges",
+     "sources": [
+      "woloshuk2021",
+      "ljosa2012",
+      "pavenstadt2003"
+     ]
+    }
+   }
+  },
+  {
+   "id": "nucleus_elongation",
+   "question": "Is the central bright object about as wide as it is tall, moderately longer in one direction, or clearly long and narrow?",
+   "scale": [
+    "round",
+    "oval",
+    "elongated"
+   ],
+   "sources": [
+    "king2022",
+    "madrazoibarra2023",
+    "brelje2026",
+    "walavalkar2019",
+    "kawasaki2021",
+    "flaherty1972",
+    "tigner2026",
+    "woloshuk2021"
+   ],
+   "anchors": {
+    "round": {
+     "text": "about as wide as it is tall; no direction is clearly the longer one",
+     "sources": [
+      "king2022",
+      "brelje2026",
+      "walavalkar2019"
+     ]
+    },
+    "oval": {
+     "text": "clearly longer one way than the other, but still blunt and rounded at both ends",
+     "sources": [
+      "brelje2026",
+      "murray2023"
+     ]
+    },
+    "elongated": {
+     "text": "a narrow strip whose long axis runs far across the frame while staying thin along its whole length",
+     "sources": [
+      "kawasaki2021",
+      "flaherty1972"
+     ]
+    }
+   }
+  },
+  {
+   "id": "outline_regularity",
+   "question": "Is the outline of the central bright object smooth and unbroken, or is it notched, indented, or split into separate lobes?",
+   "scale": [
+    "smooth",
+    "indented",
+    "lobed"
+   ],
+   "sources": [
+    "king2022",
+    "madrazoibarra2023",
+    "brelje2026",
+    "murray2023",
+    "kawasaki2021",
+    "flaherty1972",
+    "tigner2026",
+    "manley2018"
+   ],
+   "anchors": {
+    "smooth": {
+     "text": "the bright edge runs unbroken all the way round, with no notch cutting into it",
+     "sources": [
+      "brelje2026",
+      "king2022",
+      "kawasaki2021"
+     ]
+    },
+    "indented": {
+     "text": "one or two dark notches bite into the edge without dividing the object in two",
+     "sources": [
+      "tigner2026"
+     ]
+    },
+    "lobed": {
+     "text": "two or more bright blobs joined by thin bridges; a neutrophil nucleus carries three to five such lobes",
+     "sources": [
+      "manley2018",
+      "tigner2026"
+     ]
+    }
+   }
+  },
+  {
+   "id": "chromatin_texture",
+   "question": "Inside the central bright object, is the signal even across it, or is it broken up into brighter and darker patches?",
+   "scale": [
+    "uniform",
+    "mottled",
+    "coarsely_clumped"
+   ],
+   "sources": [
+    "murray2023",
+    "tigner2026",
+    "manley2018",
+    "woloshuk2021",
+    "arman2026"
+   ],
+   "anchors": {
+    "uniform": {
+     "text": "brightness is even across the object; no patch stands out against its surroundings",
+     "sources": [
+      "murray2023",
+      "woloshuk2021"
+     ]
+    },
+    "mottled": {
+     "text": "faint lighter and darker patches show, but they blend into each other without sharp edges",
+     "sources": [
+      "woloshuk2021",
+      "arman2026"
+     ]
+    },
+    "coarsely_clumped": {
+     "text": "a few distinctly bright blocks sit against clearly darker gaps, with abrupt borders between them",
+     "sources": [
+      "tigner2026",
+      "manley2018"
+     ]
+    }
+   }
+  },
+  {
+   "id": "staining_intensity",
+   "question": "How bright is the central object compared with the darkest background in the image?",
+   "scale": [
+    "dim",
+    "moderate",
+    "bright"
+   ],
+   "sources": [
+    "yang2023",
+    "murray2023",
+    "tigner2026",
+    "manley2018",
+    "woloshuk2021",
+    "arman2026"
+   ],
+   "anchors": {
+    "dim": {
+     "text": "grey rather than white, only modestly above the dark background even at its centre",
+     "sources": [
+      "yang2023",
+      "woloshuk2021"
+     ]
+    },
+    "moderate": {
+     "text": "solidly bright over most of its area, with only the middle approaching white",
+     "sources": [
+      "yang2023",
+      "woloshuk2021"
+     ]
+    },
+    "bright": {
+     "text": "close to white and near-saturated over most of its area, the strongest signal in the frame",
+     "sources": [
+      "tigner2026",
+      "manley2018"
+     ]
+    }
+   }
+  },
+  {
+   "id": "neighbouring_nuclei",
+   "question": "Apart from the central object, how many other bright objects or parts of them are visible anywhere in the image, including at the edges?",
+   "scale": [
+    "none",
+    "one_or_two",
+    "several"
+   ],
+   "sources": [
+    "yang2023",
+    "ljosa2012",
+    "woloshuk2021",
+    "king2022",
+    "king2025",
+    "kirkwood2017",
+    "walavalkar2019",
+    "kaissling2008",
+    "murray2023"
+   ],
+   "anchors": {
+    "none": {
+     "text": "the central object is the only bright thing; all four frame edges stay dark",
+     "sources": [
+      "woloshuk2021",
+      "ljosa2012"
+     ]
+    },
+    "one_or_two": {
+     "text": "one or two further bright areas appear, typically cut off by the frame edge",
+     "sources": [
+      "woloshuk2021",
+      "ljosa2012",
+      "kaissling2008"
+     ]
+    },
+    "several": {
+     "text": "three or more separate bright areas, so several frame edges carry a partial nucleus",
+     "sources": [
+      "king2025",
+      "kirkwood2017",
+      "woloshuk2021"
+     ]
+    }
+   }
+  },
+  {
+   "id": "neighbour_variety",
+   "question": "Do the other bright objects in the image look like near-copies of one another in size and shape, or a mixture of clearly different sizes and shapes?",
+   "scale": [
+    "uniform",
+    "somewhat_mixed",
+    "markedly_mixed"
+   ],
+   "sources": [
+    "murray2023",
+    "brelje2026",
+    "madrazoibarra2023",
+    "kaissling2008",
+    "woloshuk2021"
+   ],
+   "anchors": {
+    "uniform": {
+     "text": "the other bright areas match one another closely in both size and shape",
+     "sources": [
+      "brelje2026",
+      "madrazoibarra2023"
+     ]
+    },
+    "somewhat_mixed": {
+     "text": "the other bright areas differ noticeably in size or in shape, but not in both",
+     "sources": [
+      "kaissling2008",
+      "murray2023"
+     ]
+    },
+    "markedly_mixed": {
+     "text": "the other bright areas differ in size and in shape at once: round, narrow and broad ones together",
+     "sources": [
+      "murray2023",
+      "brelje2026"
+     ]
+    }
+   }
+  },
+  {
+   "id": "size_versus_neighbours",
+   "question": "Compared with the other bright objects visible in the image, is the central one smaller, about the same size, or larger?",
+   "scale": [
+    "smaller",
+    "similar",
+    "larger"
+   ],
+   "sources": [
+    "murray2023",
+    "brelje2026",
+    "pavenstadt2003",
+    "madrazoibarra2023",
+    "kaissling2008",
+    "tigner2026"
+   ],
+   "anchors": {
+    "smaller": {
+     "text": "visibly narrower than the partial bright areas showing at the frame edge",
+     "sources": [
+      "tigner2026",
+      "kaissling2008"
+     ]
+    },
+    "similar": {
+     "text": "the same width as the partial nuclei at the frame edge, as far as one can tell",
+     "sources": [
+      "brelje2026",
+      "madrazoibarra2023"
+     ]
+    },
+    "larger": {
+     "text": "clearly wider than any partial nucleus visible at the frame edge",
+     "sources": [
+      "pavenstadt2003",
+      "murray2023"
+     ]
+    }
+   }
+  }
+ ],
+ "classes": {
+  "Collecting Duct, Connecting Tubule": {
+   "fingerprint": {
+    "nucleus_size": "any",
+    "nucleus_elongation": "round",
+    "outline_regularity": "smooth",
+    "chromatin_texture": "any",
+    "staining_intensity": "any",
+    "neighbouring_nuclei": "any",
+    "neighbour_variety": "uniform",
+    "size_versus_neighbours": "similar"
+   },
+   "sources": [
+    "king2022",
+    "brelje2026",
+    "madrazoibarra2023"
+   ]
+  },
+  "Distal Convoluted Tubule": {
+   "fingerprint": {
+    "nucleus_size": "small",
+    "nucleus_elongation": "round",
+    "outline_regularity": "smooth",
+    "chromatin_texture": "any",
+    "staining_intensity": "any",
+    "neighbouring_nuclei": "several",
+    "neighbour_variety": "uniform",
+    "size_versus_neighbours": "similar"
+   },
+   "sources": [
+    "walavalkar2019",
+    "kirkwood2017",
+    "king2022",
+    "king2025",
+    "brelje2026"
+   ]
+  },
+  "Glomerular endothelial cells": {
+   "fingerprint": {
+    "nucleus_size": "any",
+    "nucleus_elongation": "elongated",
+    "outline_regularity": "smooth",
+    "chromatin_texture": "any",
+    "staining_intensity": "any",
+    "neighbouring_nuclei": "several",
+    "neighbour_variety": "markedly_mixed",
+    "size_versus_neighbours": "smaller"
+   },
+   "sources": [
+    "kawasaki2021",
+    "flaherty1972",
+    "murray2023",
+    "brelje2026"
+   ]
+  },
+  "Interstitial endothelial cells": {
+   "fingerprint": {
+    "nucleus_size": "any",
+    "nucleus_elongation": "elongated",
+    "outline_regularity": "smooth",
+    "chromatin_texture": "any",
+    "staining_intensity": "any",
+    "neighbouring_nuclei": "one_or_two",
+    "neighbour_variety": "somewhat_mixed",
+    "size_versus_neighbours": "any"
+   },
+   "sources": [
+    "flaherty1972",
+    "king2022",
+    "kaissling2008",
+    "walavalkar2019"
+   ]
+  },
+  "Leukocytes": {
+   "fingerprint": {
+    "nucleus_size": "small",
+    "nucleus_elongation": "round",
+    "outline_regularity": "indented",
+    "chromatin_texture": "coarsely_clumped",
+    "staining_intensity": "bright",
+    "neighbouring_nuclei": "one_or_two",
+    "neighbour_variety": "somewhat_mixed",
+    "size_versus_neighbours": "smaller"
+   },
+   "sources": [
+    "tigner2026",
+    "manley2018",
+    "kaissling2008"
+   ]
+  },
+  "Podocytes": {
+   "fingerprint": {
+    "nucleus_size": "large",
+    "nucleus_elongation": "oval",
+    "outline_regularity": "smooth",
+    "chromatin_texture": "uniform",
+    "staining_intensity": "dim",
+    "neighbouring_nuclei": "several",
+    "neighbour_variety": "markedly_mixed",
+    "size_versus_neighbours": "larger"
+   },
+   "sources": [
+    "murray2023",
+    "brelje2026",
+    "pavenstadt2003"
+   ]
+  },
+  "Proximal Tubule Segments": {
+   "fingerprint": {
+    "nucleus_size": "medium",
+    "nucleus_elongation": "round",
+    "outline_regularity": "smooth",
+    "chromatin_texture": "any",
+    "staining_intensity": "any",
+    "neighbouring_nuclei": "one_or_two",
+    "neighbour_variety": "uniform",
+    "size_versus_neighbours": "similar"
+   },
+   "sources": [
+    "walavalkar2019",
+    "king2022",
+    "king2025",
+    "kirkwood2017"
+   ]
+  },
+  "Thick Ascending Limb": {
+   "fingerprint": {
+    "nucleus_size": "small",
+    "nucleus_elongation": "round",
+    "outline_regularity": "smooth",
+    "chromatin_texture": "any",
+    "staining_intensity": "any",
+    "neighbouring_nuclei": "several",
+    "neighbour_variety": "uniform",
+    "size_versus_neighbours": "similar"
+   },
+   "sources": [
+    "walavalkar2019",
+    "brelje2026",
+    "king2022",
+    "king2025"
+   ]
+  }
+ }
+}

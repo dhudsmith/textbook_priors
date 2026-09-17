@@ -1,0 +1,113 @@
+chestmnist
+==========
+
+--- arm A: no zero_shot prompt (multi-label task) ---
+
+--- arm B, C: concept prompt (sha256 ea3b166cea4133d278d5b8edfaa65f2136b4b56f8ed9ae218468d48985253ae1) ---
+
+[system]
+You are an expert reader of medical images. You report only what is visible in the image, and you answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of frontal chest radiographs, single-channel greyscale. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+Answer all 12 questions below about what is visible in this image. Each question lists its levels in order. For every question choose the one level that best fits this image.
+
+1. airspace_opacity
+   Is there a homogeneous white opacity filling part of the lung, dense enough that the vessels running through that region can no longer be traced?
+   Levels, in order, and what each looks like:
+     absent: vessels can be followed from the hilum out to the periphery against dark lung, with no region of uniform added whiteness
+     patchy: one or more ill-defined white areas, each under about a quarter of a lung, obscuring the margins of the vessels inside them
+     confluent: one uniform white region obscuring vessel and airway margins across most of a lobe or a whole half of the chest
+
+2. hazy_opacity
+   Is there a hazy, veil-like increase in whiteness of the lung through which the vessel and airway margins can still be seen?
+   Levels, in order, and what each looks like:
+     absent: the lung is uniformly dark between the vessels, with no veil of added grey over any zone
+     mild: a faint veil of grey over part of one lung through which vessel margins stay traceable, only less sharp
+     marked: a dense veil over most of both lungs, vessels only just discernible through it but still not wholly obscured
+
+3. interstitial_markings
+   How prominent are the fine linear, net-like markings of the lung, over and above the normal smoothly branching vessels?
+   Levels, in order, and what each looks like:
+     normal: only smoothly branching vessels that taper outwards and fade before reaching the chest wall
+     increased: thin lines persist out to the chest wall, including short horizontal lines at the bases meeting the ribs at right angles
+     coarse_reticular: innumerable small linear opacities cross one another into a visible net, coarser and more angular than any vessel
+
+4. opacity_basal_predominance
+   If any increased whiteness is present, how strongly is it concentrated in the lower zones near the diaphragm rather than spread evenly or set in the upper zones?
+   Levels, in order, and what each looks like:
+     absent: any added whiteness is spread evenly between upper and lower zones, or sits mainly above the hila
+     mild: the lower zones are visibly whiter than the upper zones, but the same change still reaches above the hila
+     marked: the whiteness is confined below the hila and the upper zones are as dark as normal lung
+
+5. costophrenic_angle_blunting
+   Is the sharp angle where the diaphragm meets the chest wall blunted or filled in, with an upward-curving upper edge against the chest wall?
+   Levels, in order, and what each looks like:
+     absent: on both sides the diaphragm meets the chest wall in a sharp acute point
+     mild: the angle is rounded off and filled in, but the whole curve of the diaphragm dome is still visible
+     marked: whiteness fills the angle and climbs the chest wall with a concave upper edge, hiding part of the dome
+
+6. peripheral_pleural_density
+   Is there a band or plaque of soft-tissue whiteness lying along the inner chest wall or capping a lung apex, following the surface of the lung rather than a vessel?
+   Levels, in order, and what each looks like:
+     absent: lung markings reach the ribs, with only rib shadows along the inner chest wall and no band of soft-tissue grey
+     mild: a thin grey band, or a cap over one lung apex, follows the chest wall and is narrower than one rib
+     marked: a rind of soft-tissue whiteness wider than a rib follows the chest wall over several rib spaces
+
+7. cardiac_silhouette_width
+   How wide is the heart shadow compared with the widest inner diameter of the chest, a ratio of about one half being the usual upper limit?
+   Levels, in order, and what each looks like:
+     narrow: the heart shadow spans under about a third of the widest inner chest diameter and looks tall and vertical
+     normal: the heart shadow spans between about a third and one half of the widest inner chest diameter
+     wide: the heart shadow spans more than half of the widest inner chest diameter
+
+8. discrete_rounded_opacity
+   Is there a discrete, roughly round, sharply outlined white lesion inside the lung, and if so is it small (under about one fifth the width of one lung, roughly 3 cm) or larger?
+   Levels, in order, and what each looks like:
+     absent: no rounded, sharply outlined white spot stands out from the branching pattern of the vessels
+     small: a rounded opacity up to about a fifth of one hemithorax wide (3 cm); at 1 cm it is near 6 pixels here and unreliable
+     large: a rounded opacity wider than about a fifth of one hemithorax, that is, over 3 cm across
+
+9. pleural_line_with_avascular_zone
+   Is a thin white line visible running parallel to the chest wall, with completely blank lung beyond it and no vessel markings reaching out to the ribs?
+   Levels, in order, and what each looks like:
+     absent: vessel markings run out to the ribs all round, with no thin white line running parallel to the chest wall
+     present: a thin white line parallels the chest wall with blank, vessel-free lung between it and the ribs
+
+10. lung_inflation
+   How inflated do the lungs look: short with high domed diaphragms, normal, or tall and dark with low flattened diaphragms and widely spaced ribs?
+   Levels, in order, and what each looks like:
+     reduced: the diaphragm domes sit high and steeply curved, the rib spaces are narrowed and the lungs look short
+     normal: gently domed diaphragms near the tenth posterior rib, with evenly and moderately spread rib spaces
+     increased: diaphragm outlines flat or concave upward, rib spaces widened, dark lung reaching below the tenth posterior rib
+
+11. mediastinal_shift_direction
+   Is the trachea or the heart shadow off the midline, and if so is it pulled towards the whiter (more opaque) half of the chest or pushed away from it?
+   Levels, in order, and what each looks like:
+     towards_whiter_side: the tracheal air column and heart shadow are displaced into the whiter half of the chest, the darker half looking larger
+     none: the tracheal air column runs down the middle of the frame and the heart shadow sits centred between the lungs
+     away_from_whiter_side: the tracheal air column and heart shadow are pushed into the darker half, away from the whiter one
+
+12. supradiaphragmatic_gas_structure
+   Is there an abnormal rounded structure projected behind the heart or above the diaphragm that contains gas or a gas-fluid level and distorts the diaphragm outline?
+   Levels, in order, and what each looks like:
+     absent: the diaphragm outline is a smooth unbroken curve with no gas pocket above it behind the heart
+     present: a rounded gas-containing pocket, sometimes with a flat fluid level, projects above the diaphragm behind the heart
+
+Reply with one JSON object and nothing else: exactly 12 keys, the question names above, each value one of that question's levels copied exactly as written.
+
+{
+  "airspace_opacity": "absent|patchy|confluent",
+  "hazy_opacity": "absent|mild|marked",
+  "interstitial_markings": "normal|increased|coarse_reticular",
+  "opacity_basal_predominance": "absent|mild|marked",
+  "costophrenic_angle_blunting": "absent|mild|marked",
+  "peripheral_pleural_density": "absent|mild|marked",
+  "cardiac_silhouette_width": "narrow|normal|wide",
+  "discrete_rounded_opacity": "absent|small|large",
+  "pleural_line_with_avascular_zone": "absent|present",
+  "lung_inflation": "reduced|normal|increased",
+  "mediastinal_shift_direction": "towards_whiter_side|none|away_from_whiter_side",
+  "supradiaphragmatic_gas_structure": "absent|present"
+}

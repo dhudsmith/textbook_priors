@@ -72,7 +72,7 @@ if (Path.cwd().resolve() != RUN_ROOT and not _READS_ONLY.intersection(sys.argv)
 # Anything with a real toolchain or a real cost is submitted so it runs with declared resources.
 localrules:
     all, sample, prompts, score, features, classify, evaluate, report, smoke, render_prompts,
-    collect_scores, evaluate_across, tables, prompts_txt, render_prompts_txt,
+    collect_scores, evaluate_across, tables, prompts_txt, render_prompts_txt, talk_data,
 
 
 OUT = config["outdir"]
@@ -886,6 +886,32 @@ rule technical_report:
         "&& " + TEX + "pdflatex -interaction=nonstopmode -halt-on-error report.tex >> ../{log} 2>&1 "
         "&& grep -q 'Output written on report.pdf' ../{log}"
 
+
+# =====================================================================================
+# The talk website's data snapshot (talk/PLAN.md section 4). Opt-in, outside `rule all`, local,
+# no LLM calls: it reads results/ and writes JSON and PNG under talk/public/, which are committed
+# so that GitHub's runners - where results/ does not exist - can build the site. The script lives
+# under talk/, not priors/, so it is a code input of no result and adding it reruns nothing.
+# =====================================================================================
+
+rule talk_data:
+    """One run's results as the talk site's committed snapshot. x1, local, opt-in.
+
+    Build it by name (`snakemake --profile profiles/local -j 1 talk_data`) or run the script
+    directly with the base python. It decides nothing and feeds no rule below it: every number it
+    writes is copied from the files declared here, and the site hand-types none of them. The
+    output below is a marker for the whole export, the way `prompts_txt` is opt-in and outside
+    `all` for the same reason - a human-readable rendering of numbers a rule already produced."""
+    input:
+        evaluation=EVALUATION,
+        per_dataset=EVALUATED,
+        prompts_txt=PROMPTS_TXT,
+        figures=f"{OUT}/figures.json",
+        code="talk/scripts/export_talk_data.py",
+    output: "talk/public/data/study.json"
+    log: "logs/talk_data.log"
+    conda: "envs/priors.yml"
+    shell: "python talk/scripts/export_talk_data.py > {log} 2>&1"
 
 # =====================================================================================
 # Extensions (WORKFLOW.md section 10), each one rule and a config block if ever wanted, none

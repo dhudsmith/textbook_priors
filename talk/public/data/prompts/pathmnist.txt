@@ -1,0 +1,153 @@
+pathmnist
+=========
+
+--- arm A: zero_shot prompt (sha256 0c72cbd01bca24940afb825ae63892a65bd00507476b4ef3eb9b52a366830a41) ---
+
+[system]
+You are an expert reader of medical images. You answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of haematoxylin-and-eosin-stained colorectal histology patches, 3-channel colour, 224 x 224 pixels at about 0.5 microns per pixel. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+The image belongs to exactly one of these 9 categories:
+  1. adipose
+  2. background
+  3. debris
+  4. lymphocytes
+  5. mucus
+  6. smooth muscle
+  7. normal colon mucosa
+  8. cancer-associated stroma
+  9. colorectal adenocarcinoma epithelium
+
+How likely is each category for this image? Give every category a probability between 0 and 1, and make the 9 probabilities sum to 1.
+
+Reply with one JSON object and nothing else: exactly 9 keys, the category names above copied exactly as written, each value a number.
+
+{
+  "adipose": <probability>,
+  "background": <probability>,
+  "debris": <probability>,
+  "lymphocytes": <probability>,
+  "mucus": <probability>,
+  "smooth muscle": <probability>,
+  "normal colon mucosa": <probability>,
+  "cancer-associated stroma": <probability>,
+  "colorectal adenocarcinoma epithelium": <probability>
+}
+
+--- arm B, C: concept prompt (sha256 905c1b6f6c1991f6c4f2e8f245397cdc8b6a536f0fe43dca8553e13e2c711661) ---
+
+[system]
+You are an expert reader of medical images. You report only what is visible in the image, and you answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of haematoxylin-and-eosin-stained colorectal histology patches, 3-channel colour, 224 x 224 pixels at about 0.5 microns per pixel. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+Answer all 12 questions below about what is visible in this image. Each question lists its levels in order. For every question choose the one level that best fits this image.
+
+1. tissue_content
+   How much of the field is filled with recognisable stained tissue structure rather than plain, featureless white space?
+   Levels, in order, and what each looks like:
+     none: no stained material anywhere: flat, even white or very pale grey across the whole field
+     sparse: stained structure covers under about a quarter of the field; the pale rest holds no outlines
+     moderate: a quarter to two thirds is stained, or empty spaces fill the field but each one is walled
+     abundant: stained cells, fibres and nuclei fill the field, leaving no white gap wider than a nucleus
+
+2. nuclear_density
+   How densely packed are the cell nuclei, seen as small dark blue-purple bodies?
+   Levels, in order, and what each looks like:
+     none: not a single dark blue-purple nuclear body anywhere in the field
+     few: fewer than about twenty nuclei, most lying more than several nuclear widths from the next
+     moderate: nuclei roughly one to three nuclear widths apart, together covering well under a quarter of the field
+     many: nuclei frequently touching, together covering roughly a third to a half of the field
+     very_many: nuclei almost confluent, covering over half the field with little visible material between them
+
+3. nuclear_pleomorphism
+   Do the nuclei vary in size, shape and darkness, or are they all much alike?
+   Levels, in order, and what each looks like:
+     uniform: nuclei alike in size, shape and darkness, lying with their long axes similarly oriented
+     mildly_variable: largest nuclei about twice the smallest; staining slightly uneven; most still share one orientation
+     markedly_variable: largest nuclei three or more times the smallest, with coarse dark chromatin, prominent nucleoli and lost polarity
+
+4. gland_formation
+   Are there gland-like structures, that is rings or tubes of cells enclosing an open lumen?
+   Levels, in order, and what each looks like:
+     absent: no ring or tube of cells enclosing an open lumen anywhere in the field
+     few: gland-like rings occupy less than half the field; the rest is solid sheets, cords or fibrous tissue
+     many: gland-like rings occupy more than half the field
+
+5. gland_regularity
+   If gland-like structures are present, are they evenly sized, evenly spaced and smoothly outlined, or crowded, angulated and irregular in size and shape?
+   Levels, in order, and what each looks like:
+     no_glands: no ring or tube of cells encloses a lumen anywhere, so there is no gland outline to compare
+     regular: glands alike in size, round or oval, evenly spaced, smoothly outlined, each with an open lumen
+     mildly_irregular: glands differ up to about twofold in size, some branched or angulated, lumina still open and separate
+     markedly_irregular: glands back-to-back or cribriform, sharply angulated, lumina slit-like or absent, sizes differing several-fold
+
+6. goblet_cells
+   Within any cell lining, are there clear rounded mucin droplets that push the nucleus to one side of the cell?
+   Levels, in order, and what each looks like:
+     absent: no clear rounded vacuole in the lining; every nucleus sits at the same level
+     few: clear vacuoles in under about a quarter of the lining cells, scattered singly
+     many: clear vacuoles in over half the lining cells, each pushing its nucleus against the cell base
+
+7. fibre_alignment
+   Where elongated fibre-like structures are present, do they run in tightly packed parallel bundles, or are they wavy, loose and haphazardly oriented?
+   Levels, in order, and what each looks like:
+     no_fibres: no elongated fibre-like structure anywhere; the field holds only round cells, granular material or empty space
+     uniformly_parallel: almost every fibre runs on one axis, tightly packed, with no gaps or crossing bundles
+     mixed: two or three fibre directions present, or hyalinised bands over a fifth of the field wide crossing looser fibres
+     loose_and_haphazard: wavy fibres share no direction and are separated by pale amorphous ground substance
+
+8. cytoplasm_eosinophilia
+   Is the material between the nuclei mostly deep pink or red, or mostly pale, grey or blue-purple?
+   Levels, in order, and what each looks like:
+     pale_or_basophilic: material between nuclei is pale grey, blue or violet, with no saturated pink anywhere
+     mixed: pink and pale blue-grey areas both present, neither covering more than about two thirds of the field
+     strongly_eosinophilic: deep saturated pink fills over two thirds of the field between nuclei, with no blue-grey zones
+
+9. extracellular_mucin
+   Are there pools or wisps of pale blue-grey, structureless mucinous material lying outside cells?
+   Levels, in order, and what each looks like:
+     absent: no pale blue-grey structureless material lies outside cells anywhere in the field
+     focal: pale blue-grey pools cover between about a tenth and half the field
+     extensive: pale blue-grey structureless material covers more than half the field
+
+10. fat_vacuoles
+   Does the field show large empty round or polygonal spaces bounded by thin walls, in a honeycomb arrangement?
+   Levels, in order, and what each looks like:
+     absent: no large empty rounded space; any white area is unwalled or no wider than a nucleus
+     few: one to three large empty rounded spaces, each many times wider than a nucleus
+     many: empty walled spaces in a honeycomb cover over half the field, their walls thinner than a nucleus
+
+11. small_round_cell_infiltrate
+   Are there collections of small, round, uniformly dark nuclei with almost no visible cytoplasm around them?
+   Levels, in order, and what each looks like:
+     absent: no small dark round nuclei; nuclei present are elongated, pale or vesicular
+     scattered: a mild, patchy increase of small dark round nuclei, singly or in small groups, not confluent
+     dense: small dark round nuclei form a confluent band or sheet over about a third of the field
+
+12. necrotic_debris
+   Is there granular, fragmented material with broken nuclear dust and no intact cell outlines?
+   Levels, in order, and what each looks like:
+     absent: every cell has an intact outline and a whole nucleus; no granular fragmented material
+     focal: granular fragmented material in patches under about a third of the field, mostly inside gland lumina
+     extensive: granular fragmented material with scattered nuclear dust covers over a third of the field
+
+Reply with one JSON object and nothing else: exactly 12 keys, the question names above, each value one of that question's levels copied exactly as written.
+
+{
+  "tissue_content": "none|sparse|moderate|abundant",
+  "nuclear_density": "none|few|moderate|many|very_many",
+  "nuclear_pleomorphism": "uniform|mildly_variable|markedly_variable",
+  "gland_formation": "absent|few|many",
+  "gland_regularity": "no_glands|regular|mildly_irregular|markedly_irregular",
+  "goblet_cells": "absent|few|many",
+  "fibre_alignment": "no_fibres|uniformly_parallel|mixed|loose_and_haphazard",
+  "cytoplasm_eosinophilia": "pale_or_basophilic|mixed|strongly_eosinophilic",
+  "extracellular_mucin": "absent|focal|extensive",
+  "fat_vacuoles": "absent|few|many",
+  "small_round_cell_infiltrate": "absent|scattered|dense",
+  "necrotic_debris": "absent|focal|extensive"
+}

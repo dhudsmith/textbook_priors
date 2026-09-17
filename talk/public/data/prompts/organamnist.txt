@@ -1,0 +1,155 @@
+organamnist
+===========
+
+--- arm A: zero_shot prompt (sha256 4e4c0e26b60ac15251411c5c98f6621fdeae817493af0551ea2522d88f46a74a) ---
+
+[system]
+You are an expert reader of medical images. You answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of 1-channel greyscale abdominal CT crops at a fixed abdominal window; each image is a 2D bounding-box crop around one organ taken from a CT volume in the axial plane. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+The image belongs to exactly one of these 11 categories:
+  1. bladder
+  2. femur-left
+  3. femur-right
+  4. heart
+  5. kidney-left
+  6. kidney-right
+  7. liver
+  8. lung-left
+  9. lung-right
+  10. pancreas
+  11. spleen
+
+How likely is each category for this image? Give every category a probability between 0 and 1, and make the 11 probabilities sum to 1.
+
+Reply with one JSON object and nothing else: exactly 11 keys, the category names above copied exactly as written, each value a number.
+
+{
+  "bladder": <probability>,
+  "femur-left": <probability>,
+  "femur-right": <probability>,
+  "heart": <probability>,
+  "kidney-left": <probability>,
+  "kidney-right": <probability>,
+  "liver": <probability>,
+  "lung-left": <probability>,
+  "lung-right": <probability>,
+  "pancreas": <probability>,
+  "spleen": <probability>
+}
+
+--- arm B, C: concept prompt (sha256 9c33f158d4ae40dcf11b00af6653d4dcf07a21aad3c85a48cbe3f87ceda800cf) ---
+
+[system]
+You are an expert reader of medical images. You report only what is visible in the image, and you answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of 1-channel greyscale abdominal CT crops at a fixed abdominal window; each image is a 2D bounding-box crop around one organ taken from a CT volume in the axial plane. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+Answer all 12 questions below about what is visible in this image. Each question lists its levels in order. For every question choose the one level that best fits this image.
+
+1. body_side
+   Judging from the surrounding structures caught in the crop (spine, body wall, midline vessels), does the main structure lie on the patient's right, near the midline, or on the patient's left? Remember that in a cross-sectional image the patient's left is shown on the right of the picture.
+   Levels, in order, and what each looks like:
+     patient_right: the spine or the aorta sits toward the image-right of the crop, with the structure lying to the left of it on screen
+     midline: body wall or paired muscles lie about equally far from the structure on both sides of the image, with no side landmark nearer than the other
+     patient_left: the spine or the aorta sits toward the image-left of the crop, with the structure lying to the right of it on screen
+
+2. craniocaudal_level
+   From the surroundings visible in the crop, at what level of the trunk was this section taken: the pelvis, the lower abdomen, the upper abdomen, or the chest?
+   Levels, in order, and what each looks like:
+     pelvic: an iliac wing, pubic bone or rounded femoral head borders the crop, and no rib is present
+     lower_abdominal: gas- or contrast-filled bowel loops and psoas muscle border the crop, with neither rib nor pelvic bone in view
+     upper_abdominal: the lowest ribs border the crop alongside solid parenchymal organs, with no pelvic bone in view
+     thoracic: ribs surround the crop and nearly black air-filled lung borders the structure
+
+3. anteroposterior_position
+   Do the surroundings place the main structure toward the back of the body (against the spine and the back muscles), in the middle, or toward the front body wall?
+   Levels, in order, and what each looks like:
+     posterior: a vertebral body and the thick paraspinal back muscles lie immediately against the structure
+     central: neither the spine nor the front body wall touches the structure; both lie beyond it at the crop edge
+     anterior: the front body wall, with its strap-like rectus muscle or the sternum, lies immediately against the structure
+
+4. relative_size
+   Compared with the landmarks caught at the edge of the crop (a vertebral body, a rib, the thickness of the body wall), is the main structure small, medium or large?
+   Levels, in order, and what each looks like:
+     small: a single landmark at the crop edge - one vertebra or one rib - appears magnified and fills much of that edge
+     medium: two or three separate landmarks fit along the crop edge, each still plainly resolved
+     large: many small landmarks crowd the crop edge at once - several ribs, vertebrae or bowel loops together
+
+5. elongation
+   Is the outline of the main structure roughly circular, moderately oval, or markedly elongated and strip-like?
+   Levels, in order, and what each looks like:
+     round: the two widths of the outline differ by less than about a quarter, and the shape fills most of the frame
+     oval: the long width is roughly one and a half to three times the short one, leaving the frame corners empty
+     elongated: the long axis runs more than about three times the short one, a strip that leaves most of the frame as background
+
+6. contour_lobulation
+   Is the outline smooth and even, mildly lobulated or wavy, or markedly irregular and feathery?
+   Levels, in order, and what each looks like:
+     smooth: the border runs as an unbroken curve, with no bump deeper than the thickness of the border line itself
+     mildly_lobulated: one or two shallow bulges or gentle waves interrupt an otherwise continuous curve
+     markedly_irregular: many bumps and clefts break the border, or it dissolves into a feathery fringe against the surrounding fat
+
+7. hilar_notch
+   Is there a single distinct indentation, notch or wedge cut into one side of the outline where vessels appear to enter?
+   Levels, in order, and what each looks like:
+     absent: the border runs continuously round the structure with no indentation on any side
+     subtle: one side is flattened or dimpled, but the dent is shallower than about a tenth of the structure's width
+     prominent: a wedge deeper than about a tenth of the width is cut into one side, with vessels or fat running into it
+
+8. relative_attenuation
+   Overall, how bright is the main structure compared with the ordinary soft tissue and muscle visible around it?
+   Levels, in order, and what each looks like:
+     much_darker: nearly black at this window, clearly the darkest tissue in the crop and far below the muscle at the frame edge
+     slightly_darker: a shade below the muscle at the frame edge, but plainly mid-grey rather than black
+     similar: no step in grey level against the muscle at the frame edge; only the outline separates the two
+     brighter: a clear step above the muscle at the frame edge, yet still well short of the white of bone
+     much_brighter: among the brightest things in the crop, approaching the white of cortical bone or of dense contrast
+
+9. interior_homogeneity
+   Is the inside of the structure uniform in brightness, or does it contain clearly different regions, internal branching lines or pockets?
+   Levels, in order, and what each looks like:
+     homogeneous: one even grey fills the interior, broken by nothing more than a few thin vessel lines
+     mildly_heterogeneous: faint mottling or a few branching lines cross the interior, but no region differs sharply from the rest
+     markedly_heterogeneous: two or more distinct zones, one clearly brighter than the other, meet at sharp internal borders
+
+10. bright_cortical_rim
+   Is the structure outlined by a thin rim of the very brightest, calcium-density material, brighter than any soft tissue in the crop?
+   Levels, in order, and what each looks like:
+     absent: no calcium-white line follows the border anywhere; the edge is grey meeting grey
+     partial: a calcium-white line brighter than any soft tissue follows part of the border and then breaks off
+     complete: an unbroken calcium-white line rings the whole border, the brightest thing in the crop
+
+11. boundary_definition
+   How clearly is the edge of the main structure separated from what surrounds it: barely distinguishable, moderately defined, or crisp along most of its circumference?
+   Levels, in order, and what each looks like:
+     indistinct: the edge merges into the surrounding tissue over most of its length; you could not trace it confidently
+     moderate: the edge is traceable over roughly half the circumference and blurred or interrupted over the rest
+     sharp: a crisp step in brightness follows almost the whole circumference, often with a dark fat line beside it
+
+12. adjacent_bone
+   Are very bright, calcium-density structures such as vertebrae, ribs or pelvic bone visible at the edge of the crop, and if so how much of the edge do they occupy?
+   Levels, in order, and what each looks like:
+     absent: nothing of calcium-white density appears anywhere along the crop edge
+     small: one small patch of calcium-white touches the crop edge and occupies a minor part of it
+     prominent: calcium-white runs along a long stretch of the crop edge, or several bony pieces border the crop at once
+
+Reply with one JSON object and nothing else: exactly 12 keys, the question names above, each value one of that question's levels copied exactly as written.
+
+{
+  "body_side": "patient_right|midline|patient_left",
+  "craniocaudal_level": "pelvic|lower_abdominal|upper_abdominal|thoracic",
+  "anteroposterior_position": "posterior|central|anterior",
+  "relative_size": "small|medium|large",
+  "elongation": "round|oval|elongated",
+  "contour_lobulation": "smooth|mildly_lobulated|markedly_irregular",
+  "hilar_notch": "absent|subtle|prominent",
+  "relative_attenuation": "much_darker|slightly_darker|similar|brighter|much_brighter",
+  "interior_homogeneity": "homogeneous|mildly_heterogeneous|markedly_heterogeneous",
+  "bright_cortical_rim": "absent|partial|complete",
+  "boundary_definition": "indistinct|moderate|sharp",
+  "adjacent_bone": "absent|small|prominent"
+}

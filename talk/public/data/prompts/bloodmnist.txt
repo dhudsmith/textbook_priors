@@ -1,0 +1,128 @@
+bloodmnist
+==========
+
+--- arm A: zero_shot prompt (sha256 b1cb28f9745d2dac6cc5d9f79e62e229f849fc5e03f46effabee3ffae4446b71) ---
+
+[system]
+You are an expert reader of medical images. You answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of three-channel colour microscopy images of individual normal peripheral-blood cells, May-Grunwald-Giemsa stained, captured on a CellaVision DM96 analyser. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+The image belongs to exactly one of these 8 categories:
+  1. basophil
+  2. eosinophil
+  3. erythroblast
+  4. immature granulocytes(myelocytes, metamyelocytes and promyelocytes)
+  5. lymphocyte
+  6. monocyte
+  7. neutrophil
+  8. platelet
+
+How likely is each category for this image? Give every category a probability between 0 and 1, and make the 8 probabilities sum to 1.
+
+Reply with one JSON object and nothing else: exactly 8 keys, the category names above copied exactly as written, each value a number.
+
+{
+  "basophil": <probability>,
+  "eosinophil": <probability>,
+  "erythroblast": <probability>,
+  "immature granulocytes(myelocytes, metamyelocytes and promyelocytes)": <probability>,
+  "lymphocyte": <probability>,
+  "monocyte": <probability>,
+  "neutrophil": <probability>,
+  "platelet": <probability>
+}
+
+--- arm B, C: concept prompt (sha256 4a3f77c8ad67e6bb5d838514c83bd0ffeeff3896b57fd2c17f9d476354e629af) ---
+
+[system]
+You are an expert reader of medical images. You report only what is visible in the image, and you answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of three-channel colour microscopy images of individual normal peripheral-blood cells, May-Grunwald-Giemsa stained, captured on a CellaVision DM96 analyser. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+Answer all 9 questions below about what is visible in this image. Each question lists its levels in order. For every question choose the one level that best fits this image.
+
+1. nucleus_present
+   Does the cell in the centre of the image contain a nucleus, that is a distinct darker internal body, or is the whole cell body uniform with no nucleus at all?
+   Levels, in order, and what each looks like:
+     absent: the cell body is one even mass throughout, with no darker internal patch standing out from the rest
+     present: a distinctly darker, sharply bounded internal body sits inside the cell and contrasts with the paler cytoplasm
+
+2. cell_size
+   How large is the central cell compared with the surrounding red blood cells: clearly smaller than one red cell, about the same size, or clearly larger?
+   Levels, in order, and what each looks like:
+     much_smaller: the cell spans about a quarter of a neighbouring red cell, near 2 um across
+     similar: the cell matches a nearby red cell in width to within about a fifth of that width
+     larger: the cell is plainly wider than every red cell around it, up to about twice a red cell across
+
+3. nuclear_lobation
+   What is the shape of the nucleus: no nucleus at all, a single round or oval mass, a single indented, kidney-shaped or band-like mass, two lobes joined by a strand, or three or more lobes joined by thin strands?
+   Levels, in order, and what each looks like:
+     none: the cell carries no internal outline at all, so neither a lobe nor an indentation can be sought
+     round: a single unbroken circular or oval mass with a smooth convex edge and no notch in it
+     indented: one mass whose edge is notched, kidney- or band-shaped, the notch cutting less than half way across
+     bilobed: two rounded segments of similar size joined by a single narrow thread of chromatin
+     multilobed: three to five rounded segments strung in a chain, each joined to the next by a thin thread
+
+4. chromatin_density
+   How dense is the nuclear material: there is no nuclear material at all, open and finely textured with pale areas, moderately clumped, densely clumped but with a visible coarse pattern of light and dark, or so uniformly dark and structureless that no internal pattern can be seen at all?
+   Levels, in order, and what each looks like:
+     no_nucleus: the cell holds no nuclear material anywhere, so there is no interior texture to judge for density
+     open_fine: the nuclear interior is mostly pale with an even fine stipple and no dark clump larger than a dot
+     moderately_clumped: dark clumps cover under about half the nuclear area and the pale gaps between them stay plainly visible
+     dense_clumped: coarse violet clumps cover most of the nucleus, leaving only thin pale seams between them
+     pyknotic_structureless: the nucleus reads as one uniformly dark blot in which no lighter area or pattern can be made out
+
+5. nucleus_to_cytoplasm_ratio
+   About what fraction of the cell area is nucleus: none of it, because there is no nucleus, less than a third (low), between a third and two thirds (moderate), or more than two thirds (high)?
+   Levels, in order, and what each looks like:
+     no_nucleus: no nuclear area is present to measure, so the cell body reads as cytoplasm from edge to edge
+     low: cytoplasm forms a broad rim and the nucleus covers less than a third of the cell area
+     moderate: the nucleus covers between a third and two thirds of the cell, with a clear rim of cytoplasm all round
+     high: the nucleus fills more than two thirds of the cell and cytoplasm survives only as a thin crescent
+
+6. cytoplasm_basophilia
+   What colour is the cytoplasm around the nucleus: pink or almost colourless, pale grey-blue, plainly blue, or deep intense blue?
+   Levels, in order, and what each looks like:
+     pink_or_colourless: the cytoplasm is pink or almost clear, no bluer than the red cells lying around the cell
+     pale_grey_blue: a faint grey-blue wash, bluer than the red cells but much paler than the nucleus
+     blue: an even mid-blue read at a glance, clearly stronger than a grey wash but lighter than the nucleus
+     deep_blue: an intense navy blue nearly as dark as the nucleus, the strongest blue anywhere in the frame
+
+7. granule_abundance
+   How prominent are granules, that is small discrete dots, in the cytoplasm: none visible, fine and sparse or dust-like, or coarse and abundant so that they fill the cytoplasm?
+   Levels, in order, and what each looks like:
+     absent: the cytoplasm is smooth and even, showing no discrete dots against its own colour
+     fine_sparse: dots are dust-like and not separately countable, so the cytoplasm looks faintly textured rather than dotted
+     coarse_abundant: dots are separately countable at the cell edge and pack the cytoplasm so that little clear ground shows
+
+8. granule_colour
+   If granules are visible, what colour are they, from palest to darkest: none visible, pale lilac or neutral, orange-red, or dark purple to black?
+   Levels, in order, and what each looks like:
+     none_visible: no dots of any colour stand out from the even tint of the cytoplasm
+     pale_neutral: dots are pale lilac or grey, barely different in hue from the cytoplasm carrying them
+     orange_red: dots are plainly orange to red, warmer than the cytoplasm and than the violet of the nucleus
+     dark_purple: dots are dark purple to nearly black, darker than the nucleus they frequently lie across
+
+9. granules_obscure_nucleus
+   Do the cytoplasmic granules lie over the nucleus and hide it: not at all, partly, or so completely that the nuclear outline cannot be traced?
+   Levels, in order, and what each looks like:
+     absent: every part of the nuclear outline can be followed; the dots lie beside the nucleus, not across it
+     partial: dots cross the nucleus and blur one stretch of its edge, while the remainder stays traceable
+     marked: dots cover the nucleus so densely that no stretch of its outline can be followed at all
+
+Reply with one JSON object and nothing else: exactly 9 keys, the question names above, each value one of that question's levels copied exactly as written.
+
+{
+  "nucleus_present": "absent|present",
+  "cell_size": "much_smaller|similar|larger",
+  "nuclear_lobation": "none|round|indented|bilobed|multilobed",
+  "chromatin_density": "no_nucleus|open_fine|moderately_clumped|dense_clumped|pyknotic_structureless",
+  "nucleus_to_cytoplasm_ratio": "no_nucleus|low|moderate|high",
+  "cytoplasm_basophilia": "pink_or_colourless|pale_grey_blue|blue|deep_blue",
+  "granule_abundance": "absent|fine_sparse|coarse_abundant",
+  "granule_colour": "none_visible|pale_neutral|orange_red|dark_purple",
+  "granules_obscure_nucleus": "absent|partial|marked"
+}

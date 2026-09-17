@@ -1,0 +1,96 @@
+breastmnist
+===========
+
+--- arm A: zero_shot prompt (sha256 d21520d2fd08003306e3b719de0570014934ea6bbe604de4bd08ec056f0dd370) ---
+
+[system]
+You are an expert reader of medical images. You answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of 1-channel greyscale breast ultrasound images. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+The image belongs to exactly one of these 2 categories:
+  1. malignant
+  2. normal, benign
+
+How likely is each category for this image? Give every category a probability between 0 and 1, and make the 2 probabilities sum to 1.
+
+Reply with one JSON object and nothing else: exactly 2 keys, the category names above copied exactly as written, each value a number.
+
+{
+  "malignant": <probability>,
+  "normal, benign": <probability>
+}
+
+--- arm B, C: concept prompt (sha256 ca722c5882b176037ccdfc95c6e4b5d7a666ed9bee3e223e8835d6b6dea5f92b) ---
+
+[system]
+You are an expert reader of medical images. You report only what is visible in the image, and you answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of 1-channel greyscale breast ultrasound images. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+Answer all 7 questions below about what is visible in this image. Each question lists its levels in order. For every question choose the one level that best fits this image.
+
+1. focal_lesion_present
+   Is a discrete focal area standing out from the surrounding layered tissue visible?
+   Levels, in order, and what each looks like:
+     absent: only smooth parallel layers of fat, fibroglandular tissue and muscle, with nothing standing out from them
+     equivocal: a faint textural variation whose outline cannot be traced all the way round on this single view
+     present: a discrete area whose full outline can be traced, occupying space and pushing the layers aside
+
+2. shape_irregularity
+   If a focal area stands out, is its outline oval, gently lobulated, or jagged?
+   Levels, in order, and what each looks like:
+     no_focal_area: no traceable outline anywhere in the frame; the fibroglandular layers run uninterrupted across it
+     oval_or_round: a smooth ellipse or circle whose outline curves evenly, with no bulges and no corners
+     gently_lobulated: two or three broad rounded bulges on an otherwise smooth ellipse, each bulge wide and shallow
+     irregular: outline neither round nor oval: jagged or angular, or studded with many tiny 1-2 mm lobulations
+
+3. margin_circumscription
+   If a focal area stands out, is its boundary sharp, blurred, or angular and spiky?
+   Levels, in order, and what each looks like:
+     no_focal_area: nothing stands out from the tissue layers, so there is no boundary anywhere to judge
+     circumscribed: the whole circumference is a sharp line with an abrupt transition to the tissue around it
+     indistinct: part of the edge fades into the surrounding tissue with no sharp line separating the two
+     angular_or_spiculated: the edge forms sharp corners, or fine straight lines radiate outward from it into the tissue
+
+4. taller_than_wide
+   Does any focal area reach deeper below the skin than it measures across?
+   Levels, in order, and what each looks like:
+     absent: width across the image clearly exceeds depth, or nothing discrete stands out to measure at all
+     borderline: depth below the skin line and width across it look about equal, neither axis clearly the longer
+     present: the area reaches further in depth from the skin line than it measures across, standing upright
+
+5. posterior_shadowing
+   Is tissue directly beneath a focal area darker than tissue beside it at that depth?
+   Levels, in order, and what each looks like:
+     absent: tissue just deep to the area is as bright as tissue at the same depth beside it
+     mild: narrow dark lines trail from the area's edges only; tissue directly behind it stays visible
+     marked: a broad dark band deep to the whole area hides the tissue behind it toward the image bottom
+
+6. thick_echogenic_halo
+   Is a broad bright rim, thicker than a fine line, present around a focal area?
+   Levels, in order, and what each looks like:
+     absent: no bright rim, or only a hairline bright capsule no thicker than the surrounding tissue lines
+     mild: a bright rim clearly thicker than a hairline but present around only part of the circumference
+     marked: a broad bright zone right around the area, its outer edge fading gradually into surrounding tissue
+
+7. tissue_plane_distortion
+   Are the horizontal tissue layers around a focal area pulled in or interrupted?
+   Levels, in order, and what each looks like:
+     absent: the horizontal tissue layers run straight past the area, neither bent toward it nor broken
+     mild: layers next to the area bow or angle toward it but remain continuous along their length
+     marked: layers are broken where they meet the area, with straight strands running radially out from it
+
+Reply with one JSON object and nothing else: exactly 7 keys, the question names above, each value one of that question's levels copied exactly as written.
+
+{
+  "focal_lesion_present": "absent|equivocal|present",
+  "shape_irregularity": "no_focal_area|oval_or_round|gently_lobulated|irregular",
+  "margin_circumscription": "no_focal_area|circumscribed|indistinct|angular_or_spiculated",
+  "taller_than_wide": "absent|borderline|present",
+  "posterior_shadowing": "absent|mild|marked",
+  "thick_echogenic_halo": "absent|mild|marked",
+  "tissue_plane_distortion": "absent|mild|marked"
+}

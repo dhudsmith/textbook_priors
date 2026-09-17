@@ -1,0 +1,114 @@
+octmnist
+========
+
+--- arm A: zero_shot prompt (sha256 33f95fdc2bc77927cb2557c105c2f2ceda2fce50e0315463646d63b624117544) ---
+
+[system]
+You are an expert reader of medical images. You answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of 1-channel greyscale retinal optical coherence tomography (OCT) B-scans. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+The image belongs to exactly one of these 4 categories:
+  1. choroidal neovascularization
+  2. diabetic macular edema
+  3. drusen
+  4. normal
+
+How likely is each category for this image? Give every category a probability between 0 and 1, and make the 4 probabilities sum to 1.
+
+Reply with one JSON object and nothing else: exactly 4 keys, the category names above copied exactly as written, each value a number.
+
+{
+  "choroidal neovascularization": <probability>,
+  "diabetic macular edema": <probability>,
+  "drusen": <probability>,
+  "normal": <probability>
+}
+
+--- arm B, C: concept prompt (sha256 40d2f179319a81626ded17cef977601340991341dbc6bcf5faedad55db86dd3e) ---
+
+[system]
+You are an expert reader of medical images. You report only what is visible in the image, and you answer with the JSON object you are asked for and nothing else.
+
+[user]
+You are shown one image from a collection of 1-channel greyscale retinal optical coherence tomography (OCT) B-scans. The image is 224 by 224 pixels, and comes with no clinical context, no patient information and no scale bar: judge only what this image shows.
+
+Answer all 9 questions below about what is visible in this image. Each question lists its levels in order. For every question choose the one level that best fits this image.
+
+1. retinal_layer_integrity
+   Are the banded retinal layers continuous and regularly stacked across the scan?
+   Levels, in order, and what each looks like:
+     intact: every band, down to the thin bright ellipsoid-zone line, runs unbroken from one edge of the frame to the other
+     mildly_disrupted: one or two bands blur or break over less than about a quarter of the frame width, and the stacking order stays readable throughout
+     markedly_disrupted: banding is lost over more than about a quarter of the frame width, or layers are so displaced that their order cannot be traced
+
+2. foveal_contour
+   Does the retinal surface at the centre form a smooth shallow depression?
+   Levels, in order, and what each looks like:
+     depressed: the inner surface dips into a smooth shallow concave pit whose floor lies below the inner surface on either side
+     flattened: the central dip is shallow or gone, so the inner surface runs almost level across the middle of the frame
+     elevated: the centre of the inner surface bulges upward and stands higher than the inner surface to either side of it
+
+3. retinal_thickness
+   How thick is the retina between its inner surface and the bright outer band?
+   Levels, in order, and what each looks like:
+     not_increased: the retina is at its thinnest in the centre of the frame and grows thicker towards both edges
+     mildly_increased: the central retina is as thick as, or a little thicker than, the retina at the edges of the same frame
+     markedly_increased: the central retina is more than about half again as thick as the retina at the edges of the same frame
+
+4. intraretinal_cystoid_spaces
+   Are there rounded dark low-reflectivity pockets inside the retinal layers?
+   Levels, in order, and what each looks like:
+     absent: the layers between the inner surface and the bright outer band are evenly banded, with no dark rounded pocket among them
+     few_small: one to three dark rounded pockets, each under about a third of the retinal thickness tall, with retinal tissue both above and below it
+     many_or_large: four or more such pockets, or one taller than half the retinal thickness, each still roofed and floored by retinal tissue
+
+5. subretinal_fluid
+   Is there a dark empty space lifting the retina off the bright band beneath it?
+   Levels, in order, and what each looks like:
+     absent: the outermost retinal bands sit directly on the bright outer band, with no dark gap between the two
+     small: a shallow dark gap floored only by the bright outer band lifts the outermost retinal bands by under about a quarter of the retinal thickness
+     large: a dome of dark space raises the whole outer retina more than a quarter of the retinal thickness above the bright outer band
+
+6. rpe_line_contour
+   Is the bright outer band smooth, gently domed in small bumps, or focally lifted?
+   Levels, in order, and what each looks like:
+     smooth: the bright outer band follows one even curve, and no bump on it is wider than about a hundredth of the frame width (63 um)
+     small_domed_undulations: one or more smooth rounded domes lift the band, each under about a twentieth of the frame width, the band thin and unbroken over each
+     large_irregular_elevation: a single lift wider than about a twentieth of the frame width, or one whose top is ragged, angular or multi-peaked rather than a smooth dome
+
+7. subretinal_hyperreflective_material
+   Is there bright solid-looking material between the retina and the bright outer band?
+   Levels, in order, and what each looks like:
+     absent: the outermost retinal bands meet the bright outer band directly, with nothing bright and solid-looking interposed
+     small: one bright patch lies between them, under about a third of the retinal thickness tall and narrower than a twentieth of the frame width
+     extensive: bright material between them fills more than about a third of the retinal thickness, or runs wider than a twentieth of the frame width
+
+8. hyperreflective_foci
+   Are there small bright dots or specks scattered within the darker retinal layers?
+   Levels, in order, and what each looks like:
+     absent: no discrete bright dot stands out from the darker layers lying above the bright outer band
+     few: up to about ten separate bright dots, each no larger than the bright outer band is thick (30 um), scattered through the darker layers
+     many: more than about ten such dots, often gathered into clusters or strung along one layer
+
+9. shadowing_beneath_lesion
+   Do bright structures cast vertical dark columns into the tissue beneath them?
+   Levels, in order, and what each looks like:
+     absent: tissue directly beneath every bright structure is as bright as the tissue beside it at the same depth
+     mild: one faint dim column sits under a bright structure, no wider than that structure, and the layers it crosses can still be made out
+     marked: dark columns under several bright structures blank out the layers beneath them all the way to the bottom of the frame
+
+Reply with one JSON object and nothing else: exactly 9 keys, the question names above, each value one of that question's levels copied exactly as written.
+
+{
+  "retinal_layer_integrity": "intact|mildly_disrupted|markedly_disrupted",
+  "foveal_contour": "depressed|flattened|elevated",
+  "retinal_thickness": "not_increased|mildly_increased|markedly_increased",
+  "intraretinal_cystoid_spaces": "absent|few_small|many_or_large",
+  "subretinal_fluid": "absent|small|large",
+  "rpe_line_contour": "smooth|small_domed_undulations|large_irregular_elevation",
+  "subretinal_hyperreflective_material": "absent|small|extensive",
+  "hyperreflective_foci": "absent|few|many",
+  "shadowing_beneath_lesion": "absent|mild|marked"
+}
