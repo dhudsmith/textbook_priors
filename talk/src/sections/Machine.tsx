@@ -120,18 +120,9 @@ export function Machine() {
       <p className="lede">{machine.lede}</p>
       <Bullets items={machine.bullets} />
 
-      <p style={{ maxWidth: "var(--measure)" }}>
-        If you have written a Makefile you already know the idea: a rule says what it produces,
-        what it needs, and the command that turns one into the other. You ask for the thing you
-        want, and the tool works out what has to run, and in what order, from what is missing or
-        out of date.
-      </p>
-      <p style={{ maxWidth: "var(--measure)" }}>
-        Snakemake adds what a study on a cluster needs and <code>make</code> has no word for: one
-        rule stands for hundreds of jobs, each job declares the software it runs in and the
-        processors, memory and hours it wants, and an output can be write-protected so that
-        making it twice has to be a decision.
-      </p>
+      <p style={{ maxWidth: "var(--measure)" }}>{machine.why.lede}</p>
+      <Bullets items={machine.why.bullets} />
+      <p style={{ maxWidth: "var(--measure)" }}>{machine.why.close}</p>
 
       <RuleTable blurbs={BLURBS} details={DETAILS} open={open} setOpen={setOpen} />
       <p className="note">

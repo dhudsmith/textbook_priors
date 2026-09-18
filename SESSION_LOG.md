@@ -1684,3 +1684,20 @@ bare arrow keys to the browser so a presentation clicker still scrolls one scree
 deck that stole them would break the clicker everywhere else. Checked by driving it: the counter
 runs 1 through 6 and wraps in both directions, exactly one card is ever visible, the deck's height
 does not change between cards, and it fits a 390 px screen without the page scrolling sideways.
+
+## 2026-09-18 23:50 — "The compute workflow", and why a workflow manager at all
+
+Section five is *The compute workflow* now, in the heading and in the rail, and the two paragraphs
+explaining `make` are replaced by the argument he actually wants made there: what a workflow
+manager is worth when an agent is writing the code. Four things — it is the context the agent works
+from, it reads back to the human as the record of what the agent built, it states what depends on
+what, and it is where checking starts, since asking for one thing names every step behind it — and
+then the contrast he named: a pile of scripts does none of this, and only whoever ran it knows the
+order. Shorter than what it replaces, as asked, and it says more.
+
+One judgement call, flagged rather than buried: the Makefile connection he asked for in the
+previous batch survives, cut from a paragraph to one clause — *a rule says what it produces, what
+it needs, and the command between them; a Makefile, with the cluster written in* — because without
+it the room does not know what a rule is before meeting a table of nineteen of them. The prose also
+moved out of `Machine.tsx` and into `content/index.ts`, where the page's authored language belongs;
+it had been written inline when the rules table was built.

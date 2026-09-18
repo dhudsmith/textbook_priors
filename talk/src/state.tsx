@@ -13,7 +13,7 @@ export const SECTIONS = [
   { id: "design", short: "Classification arms" },
   { id: "models", short: "Models tested" },
   { id: "workflow", short: "How it is structured" },
-  { id: "machine", short: "How it runs" },
+  { id: "machine", short: "The workflow" },
   { id: "results", short: "Results" },
   { id: "size", short: "Model size and price" },
   { id: "thinking", short: "Thinking" },

@@ -185,13 +185,29 @@ export const models = {
 };
 
 export const machine = {
-  header: "How the project runs",
+  header: "The compute workflow",
   lede: "Seven stages, one file, every number with a rule.",
   bullets: [
     "A chunk is one job's hundred images",
     "A reader is a model plus a reasoning effort",
     "Once a reply is written it stays written: buying the calls again has to be deliberate",
   ],
+  /* Why a workflow manager, when an agent is the one writing the code. The table and the graph
+     below are the argument; this is only the reason to look at them, so it stays short. */
+  why: {
+    lede: "A rule says what it produces, what it needs, and the command between them — a " +
+      "Makefile, with the cluster written in. What that is worth when an agent writes the " +
+      "code:",
+    bullets: [
+      "It is the context the agent works from: what exists already, and what it is for",
+      "It reads back to me — the agent writes the rules, and the file is where I see what it " +
+        "built",
+      "It states what depends on what",
+      "It is where checking starts: ask for one thing, and every step behind it is named and " +
+        "can be run again",
+    ],
+    close: "A pile of scripts does none of this, and only whoever ran it knows the order.",
+  },
 };
 
 /* The headline results figure, and the three questions it answers. The per-question detail sits
