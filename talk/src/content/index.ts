@@ -47,23 +47,24 @@ export const title = {
   header: "Reproducible Scientific Computing with AI Coding Agents",
   byline: { who: "D. Hudson Smith", where: "School of Mathematical and Statistical Sciences" },
   standfirst:
-    "Hand a computational study to an AI agent — the code, the jobs, the figures, the report — " +
-    "and keep only the part that makes it science. How do you trust a result you did not " +
-    "compute?",
+    "How much of the research process can we give to a coding agent? What do we gain? What do we lose?",
   intro: {
     lede:
       "To make that concrete, we start a new project — one that had been sitting at the back of " +
-      "my mind for a while.",
-    question: "Can out-of-the-box vision-language models (VLMs) classify medical images?",    bullets: [
-      "Largely automated — and largely is the honest word",
-      "What the human still had to do is what this talk is about",
+      "my mind for a while:",
+    question: "Can out-of-the-box vision-language models (VLMs) classify medical images?",    
+    bullets: [
+      "Lots of details but straightforward",
+      "Could use a cluster",
+      "Interests me",
+      "Something that could be done in a week!",
+      "Bonus: can use the RCD LLM service ;)"
     ],
   },
   workflow: {
     header: "How the study is put together",
     lede:
-      "Fixed inputs, one workflow, generated outputs. Two different things here are called AI: the " +
-      "agent that wrote the workflow, and the model the workflow calls.",
+      "Trying to get AI to do it the way I want.",
     caption:
       "Solid arrows are data. Dashed arrows are authorship — what the agent wrote, rather than " +
       "what the workflow ran.",
@@ -72,17 +73,15 @@ export const title = {
 };
 
 export const premise = {
-  header: "How this talk was built",
+  header: "How the work unfolded.",
   lede:
     "Planned in a day, built and run and reported in three more. An agent wrote most of the " +
     "code. A workflow made its work inspectable.",
   bullets: [
-    "A few dozen prompts set off hundreds of jobs",
-    "A tick is a moment; a bar is a period; an area is a rate",
-    "Directing the work is cheap now. Understanding it is not.",
-    "The code is not the product. The claim is.",
-    "Understanding debt: built faster than its owner can read it",
-    "The workflow makes the work inspectable — it does not inspect it",
+    "49 prompts set of 662 Palmetto jobs.",
+    "58,409 calls to the RCD LLM service.",
+    "290 hours of machine time.",
+    "Tested 7 distinct hypotheses on 12 medical image datasets.",
   ],
   effortCaption:
     "Prompts and commits are moments. Jobs are the periods they ran. The calls are a rate.",
