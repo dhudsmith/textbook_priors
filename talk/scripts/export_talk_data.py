@@ -75,15 +75,15 @@ CONTENTION = {
              "series rather than a curve; the service is shared, so some of the change may be "
              "other users' load."),
     "series": [
-        {"id": "zero_shot_thinking_off", "label": "zero-shot prompt, thinking off",
+        {"id": "zero_shot_thinking_off", "label": "class prompt, thinking off",
          "model": "qwen3.8-27b-fp8",
          "points": [{"jobs": 1, "s_per_call": 1.5, "calls_per_s": 0.67},
                     {"jobs": 24, "s_per_call": 42.8, "calls_per_s": 0.56}]},
-        {"id": "concept_thinking_off", "label": "concept prompt, thinking off",
+        {"id": "concept_thinking_off", "label": "visual-features prompt, thinking off",
          "model": "qwen3.8-27b-fp8",
          "points": [{"jobs": 1, "s_per_call": 4.5, "calls_per_s": 0.22},
                     {"jobs": 48, "s_per_call": 89.0, "calls_per_s": 0.54}]},
-        {"id": "concept_thinking_medium", "label": "concept prompt, thinking at medium",
+        {"id": "concept_thinking_medium", "label": "visual-features prompt, thinking at medium",
          "model": "qwen3.8-27b-fp8-medium",
          "points": [{"jobs": 1, "s_per_call": 1.5, "calls_per_s": 0.67},
                     {"jobs": 11, "s_per_call": 134.0, "calls_per_s": 0.08}]},
@@ -99,19 +99,19 @@ CONTENTION = {
 # The close's "caught by" tally: each near miss the study recorded, and what actually caught it.
 # Read off CHANGELOG.md and SESSION_LOG.md by date; the `source` field is where to check it.
 CATCHES = [
-    {"what": "An unfair pixel baseline that would have made the headline claim true by construction",
+    {"what": "An unfair baseline that would have made the headline claim true whatever the numbers said",
      "caught_by": "a person reading the plan", "source": "CHANGELOG.md 2026-09-09"},
     {"what": "Four generated rules that all ran the last model's command",
      "caught_by": "one chunk run before 270", "source": "CHANGELOG.md 2026-09-11"},
     {"what": "3,000 good answers filed in a part of the reply our code never read, and recorded as missing",
      "caught_by": "one diagnostic call", "source": "CHANGELOG.md 2026-09-11"},
-    {"what": "A 48-job wave that ran two hours and wrote nothing",
+    {"what": "Forty-eight jobs at once that ran for two hours and wrote nothing",
      "caught_by": "a timed call", "source": "CHANGELOG.md 2026-09-12"},
-    {"what": "Thinking believed impossible, when the cause was our own 512-token budget",
+    {"what": "Thinking believed impossible, when the cause was our own limit on reply length",
      "caught_by": "a test at 15:20", "source": "CHANGELOG.md 2026-09-12"},
     {"what": "A second agent session moving the shared working copy to another version of the code mid-run",
      "caught_by": "the record filed beside each result", "source": "SESSION_LOG.md 2026-09-13 12:25"},
-    {"what": "An eleven-chunk thinking wave that would have died at its time limit",
+    {"what": "Eleven thinking jobs at once that would all have hit their time limit",
      "caught_by": "one chunk run first, and a timed call", "source": "CHANGELOG.md 2026-09-12"},
 ]
 
@@ -177,19 +177,23 @@ def model_table(config: dict, by_model: dict, primary: str, price_order: list[st
     return rows
 
 
+# One name per arm, and the same name the page uses for it everywhere else: the model's own
+# guess, the feature scores, a classifier. The zero-label arms wear no "(no labels)" because the
+# figure already draws them flat and the arm table has a column for it.
 ARM_STYLE = [
-    {"id": "A", "label": "arm A: zero-shot (no labels)", "colour": "#7f7f7f", "dark": "#a8a8a6",
+    {"id": "A", "label": "arm A: the model's own guess", "colour": "#7f7f7f", "dark": "#a8a8a6",
      "dash": "2 3", "labels": 0},
-    {"id": "B", "label": "arm B: textbook only (no labels)", "colour": "#2ca02c", "dark": "#5cc45c",
-     "dash": "6 4", "labels": 0},
-    {"id": "C", "label": "arm C: concept scores", "colour": "#1f77b4", "dark": "#5aa7dd",
-     "dash": None, "labels": "n"},
-    {"id": "P", "label": "arm P: ImageNet features", "colour": "#d62728", "dark": "#f2615f",
-     "dash": None, "labels": "n"},
-    {"id": "CP", "label": "arm C+P: both blocks", "colour": "#762a83", "dark": "#b47ec0",
+    {"id": "B", "label": "arm B: feature scores matched to the textbook", "colour": "#2ca02c",
+     "dark": "#5cc45c", "dash": "6 4", "labels": 0},
+    {"id": "C", "label": "arm C: classifier on the feature scores", "colour": "#1f77b4",
+     "dark": "#5aa7dd", "dash": None, "labels": "n"},
+    {"id": "P", "label": "arm P: classifier on image features", "colour": "#d62728",
+     "dark": "#f2615f", "dash": None, "labels": "n"},
+    {"id": "CP", "label": "arm C+P: classifier on both", "colour": "#762a83", "dark": "#b47ec0",
      "dash": "5 3", "labels": "n"},
 ]
-LIT_STYLE = {"id": "lit", "label": "published ResNet-18 (224), fully supervised (Yang et al. 2023)",
+LIT_STYLE = {"id": "lit", "label": "ceiling: published result, trained on every label "
+                                   "(Yang et al. 2023)",
              "colour": "#8c564b", "dark": "#c08a7c", "dash": "1 4"}
 DATASET_HUES = ["#1f77b4", "#d62728", "#2ca02c", "#762a83", "#e6820e", "#17789c",
                 "#8c564b", "#c2185b", "#5b8c00", "#00695c", "#7f7f7f", "#9a6a00"]
@@ -615,7 +619,7 @@ def export_samples(datasets: list[str], per_class: int, cap: int, names: dict) -
 def export_archive(datasets: list[str], per_dataset: int, primary: str) -> dict:
     """A handful of real archived calls, with the image, both answers and the chunk's manifest.
 
-    The site draws an image at random and shows the two answers it got - the checklist levels
+    The site draws an image at random and shows the two answers it got - the feature scores
     and the class distribution - side by side, so the speaker can show real answers without
     buying a call. The two prompts are archived in separate chunks but cover the same test
     positions, so the records pair up on (dataset, position). Only chunk 00 of each dataset is
@@ -746,10 +750,10 @@ def export_timeline() -> dict:
     entries.sort(key=lambda e: (e["date"], e["time"]))
     days = sorted({e["date"] for e in entries})
     return {"source": "SESSION_LOG.md", "days": days, "entries": entries,
-            "kinds": [{"id": "direct", "label": "the user set the direction"},
-                      {"id": "build", "label": "something was written"},
-                      {"id": "run", "label": "compute was submitted"},
-                      {"id": "decide", "label": "a choice was settled"},
+            "kinds": [{"id": "direct", "label": "I set the direction"},
+                      {"id": "build", "label": "code was written"},
+                      {"id": "run", "label": "jobs were submitted"},
+                      {"id": "decide", "label": "a choice was made"},
                       {"id": "catch", "label": "something wrong was found"},
                       {"id": "rewind", "label": "work was removed"}],
             "kind_note": ("Only the kind of each entry was assigned by hand; the rest is the "
@@ -930,29 +934,29 @@ def export_effort(study: dict) -> dict:
     lanes = [
         {"id": "prompts", "kind": "point", "label": "a prompt",
          "count": len(prompts),
-         "note": "one per entry in the session log; the record dates it but not how long it "
+         "note": "one per entry in the session log; we know when it was, not how long it "
                  "took"},
         {"id": "commits", "kind": "point", "label": "code written",
          "count": len(commits), "agent_count": len(agent_commits),
          "note": (f"{len(agent_commits)} of {len(commits)} name an agent as co-author, which is "
-                  "the only mark the record holds of the agent's work")},
+                  "the only sign in the record that an agent wrote it")},
         {"id": "calls", "kind": "rate", "label": "calls to the RCD LLM service",
          "count": calls_total, "chunks": len(call_spans),
          "peak_per_hour": round(peak_rate), "peak_per_bin": round(peak_bin),
          "bin_minutes": CALL_BIN,
          "mean_per_hour": round(calls_total / busy["llm"]) if busy["llm"] else 0,
          "unit": "calls per hour",
-         "note": ("a chunk records how many calls it made and when it ran, but no response "
-                  "carries a clock of its own, so each chunk's calls are spread evenly across "
-                  "its own span and summed into 15-minute bins - a rate, not 58,409 datable "
-                  "events")},
+         "note": ("a chunk records how many calls it made and when it ran, but no reply "
+                  "carries a time of its own, so each chunk's calls are spread evenly across "
+                  "its own span and counted in 15-minute steps: a rate, not one mark per "
+                  "call")},
         {"id": "llm_jobs", "kind": "span",
          "label": "jobs waiting on the RCD LLM service",
          "count": len(llm), "hours": round(wall["llm"], 2),
          "cpu_hours": round(cpu["llm"], 2), "busy_hours": round(busy["llm"], 2),
          "blocks": len(blocks["llm"]),
          "note": ("the scoring jobs; their time is spent waiting on the RCD LLM service, whose "
-                  "GPUs this project never meters")},
+                  "GPU time this project never measures")},
         {"id": "local_jobs", "kind": "span",
          "label": "jobs computing on the cluster",
          "count": len(local), "hours": round(wall["local"], 2),

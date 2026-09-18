@@ -383,6 +383,13 @@
   },
   {
    "date": "2026-09-18",
+   "time": "08:40",
+   "title": "The figures get the plain-language pass, and \"checklist\" loses its place",
+   "kind": "build",
+   "lead": "The prose had been through a plain-language pass and the figures had not, so the same standard was carried inside them: axis labels, legend entries, direct end-labels, in-figure annotations, column headers drawn in\u2026"
+  },
+  {
+   "date": "2026-09-18",
    "time": "09:40",
    "title": "The owner's edits, distilled and applied",
    "kind": "build",
@@ -422,24 +429,45 @@
    "title": "The classifiers are not identical, and the models get a section",
    "kind": "build",
    "lead": "Three instructions, in the order they arrived. \"The classifiers are not identical."
+  },
+  {
+   "date": "2026-09-18",
+   "time": "15:10",
+   "title": "Titles that name their contents",
+   "kind": "build",
+   "lead": "The user cut a panel and named a habit. The panel \u2014 \"How many calls each model answered, and under what name\" \u2014 repeated the models table three sections above it, so it went."
+  },
+  {
+   "date": "2026-09-18",
+   "time": "16:05",
+   "title": "Name the model behind every result",
+   "kind": "build",
+   "lead": "Naming the model under the results figure turned out to be an instance of a rule: \"Everywhere we report a result that depends on model outputs, you should clarify what model is used.\" Every section was pulled off the\u2026"
+  },
+  {
+   "date": "2026-09-18",
+   "time": "17:10",
+   "title": "A plain-language pass over all the copy",
+   "kind": "build",
+   "lead": "The user asked for the standard he has been applying by hand for two days to be carried through every line on the site: \"avoid vague terminology, unusual metaphors, virtue signaling."
   }
  ],
  "kinds": [
   {
    "id": "direct",
-   "label": "the user set the direction"
+   "label": "I set the direction"
   },
   {
    "id": "build",
-   "label": "something was written"
+   "label": "code was written"
   },
   {
    "id": "run",
-   "label": "compute was submitted"
+   "label": "jobs were submitted"
   },
   {
    "id": "decide",
-   "label": "a choice was settled"
+   "label": "a choice was made"
   },
   {
    "id": "catch",
@@ -453,7 +481,7 @@
  "kind_note": "Only the kind of each entry was assigned by hand; the rest is the file's own heading and first paragraph.",
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T05:27:33Z",
+  "exported": "2026-09-18T12:43:06Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
    "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",

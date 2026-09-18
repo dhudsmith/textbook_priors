@@ -3,12 +3,12 @@ import { useTalk } from "../state";
 import { Dots } from "../components/ui";
 import { verdicts as copy } from "../content";
 
-/* The verdict board: seven rows, each saying in plain words what it asked, its count against the
-   count the rule asks for, a dot per dataset, and the verdict. Nothing here decides anything -
-   every field is copied from results/evaluation.json.
+/* The verdict table: seven rows, each saying in plain words what it asked, how many datasets it
+   won on against how many the rule asks for, a dot per dataset, and the verdict. Nothing here
+   decides anything - every field is copied from results/evaluation.json.
 
    Three of the seven were argued on the results figure and two in the thinking section; model
-   size and the price ladder left the talk entirely, so their rows link to Extra, where the
+   size and the price comparison left the talk entirely, so their rows link to Extra, where the
    comparison is drawn in full. */
 
 const SECTION_OF: Record<string, string> = {
@@ -30,7 +30,7 @@ export function VerdictBoard() {
           <tr>
             <th>hypothesis</th>
             <th style={{ textAlign: "left" }}>what it asked</th>
-            <th>count</th>
+            <th className="nowrap">won on</th>
             <th className="nowrap">needed</th>
             <th>p</th>
             <th style={{ textAlign: "left" }}>per dataset</th>

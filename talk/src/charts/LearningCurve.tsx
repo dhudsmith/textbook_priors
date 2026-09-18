@@ -8,7 +8,8 @@ import { AxisBottom, AxisLeft, Legend, fmt3, plotBox, spreadLabels, useHover } f
 /* H1's learning curve. Arms C, P and C+P move with n; arms A and B are horizontal lines, because
    they use no labels at all; the published ceiling is a fixed reference and deliberately not one
    of the arms - a different colour, a sparser dash, no fill, and its own legend wording.
-   n_B is marked where the pixel curve reaches arm B, which is the headline number of H1. */
+   The dashed vertical mark is where arm P reaches arm B: how many labelled images it takes to
+   match the textbook with no labels at all, which is the headline number of H1. */
 
 const LABELLED = ["C", "P", "CP"] as const;
 
@@ -105,7 +106,8 @@ export function LearningCurve({ height = 400, initialHidden = [] }: {
   return (
     <div ref={ref}>
       <svg className="plot" width={width} height={height} role="img"
-           aria-label={`Learning curve for ${dataset}: test AUC against labelled images`}>
+           aria-label={`${dataset}: test AUC for each arm against the number of labelled ` +
+                       "images it was given. Arms given no labels are drawn as flat lines."}>
         <AxisLeft scale={y} x={MARGIN.left} ticks={yTicks} width={innerW} label="test AUC" />
         <AxisBottom scale={x} y={MARGIN.top + innerH} ticks={ns} label="labelled images (n)" />
 
@@ -114,7 +116,7 @@ export function LearningCurve({ height = 400, initialHidden = [] }: {
             <line x1={nBx} x2={nBx} y1={MARGIN.top} y2={MARGIN.top + innerH}
                   stroke="var(--ink-muted)" strokeWidth={1} strokeDasharray="2 4" />
             <text x={nBx + 4} y={MARGIN.top + 11} className="serieslabel"
-                  fill="var(--ink-secondary)">n_B = {nB}</text>
+                  fill="var(--ink-secondary)">{nB} labels to match arm B</text>
           </g>
         )}
 

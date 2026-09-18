@@ -1,8 +1,8 @@
 {
  "span": {
   "from": "2026-09-09T14:20",
-  "to": "2026-09-18T13:25",
-  "minutes": 12904.53
+  "to": "2026-09-18T17:10",
+  "minutes": 13129.53
  },
  "days": [
   {
@@ -51,16 +51,16 @@
    "id": "prompts",
    "kind": "point",
    "label": "a prompt",
-   "count": 59,
-   "note": "one per entry in the session log; the record dates it but not how long it took"
+   "count": 63,
+   "note": "one per entry in the session log; we know when it was, not how long it took"
   },
   {
    "id": "commits",
    "kind": "point",
    "label": "code written",
-   "count": 126,
-   "agent_count": 122,
-   "note": "122 of 126 name an agent as co-author, which is the only mark the record holds of the agent's work"
+   "count": 134,
+   "agent_count": 130,
+   "note": "130 of 134 name an agent as co-author, which is the only sign in the record that an agent wrote it"
   },
   {
    "id": "calls",
@@ -73,7 +73,7 @@
    "bin_minutes": 15,
    "mean_per_hour": 4561,
    "unit": "calls per hour",
-   "note": "a chunk records how many calls it made and when it ran, but no response carries a clock of its own, so each chunk's calls are spread evenly across its own span and summed into 15-minute bins - a rate, not 58,409 datable events"
+   "note": "a chunk records how many calls it made and when it ran, but no reply carries a time of its own, so each chunk's calls are spread evenly across its own span and counted in 15-minute steps: a rate, not one mark per call"
   },
   {
    "id": "llm_jobs",
@@ -84,7 +84,7 @@
    "cpu_hours": 0.61,
    "busy_hours": 12.81,
    "blocks": 17,
-   "note": "the scoring jobs; their time is spent waiting on the RCD LLM service, whose GPUs this project never meters"
+   "note": "the scoring jobs; their time is spent waiting on the RCD LLM service, whose GPU time this project never measures"
   },
   {
    "id": "local_jobs",
@@ -366,6 +366,11 @@
     "title": "Surface the RCD LLM service calls, at the resolution the archive supports"
    },
    {
+    "minute": 12619.53,
+    "at": "2026-09-18T08:40",
+    "title": "The figures get the plain-language pass, and \"checklist\" loses its place"
+   },
+   {
     "minute": 12679.53,
     "at": "2026-09-18T09:40",
     "title": "The owner's edits, distilled and applied"
@@ -394,6 +399,21 @@
     "minute": 12904.53,
     "at": "2026-09-18T13:25",
     "title": "The classifiers are not identical, and the models get a section"
+   },
+   {
+    "minute": 13009.53,
+    "at": "2026-09-18T15:10",
+    "title": "Titles that name their contents"
+   },
+   {
+    "minute": 13064.53,
+    "at": "2026-09-18T16:05",
+    "title": "Name the model behind every result"
+   },
+   {
+    "minute": 13129.53,
+    "at": "2026-09-18T17:10",
+    "title": "A plain-language pass over all the copy"
    }
   ],
   "commits": [
@@ -1152,6 +1172,54 @@
     "at": "2026-09-18T00:57",
     "title": "Cut the talk to twenty-five minutes",
     "agent": true
+   },
+   {
+    "minute": 12190.12,
+    "at": "2026-09-18T01:30",
+    "title": "Correct the arm diagram, rebuild the archived-call panel, add the models",
+    "agent": true
+   },
+   {
+    "minute": 12547.85,
+    "at": "2026-09-18T07:28",
+    "title": "Name the section \"5 classification arms\"",
+    "agent": true
+   },
+   {
+    "minute": 12555.0,
+    "at": "2026-09-18T07:35",
+    "title": "Give titles their contents, and drop the duplicated calls panel",
+    "agent": true
+   },
+   {
+    "minute": 12557.27,
+    "at": "2026-09-18T07:37",
+    "title": "Say which model the results figure is built on",
+    "agent": true
+   },
+   {
+    "minute": 12559.6,
+    "at": "2026-09-18T07:40",
+    "title": "Name what the two tables hold, not that an answer arrived",
+    "agent": true
+   },
+   {
+    "minute": 12562.32,
+    "at": "2026-09-18T07:42",
+    "title": "Name the model behind every model-dependent result",
+    "agent": true
+   },
+   {
+    "minute": 12575.5,
+    "at": "2026-09-18T07:55",
+    "title": "Plain language throughout, and a caption that counts its own days",
+    "agent": true
+   },
+   {
+    "minute": 12592.5,
+    "at": "2026-09-18T08:12",
+    "title": "Say it the way someone would say it",
+    "agent": true
    }
   ]
  },
@@ -1534,9 +1602,9 @@
  },
  "counts": {
   "calls_peak_per_hour": 38506,
-  "prompts": 59,
-  "commits": 126,
-  "agent_commits": 122,
+  "prompts": 63,
+  "commits": 134,
+  "agent_commits": 130,
   "jobs": 662,
   "calls": 58409,
   "machine_hours": 290.3,
@@ -1551,7 +1619,7 @@
   "first_job": "2026-09-11T22:08",
   "last_job": "2026-09-13T23:02"
  },
- "headline": "59 prompts set off 662 jobs, 58,409 calls to the RCD LLM service and 290 hours of machine time.",
+ "headline": "63 prompts set off 662 jobs, 58,409 calls to the RCD LLM service and 290 hours of machine time.",
  "method": [
   "A job is the interval its own manifest states: `written` less `wall_seconds`. Where jobs of the same lane overlap, the lane draws the period they occupied between them rather than one bar per job.",
   "A prompt is the timestamp on its SESSION_LOG.md heading, and a commit its commit date - instants, not durations.",
@@ -1566,7 +1634,7 @@
  ],
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T05:27:33Z",
+  "exported": "2026-09-18T12:43:06Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
    "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",

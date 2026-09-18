@@ -125,10 +125,11 @@ export function EffortWaterfall({ data, height }: { data: Effort; height?: numbe
   return (
     <div ref={ref}>
       <svg className="plot" width={width} height={drawn} role="img"
-           aria-label={`A project timeline in ${data.lanes.length} lanes from ` +
-                       `${data.span.from.slice(0, 10)} to ${data.span.to.slice(0, 10)}: ` +
-                       `${data.counts.prompts} prompts and ${data.counts.commits} batches of ` +
-                       `code as moments, and ${data.counts.jobs} jobs as the periods they ran`}>
+           aria-label={`What happened when, from ${data.span.from.slice(0, 10)} to ` +
+                       `${data.span.to.slice(0, 10)}, in ${data.lanes.length} lanes over one ` +
+                       `clock: ${data.counts.prompts} prompts and ${data.counts.commits} times ` +
+                       `code was written, each drawn as a moment, and ${data.counts.jobs} jobs ` +
+                       "drawn as the periods they ran"}>
         {/* alternating lane bands, so a row is followed across a wide plot */}
         {data.lanes.map((lane, i) => (
           i % 2 === 1 ? (
@@ -273,7 +274,7 @@ export function EffortWaterfall({ data, height }: { data: Effort; height?: numbe
             <line x1="4" y1="1" x2="4" y2="11" stroke={LANE_HUE.prompts} strokeWidth="2"
                   strokeLinecap="round" />
           </svg>
-          a tick is a moment — the record dates it, not its length
+          a tick is a moment — we know when it was, not how long it took
         </span>
         <span className="chip" style={{ cursor: "default" }}>
           <svg width="14" height="12" aria-hidden="true">
@@ -286,7 +287,7 @@ export function EffortWaterfall({ data, height }: { data: Effort; height?: numbe
             <path d="M0 11 L3 7 L6 9 L9 2 L12 6 L16 4 L16 11 Z" fill={LANE_HUE.calls}
                   fillOpacity="0.82" />
           </svg>
-          an area is a rate — calls binned across the chunk that recorded them
+          an area is a rate — calls spread across the chunk that recorded them
         </span>
         <span className="chip" style={{ cursor: "default" }}>
           peak {data.machine.peak_concurrency} jobs at once ·{" "}

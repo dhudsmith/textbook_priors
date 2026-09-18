@@ -2,10 +2,11 @@ import { useState } from "react";
 import { useTalk } from "../state";
 
 /* Two structural diagrams: what each arm is made of, and the seven stages. Both are drawn rather
-   than described because the shape is the point - in the arm diagram, that the three arms given
-   labels are three separate fits, one per arm, of the same linear classification head, and that
-   each one sees only the features that reach it. Nothing is shared between the arms but the
-   procedure. */
+   than described because the shape is the point. In the arm diagram the three arms that get
+   labels have a classifier each - three boxes, not one - and each is entered only by the features
+   its arm is defined on. The drawing says there are three of them, so the words do not have to:
+   the boxes say "classifier" and nothing claims the arms share one. The model's answers are the
+   feature scores throughout, here and in the prose. */
 
 /* A white letter on the arm's own light step measured 4.0:1 and its dark step 2.2 to 3.2 - all
    of them under the floor. The letter wears the surface colour, which is white in light and near
@@ -31,28 +32,26 @@ export function ArmDiagram() {
           style={{ fontSize: 10, letterSpacing: "0.09em" }}>{label}</text>
   );
 
-  /* One head per arm that gets labels, drawn at the height of its own badge and outlined in its
-     own colour, so a reader can follow a colour from a feature block through a head to an arm.
-     C+P sits in the middle on purpose: both feature blocks reach it without crossing anything. */
+  /* One classifier per arm that gets labels, drawn at the height of its own badge and outlined
+     in its own colour, so a reader can follow a colour from a feature block through a classifier
+     to an arm. C+P sits in the middle on purpose: both feature blocks reach it without crossing
+     anything. Three boxes is the claim - the arms are fitted the same way and share nothing. */
   const heads: [string, number][] = [["C", 112], ["CP", 172], ["P", 232]];
 
   return (
     <svg className="plot" viewBox="0 0 720 296" width="100%" role="img" style={{ maxWidth: "46rem" }}
          aria-label={
-           "The image is read three ways. A zero-shot prompt to the vision-language model gives " +
-           "arm A, the model's own class guess, with no labels. A concept prompt gives the " +
-           "concept vector, which matched against the textbook's class fingerprints gives arm B, " +
-           "also with no labels. The same image goes to a frozen ImageNet ResNet-18, which gives " +
-           "the pixel features. The three arms that get labels each have their own linear " +
-           "classification head, fitted separately by the same procedure on the same n labels: " +
-           "arm C's head takes the concept vector, arm P's head takes the pixel features, and " +
-           "arm C+P's head takes both. What those three share is the procedure, not the " +
-           "classifier."}>
+           "One image, read five ways. Asked to name the class, the vision-language model " +
+           "answers arm A. Asked to score the visual features the textbook lists, it picks one " +
+           "level for each of them; matching those feature scores to the levels the textbook " +
+           "expects for each class gives arm B. Neither arm uses a labelled image. An ImageNet " +
+           "ResNet-18, pretrained and not retrained here, turns the same image into image " +
+           "features. Three more arms each fit a classifier of their own on n labelled images: " +
+           "arm C on the feature scores, arm P on the image features, and arm C+P on both."}>
       <g style={{ fontFamily: "var(--sans)", fontSize: 12 }}>
         {column(49, "IMAGE")}
         {column(190, "WHAT READS IT")}
         {column(348, "FEATURES")}
-        {column(494, "ONE PROCEDURE, THREE FITS")}
         {column(618, "ARM")}
 
         {box(8, 120, 82, 42, "var(--surface-sunken)")}
@@ -61,29 +60,25 @@ export function ArmDiagram() {
               style={{ fontSize: 10.5 }}>224 px</text>
 
         {box(116, 30, 148, 40, "var(--surface-raised)")}
-        <text x={190} y={55} textAnchor="middle" fill="var(--ink)">VLM, zero-shot prompt</text>
+        <text x={190} y={55} textAnchor="middle" fill="var(--ink)">VLM: name the class</text>
         {box(116, 96, 148, 50, "var(--surface-raised)")}
-        <text x={190} y={116} textAnchor="middle" fill="var(--ink)">VLM, concept prompt</text>
+        <text x={190} y={116} textAnchor="middle" fill="var(--ink)">VLM: score the features</text>
         <text x={190} y={132} textAnchor="middle" fill="var(--ink-muted)"
               style={{ fontSize: 10.5 }}>one level per feature</text>
         {box(116, 226, 148, 50, "var(--surface-raised)")}
-        <text x={190} y={246} textAnchor="middle" fill="var(--ink)">frozen ImageNet</text>
+        <text x={190} y={246} textAnchor="middle" fill="var(--ink)">ImageNet ResNet-18</text>
         <text x={190} y={262} textAnchor="middle" fill="var(--ink-muted)"
-              style={{ fontSize: 10.5 }}>ResNet-18 features</text>
+              style={{ fontSize: 10.5 }}>pretrained, not retrained</text>
 
         {box(296, 96, 104, 50, "var(--surface-sunken)")}
-        <text x={348} y={116} textAnchor="middle" fill="var(--ink)">concept</text>
-        <text x={348} y={131} textAnchor="middle" fill="var(--ink)">vector</text>
+        <text x={348} y={126} textAnchor="middle" fill="var(--ink)">feature scores</text>
         {box(296, 226, 104, 50, "var(--surface-sunken)")}
-        <text x={348} y={255} textAnchor="middle" fill="var(--ink)">pixel features</text>
+        <text x={348} y={255} textAnchor="middle" fill="var(--ink)">image features</text>
 
         {heads.map(([id, y]) => (
           <g key={`head-${id}`}>
-            {box(424, y, 140, 44, "var(--surface-sunken)", armHue(id))}
-            <text x={494} y={y + 19} textAnchor="middle" fill="var(--ink)"
-                  style={{ fontSize: 11.5 }}>linear classification</text>
-            <text x={494} y={y + 34} textAnchor="middle" fill="var(--ink-muted)"
-                  style={{ fontSize: 10.5 }}>head, fitted on n labels</text>
+            {box(436, y, 110, 40, "var(--surface-sunken)", armHue(id))}
+            <text x={491} y={y + 24} textAnchor="middle" fill="var(--ink)">classifier</text>
           </g>
         ))}
 
@@ -118,22 +113,23 @@ export function ArmDiagram() {
           </g>
 
           {/* Every line that reaches an arm wears that arm's colour, because the provenance is
-              the point: A never becomes features at all, B reads the concept vector with no head,
-              and each head is entered only by the block or blocks its arm is defined on. */}
+              the point: A never becomes features at all, B reads the feature scores with no
+              classifier, and each classifier is entered only by the block or blocks its arm is
+              defined on. */}
           <path d="M264 50 C420 50 470 50 605 50" stroke={armHue("A")} />
           <path d="M400 106 C414 106 414 88 605 88" stroke={armHue("B")} />
 
-          <path d="M400 126 C412 126 412 134 424 134" stroke={armHue("C")} />
-          <path d="M564 134 H605" stroke={armHue("C")} />
+          <path d="M400 126 C418 126 418 134 436 134" stroke={armHue("C")} />
+          <path d="M546 134 H605" stroke={armHue("C")} />
 
-          <path d="M400 140 C410 140 410 154 410 176 C410 185 413 188 424 188"
+          <path d="M400 140 C414 140 414 154 414 176 C414 185 418 188 436 188"
                 stroke={armHue("CP")} />
-          <path d="M400 232 C418 232 418 218 418 210 C418 203 420 200 424 200"
+          <path d="M400 232 C422 232 422 218 422 210 C422 203 424 200 436 200"
                 stroke={armHue("CP")} />
-          <path d="M564 194 H605" stroke={armHue("CP")} />
+          <path d="M546 194 H605" stroke={armHue("CP")} />
 
-          <path d="M400 246 C412 246 412 254 424 254" stroke={armHue("P")} />
-          <path d="M564 254 H605" stroke={armHue("P")} />
+          <path d="M400 246 C418 246 418 254 436 254" stroke={armHue("P")} />
+          <path d="M546 254 H605" stroke={armHue("P")} />
         </g>
       </g>
     </svg>
@@ -160,13 +156,12 @@ export function WorkflowDiagram() {
   return (
     <svg className="plot" viewBox="0 0 760 400" width="100%" role="img" style={{ maxWidth: "52rem" }}
          aria-label={
-           "A human directs an AI coding agent. The agent wrote three things: the concept bank, " +
-           "the Snakemake workflow, and the report and this page. The workflow takes two fixed " +
-           "inputs - the concept bank and the twelve MedMNIST datasets - runs seven stages, and " +
-           "produces the response archive, which is never overwritten, the tables and figures, " +
-           "and the " +
-           "report. The vision-language model under study is a service the score stage calls; it " +
-           "writes none of the code."}>
+           "A person directs an AI coding agent, and the agent wrote three things: the concept " +
+           "bank, the Snakemake workflow, and the report and this page. The workflow takes two " +
+           "fixed inputs, the concept bank and the twelve MedMNIST datasets, runs seven stages " +
+           "and writes three outputs: the archive of replies, which is never overwritten, the " +
+           "tables and figures, and the report. The vision-language model this study tests is a " +
+           "service the score stage calls. It wrote none of the code."}>
       <defs>
         <marker id="wf-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6"
                 markerHeight="6" orient="auto">
@@ -233,7 +228,7 @@ export function WorkflowDiagram() {
         {box(246, 344, 196, 44, "var(--surface-raised)", "var(--ink-muted)")}
         <text x={344} y={364} textAnchor="middle" fill="var(--ink)">VLM service</text>
         <text x={344} y={379} textAnchor="middle" fill="var(--ink-muted)"
-              style={{ fontSize: 10 }}>the object of study</text>
+              style={{ fontSize: 10 }}>the model this study tests</text>
         <text x={452} y={329} fill="var(--ink-muted)"
               style={{ fontSize: 10 }}>the score stage calls it</text>
 

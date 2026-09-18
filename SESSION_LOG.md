@@ -1481,3 +1481,91 @@ it, and already wrong: the export had reached ten days that morning. It is a sha
 from `effort.days` in the section, which is the pattern the rest of the page uses. Worth recording
 because the failure is characteristic: a rewrite for plainness reached for a concrete number, and
 a concrete number is exactly the thing that goes stale while the prose around it stays true.
+
+## 2026-09-18 08:40 — The figures get the plain-language pass, and "checklist" loses its place
+
+The prose had been through a plain-language pass and the figures had not, so the same standard was
+carried inside them: axis labels, legend entries, direct end-labels, in-figure annotations, column
+headers drawn in SVG, tooltip text, captions, panel summaries and every `aria-label`.
+
+The user's worked example set the calibration. The arm diagram had a column headed *one procedure,
+three fits* over three boxes reading *linear classification head, fitted on n labels*. He wanted
+one word: **classifier**. The history behind that column matters — it replaced *one identical
+classifier*, which was false — but the fix had been made in words when the picture could carry it:
+three separate boxes each labelled "classifier" already say there are three. So the column header
+is gone, each box says "classifier", and nothing on the page claims the arms share one. The boxes
+narrowed with their text and the lines into and out of them moved with the boxes; no arm, colour or
+connection changed.
+
+**Then the vocabulary itself moved.** The learning curve's legend said *arm C: concept scores* and
+*arm B: textbook only* while the prose beside it said *checklist answers* — two names for one
+thing, the fault an earlier pass had fixed in the prose and left in the figures. Told to make them
+agree, the answer was first "checklist" everywhere; the user then rejected the word outright:
+*"Plain language issue. Use 'visual features' or 'feature scores', 'scored visual features'."* A
+checklist names the shape of a list without ever saying what is on it. So the page now has one
+name per thing: the textbook lists **visual features**, the model returns **feature scores**, and
+what arms C, P and C+P each fit is a **classifier**. Arm stays, because the diagram explains it.
+
+The five arm labels live in `study.style.arms`, so the rename was made in
+`talk/scripts/export_talk_data.py` and the export re-run rather than hand-patched into
+`talk/public/data/`. Re-running reproduces every renamed string and changes nothing else: the arm
+and ceiling labels in `study.json`, the two prompt names in `contention.json`, the timeline's kind
+labels, three lane notes in `effort.json` and four entries of the close's "caught by" list. The
+counts that moved — 59 prompts to 62, 126 code entries to 134 — moved because this file grew
+today, not because anything was edited.
+
+Other vagueness of the same kind, judged one at a time against "would someone who has not read
+this page know what this refers to?". Changed: *class fingerprints* to the levels the textbook
+expects for each class; *the price ladder* to the closed models ranked by price; *the reader
+chain* to the comparisons between readers; *n_B* to "500 labels to match arm B" drawn on the
+figure itself; *the pixel arm* to arm P; *permutation controls* to the bank being shuffled;
+*wave* to "many at once" wherever the sentence did not define it. Kept: concept bank, probe,
+reader, chunk, arm and AUC, which the page teaches; *frontier model*, because the model it means
+is named in full beside every use of it; and *ceiling*, which the legend now spells out.
+
+**Seven of the ten callouts came out** in the same pass, on the user's audit. Three stay: *No
+clinician has read this bank*, *The outputs are not the product* and *Understanding debt* — all
+three agent notes, and two of them his own words. The seven near misses and principles are deleted
+rather than commented out; the history holds them, and the close's "what caught each one" list
+still carries every one of those stories in a line each. Four sections now have no callout at all,
+which is the standing rule working: the arms, how the study runs, the results and the thinking
+section end on their own material, and the empty `callouts` arrays and `<Callouts>` elements went
+with them.
+
+Checked by looking, not by building: twelve bands and no page errors in light and dark, every
+figure touched read as an image in both themes, and the learning curve under all three question
+presets and on the one dataset whose crossing mark is drawn. Two label faults were found that way.
+The closed-model chart's y-axis label ran fifty-six characters up a three-hundred-pixel plot and
+overprinted its own ticks at both ends — it now says "probe AUC" and the fitting detail moved to
+the note beneath. And the legend chips grew by a line under the longer arm names, which wraps
+cleanly and was left. One fault was seen and left alone: the thinking scatter's rotated y-axis
+label sits on its tick labels, which is geometry rather than language and predates this pass.
+
+## 2026-09-18 19:40 — "Checklist" goes, and seven callouts with it
+
+Two instructions, one pass. The first: *"I don't like 'checklist'. Plain language issue. Use
+'visual features' or 'feature scores', 'scored visual features'. Apply throughout. Identify other
+similar vagueness. Arm can stay, because we have the opportunity to clearly explain it with the
+diagram."* "Checklist" was the agent's own plain-language substitute for "concept", and it failed
+the owner's test in the same way the words it replaced did: it names a form — a list of things to
+check — without ever saying what is on it. The page now says the textbook lists **visual
+features**, the model returns **feature scores**, and what arms C, P and C+P each fit is a
+**classifier**. Arm stays, because the diagram defines it.
+
+The second was the figure pass itself, calibrated on *"one procedure, three fits. Just say
+classifier."* That column header is gone: three boxes each reading "classifier" already say there
+are three of them, which is the whole point of drawing it rather than asserting it — and it says so
+without reviving the "one identical classifier" error the header was written to correct. Arm labels
+and the ceiling label moved in `export_talk_data.py` rather than in the JSON, and a re-export
+reproduces them exactly.
+
+The owner also audited the callouts and cut seven of ten, keeping only the three agent notes: the
+bank no clinician has read, the outputs not being the product, and understanding debt. Four sections
+now carry no callout at all, which his own rule allows. The near-miss stories are not lost — the
+close still lists what caught each one — and the contention chart, which had been placed to
+illustrate the deleted wave-that-wrote-nothing, was kept because it answers the question its own
+section asks; its caption lost the word "wave", which only the deleted box had defined.
+
+A measured sweep afterwards found fourteen places where two pieces of text overlap inside a figure,
+the worst being two model names colliding by forty pixels on the reader chain. Those are geometry
+rather than language, and several predate today; they are the next thing to fix.

@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Bullets, Callouts, Header } from "../components/ui";
+import { Band, Bullets, Header } from "../components/ui";
 import { StageStrip } from "../components/diagrams";
 import { ArchiveCall } from "../components/ArchiveCall";
 import { machine } from "../content";
@@ -13,14 +13,15 @@ const BLURBS: Record<string, string> = {
   sample: "Per dataset: the test images this study scores, drawn once, and the pool of " +
     "labelled images the arms draw from.",
   score: "Per dataset, a rule writes the two prompts from the bank and the class names. Then, " +
-    "per model and per chunk of a hundred images, the calls go out and every reply is archived " +
+    "per model and per chunk of a hundred images, the calls go out and every reply is kept " +
     "where it cannot be overwritten.",
-  features: "Per dataset: the ImageNet ResNet-18 features of the sampled images, with the " +
-    "network left frozen.",
-  classify: "Per dataset: every arm at every number of labels and every seed, the two shuffled " +
-    "controls, and one probe per reader on the same images.",
-  evaluate: "Per dataset: an AUC for every arm, paired bootstrap intervals, and n_B. Then, " +
-    "across datasets: the sign tests, the model ladder and the reader chain.",
+  features: "Per dataset: the ImageNet ResNet-18 features of the sampled images. The network " +
+    "is pretrained and is not retrained here.",
+  classify: "Per dataset: every arm at every number of labels and every seed, the two " +
+    "shuffled controls, and one probe per reader on the same images.",
+  evaluate: "Per dataset: an AUC for every arm, a 95% interval for every difference, and how " +
+    "many labelled images arm P needed to match arm B. Then, across datasets: the sign tests " +
+    "and the comparisons between models and between readers.",
   report: "Every figure and table, two generated appendices, and the technical report PDF.",
 };
 
@@ -42,14 +43,13 @@ export function Machine() {
         {study.archive.calls.toLocaleString("en-US")} calls.
       </p>
 
-      <h3>One archived image, two prompts</h3>
+      <h3>One archived image, and both answers</h3>
       <div ref={ref}>
         {error && <p className="note">Could not load the archive sample: {error}</p>}
         {archive ? <ArchiveCall sample={archive} />
                  : <p className="note">Loading the archived answers…</p>}
       </div>
 
-      <Callouts items={machine.callouts} />
     </Band>
   );
 }

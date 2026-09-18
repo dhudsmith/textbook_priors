@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Bullets, Callouts, Header } from "../components/ui";
+import { Band, Bullets, Header } from "../components/ui";
 import { ArmDiagram } from "../components/diagrams";
 import { design } from "../content";
 
@@ -40,9 +40,11 @@ export function Design() {
               </td>
               <td>{a.id === "A" || a.id === "B" ? "0" : "n"}</td>
               <td style={{ textAlign: "left", fontSize: "0.8rem", color: "var(--ink-secondary)" }}>
-                {a.id === "A" ? "— (no features; the model names the class itself)"
-                  : a.id === "B" ? "concept scores, matched to the bank's class fingerprints"
-                  : a.id === "C" ? "concept scores"
+                {/* the arm's own name says what is done with the features, so this column
+                    says only what they are: B and C read the same scores, and differ in
+                    whether a classifier is fitted on them. */}
+                {a.id === "A" ? "— none; the model names the class itself"
+                  : a.id === "B" || a.id === "C" ? "feature scores"
                   : a.id === "P" ? "ImageNet ResNet-18 features"
                   : "both, joined and put on one scale"}
               </td>
@@ -52,8 +54,8 @@ export function Design() {
       </table>
       </div>
       <p className="note">
-        A probe is a linear classification head fitted on features that are left frozen.
-        Arms C, P and C+P each fit their own, by the same procedure, on the same labels.
+        A probe is a classifier fitted on features that are already fixed: nothing above it is
+        retrained. Arms C, P and C+P each fit their own, the same way, on the same labels.
       </p>
 
       <h3>Two limits</h3>
@@ -61,7 +63,6 @@ export function Design() {
         {design.limits.map((l, i) => <li key={i}>{l}</li>)}
       </ul>
 
-      <Callouts items={design.callouts} />
     </Band>
   );
 }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTalk } from "../state";
-import { Band, Bullets, Callouts, ChartFrame, DatasetPicker, Deep, Dots, Header } from "../components/ui";
+import { Band, Bullets, ChartFrame, DatasetPicker, Deep, Dots, Header } from "../components/ui";
 import { LearningCurve } from "../charts/LearningCurve";
 import { Dumbbell, PermutationDrops } from "../charts/Dumbbell";
 import { Forest } from "../charts/Forest";
@@ -25,7 +25,7 @@ export function Results() {
   const per = study.per_dataset[dataset];
   const tissue = study.per_dataset["tissuemnist"];
 
-  // H1's crossing point only exists where the pixel arm started below the checklist arm.
+  // H1's crossing point only exists where arm P started below arm B.
   const crossing = armB
     .filter((d) => /^\d+$/.test(study.per_dataset[d].n_b?.point ?? ""))
     .sort((a, b) => Number(study.per_dataset[b].n_b!.point)
@@ -72,23 +72,23 @@ export function Results() {
       {choice === "h1" && (
         <>
           <p>
-            At n = {firstN} a head fitted on the checklist answers beats one fitted on pretrained
-            image features on {h1.c_beats_p_wins} of {h1.n_datasets}, against the {h1.min_wins} the
-            rule asks for (p = {h1.c_beats_p_sign_test_p.toFixed(4)}). On{" "}
-            {h1.datasets_where_the_probe_starts_above_arm_b} of the {armB.length} datasets with a
-            textbook-only arm, pretrained image features are already ahead of it at n = {firstN}.
+            At n = {firstN} a classifier fitted on the feature scores beats one fitted on
+            pretrained image features on {h1.c_beats_p_wins} of {h1.n_datasets}, against the{" "}
+            {h1.min_wins} the rule asks for (p = {h1.c_beats_p_sign_test_p.toFixed(4)}). On{" "}
+            {h1.datasets_where_the_probe_starts_above_arm_b} of the {armB.length} datasets that
+            have an arm B, pretrained image features are already ahead of it at n = {firstN}.
           </p>
           {!crosses && elsewhere && (
             <p className="note">
-              No crossing here: the pixel arm starts above the checklist arm. See{" "}
+              No crossing here: arm P starts above arm B. See{" "}
               <button className="inline" onClick={() => setDataset(elsewhere)}>{elsewhere}</button>,
               where it crosses at {study.per_dataset[elsewhere].n_b!.point}.
             </p>
           )}
-          <Deep summary="How many labelled images the pixel arm needed to catch the checklist">
+          <Deep summary="How many labelled images arm P needed to match arm B">
             <table className="data" style={{ maxWidth: "36rem" }}>
               <thead>
-                <tr><th>dataset</th><th>n_B</th>
+                <tr><th>dataset</th><th className="nowrap">labels needed</th>
                     <th style={{ textAlign: "left" }}>95% interval</th></tr>
               </thead>
               <tbody>
@@ -107,7 +107,7 @@ export function Results() {
               </tbody>
             </table>
             <p className="note">
-              <span className="mono">&lt;=50</span> means the pixel arm was already ahead at the
+              <span className="mono">&lt;=50</span> means arm P was already ahead at the
               smallest labelled set we tried.
             </p>
           </Deep>
@@ -117,10 +117,10 @@ export function Results() {
       {choice === "h2" && (
         <>
           <p>
-            The checklist arm beat the diagnosis arm on {h2.b_beats_a_wins} of {armB.length},
-            against the {h2.min_wins} the rule asks for
+            Arm B, the feature scores read against the textbook, beat arm A on{" "}
+            {h2.b_beats_a_wins} of {armB.length}, against the {h2.min_wins} the rule asks for
             (p = {h2.b_beats_a_sign_test_p.toFixed(4)}). On tissuemnist the model's own guess is{" "}
-            {fmt3(tissue.auc["A"])} — chance — and the checklist still reaches{" "}
+            {fmt3(tissue.auc["A"])} — chance — and the feature scores still reach{" "}
             {fmt3(tissue.auc[`B__${study.study.primary}`])}.
           </p>
           <Deep summary="The two arms side by side, and what is left when the bank is shuffled">
@@ -129,7 +129,7 @@ export function Results() {
               <Dumbbell />
             </ChartFrame>
             <ChartFrame
-              caption="What each arm loses when the bank is shuffled. Both lose everywhere.">
+              caption="What each arm loses when the bank is shuffled. Both lose everywhere, so the feature scores carry real class information.">
               <PermutationDrops />
             </ChartFrame>
           </Deep>
@@ -150,9 +150,9 @@ export function Results() {
           </p>
           <Deep summary="The gain on every dataset, with its interval">
             <ChartFrame
-              caption={`Arm C+P minus arm P at n = ${h5.n}: two heads fitted the same way, ` +
-                       "one on the image features alone and one with the checklist answers " +
-                       "alongside them."}>
+              caption={`Arm C+P minus arm P at n = ${h5.n}: two classifiers fitted the same ` +
+                       "way, one on the image features alone and one on those features with " +
+                       "the feature scores alongside them."}>
               <Forest rows={h5rows} colour={armHue("CP")}
                       label={`arm C+P minus arm P at n = ${h5.n}`}
                       annotate={["no gain", "gain"]} />
@@ -169,7 +169,6 @@ export function Results() {
       </p>
 
       <Bullets items={copy.bullets} />
-      <Callouts items={copy.callouts} />
     </Band>
   );
 }

@@ -52,8 +52,9 @@ export function TimelineStrip({ timeline, days, height = 150 }: {
   return (
     <div ref={ref}>
       <svg className="plot" width={width} height={height} role="img"
-           aria-label={`${entries.length} directing prompts across ${shownDays.length} day(s), ` +
-                       `one tick each, from SESSION_LOG.md`}>
+           aria-label={`One tick per prompt that changed the plan: ${entries.length} of them ` +
+                       `across ${shownDays.length} ` +
+                       `${shownDays.length === 1 ? "day" : "days"}, by the time of day`}>
         <g className="axis">
           {hours.map((h) => (
             <g key={h} transform={`translate(${x(h * 60)} 0)`}>

@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Bullets, Callouts, Header } from "../components/ui";
+import { Band, Bullets, Header } from "../components/ui";
 import { VerdictBoard } from "../charts/Verdicts";
 import { verdicts as copy } from "../content";
 
@@ -23,7 +23,6 @@ export function Verdicts() {
       <VerdictBoard />
 
       <Bullets items={copy.bullets} />
-      <Callouts items={copy.callouts} />
     </Band>
   );
 }

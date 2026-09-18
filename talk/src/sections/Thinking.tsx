@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Bullets, Callouts, ChartFrame, Deep, Dots, Header } from "../components/ui";
+import { Band, Bullets, ChartFrame, Deep, Dots, Header } from "../components/ui";
 import { Ladder } from "../charts/Ladder";
 import { ThinkingScatter } from "../charts/ThinkingScatter";
 import { Forest } from "../charts/Forest";
@@ -46,7 +46,7 @@ export function Thinking() {
       </p>
 
       <ChartFrame
-        caption="Thinking's effect against how well the same model read the checklist without it.">
+        caption="Thinking's effect against how well the same model scored the visual features without it.">
         <ThinkingScatter />
       </ChartFrame>
 
@@ -54,7 +54,7 @@ export function Thinking() {
         The thinking step wins on {h4.h4a.wins} of {h4.n_datasets}{" "}
         (p = {h4.h4a.sign_test_p.toFixed(4)}) and the frontier model on {h4.h4b.wins}{" "}
         (p = {h4.h4b.sign_test_p.toFixed(4)}), against the {h4.min_wins} the rule asks for:{" "}
-        {v4.verdict}. Each of the {h4.readers.length} readers gets its own head, fitted the
+        {v4.verdict}. Each of the {h4.readers.length} readers gets its own classifier, fitted the
         same way on the same {h4.subsample} images, so every difference is paired.
       </p>
       <Bullets items={copy.bullets} />
@@ -70,8 +70,9 @@ export function Thinking() {
         <ChartFrame
           caption={`Probe AUC on the same ${h4.subsample} images, one line per dataset. Hover a ` +
                    "line to isolate it."}>
-          <Ladder order={chain} values={h4.probe_auc} yLabel="cross-validated probe AUC"
-                  label="Probe AUC per dataset across the nine readers" height={420}
+          <Ladder order={chain} values={h4.probe_auc} yLabel="probe AUC"
+                  label={`Probe AUC for each dataset across the ${chain.length} readers, ` +
+                         "one line per dataset"} height={420}
                   named={widestSpread(h4.probe_auc, chain, 4, ["dermamnist"])}
                   note="The first four readers are the models with thinking off. Each label is a model and the effort it was given." />
         </ChartFrame>
@@ -79,16 +80,16 @@ export function Thinking() {
 
       <Deep summary="A prediction made before the calls: was the frontier model thinking too hard?">
         <p>
-          The archive showed the frontier model collapsing one dermoscopy feature to a single
-          answer, so a rule was written — before the calls — saying that less effort would fix that
-          dataset and no other. Lowering the effort wins on {h6.wins} of {h6.n_datasets} and
+          The archive showed the frontier model giving one dermoscopy feature the same score on
+          every image, so a rule was written — before the calls — saying that less effort would
+          fix that dataset and no other. Lowering the effort wins on {h6.wins} of {h6.n_datasets} and
           raising it on {h6.wins_for_more}, against the {h6.min_wins} either direction would need:{" "}
           {v6.verdict}. Exactly {h6clear.length} interval of the {h6rows.length} clears zero, and
           it is {h6clear.map((r) => r.dataset).join(", ")} — the one the prediction named.
         </p>
         <ChartFrame
           caption={"gpt-5.6-terra at low effort minus the same model at medium, each read by " +
-                   "a head of its own, fitted the same way."}>
+                   "a classifier of its own, fitted the same way."}>
           <Forest rows={h6rows} colour={armHue("C")}
                   label="gpt-5.6-terra: low minus medium, probe AUC" />
         </ChartFrame>
@@ -112,7 +113,6 @@ export function Thinking() {
         </Deep>
       )}
 
-      <Callouts items={copy.callouts} />
     </Band>
   );
 }

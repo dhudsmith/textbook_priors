@@ -108,9 +108,9 @@ export default function Explore() {
         </table>
       </Deep>
 
-      <Deep summary="How often the model answered every feature on the checklist">
+      <Deep summary="How often the model scored every visual feature">
         <table className="data" style={{ maxWidth: "32rem" }}>
-          <thead><tr><th>model</th><th>complete</th></tr></thead>
+          <thead><tr><th>model</th><th>scored in full</th></tr></thead>
           <tbody>
             {Object.entries(per.complete_frac).map(([m, f]) => (
               <tr key={m}><td className="mono">{m}</td><td>{(f * 100).toFixed(1)}%</td></tr>
@@ -118,8 +118,8 @@ export default function Explore() {
           </tbody>
         </table>
         <p className="note">
-          Any model that left more than 5% of a dataset's checklists incomplete is flagged in the
-          report and kept out of the headline; none did.
+          Any model that left more than 5% of a dataset's images with a feature unscored is
+          flagged in the report and kept out of the headline; none did.
         </p>
       </Deep>
 

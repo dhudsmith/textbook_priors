@@ -1,7 +1,7 @@
 {
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T05:27:33Z",
+  "exported": "2026-09-18T12:43:06Z",
   "source_files": [
    "config/config.yaml",
    "config/medmnist.yaml",
@@ -358,7 +358,7 @@
   "arms": [
    {
     "id": "A",
-    "label": "arm A: zero-shot (no labels)",
+    "label": "arm A: the model's own guess",
     "colour": "#7f7f7f",
     "dark": "#a8a8a6",
     "dash": "2 3",
@@ -366,7 +366,7 @@
    },
    {
     "id": "B",
-    "label": "arm B: textbook only (no labels)",
+    "label": "arm B: feature scores matched to the textbook",
     "colour": "#2ca02c",
     "dark": "#5cc45c",
     "dash": "6 4",
@@ -374,7 +374,7 @@
    },
    {
     "id": "C",
-    "label": "arm C: concept scores",
+    "label": "arm C: classifier on the feature scores",
     "colour": "#1f77b4",
     "dark": "#5aa7dd",
     "dash": null,
@@ -382,7 +382,7 @@
    },
    {
     "id": "P",
-    "label": "arm P: ImageNet features",
+    "label": "arm P: classifier on image features",
     "colour": "#d62728",
     "dark": "#f2615f",
     "dash": null,
@@ -390,7 +390,7 @@
    },
    {
     "id": "CP",
-    "label": "arm C+P: both blocks",
+    "label": "arm C+P: classifier on both",
     "colour": "#762a83",
     "dark": "#b47ec0",
     "dash": "5 3",
@@ -399,7 +399,7 @@
   ],
   "literature": {
    "id": "lit",
-   "label": "published ResNet-18 (224), fully supervised (Yang et al. 2023)",
+   "label": "ceiling: published result, trained on every label (Yang et al. 2023)",
    "colour": "#8c564b",
    "dark": "#c08a7c",
    "dash": "1 4"
@@ -9076,7 +9076,7 @@
   ],
   "catches": [
    {
-    "what": "An unfair pixel baseline that would have made the headline claim true by construction",
+    "what": "An unfair baseline that would have made the headline claim true whatever the numbers said",
     "caught_by": "a person reading the plan",
     "source": "CHANGELOG.md 2026-09-09"
    },
@@ -9091,12 +9091,12 @@
     "source": "CHANGELOG.md 2026-09-11"
    },
    {
-    "what": "A 48-job wave that ran two hours and wrote nothing",
+    "what": "Forty-eight jobs at once that ran for two hours and wrote nothing",
     "caught_by": "a timed call",
     "source": "CHANGELOG.md 2026-09-12"
    },
    {
-    "what": "Thinking believed impossible, when the cause was our own 512-token budget",
+    "what": "Thinking believed impossible, when the cause was our own limit on reply length",
     "caught_by": "a test at 15:20",
     "source": "CHANGELOG.md 2026-09-12"
    },
@@ -9106,7 +9106,7 @@
     "source": "SESSION_LOG.md 2026-09-13 12:25"
    },
    {
-    "what": "An eleven-chunk thinking wave that would have died at its time limit",
+    "what": "Eleven thinking jobs at once that would all have hit their time limit",
     "caught_by": "one chunk run first, and a timed call",
     "source": "CHANGELOG.md 2026-09-12"
    }

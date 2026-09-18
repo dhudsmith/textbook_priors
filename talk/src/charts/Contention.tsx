@@ -37,7 +37,8 @@ export function Contention({ data }: { data: ContentionData }) {
   return (
     <div ref={ref}>
       <svg className="plot" width={width} height={height} role="img"
-           aria-label="Seconds per call at one job in flight against a wave of them, per prompt">
+           aria-label={"Seconds per call with one job running, against many running at once, " +
+                       "for each prompt"}>
         <g className="grid">
           {x.ticks(5).map((t) => (
             <line key={t} x1={x(t)} x2={x(t)} y1={margin.top - 6} y2={height - margin.bottom} />
@@ -86,7 +87,7 @@ export function Contention({ data }: { data: ContentionData }) {
       </svg>
       {tip}
       <p className="note">
-        A hollow bar is one job in flight; a filled bar is the wave.
+        A hollow bar is one job on its own; a filled bar is many at once.
       </p>
     </div>
   );

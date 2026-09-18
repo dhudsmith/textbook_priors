@@ -6,10 +6,10 @@ import { LAZY, asset } from "../data";
 /* One archived image, and what both prompts returned for it.
 
    The study asks the same picture two different questions, in two separate calls, and gets two
-   different shapes of answer back: the checklist comes back as a level for each visual feature,
-   the other prompt as a number for each class. Showing them together is the point of the panel,
-   so they are drawn side by side rather than one at a time. The archived records pair on the
-   dataset and the position in the test sample, which is the same image in both.
+   different shapes of answer back: one prompt returns a level for each visual feature, the other
+   a number for each class. Showing them together is the point of the panel, so they are drawn
+   side by side rather than one at a time. The archived records pair on the dataset and the
+   position in the test sample, which is the same image in both.
 
    Nothing here is live and nothing is re-read: results/score/ is write-protected and this is a
    copy of a few of its records, taken by the export. The reply text is deliberately not shown -
@@ -39,8 +39,8 @@ export function ArchiveCall({ sample, fixedDataset }: {
     }
     const all = [...by.values()].sort((a, b) => a.key.localeCompare(b.key));
     // On the spine both answers have to be there, because the contrast is the whole point. Asked
-    // for one dataset in Extra, show what that dataset has: chestmnist is scored on the checklist
-    // alone, and saying so is better than dropping the dataset.
+    // for one dataset in Extra, show what that dataset has: chestmnist is only ever asked for
+    // the visual features, and saying so is better than dropping the dataset.
     const both = all.filter((p) => p.concept && p.zero);
     return fixedDataset ? (both.length ? both : all) : both;
   }, [sample.records, fixedDataset]);
@@ -124,13 +124,13 @@ export function ArchiveCall({ sample, fixedDataset }: {
                   ))}
                 </tbody>
               </table>
-            ) : <p className="note">This image has no checklist answers on file.</p>}
+            ) : <p className="note">This image has no feature scores on file.</p>}
           </div>
 
           <div>
             <h4>How likely each class</h4>
             <p className="note">
-              A second call, on a prompt of its own: how likely is each class? Neither call saw
+              A second call, with a different prompt: how likely is each class? Neither call saw
               the other's answer.
             </p>
             {scores.length ? (
@@ -166,7 +166,7 @@ export function ArchiveCall({ sample, fixedDataset }: {
               <p className="note">
                 {meta.multi_label
                   ? `${pair.dataset} marks several findings at once rather than one class, so ` +
-                    "this question is not asked of it. Only the checklist is."
+                    "this question is not asked of it. Only the visual features are scored."
                   : "This image has no class answer on file."}
               </p>
             )}

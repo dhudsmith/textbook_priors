@@ -18,6 +18,11 @@
    repositories or schemas - except the terms the page itself teaches and is about: Snakemake,
    arm, probe, AUC, chunk, reader, concept bank.
 
+   One name per thing, and it names the thing rather than its shape. The textbook's list is
+   "visual features"; what the model returns for them is "feature scores" or "scored visual
+   features"; what arms C, P and C+P each fit is a "classifier". Not "checklist", which says a
+   list is being checked without ever saying of what.
+
    Style: short sentences, a doer as the subject and its action as the verb, one idea each. Say
    what happened; let the reader judge it. */
 
@@ -102,18 +107,6 @@ export const premise = {
       ],
       source: "TALK.md §3; SESSION_LOG.md",
     },
-    {
-      kind: "nearmiss",
-      title: "The wave that wrote nothing",
-      body: [
-        "Forty-eight jobs ran for two hours and wrote nothing. Each hit its time limit, and a " +
-          "job that runs out of time loses every call it has paid for.",
-        "A call that takes a second and a half on its own took forty-three under our own load. " +
-          "Forty-eight jobs at once bought about two and a half times the work of one: on a " +
-          "service this close to saturation, asking for more of it at once buys almost nothing.",
-      ],
-      source: "CHANGELOG.md 2026-09-12",
-    },
   ] as Callout[],
 };
 
@@ -140,7 +133,7 @@ export const question = {
     bulletShapes: [
       "{minConcepts} to {maxConcepts} features per task, each on an ordered scale",
       "Every level carries the wording the model is shown, and a citation for it",
-      "Each class gets a fingerprint: the level the textbook expects for each feature",
+      "For each class, the level the textbook expects for every feature",
       "Written down before any call went out",
     ],
   },
@@ -150,8 +143,8 @@ export const question = {
       title: "No clinician has read this bank",
       body: [
         "The bank was compiled by a model — Claude Opus 5 — from the literature, and every " +
-          "feature and fingerprint carries a citation. No clinician has read them. The review is " +
-          "simulated too, and each file says so.",
+          "feature and every level it expects carries a citation. No clinician has read them. " +
+          "The review is simulated too, and each file says so.",
         "A citation lets a reader check the claim. A credential only lets them defer to it.",
       ],
       source: "CONCEPT_BANK.md; data/concepts/*.yaml",
@@ -163,7 +156,7 @@ export const design = {
   headerShape: "{arms} classification arms",
   lede: "What is the textbook worth in labelled images? Two arms use none. Three use n.",
   bullets: [
-    "Three arms each fit their own linear classification head — same procedure, different features",
+    "Three arms each fit their own classifier — fitted the same way, on different features",
     "Every comparison is paired: the same test images for every arm",
     "AUC throughout: 1.0 perfect, 0.5 chance",
   ],
@@ -174,20 +167,6 @@ export const design = {
     "chestmnist marks several findings at once rather than one class, so arms A and B cannot " +
       "be defined for it. It runs in C, P and C+P only.",
   ],
-  callouts: [
-    {
-      kind: "nearmiss",
-      title: "The unfair baseline",
-      body: [
-        "The first plan set a network trained from scratch on fifty images against a model with " +
-          "billions of pretrained parameters. Every rule could have been correct and the headline " +
-          "claim still true by construction.",
-        "A person reading the plan caught it before any rule existed. The from-scratch network " +
-          "became the ceiling; the baseline became a probe on pretrained image features.",
-      ],
-      source: "CHANGELOG.md 2026-09-09",
-    },
-      ] as Callout[],
 };
 
 /* The models, between the arms and how the study is built. Short by design: the room needs to
@@ -218,50 +197,16 @@ export const machine = {
     "A reader is a model plus a reasoning effort",
     "Once a reply is written it stays written: buying the calls again has to be deliberate",
   ],
-  callouts: [
-    {
-      kind: "nearmiss",
-      title: "One chunk run before the other 270",
-      body: [
-        "Four scoring rules were written in one loop, and all four inherited the last one's " +
-          "command. The first chunk, run alone on purpose, came back with the primary model's " +
-          "name on the file and a different model's name in the record of what had answered.",
-        "Had the rest gone out, one model would have written every archive, and the question " +
-          "about model size would have compared four copies of it.",
-      ],
-      source: "CHANGELOG.md 2026-09-11",
-    },
-    {
-      kind: "nearmiss",
-      title: "The field we did not read",
-      body: [
-        "One model returned nothing readable on three thousand calls. A single diagnostic call " +
-          "found its answers, already formatted, in a part of the reply our code never looked at.",
-        "The archive could not repair it: it held the text we had pulled out, not the reply, so " +
-          "the calls had to be bought again. The whole reply is kept now.",
-      ],
-      source: "CHANGELOG.md 2026-09-11",
-    },
-    {
-      kind: "principle",
-      title: "Name the model, and keep what it said",
-      body: [
-        "The service's shortcut names point at whatever it considers best today. Buy an archive against one and it answers differently next month, with nothing on file to say so.",
-        "Every model here is named in full, every reply is kept exactly as it came back, and the name of the model that answered is kept with it. Everything after that is a fixed calculation on those files.",
-      ],
-      source: "WORKFLOW.md §5, principle 7; docs/rcd_llm_service.md",
-    },
-  ] as Callout[],
 };
 
 /* The headline results figure, and the three questions it answers. The per-question detail sits
-   in panels beside it, closed; model size and the price ladder moved out to Extra entirely. */
+   in panels beside it, closed; model size and the price comparison moved out to Extra. */
 export const results = {
   header: "Test AUC for each arm",
   ledeShape:
     "Every arm on the same chart: how well it separates the classes, against how many " +
-    "labelled images it was given. One model read every image here — {primary}. The pixel arm " +
-    "uses no model at all. Pick a question and the figure draws the arms that answer it.",
+    "labelled images it was given. One model read every image here — {primary}. Arm P uses " +
+    "no model at all. Pick a question and the figure draws the arms that answer it.",
   bullets: [
     "Arms given no labels are flat lines; arms given labels climb",
     "Shaded bands are 95% intervals — hover a point to read one",
@@ -272,45 +217,32 @@ export const results = {
       id: "h1",
       chip: "Can the textbook replace labels?",
       asks:
-        "Three arms: the checklist read with no labels, a head fitted on pretrained image " +
-        "features, and a second head fitted the same way on the checklist answers.",
+        "Three arms: the feature scores read against the textbook with no labels, a classifier " +
+        "fitted on pretrained image features, and a second classifier fitted the same way on " +
+        "the feature scores.",
       hidden: ["CP", "A", "lit"],
     },
     {
       id: "h2",
-      chip: "Checklist, or just ask for the diagnosis?",
+      chip: "Score the features, or just ask for the diagnosis?",
       asks:
-        "Two prompts on the same image, neither using a label: name the diagnosis, or answer " +
-        "the checklist and match the answers to the textbook's description of each class.",
+        "Two prompts on the same image, neither using a label: name the diagnosis, or score " +
+        "the visual features and match those scores to the textbook's description of each class.",
       hidden: ["C", "P", "CP", "lit"],
     },
     {
       id: "h5",
-      chip: "Does the textbook add to the pixels?",
+      chip: "Does the textbook add to the image features?",
       asks:
-        "A head fitted on pretrained image features, then a second head, fitted the same way, " +
-        "on those features with the checklist answers alongside them. Nothing else changes.",
+        "A classifier fitted on pretrained image features, then a second one, fitted the same " +
+        "way, on those features with the feature scores alongside them. Nothing else changes.",
       hidden: ["A", "B", "C", "lit"],
     },
   ],
   /* Kept for the panel that answers the obvious objection to the second question. */
   circular: [
-    "The two arms are separate calls on separate prompts, so the comparison cannot be circular. The first design returned both from one call, which would have let the checklist answers rationalise a class the model had already chosen.",
+    "The two arms are separate calls on separate prompts, so the comparison cannot be circular. The first design returned both from one call, which would have let the feature scores be written to fit a class the model had already chosen.",
   ],
-  callouts: [
-    {
-      kind: "nearmiss",
-      title: "Two agents editing the same code",
-      body: [
-        "Two agent sessions were working in the same folder, neither aware of the other. The " +
-          "second switched it to its own version of the code while jobs were running. A job " +
-          "reads the code when it starts, so five of twelve results came out of the wrong one.",
-        "The record filed beside each result names the version that wrote it, and that is what " +
-          "found it — before anybody had a theory. Read the record first.",
-      ],
-      source: "SESSION_LOG.md 2026-09-13 12:25",
-    },
-  ] as Callout[],
 };
 
 export const thinking = {
@@ -327,17 +259,6 @@ export const thinking = {
   limits: [
     "The frontier model is closed and its size is not published, so this step changes capability rather than parameter count. It also refuses to answer deterministically, so it is the one reader whose answers vary between calls, and some of any difference is noise the intervals cannot see.",
   ],
-  callouts: [
-    {
-      kind: "agent",
-      title: "An arm that could decide nothing",
-      body: [
-        "A fifth arm was added after seeing the numbers. Asking for it took one prompt; it cost three thousand calls, and it measured something real.",
-        "It was removed the same day. Designed after the results, it could decide nothing. When a new arm costs one sentence, nothing about the effort will stop you from adding it. You have to.",
-      ],
-      source: "CHANGELOG.md 2026-09-12; WORKFLOW.md §10",
-    },
-  ] as Callout[],
 };
 
 export const verdicts = {
@@ -345,7 +266,7 @@ export const verdicts = {
   /* Filled in Verdicts.tsx: which model each row rests on. */
   modelsNote:
     "Five of these rest on one model, {primary}. The other two compare models: one across the " +
-    "open families, one across the closed price ladder.",
+    "open families, one across the closed models ranked by price.",
   bullets: [
     "The textbook cannot replace labelled images",
     "Added to them, it adds a small but consistent gain",
@@ -353,20 +274,20 @@ export const verdicts = {
   /* The plain-language reading of each question, for the one column a listener actually reads.
      H3 and H7 are presented nowhere else, so their sentences name the comparison outright. */
   asks: {
-    h1: "With no labels at all, does the textbook checklist beat pretrained image features " +
-      "given the smallest labelled set?",
-    h2: "Does answering the textbook checklist beat simply asking the model for the diagnosis?",
+    h1: "With no labels at all, do the feature scores read against the textbook beat " +
+      "pretrained image features given the smallest labelled set?",
+    h2: "Does scoring the textbook's visual features beat simply asking the model for the " +
+      "diagnosis?",
     h3: "Within each open model family, does the bigger model read the images better than the " +
       "smaller one?",
     h4: "Does a better reader — told to think, or a stronger model — get more out of the same " +
       "images?",
-    h5: "Added to pretrained image features, do the checklist answers carry anything those " +
+    h5: "Added to pretrained image features, do the feature scores carry anything those " +
       "features do not already have?",
     h6: "Was the frontier model asked to think too hard? Lower its effort and see.",
-    h7: "Among closed models ranked only by price, does the most expensive read the checklist " +
-      "better than the cheapest?",
+    h7: "Among closed models ranked only by price, does the most expensive score the visual " +
+      "features better than the cheapest?",
   } as Record<string, string>,
-  callouts: [] as Callout[],
 };
 
 export const close = {
@@ -397,7 +318,7 @@ export const explore = {
 /* What the study does not claim. Off the main scroll: it is what a room asks about rather than
    something twenty-five minutes has time to walk through. */
 export const notClaimed = [
-  "The concept scores are not clinically validated.",
+  "The feature scores are not clinically validated.",
   "A simulated expert review is not a clinician's review.",
   "No arm here is state of the art.",
   "Every source dataset is public and labelled, so “the model carries textbook knowledge” " +
@@ -405,7 +326,7 @@ export const notClaimed = [
 ];
 
 /* H3 and H7 left the talk: the detail is in Extra and the verdict table is where the room meets
-   them. This is the prose that went with the model ladder. */
+   them. This is the prose that went with the model comparison. */
 export const ladderExtra = {
   header: "Does a bigger model read better?",
   ledeShape:

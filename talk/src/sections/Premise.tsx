@@ -43,7 +43,7 @@ export function Premise() {
       {contention && (
         <Deep summary="What our own load did to a single call">
           <ChartFrame
-            caption="One job in flight against a wave of them, per prompt.">
+            caption="One job on its own against many at once, per prompt.">
             <Contention data={contention} />
           </ChartFrame>
         </Deep>

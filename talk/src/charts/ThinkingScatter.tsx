@@ -4,9 +4,9 @@ import { useWidth } from "../hooks";
 import { AxisBottom, AxisLeft, Marker, fmt3, plotBox, short, signed, spreadLabels, useHover }
   from "./primitives";
 
-/* Thinking's effect against how well the model read the concepts without it. The slope is the
-   claim: thinking rescues the tasks the model read badly and costs the ones it read well. One
-   point per dataset, in the dataset's own colour and marker. */
+/* Thinking's effect against how well the model scored the visual features without it. The slope
+   is the claim: thinking helps on the tasks the model read badly and hurts on the ones it read
+   well. One point per dataset, in the dataset's own colour and marker. */
 
 export function ThinkingScatter({ height = 360 }: { height?: number }) {
   const { study, hue, metaOf } = useTalk();
@@ -42,7 +42,9 @@ export function ThinkingScatter({ height = 360 }: { height?: number }) {
   return (
     <div ref={ref}>
       <svg className="plot" width={width} height={height} role="img"
-           aria-label="Thinking's effect on the probe against the same model's probe AUC without thinking">
+           aria-label={"One point per dataset: how much the thinking step changed the probe's " +
+                       "AUC, against how well the same model scored the visual features with " +
+                       "thinking off. The points slope downwards."}>
         <AxisLeft scale={y} x={MARGIN.left} ticks={y.ticks(5)} width={innerW}
                   label="thinking − no thinking (AUC)" format={(v) => signed(v, 2)} />
         <AxisBottom scale={x} y={MARGIN.top + innerH} ticks={x.ticks(5)}

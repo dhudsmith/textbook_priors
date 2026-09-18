@@ -7,9 +7,10 @@ import { AxisLeft, MARGIN, Marker, fmt3, plotBox, readerTick, short, spreadLabel
   from "./primitives";
 
 /* One line per dataset across an ordered list of models or readers. Used three times - the open
-   ladder (H3), the price ladder (H7) and the reader chain (H4) - because they are the same claim
-   shape and a reader comparing them should be comparing one colour language, not three. Each
-   dataset keeps the report's own colour AND its own marker, so no two share both. */
+   models by size (H3), the closed models by price (H7) and the nine readers (H4) - because they
+   are the same claim shape and a reader comparing them should be comparing one colour language,
+   not three. Each dataset keeps the report's own colour AND its own marker, so no two share
+   both. */
 
 export function Ladder({ order, values, yLabel, label, height = 380, divideAfter, note,
                          named = [] }: {

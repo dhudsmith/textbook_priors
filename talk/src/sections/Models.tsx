@@ -6,7 +6,7 @@ import { models } from "../content";
    built on what a model said, and it comes before the results because the results start naming
    families, sizes and thinking efforts and the room should already know what those are. Every
    column answers a question the talk asks later; nothing here is a specification for its own
-   sake, and the row order is the order the two ladders climb. */
+   sake, and the row order is the order the two comparisons climb. */
 
 /** The efforts the service accepts, said the way the talk says them. */
 function thinking(levels: string[]): string {
@@ -54,7 +54,7 @@ export function Models() {
       {primary && (
         <p className="note">
           Every arm is built on <span className="mono">{primary.name}</span>, which answered both
-          prompts on every image. The others were asked the checklist alone, each to settle one
+          prompts on every image. The others only scored the visual features, each to settle one
           question. {models.sizeNote}
         </p>
       )}

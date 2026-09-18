@@ -38,7 +38,8 @@ export function Dumbbell() {
   return (
     <div ref={ref}>
       <svg className="plot" width={width} height={h} role="img"
-           aria-label="Arm A against arm B, test AUC, one row per dataset">
+           aria-label={"Test AUC for arm A against arm B, one row per dataset, with the arm " +
+                       "that won marked at the right"}>
         <g className="grid">
           {x.ticks(5).map((t) => (
             <line key={t} x1={x(t)} x2={x(t)} y1={MARGIN.top - 6}
@@ -72,8 +73,8 @@ export function Dumbbell() {
                onMouseEnter={(e) => show(e, (
                  <>
                    <div className="k">{r.dataset}</div>
-                   arm A (zero-shot) <strong>{fmt3(r.a)}</strong><br />
-                   arm B (textbook) <strong>{fmt3(r.b)}</strong>
+                   arm A (the model's own guess) <strong>{fmt3(r.a)}</strong><br />
+                   arm B (feature scores) <strong>{fmt3(r.b)}</strong>
                    <div className="k">B − A {signed(r.diff.median)} 95% [{fmt3(r.diff.lo)},
                      {" "}{fmt3(r.diff.hi)}]</div>
                  </>
@@ -109,16 +110,17 @@ export function Dumbbell() {
           <svg width="12" height="12" aria-hidden="true">
             <rect x="1.8" y="1.8" width="8.4" height="8.4" rx="1" fill={armHue("B")} />
           </svg>
-          arm B: the checklist, matched to the textbook
+          arm B: feature scores matched to the textbook
         </span>
       </div>
     </div>
   );
 }
 
-/* The permutation controls, as bars: how much AUC each arm loses when the fingerprints are
-   permuted across classes, or the concept columns across images. Free re-analyses of the archive,
-   and the reason the concept answers are known to carry real class information. */
+/* The two shuffled controls, as bars: how much AUC each arm loses when the levels the textbook
+   expects are shuffled between classes, or the feature scores are shuffled between images. Free
+   re-analyses of the archive, and the reason the feature scores are known to carry real class
+   information. */
 export function PermutationDrops() {
   const { study, armHue } = useTalk();
   const { ref, width: measured } = useWidth<HTMLDivElement>(720);
@@ -145,7 +147,8 @@ export function PermutationDrops() {
   return (
     <div ref={ref}>
       <svg className="plot" width={width} height={h} role="img"
-           aria-label="AUC lost under the permutation controls, per dataset and arm">
+           aria-label={"How much AUC each arm loses when the bank is shuffled, one row per " +
+                       "dataset"}>
         <g className="grid">
           {x.ticks(5).map((t) => (
             <line key={t} x1={x(t)} x2={x(t)} y1={MARGIN.top - 6}
@@ -196,12 +199,12 @@ export function PermutationDrops() {
       {tip}
       <div className="controls" aria-label="Series">
         <span className="chip legend" style={{ cursor: "default" }}>
-          <span className="swatch" style={{ background: armHue("B") }} /> arm B, fingerprints
-          shuffled between classes
+          <span className="swatch" style={{ background: armHue("B") }} /> arm B, the levels the
+          textbook expects shuffled between classes
         </span>
         <span className="chip legend" style={{ cursor: "default" }}>
           <span className="swatch" style={{ background: armHue("C") }} /> arm C at n = 50,
-          checklist answers shuffled between images
+          feature scores shuffled between images
         </span>
       </div>
       <p className="note">

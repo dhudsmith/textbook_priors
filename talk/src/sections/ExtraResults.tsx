@@ -5,8 +5,9 @@ import { Ladder } from "../charts/Ladder";
 import { ladderExtra as copy } from "../content";
 import { signed, widestSpread } from "../charts/primitives";
 
-/* Model size and the price ladder left the talk: twenty-five minutes did not have room for them
-   and the verdict table is where the room meets them now. The whole comparison lives here. */
+/* Model size and the price comparison left the talk: twenty-five minutes did not have room for
+   them and the verdict table is where the room meets them now. The whole comparison lives
+   here. */
 
 export function LadderBlock() {
   const { study } = useTalk();
@@ -62,13 +63,13 @@ export function LadderBlock() {
         {gemma.wins} (p = {gemma.sign_test_p.toFixed(4)}). The rule asks for {v3.threshold} in both
         families: {v3.verdict}. A Friedman test over the four models gives{" "}
         p = {Number(h3.friedman.p).toFixed(2)}. The closed family, ranked by price alone, is the
-        contrast: the top of the ladder beats the bottom on {h7.wins} of {h7.n_datasets}{" "}
+        contrast: the most expensive beats the cheapest on {h7.wins} of {h7.n_datasets}{" "}
         (p = {h7.sign_test_p.toFixed(4)}), which is {v7.verdict}.
       </p>
       <Bullets items={copy.bullets} />
 
-      <div className="controls" role="group" aria-label="Ladder">
-        <span className="group-label">ladder</span>
+      <div className="controls" role="group" aria-label="Which models">
+        <span className="group-label">models</span>
         <button className="chip" aria-pressed={which === "open"} onClick={() => setWhich("open")}>
           open models, by size
         </button>
@@ -88,14 +89,16 @@ export function LadderBlock() {
           named={widestSpread(values, order)}
           yLabel={which === "open"
             ? "arm B test AUC"
-            : "probe AUC (one head per model, all fitted the same way)"}
+            : "probe AUC"}
           label={which === "open"
-            ? "Arm B AUC per dataset across the four open models"
-            : "Probe AUC per dataset across the closed price ladder"}
+            ? "Arm B test AUC for each dataset across the four open models, smallest first "
+              + "within each family"
+            : "Probe AUC for each dataset across the three closed models, cheapest first"}
           divideAfter={which === "open" && familyDivide >= 0 ? familyDivide : undefined}
           note={which === "open"
             ? "The divider separates the two families."
-            : "Price is the vendor's ranking, not a parameter count."}
+            : "One classifier per model, all fitted the same way. Price is the vendor's "
+              + "ranking, not a parameter count."}
         />
       </ChartFrame>
 
@@ -108,7 +111,7 @@ export function LadderBlock() {
       <p className="tally">
         <Dots per={v7.per_dataset} order={study.study.arm_b_datasets} label="H7 per dataset" />{" "}
         <span className="note" style={{ display: "inline" }}>
-          H7, the top of the price ladder over the bottom: {v7.wins} of {v7.n_datasets},{" "}
+          H7, the most expensive model over the cheapest: {v7.wins} of {v7.n_datasets},{" "}
           against {v7.threshold} needed — {v7.verdict}. Median step{" "}
           {signed(median(Object.values(h7.differences).map((d) => (d as { median: number }).median)))}{" "}
           AUC.

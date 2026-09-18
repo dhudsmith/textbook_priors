@@ -5,9 +5,13 @@ import { question } from "../content";
 import { useAsync } from "../hooks";
 import { LAZY, asset, loadBank } from "../data";
 
-/* The dataset picker, sample images by class and the concept bank as a checklist: open a concept
-   to see its ordered levels, the cited anchor text for each level, and the sources. This is the
-   study's prior knowledge, written down before any call was bought. */
+/** The bank writes a feature's name in one word; a reader should not have to. */
+const plain = (s: string) => s.replace(/_/g, " ");
+
+/* The dataset picker, sample images by class, and the concept bank as a table of visual
+   features: open one to see its ordered levels, the wording the model is shown for each level,
+   and the sources. This is the study's prior knowledge, written down before any call was
+   bought. */
 
 export function Question() {
   const { study, meta, dataset } = useTalk();
@@ -45,7 +49,7 @@ export function Question() {
             {meta.modality} · {meta.n_classes} classes, {meta.medmnist_task} · official test
             split{" "}
             {meta.split_sizes.test.toLocaleString("en-US")} images, of which this study scores{" "}
-            {meta.test_n} · {meta.n_concepts} concepts in the bank
+            {meta.test_n} · {meta.n_concepts} visual features in the bank
           </p>
           <div className="classgrid">
             {byClass.map(([name, shots]) => (
@@ -76,7 +80,7 @@ export function Question() {
               <table className="data">
                 <thead>
                   <tr>
-                    <th>concept</th>
+                    <th>visual feature</th>
                     <th style={{ textAlign: "left" }}>question put to the model</th>
                     <th>levels</th>
                   </tr>
@@ -85,7 +89,7 @@ export function Question() {
                   {bank.concepts.map((c) => (
                     <tr key={c.id} style={{ cursor: "pointer" }}
                         onClick={() => setOpen(open === c.id ? null : c.id)}>
-                      <td className="mono">{c.id}</td>
+                      <td>{plain(c.id)}</td>
                       <td style={{ textAlign: "left", fontSize: "0.8rem" }}>{c.question}</td>
                       <td>{c.scale.length}</td>
                     </tr>
@@ -96,13 +100,13 @@ export function Question() {
               {open && (
                 <div className="card" style={{ maxWidth: "44rem", marginTop: "0.8rem",
                                                cursor: "default" }}>
-                  <div className="hid">{open}</div>
+                  <div className="hid">{plain(open)}</div>
                   <ol style={{ fontSize: "0.85rem", paddingLeft: "1.2rem" }}>
                     {bank.concepts.find((c) => c.id === open)!.scale.map((level) => {
                       const anchor = bank.concepts.find((c) => c.id === open)!.anchors[level];
                       return (
                         <li key={level} style={{ marginBottom: "0.4rem" }}>
-                          <span className="mono">{level}</span> — {anchor?.text}
+                          <strong>{plain(level)}</strong> — {anchor?.text}
                           {anchor && (
                             <span className="mono"
                                   style={{ color: "var(--ink-muted)", fontSize: "0.72rem" }}>
@@ -116,15 +120,15 @@ export function Question() {
                 </div>
               )}
 
-              <Deep summary="Class fingerprints — the level the textbook expects for each feature">
+              <Deep summary="The level the textbook expects for each feature, class by class">
                 <div className="chart-scroll">
                   <table className="data">
                     <thead>
                       <tr>
                         <th>class</th>
                         {bank.concepts.map((c) => (
-                          <th key={c.id} className="mono" style={{ fontSize: "0.66rem" }}>
-                            {c.id}
+                          <th key={c.id} style={{ fontSize: "0.66rem" }}>
+                            {plain(c.id)}
                           </th>
                         ))}
                       </tr>
@@ -132,12 +136,12 @@ export function Question() {
                     <tbody>
                       {Object.entries(bank.classes).map(([name, spec]) => (
                         <tr key={name}>
-                          <td>{name}</td>
+                          <td>{plain(name)}</td>
                           {bank.concepts.map((c) => (
-                            <td key={c.id} className="mono" style={{ fontSize: "0.7rem",
+                            <td key={c.id} style={{ fontSize: "0.7rem",
                                   color: spec.fingerprint[c.id] === "any"
                                     ? "var(--ink-muted)" : "var(--ink)" }}>
-                              {spec.fingerprint[c.id] ?? "—"}
+                              {plain(spec.fingerprint[c.id] ?? "—")}
                             </td>
                           ))}
                         </tr>
@@ -146,8 +150,8 @@ export function Question() {
                   </table>
                 </div>
                 <p className="note">
-                  <span className="mono">any</span> means the sources rule nothing out on that
-                  feature for that class.
+                  <strong>any</strong> means the sources rule nothing out on that feature for
+                  that class.
                 </p>
               </Deep>
 
