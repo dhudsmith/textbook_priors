@@ -13,8 +13,9 @@ import { Machine } from "./sections/Machine";
 import { Results } from "./sections/Results";
 import { Thinking } from "./sections/Thinking";
 import { Verdicts } from "./sections/Verdicts";
-import { Close } from "./sections/Close";
-import { REFRAIN, explore } from "./content";
+import { ModelSize } from "./sections/ModelSize";
+import { Takeaways } from "./sections/Takeaways";
+import { title, explore } from "./content";
 
 /* The explorer is the one heavy part of the page and nobody sees it during the talk, so it is a
    separate chunk that loads when it first scrolls into view. */
@@ -24,7 +25,7 @@ function ExploreBand() {
   const { ref, seen } = useInView<HTMLDivElement>("400px");
   return (
     <Band id="explore">
-      <Header id="explore" eyebrow="11">{explore.header}</Header>
+      <Header id="explore" eyebrow="12">{explore.header}</Header>
       <div ref={ref} className="explore-slot">
         {seen && (
           <Suspense fallback={<p className="note">Loading the explorer…</p>}>
@@ -65,13 +66,11 @@ function Page() {
         <Workflow />
         <Machine />
         <Results />
+        <ModelSize />
         <Thinking />
-        {/* The refrain at the hinge of the talk, and again at the close: it is the sentence the
-            room should leave with. */}
-        <div className="refrain-band"><p className="pullquote">{REFRAIN}</p></div>
         <Verdicts />
         <Premise />
-        <Close />
+        <Takeaways />
         <ExploreBand />
       </main>
     </div>
@@ -83,7 +82,7 @@ export default function App() {
   if (error) {
     return (
       <main className="main" style={{ padding: "3rem" }}>
-        <h1>Textbook priors over visual features</h1>
+        <h1>{title.header}</h1>
         <p>The data snapshot could not be loaded: {error}</p>
         <p className="note">
           The page reads <code>data/study.json</code>, written by the <code>talk_data</code> rule.

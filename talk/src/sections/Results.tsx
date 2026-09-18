@@ -74,7 +74,8 @@ export function Results() {
           <p>
             At n = {firstN} a classifier fitted on the feature scores beats one fitted on
             pretrained image features on {h1.c_beats_p_wins} of {h1.n_datasets}, against the{" "}
-            {h1.min_wins} the rule asks for (p = {h1.c_beats_p_sign_test_p.toFixed(4)}). On{" "}
+            {h1.min_wins} needed to count as support
+            (p = {h1.c_beats_p_sign_test_p.toFixed(4)}). On{" "}
             {h1.datasets_where_the_probe_starts_above_arm_b} of the {armB.length} datasets that
             have an arm B, pretrained image features are already ahead of it at n = {firstN}.
           </p>
@@ -117,9 +118,10 @@ export function Results() {
       {choice === "h2" && (
         <>
           <p>
-            Arm B, the feature scores read against the textbook, beat arm A on{" "}
-            {h2.b_beats_a_wins} of {armB.length}, against the {h2.min_wins} the rule asks for
-            (p = {h2.b_beats_a_sign_test_p.toFixed(4)}). On tissuemnist the model's own guess is{" "}
+            Arm B, the feature scores read against what the literature expects, beat arm A
+            on{" "}
+            {h2.b_beats_a_wins} of {armB.length}, against the {h2.min_wins} needed to count as
+            support (p = {h2.b_beats_a_sign_test_p.toFixed(4)}). On tissuemnist the model's own guess is{" "}
             {fmt3(tissue.auc["A"])} — chance — and the feature scores still reach{" "}
             {fmt3(tissue.auc[`B__${study.study.primary}`])}.
           </p>
@@ -143,7 +145,7 @@ export function Results() {
         <>
           <p>
             At n = {h5.n} the combined arm beats pretrained image features alone on {h5.wins} of{" "}
-            {h5.n_datasets}, against the {h5.min_wins} the rule asks for
+            {h5.n_datasets}, against the {h5.min_wins} needed to count as support
             (p = {h5.sign_test_p.toFixed(4)}): <strong>{v.verdict}</strong>. Median gain{" "}
             {signed(median(Object.values(h5.differences).map((d) => (d as { median: number }).median)))}{" "}
             AUC.

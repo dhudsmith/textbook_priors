@@ -14,11 +14,14 @@ top so the room can follow along on their own devices; hosted on GitHub Pages.
 ## 1. The shape
 
 **Spine**: one scientific question, five arms, seven hypotheses, seven verdicts computed rather
-than chosen. The audience leaves knowing what a vision-language model's textbook knowledge is
-worth in labelled images, and where it does and does not help.
+than chosen. The audience leaves knowing what a vision-language model's knowledge of the
+scholarly record is worth in labelled images, and where it does and does not help.
 
-**Rails**: three kinds of callout, colour-coded and placed beside the result they belong to, never
-in a separate section. They are read aloud as asides or left for the audience to read later.
+**Rails**: callouts placed beside the result they belong to, never in a separate section. They
+are read aloud as asides or left for the audience to read later. **Amended 2026-09-18:** there is
+now **one kind**, labelled **Note**, in one colour — "I would like to have a single type of call
+out. I don't think people keep track of that in their heads." The three kinds below are what the
+page carried until then, and the table is kept because it still says what a note is for.
 
 | callout | colour | what it carries | source it links to |
 |---|---|---|---|
@@ -27,11 +30,13 @@ in a separate section. They are read aloud as asides or left for the audience to
 | **Agent note** | violet | what working this way with an agent taught us | `SESSION_LOG.md`, timestamped |
 
 **Bookends**: the opening sets up the premise — this study was built in four days with an AI coding
-agent, and the talk is the result — and the close returns to it with the ledger of what that cost
-and what caught the mistakes. Everything between is science.
+agent, and the talk is the result. **Amended 2026-09-18:** the close that returned to it with the
+ledger is cut, and the talk ends on the owner's own takeaways instead.
 
-**The refrain**, said at the open and the close and written in one callout in the middle: *the
-workflow turns hidden work into inspectable work; it does not inspect it for you.*
+**The refrain** — *the workflow turns hidden work into inspectable work; it does not inspect it
+for you* — was said at the open, in the middle and at the close. **Cut 2026-09-18:** the standalone
+pull quote between the sections and the one at the close are both gone, and the `REFRAIN` export
+with them. Nothing on the page says it now; it is the speaker's line if he wants it.
 
 **Style**: the page is the presentation, so a section speaks in bullets and the speaker says the
 sentences; prose belongs in the technical report, not here. One idea per section, a figure or an
@@ -64,6 +69,29 @@ export. Separately, the callouts were cut from ten to three — *No clinician ha
 *The outputs are not the product* and *Understanding debt*, all agent notes; the arms, machine,
 results and thinking sections now carry none, which is the rule in §1 working rather than an
 omission.
+
+**Amended 2026-09-18, in the evening.** Seven changes, all from the owner, and the page is
+thirteen bands: title and eleven numbered sections and Extra. *The framing was factually wrong.*
+The visual features and the levels expected for each class were compiled from the published
+literature, not from a textbook — 92 distinct sources are cited across the twelve bank files — so
+the page says **the literature** or **the scholarly record** everywhere it used to say the
+textbook, and arm B is "feature scores matched to what the literature expects". The count of
+sources is read from the bank files themselves in `Question.tsx`, per this plan's own rule that no
+number is typed into the site source; the repository, `WORKFLOW.md` and the study's internal names
+are untouched. *The arms section's two limits* are a closed `Limitations` panel: not covered in
+the room, open to a reader. *Vague references are out* — "each to settle one question" named the
+comparison it meant, "the rule asks for" became "needed to count as support", now that the rules
+themselves are in Extra, and "two limits on this reading" is `Limitations` there too. *The
+information architecture is the **project***: "How the study is put together" is **How the project
+is structured**, and "How the study runs" is **How the project runs**; "study" is kept for the
+scientific investigation. *"What four days cost" is deleted*, section, file and content block —
+"it's too hard to parse in a general audience" — and with it the list of what caught each mistake;
+the *Understanding debt* note moved to the takeaways, and the links and the closing QR code moved
+with it. *Model size and price is back on the spine* as section 7, directly after the results
+figure: the ladder chart with its two views, one sentence of what it found and nothing else, and
+it is out of Extra. Extra also loses the archived-call widget, which the talk itself already
+carries. *The talk ends on **Takeaways*** — the owner's own bullets, and three the agent proposed
+under a heading of their own so he can see which are his.
 
 **Amended 2026-09-18, after a read-through with the owner.** Three changes, and the sections
 are renumbered around the second of them. *The arm diagram was wrong*: it drew one box

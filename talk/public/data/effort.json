@@ -1,8 +1,8 @@
 {
  "span": {
   "from": "2026-09-09T14:20",
-  "to": "2026-09-18T17:10",
-  "minutes": 13129.53
+  "to": "2026-09-18T21:30",
+  "minutes": 13389.53
  },
  "days": [
   {
@@ -51,16 +51,16 @@
    "id": "prompts",
    "kind": "point",
    "label": "a prompt",
-   "count": 63,
+   "count": 65,
    "note": "one per entry in the session log; we know when it was, not how long it took"
   },
   {
    "id": "commits",
    "kind": "point",
    "label": "code written",
-   "count": 134,
-   "agent_count": 130,
-   "note": "130 of 134 name an agent as co-author, which is the only sign in the record that an agent wrote it"
+   "count": 136,
+   "agent_count": 132,
+   "note": "132 of 136 name an agent as co-author, which is the only sign in the record that an agent wrote it"
   },
   {
    "id": "calls",
@@ -414,6 +414,16 @@
     "minute": 13129.53,
     "at": "2026-09-18T17:10",
     "title": "A plain-language pass over all the copy"
+   },
+   {
+    "minute": 13279.53,
+    "at": "2026-09-18T19:40",
+    "title": "\"Checklist\" goes, and seven callouts with it"
+   },
+   {
+    "minute": 13389.53,
+    "at": "2026-09-18T21:30",
+    "title": "It is the scholarly record, not a textbook; and the talk ends on takeaways"
    }
   ],
   "commits": [
@@ -1220,6 +1230,18 @@
     "at": "2026-09-18T08:12",
     "title": "Say it the way someone would say it",
     "agent": true
+   },
+   {
+    "minute": 12624.72,
+    "at": "2026-09-18T08:45",
+    "title": "Say visual features and classifier; keep three callouts",
+    "agent": true
+   },
+   {
+    "minute": 12628.9,
+    "at": "2026-09-18T08:49",
+    "title": "Date the talk in the eyebrow",
+    "agent": true
    }
   ]
  },
@@ -1602,9 +1624,9 @@
  },
  "counts": {
   "calls_peak_per_hour": 38506,
-  "prompts": 63,
-  "commits": 134,
-  "agent_commits": 130,
+  "prompts": 65,
+  "commits": 136,
+  "agent_commits": 132,
   "jobs": 662,
   "calls": 58409,
   "machine_hours": 290.3,
@@ -1619,7 +1641,7 @@
   "first_job": "2026-09-11T22:08",
   "last_job": "2026-09-13T23:02"
  },
- "headline": "63 prompts set off 662 jobs, 58,409 calls to the RCD LLM service and 290 hours of machine time.",
+ "headline": "65 prompts set off 662 jobs, 58,409 calls to the RCD LLM service and 290 hours of machine time.",
  "method": [
   "A job is the interval its own manifest states: `written` less `wall_seconds`. Where jobs of the same lane overlap, the lane draws the period they occupied between them rather than one bar per job.",
   "A prompt is the timestamp on its SESSION_LOG.md heading, and a commit its commit date - instants, not durations.",
@@ -1634,7 +1656,7 @@
  ],
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T12:43:06Z",
+  "exported": "2026-09-18T13:56:42Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
    "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",

@@ -7,14 +7,13 @@ import { verdicts as copy } from "../content";
    won on against how many the rule asks for, a dot per dataset, and the verdict. Nothing here
    decides anything - every field is copied from results/evaluation.json.
 
-   Three of the seven were argued on the results figure and two in the thinking section; model
-   size and the price comparison left the talk entirely, so their rows link to Extra, where the
-   comparison is drawn in full. */
+   Three of the seven were argued on the results figure, two in the thinking section and two in
+   the model-size section, and each row links back to the one that argued it. */
 
 const SECTION_OF: Record<string, string> = {
   h1: "results", h2: "results", h5: "results",
   h4: "thinking", h6: "thinking",
-  h3: "explore", h7: "explore",
+  h3: "size", h7: "size",
 };
 
 export function VerdictBoard() {

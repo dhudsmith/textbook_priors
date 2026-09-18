@@ -107,8 +107,8 @@ export function ArchiveCall({ sample, fixedDataset }: {
           <div>
             <h4>Visual features, and the level picked</h4>
             <p className="note">
-              One call: every visual feature the textbook lists for this kind of image, and the
-              level the model picked for it.
+              One call: every visual feature the literature lists for this kind of image, and
+              the level the model picked for it.
             </p>
             {levels.length ? (
               <table className="data">

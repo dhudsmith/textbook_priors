@@ -12,6 +12,9 @@ import { AxisLeft, MARGIN, Marker, fmt3, plotBox, readerTick, short, spreadLabel
    not three. Each dataset keeps the report's own colour AND its own marker, so no two share
    both. */
 
+/** What the lines that are not named are called, once, at the foot of the label column. */
+const GREY_LABEL = "other datasets";
+
 export function Ladder({ order, values, yLabel, label, height = 380, divideAfter, note,
                          named = [] }: {
   order: string[];
@@ -45,7 +48,12 @@ export function Ladder({ order, values, yLabel, label, height = 380, divideAfter
   const bottom = tilt
     ? Math.ceil(longest * 6.3 * Math.sin((22 * Math.PI) / 180)) + 30
     : 46;
-  const { width, margin: base } = plotBox(measured, { ...MARGIN, right: 108 });
+  /* The right margin holds the direct end labels, so it is measured from the longest one drawn
+     rather than fixed: "other datasets" ran off the edge of the plot at 108. */
+  const rightLabels = [...datasets.filter(isNamed).map(short), ...(anyGrey ? [GREY_LABEL] : [])];
+  const rightNeeded = Math.ceil(Math.max(0, ...rightLabels.map((t) => t.length)) * 7.6) + 16;
+  const { width, margin: base } = plotBox(measured,
+    { ...MARGIN, right: Math.max(108, rightNeeded) });
   const margin = { ...base, bottom };
   const innerW = Math.max(220, width - margin.left - margin.right);
   const innerH = height - margin.top - margin.bottom;
@@ -153,7 +161,7 @@ export function Ladder({ order, values, yLabel, label, height = 380, divideAfter
         {anyGrey && (
           <text x={margin.left + innerW + 8} y={margin.top + innerH + 4} className="serieslabel"
                 fill="var(--ink-muted)">
-            other datasets
+            {GREY_LABEL}
           </text>
         )}
       </svg>

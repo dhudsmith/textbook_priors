@@ -450,6 +450,20 @@
    "title": "A plain-language pass over all the copy",
    "kind": "build",
    "lead": "The user asked for the standard he has been applying by hand for two days to be carried through every line on the site: \"avoid vague terminology, unusual metaphors, virtue signaling."
+  },
+  {
+   "date": "2026-09-18",
+   "time": "19:40",
+   "title": "\"Checklist\" goes, and seven callouts with it",
+   "kind": "build",
+   "lead": "Two instructions, one pass. The first: \"I don't like 'checklist'. Plain language issue. Use 'visual features' or 'feature scores', 'scored visual features'. Apply throughout. Identify other similar vagueness."
+  },
+  {
+   "date": "2026-09-18",
+   "time": "21:30",
+   "title": "It is the scholarly record, not a textbook; and the talk ends on takeaways",
+   "kind": "build",
+   "lead": "Nine instructions in one batch, and the first is a factual correction rather than a style one: \"Calling it textbook features is not quite right. These features were scraped from over 100 scientific papers."
   }
  ],
  "kinds": [
@@ -481,7 +495,7 @@
  "kind_note": "Only the kind of each entry was assigned by hand; the rest is the file's own heading and first paragraph.",
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T12:43:06Z",
+  "exported": "2026-09-18T13:56:42Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
    "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",

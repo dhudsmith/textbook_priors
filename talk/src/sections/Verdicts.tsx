@@ -10,10 +10,10 @@ export function Verdicts() {
 
   return (
     <Band id="verdicts">
-      <Header id="verdicts" eyebrow="8">{copy.header}</Header>
+      <Header id="verdicts" eyebrow="9">{copy.header}</Header>
       <p className="lede">
-        {supported.map((v) => v.id.toUpperCase()).join(" and ")} met their rules. The other{" "}
-        {not.length} did not.
+        {supported.map((v) => v.id.toUpperCase()).join(" and ")} won on as many datasets as they
+        needed. The other {not.length} did not.
       </p>
 
       <p className="note">

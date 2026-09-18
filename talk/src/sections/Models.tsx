@@ -54,8 +54,8 @@ export function Models() {
       {primary && (
         <p className="note">
           Every arm is built on <span className="mono">{primary.name}</span>, which answered both
-          prompts on every image. The others only scored the visual features, each to settle one
-          question. {models.sizeNote}
+          prompts on every image. The other {rows.length - 1} only scored the visual features, for the
+          comparison of model size and price. {models.sizeNote}
         </p>
       )}
     </Band>

@@ -38,7 +38,7 @@ export function Thinking() {
 
   return (
     <Band id="thinking">
-      <Header id="thinking" eyebrow="7">{copy.header}</Header>
+      <Header id="thinking" eyebrow="8">{copy.header}</Header>
       <p className="lede">
         {copy.ledeShape
           .replace("{primary}", study.study.primary)
@@ -53,7 +53,8 @@ export function Thinking() {
       <p>
         The thinking step wins on {h4.h4a.wins} of {h4.n_datasets}{" "}
         (p = {h4.h4a.sign_test_p.toFixed(4)}) and the frontier model on {h4.h4b.wins}{" "}
-        (p = {h4.h4b.sign_test_p.toFixed(4)}), against the {h4.min_wins} the rule asks for:{" "}
+        (p = {h4.h4b.sign_test_p.toFixed(4)}), against the {h4.min_wins} needed to count as
+        support:{" "}
         {v4.verdict}. Each of the {h4.readers.length} readers gets its own classifier, fitted the
         same way on the same {h4.subsample} images, so every difference is paired.
       </p>
@@ -101,7 +102,7 @@ export function Thinking() {
         </p>
       </Deep>
 
-      <Deep summary="Two limits on this reading">
+      <Deep summary="Limitations">
         {copy.limits.map((p, i) => <p key={i}>{p}</p>)}
       </Deep>
 

@@ -9,7 +9,7 @@ import { AxisBottom, AxisLeft, Legend, fmt3, plotBox, spreadLabels, useHover } f
    they use no labels at all; the published ceiling is a fixed reference and deliberately not one
    of the arms - a different colour, a sparser dash, no fill, and its own legend wording.
    The dashed vertical mark is where arm P reaches arm B: how many labelled images it takes to
-   match the textbook with no labels at all, which is the headline number of H1. */
+   match the literature with no labels at all, which is the headline number of H1. */
 
 const LABELLED = ["C", "P", "CP"] as const;
 

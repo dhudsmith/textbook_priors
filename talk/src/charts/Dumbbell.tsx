@@ -110,15 +110,16 @@ export function Dumbbell() {
           <svg width="12" height="12" aria-hidden="true">
             <rect x="1.8" y="1.8" width="8.4" height="8.4" rx="1" fill={armHue("B")} />
           </svg>
-          arm B: feature scores matched to the textbook
+          arm B: feature scores matched to what the literature expects
         </span>
       </div>
     </div>
   );
 }
 
-/* The two shuffled controls, as bars: how much AUC each arm loses when the levels the textbook
-   expects are shuffled between classes, or the feature scores are shuffled between images. Free
+/* The two shuffled controls, as bars: how much AUC each arm loses when the levels the
+   literature expects are shuffled between classes, or the feature scores are shuffled between
+   images. Free
    re-analyses of the archive, and the reason the feature scores are known to carry real class
    information. */
 export function PermutationDrops() {
@@ -200,7 +201,7 @@ export function PermutationDrops() {
       <div className="controls" aria-label="Series">
         <span className="chip legend" style={{ cursor: "default" }}>
           <span className="swatch" style={{ background: armHue("B") }} /> arm B, the levels the
-          textbook expects shuffled between classes
+          literature expects shuffled between classes
         </span>
         <span className="chip legend" style={{ cursor: "default" }}>
           <span className="swatch" style={{ background: armHue("C") }} /> arm C at n = 50,

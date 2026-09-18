@@ -1569,3 +1569,63 @@ section asks; its caption lost the word "wave", which only the deleted box had d
 A measured sweep afterwards found fourteen places where two pieces of text overlap inside a figure,
 the worst being two model names colliding by forty pixels on the reader chain. Those are geometry
 rather than language, and several predate today; they are the next thing to fix.
+
+## 2026-09-18 21:30 — It is the scholarly record, not a textbook; and the talk ends on takeaways
+
+Nine instructions in one batch, and the first is a factual correction rather than a style one:
+*"Calling it textbook features is not quite right. These features were scraped from over 100
+scientific papers. So it's more like what does the scholarly record show."* The bank was compiled
+from the published literature, and the files say so — 92 distinct citation keys across the twelve
+`talk/public/data/bank/*.json`, which is fewer than a hundred, so the page states the real count
+and reads it from the bank files rather than carrying a typed number. Every use of *textbook* in
+the talk's own language is now *the literature*: the bank's header and bullets, the arms lede, the
+three question chips and their descriptions, the H1/H2/H5 sentences on the verdict board, arm B's
+legend on the dumbbell, the permutation legend, the archived-call caption, the arm diagram's
+description, and what the study does not claim. Three phrases are left because they come through
+the export rather than the site source — arm B's label in `study.style.arms` and H1's and H5's
+`question` fields — and are for the session that owns `export_talk_data.py`. The repository,
+`WORKFLOW.md` and the study's internal names are untouched: the correction is to the talk.
+
+The rest, in the order they arrived. *One kind of callout*, labelled **Note** — "I don't think
+people keep track of that in their heads" — so `CalloutKind`, `KIND_LABEL`, the `kind` field, the
+three colour rules and two wash tokens are gone, and the three surviving notes are simply notes.
+*The arms section's two limits* became a closed `Limitations` panel, and the thinking section's
+"two limits on this reading" the same, that being one of the vague references the next instruction
+was about: *"'each to settle one question' is a vague reference. Avoid all such vague
+references."* That clause now names the comparison it meant, and "the N the rule asks for" — a
+rule the talk stopped showing when the hypotheses moved to Extra — is "the N needed to count as
+support" in all four places it appeared. *The information architecture is the project, not the
+study*: **How the project is structured** and **How the project runs**. *The refrain is cut*,
+both the standalone pull quote and the one at the close, along with the `REFRAIN` export and its
+band styling; `talk/PLAN.md` records the cut with its date. *"What four days cost" is deleted
+entirely* — "it's too hard to parse in a general audience" — with its file, its content block, its
+entry in `SECTIONS` and the list of what caught each mistake; the *Understanding debt* note, the
+links and the closing QR moved into the new last section. *The model-size result came back onto
+the spine* as section 7, immediately after the results figure: the ladder with its two views, one
+sentence of what it found, nothing else, and out of Extra — which also loses the archived-call
+widget, since the talk already carries it.
+
+*Takeaways*, last, is the section he speaks from: ten bullets in his own words, lightly edited,
+and three the agent proposed under a heading that says they are the agent's, to be kept or cut.
+
+One fault was found by looking rather than building, and it predates this session: the ladder's
+right margin was fixed at 108 px while the grey band's label, *other datasets*, needs more, so it
+was clipped at the edge of the plot in both the readers chart and the model chart. The margin is
+now measured from the longest label actually drawn. Verified with the page built to a private
+output directory: thirteen bands, the rail and the eyebrows agreeing on the order, no page errors
+in light or dark, and every changed section read as an image in both.
+
+*How the project runs* stopped being prose and became the rules themselves. The nineteen Snakemake
+rules are a table grouped by stage, each row expanding to the rule's own code — what it declares as
+input, what it writes, the resources it asks the scheduler for — and beneath it the dependency graph
+drawn from `snakemake --rulegraph` rather than by hand, with the test rule's edges dashed and
+labelled so the shape is readable without knowing the tool. The caption makes the point the section
+exists for: nobody drew that graph; it is worked out from what each rule says it needs. The export
+now needs Snakemake on the path to regenerate it, which is why it reads `PRIORS_SNAKEMAKE`.
+
+Two items each agent left for the other were closed here. The three `textbook` strings that reach
+the page through `export_talk_data.py` — arm B's label and the H1 and H5 question fields — now say
+*the literature*, so the count of that word in `study.json` is zero and the correction is complete
+rather than nine-tenths done; and `StageStrip`, the diagram the rules table replaced, was deleted
+along with the import it was the last user of. The export was re-run and diffed to confirm it
+reproduces its own output: exactly three changes, the three strings, and nothing else moved.

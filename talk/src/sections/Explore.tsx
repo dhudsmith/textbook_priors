@@ -1,23 +1,20 @@
 import { useState } from "react";
 import { useTalk } from "../state";
 import { DatasetPicker, Deep, Header } from "../components/ui";
-import { ArchiveCall } from "../components/ArchiveCall";
-import { LAZY, asset, loadArchive, loadBank, loadPrompt } from "../data";
+import { LAZY, asset, loadBank, loadPrompt } from "../data";
 import { useAsync } from "../hooks";
 import { REPO, notClaimed } from "../content";
-import { LadderBlock } from "./ExtraResults";
 import { fmt3, signed } from "../charts/primitives";
 
-/* Not presented: everything for the audience on their own devices and for questions, including
-   the comparisons that left the talk. This module is lazy-loaded, so the scroll does not pay for
-   it until somebody reaches it. */
+/* Not presented: everything for the audience on their own devices and for questions. This
+   module is lazy-loaded, so the scroll does not pay for it until somebody reaches it. What the
+   model said about one image is in the talk itself and is not repeated here. */
 
 export default function Explore() {
   const { study, dataset, meta } = useTalk();
   const per = study.per_dataset[dataset];
   const { data: bank } = useAsync(() => loadBank(dataset), [dataset]);
   const { data: prompt } = useAsync(() => loadPrompt(dataset), [dataset]);
-  const { data: archive } = useAsync(loadArchive);
   const [fig, setFig] = useState<string | null>(null);
 
   const rows = study.verdicts.map((v) => ({
@@ -163,12 +160,6 @@ export default function Explore() {
         ) : "Loading the bank…"}
       </Deep>
 
-      <h4>What the model said about this dataset's images</h4>
-      {archive ? <ArchiveCall sample={archive} fixedDataset={dataset} />
-               : <p className="note">Loading the archived answers…</p>}
-
-      <LadderBlock />
-
       <h4>Every figure the report generates</h4>
       <div className="controls">
         {study.figures.map((f) => (
@@ -228,8 +219,8 @@ export default function Explore() {
 
       <h4>Files</h4>
       <p style={{ fontSize: "0.9rem" }}>
-        Everything on this page comes from <a href={REPO}>the code</a>, linked again at the
-        close.
+        Everything on this page comes from <a href={REPO}>the code</a>, linked again in the
+        takeaways.
       </p>
       <Deep summary="Every file this page's numbers were read from">
         <ul className="mono" style={{ fontSize: "0.72rem", color: "var(--ink-muted)" }}>
@@ -241,5 +232,5 @@ export default function Explore() {
 }
 
 export function ExploreHeader() {
-  return <Header id="explore" eyebrow="11">Extra</Header>;
+  return <Header id="explore" eyebrow="12">Extra</Header>;
 }

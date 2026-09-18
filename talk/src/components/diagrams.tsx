@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useTalk } from "../state";
 
 /* Two structural diagrams: what each arm is made of, and the seven stages. Both are drawn rather
@@ -42,9 +41,9 @@ export function ArmDiagram() {
     <svg className="plot" viewBox="0 0 720 296" width="100%" role="img" style={{ maxWidth: "46rem" }}
          aria-label={
            "One image, read five ways. Asked to name the class, the vision-language model " +
-           "answers arm A. Asked to score the visual features the textbook lists, it picks one " +
-           "level for each of them; matching those feature scores to the levels the textbook " +
-           "expects for each class gives arm B. Neither arm uses a labelled image. An ImageNet " +
+           "answers arm A. Asked to score the visual features the literature lists, it picks " +
+           "one level for each of them; matching those feature scores to the levels the " +
+           "literature expects for each class gives arm B. Neither arm uses a labelled image. An ImageNet " +
            "ResNet-18, pretrained and not retrained here, turns the same image into image " +
            "features. Three more arms each fit a classifier of their own on n labelled images: " +
            "arm C on the feature scores, arm P on the image features, and arm C+P on both."}>
@@ -285,35 +284,3 @@ export function WorkflowDiagram() {
   );
 }
 
-export function StageStrip({ blurbs }: { blurbs: Record<string, string> }) {
-  const { study } = useTalk();
-  const [open, setOpen] = useState<string | null>(null);
-  return (
-    <div>
-      <div className="controls" role="group" aria-label="Stages">
-        {study.stages.map((s, i) => (
-          <span key={s.id} style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-            <button className="chip" aria-pressed={open === s.id}
-                    onClick={() => setOpen(open === s.id ? null : s.id)}>
-              {s.name}
-              <span className="mono" style={{ color: "var(--ink-muted)" }}>{s.jobs}</span>
-            </button>
-            {i < study.stages.length - 1 && (
-              <span aria-hidden="true" style={{ color: "var(--ink-muted)" }}>→</span>
-            )}
-          </span>
-        ))}
-      </div>
-      {open && (
-        <div className="card" style={{ maxWidth: "40rem", cursor: "default" }}>
-          <div className="hid">
-            {study.stages.find((s) => s.id === open)!.jobs}{" "}
-            {study.stages.find((s) => s.id === open)!.unit}
-          </div>
-          <div className="claim">{study.stages.find((s) => s.id === open)!.name}</div>
-          <p style={{ fontSize: "0.86rem", marginBottom: 0 }}>{blurbs[open]}</p>
-        </div>
-      )}
-    </div>
-  );
-}

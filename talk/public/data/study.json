@@ -1,7 +1,7 @@
 {
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T12:43:06Z",
+  "exported": "2026-09-18T13:56:42Z",
   "source_files": [
    "config/config.yaml",
    "config/medmnist.yaml",
@@ -94,7 +94,9 @@
    "results/score/organsmnist__qwen3.8-27b-fp8__test__zero_shot__chunk00.json",
    "results/score/chestmnist__qwen3.8-27b-fp8__test__concept__chunk00.json",
    "SESSION_LOG.md",
-   "report/figs/*.png"
+   "report/figs/*.png",
+   "Snakefile",
+   "profiles/palmetto/config.yaml"
   ],
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
@@ -366,7 +368,7 @@
    },
    {
     "id": "B",
-    "label": "arm B: feature scores matched to the textbook",
+    "label": "arm B: feature scores matched to the literature",
     "colour": "#2ca02c",
     "dark": "#5cc45c",
     "dash": "6 4",
@@ -1499,7 +1501,7 @@
    "id": "h1",
    "section": "h1",
    "title": "Substitution",
-   "question": "Are textbook features worth a measurable number of labelled images?",
+   "question": "Are the literature's visual features worth a measurable number of labelled images?",
    "rule": "median n_B \u2265 100 over the eleven arm-B datasets AND AUC(C) > AUC(P) at n = 50 on at least 10 of the 12 datasets (p < 0.05)",
    "wins": 2,
    "threshold": 10,
@@ -1632,7 +1634,7 @@
    "id": "h5",
    "section": "h5",
    "title": "Complement",
-   "question": "Does the textbook add anything the pixels do not already carry?",
+   "question": "Do the feature scores add anything the image features do not already carry?",
    "rule": "AUC(C+P) > AUC(P) at n = 50 on at least 10 of the 12 datasets (p < 0.05)",
    "wins": 11,
    "threshold": 10,
@@ -9133,5 +9135,1337 @@
   "fig_samples_retinamnist.png",
   "fig_samples_tissuemnist.png",
   "fig_thinking.png"
- ]
+ ],
+ "workflow": {
+  "rules": [
+   {
+    "name": "all",
+    "index": 0,
+    "stage": null,
+    "source": "rule all:\n    input: \"report/report.pdf\"",
+    "local": true,
+    "protected": false,
+    "env": null,
+    "modules": [],
+    "throttle": null,
+    "layer": 9,
+    "order": 0,
+    "jobs": 1,
+    "needs": [
+     "technical_report"
+    ],
+    "feeds": [],
+    "reads": [
+     {
+      "path": "report/report.pdf",
+      "n": 1
+     }
+    ],
+    "writes": [],
+    "cpus": null,
+    "mem_mb": null,
+    "runtime": null,
+    "cap": null
+   },
+   {
+    "name": "classify_dataset",
+    "index": 23,
+    "stage": "classify",
+    "source": "rule classify_dataset:\n    \"\"\"Every arm's scores on the test sample, for one dataset. x6.\"\"\"\n    input:\n        scores=f\"{OUT}/scores/{{dataset}}.json\",\n        features=f\"{OUT}/features/{{dataset}}.json\",\n        feature_arrays=f\"{config['featuredir']}/{{dataset}}.npz\",\n        sample=f\"{OUT}/sample/{{dataset}}.json\",\n        arrays=f\"{config['cachedir']}/{{dataset}}.npz\",\n        prompts=f\"{OUT}/prompts/{{dataset}}.json\",\n        bank=lambda w: f\"{config['conceptdir']}/{w.dataset}.yaml\",\n        smoke=SMOKE,\n        code=CODE_CLASSIFY,\n    params:\n        curve_n=\",\".join(str(n) for n in config[\"curve\"][\"n\"]),\n        curve_seeds=\",\".join(str(s) for s in config[\"curve\"][\"seeds\"]),\n        l2_grid=\",\".join(str(c) for c in config[\"classify\"][\"l2_grid\"]),\n        cv_folds=config[\"classify\"][\"cv_folds\"],\n        permute_seeds=\",\".join(str(s) for s in config[\"classify\"][\"permute\"][\"seeds\"]),\n    output:\n        json=f\"{OUT}/classify/{{dataset}}.json\",\n        arrays=f\"{OUT}/classify/{{dataset}}.npz\",\n    log: \"logs/classify/{dataset}.log\"\n    benchmark: \"benchmarks/classify/{dataset}.tsv\"\n    conda: \"envs/priors.yml\"\n    threads: RES[\"classify\"][\"cpus\"]\n    resources: **res(\"classify\")\n    shell: STAGE + \"classify {wildcards.dataset} --out {output.json} --arrays {output.arrays} > {log} 2>&1\"",
+    "local": false,
+    "protected": false,
+    "env": "envs/priors.yml",
+    "modules": [
+     "priors/classify.py",
+     "priors/data.py",
+     "priors/stages.py"
+    ],
+    "throttle": null,
+    "layer": 4,
+    "order": 0,
+    "jobs": 12,
+    "needs": [
+     "collect_scores",
+     "pixel_features",
+     "render_prompts",
+     "sample_dataset",
+     "smoke"
+    ],
+    "feeds": [
+     "evaluate_dataset",
+     "tables"
+    ],
+    "reads": [
+     {
+      "path": "data/cache/features/{dataset}.npz",
+      "n": 1
+     },
+     {
+      "path": "data/cache/sample/{dataset}.npz",
+      "n": 1
+     },
+     {
+      "path": "results/features/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/prompts/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/sample/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/scores/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/smoke_ok.txt",
+      "n": 1
+     }
+    ],
+    "writes": [
+     {
+      "path": "results/classify/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/classify/{dataset}.npz",
+      "n": 1
+     }
+    ],
+    "cpus": 4,
+    "mem_mb": 8000,
+    "runtime": 120,
+    "cap": null
+   },
+   {
+    "name": "collect_scores",
+    "index": 21,
+    "stage": "score",
+    "source": "rule collect_scores:\n    \"\"\"One dataset's chunks gathered into the table the classify stage reads. x6, local.\"\"\"\n    input:\n        chunks=lambda w: [f for f in SCORES if f.startswith(f\"{OUT}/score/{w.dataset}__\")],\n        prompts=f\"{OUT}/prompts/{{dataset}}.json\",\n        code=code(\"stages\"),\n    params:\n        missing_max_frac=config[\"classify\"][\"missing_max_frac\"],\n    output: f\"{OUT}/scores/{{dataset}}.json\"\n    log: \"logs/collect_scores/{dataset}.log\"\n    conda: \"envs/priors.yml\"\n    shell: STAGE + \"collect-scores {wildcards.dataset} --out {output} > {log} 2>&1\"",
+    "local": true,
+    "protected": false,
+    "env": "envs/priors.yml",
+    "modules": [
+     "priors/stages.py"
+    ],
+    "throttle": null,
+    "layer": 3,
+    "order": 0,
+    "jobs": 12,
+    "needs": [
+     "render_prompts",
+     "score_gemma_4_12b",
+     "score_gemma_4_31b",
+     "score_qwen3_5_9b",
+     "score_qwen3_8_27b_fp8",
+     "score_reader",
+     "score_reader_gateway"
+    ],
+    "feeds": [
+     "classify_dataset"
+    ],
+    "reads": [
+     {
+      "path": "results/prompts/{dataset}.json",
+      "n": 1
+     }
+    ],
+    "writes": [
+     {
+      "path": "results/scores/{dataset}.json",
+      "n": 1
+     }
+    ],
+    "cpus": null,
+    "mem_mb": null,
+    "runtime": null,
+    "cap": null
+   },
+   {
+    "name": "evaluate_across",
+    "index": 25,
+    "stage": "evaluate",
+    "source": "rule evaluate_across:\n    \"\"\"The five hypotheses, decided by the rules fixed before the numbers existed. x1, local.\"\"\"\n    input:\n        per_dataset=EVALUATED,\n        code=CODE_EVALUATE,\n    params:\n        alpha=config[\"evaluate\"][\"alpha\"],\n        datasets=\",\".join(DATASETS),\n    output: EVALUATION\n    log: \"logs/evaluate_across.log\"\n    conda: \"envs/priors.yml\"\n    shell: STAGE + \"evaluate-across --out {output} > {log} 2>&1\"",
+    "local": true,
+    "protected": false,
+    "env": "envs/priors.yml",
+    "modules": [
+     "priors/data.py",
+     "priors/evaluate.py",
+     "priors/stages.py"
+    ],
+    "throttle": null,
+    "layer": 6,
+    "order": 0,
+    "jobs": 1,
+    "needs": [
+     "evaluate_dataset"
+    ],
+    "feeds": [
+     "figures",
+     "tables"
+    ],
+    "reads": [
+     {
+      "path": "results/evaluate/{dataset}.json",
+      "n": 12
+     }
+    ],
+    "writes": [
+     {
+      "path": "results/evaluation.json",
+      "n": 1
+     }
+    ],
+    "cpus": null,
+    "mem_mb": null,
+    "runtime": null,
+    "cap": null
+   },
+   {
+    "name": "evaluate_dataset",
+    "index": 24,
+    "stage": "evaluate",
+    "source": "rule evaluate_dataset:\n    \"\"\"AUC per arm, the paired bootstrap, and n_B, for one dataset. x6.\"\"\"\n    input:\n        classify=f\"{OUT}/classify/{{dataset}}.json\",\n        arrays=f\"{OUT}/classify/{{dataset}}.npz\",\n        release=config[\"release\"],\n        smoke=SMOKE,\n        code=CODE_EVALUATE,\n    params:\n        bootstrap=config[\"evaluate\"][\"bootstrap\"],\n        ci=config[\"evaluate\"][\"ci\"],\n        seed=config[\"evaluate\"][\"seed\"],\n        curve_n=\",\".join(str(n) for n in config[\"curve\"][\"n\"]),\n    output: f\"{OUT}/evaluate/{{dataset}}.json\"\n    log: \"logs/evaluate/{dataset}.log\"\n    benchmark: \"benchmarks/evaluate/{dataset}.tsv\"\n    conda: \"envs/priors.yml\"\n    threads: RES[\"evaluate\"][\"cpus\"]\n    resources: **res(\"evaluate\")\n    shell: STAGE + \"evaluate {wildcards.dataset} --out {output} > {log} 2>&1\"",
+    "local": false,
+    "protected": false,
+    "env": "envs/priors.yml",
+    "modules": [
+     "priors/data.py",
+     "priors/evaluate.py",
+     "priors/stages.py"
+    ],
+    "throttle": null,
+    "layer": 5,
+    "order": 0,
+    "jobs": 12,
+    "needs": [
+     "classify_dataset",
+     "smoke"
+    ],
+    "feeds": [
+     "evaluate_across",
+     "figures",
+     "tables"
+    ],
+    "reads": [
+     {
+      "path": "config/medmnist.yaml",
+      "n": 1
+     },
+     {
+      "path": "results/classify/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/classify/{dataset}.npz",
+      "n": 1
+     },
+     {
+      "path": "results/smoke_ok.txt",
+      "n": 1
+     }
+    ],
+    "writes": [
+     {
+      "path": "results/evaluate/{dataset}.json",
+      "n": 1
+     }
+    ],
+    "cpus": 2,
+    "mem_mb": 4000,
+    "runtime": 60,
+    "cap": null
+   },
+   {
+    "name": "fetch",
+    "index": 10,
+    "stage": "sample",
+    "source": "rule fetch:\n    \"\"\"One release file from the pinned record, in parallel byte ranges, MD5-checked. Runs only\n    for a file that is not on disk. x4 from the talk version's storage root.\"\"\"\n    output: f\"{config['rawdir']}/{{file}}\"\n    wildcard_constraints:\n        file=\"|\".join(re.escape(f) for f in RAW_FILES),\n    params:\n        url=lambda w: f\"{ZENODO}/files/{w.file}?download=1\",\n        md5=lambda w: described(w.file)[\"md5_224\"],\n        bytes=lambda w: described(w.file)[\"size_bytes\"],\n        segments=lambda w: segments(w.file),\n    log: \"logs/fetch/{file}.log\"\n    benchmark: \"benchmarks/fetch/{file}.tsv\"\n    threads: RES[\"fetch\"][\"cpus\"]\n    resources: **res(\"fetch\"), zenodo=lambda w: segments(w.file)\n    shell:\n        \"scripts/fetch_medmnist.sh {params.url} {params.md5} {params.bytes} {params.segments} \"\n        \"{output} \" + config[\"storage_root\"] + \" > {log} 2>&1\"",
+    "local": false,
+    "protected": false,
+    "env": null,
+    "modules": [],
+    "throttle": null,
+    "layer": 0,
+    "order": 0,
+    "jobs": 12,
+    "needs": [],
+    "feeds": [
+     "sample_dataset"
+    ],
+    "reads": [],
+    "writes": [
+     {
+      "path": "data/raw/{file}",
+      "n": 1
+     }
+    ],
+    "cpus": 1,
+    "mem_mb": 2000,
+    "runtime": 600,
+    "cap": null
+   },
+   {
+    "name": "figures",
+    "index": 27,
+    "stage": "report",
+    "source": "rule figures:\n    \"\"\"Six figures plus a sampled-image montage per dataset. x1.\"\"\"\n    input:\n        evaluation=EVALUATION, per_dataset=EVALUATED, code=CODE_REPORT,\n        # The montages draw the cached sample arrays every arm was scored on, and name their rows\n        # from the rendered prompts, so both are declared rather than reached for.\n        arrays=expand(f\"{config['cachedir']}/{{dataset}}.npz\", dataset=DATASETS),\n        prompts=PROMPTS,\n        literature=config[\"literature\"],\n    output: FIG_FILES\n    log: \"logs/figures.log\"\n    benchmark: \"benchmarks/figures.tsv\"\n    conda: \"envs/priors.yml\"\n    threads: RES[\"report\"][\"cpus\"]\n    resources: **res(\"report\")\n    shell: STAGE + \"figures --dest \" + FIGS + \" > {log} 2>&1\"",
+    "local": false,
+    "protected": false,
+    "env": "envs/priors.yml",
+    "modules": [
+     "priors/report.py",
+     "priors/stages.py"
+    ],
+    "throttle": null,
+    "layer": 7,
+    "order": 1,
+    "jobs": 1,
+    "needs": [
+     "evaluate_across",
+     "evaluate_dataset",
+     "render_prompts",
+     "sample_dataset"
+    ],
+    "feeds": [
+     "technical_report"
+    ],
+    "reads": [
+     {
+      "path": "data/cache/sample/{dataset}.npz",
+      "n": 12
+     },
+     {
+      "path": "data/literature/benchmarks.yaml",
+      "n": 1
+     },
+     {
+      "path": "results/evaluate/{dataset}.json",
+      "n": 12
+     },
+     {
+      "path": "results/evaluation.json",
+      "n": 1
+     },
+     {
+      "path": "results/prompts/{dataset}.json",
+      "n": 12
+     }
+    ],
+    "writes": [
+     {
+      "path": "report/figs/fig_curve.png",
+      "n": 1
+     },
+     {
+      "path": "report/figs/fig_h5.png",
+      "n": 1
+     },
+     {
+      "path": "report/figs/fig_h6.png",
+      "n": 1
+     },
+     {
+      "path": "report/figs/fig_h7.png",
+      "n": 1
+     },
+     {
+      "path": "report/figs/fig_ladder.png",
+      "n": 1
+     },
+     {
+      "path": "report/figs/fig_n_b.png",
+      "n": 1
+     },
+     {
+      "path": "report/figs/fig_readers.png",
+      "n": 1
+     },
+     {
+      "path": "report/figs/fig_samples_{dataset}.png",
+      "n": 12
+     },
+     {
+      "path": "report/figs/fig_thinking.png",
+      "n": 1
+     }
+    ],
+    "cpus": 2,
+    "mem_mb": 4000,
+    "runtime": 30,
+    "cap": null
+   },
+   {
+    "name": "pixel_features",
+    "index": 22,
+    "stage": "features",
+    "source": "rule pixel_features:\n    \"\"\"Frozen ImageNet features of one dataset's sampled images. x6.\"\"\"\n    input:\n        sample=f\"{OUT}/sample/{{dataset}}.json\",\n        arrays=f\"{config['cachedir']}/{{dataset}}.npz\",\n        smoke=SMOKE,\n        code=CODE_FEATURES,\n    params:\n        arch=config[\"features\"][\"arch\"],\n        weights=config[\"features\"][\"weights\"],\n        batch=config[\"features\"][\"batch\"],\n    output:\n        json=f\"{OUT}/features/{{dataset}}.json\",\n        arrays=f\"{config['featuredir']}/{{dataset}}.npz\",\n    log: \"logs/features/{dataset}.log\"\n    benchmark: \"benchmarks/features/{dataset}.tsv\"\n    conda: \"envs/priors_torch.yml\"\n    threads: RES[\"features\"][\"cpus\"]\n    resources: **res(\"features\")\n    shell:\n        \"export TORCH_HOME=\" + config[\"torch_home\"] + \"; \" + STAGE +\n        \"features {wildcards.dataset} --out {output.json} --arrays {output.arrays} > {log} 2>&1\"",
+    "local": false,
+    "protected": false,
+    "env": "envs/priors_torch.yml",
+    "modules": [
+     "priors/features.py",
+     "priors/stages.py"
+    ],
+    "throttle": null,
+    "layer": 2,
+    "order": 0,
+    "jobs": 12,
+    "needs": [
+     "sample_dataset",
+     "smoke"
+    ],
+    "feeds": [
+     "classify_dataset"
+    ],
+    "reads": [
+     {
+      "path": "data/cache/sample/{dataset}.npz",
+      "n": 1
+     },
+     {
+      "path": "results/sample/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/smoke_ok.txt",
+      "n": 1
+     }
+    ],
+    "writes": [
+     {
+      "path": "data/cache/features/{dataset}.npz",
+      "n": 1
+     },
+     {
+      "path": "results/features/{dataset}.json",
+      "n": 1
+     }
+    ],
+    "cpus": 4,
+    "mem_mb": 8000,
+    "runtime": 60,
+    "cap": null
+   },
+   {
+    "name": "render_prompts",
+    "index": 12,
+    "stage": "score",
+    "source": "rule render_prompts:\n    \"\"\"Both prompt strings for one dataset, from the bank and the pinned label map. x6, local.\"\"\"\n    input:\n        bank=lambda w: f\"{config['conceptdir']}/{w.dataset}.yaml\",\n        release=config[\"release\"],\n        code=CODE_PROMPTS,\n        smoke=SMOKE,\n    params:\n        size=config[\"size\"],\n        anchors=config[\"vlm\"][\"prompt\"][\"anchors\"],\n        gloss=lambda w: (config[\"vlm\"][\"prompt\"].get(\"class_gloss\") or {}).get(w.dataset),\n    output: f\"{OUT}/prompts/{{dataset}}.json\"\n    log: \"logs/render_prompts/{dataset}.log\"\n    conda: \"envs/priors.yml\"\n    shell: STAGE + \"render-prompts {wildcards.dataset} --out {output} > {log} 2>&1\"",
+    "local": true,
+    "protected": false,
+    "env": "envs/priors.yml",
+    "modules": [
+     "priors/data.py",
+     "priors/prompts.py",
+     "priors/stages.py"
+    ],
+    "throttle": null,
+    "layer": 1,
+    "order": 1,
+    "jobs": 12,
+    "needs": [
+     "smoke"
+    ],
+    "feeds": [
+     "classify_dataset",
+     "collect_scores",
+     "figures",
+     "score_gemma_4_12b",
+     "score_gemma_4_31b",
+     "score_qwen3_5_9b",
+     "score_qwen3_8_27b_fp8",
+     "score_reader",
+     "score_reader_gateway",
+     "tables"
+    ],
+    "reads": [
+     {
+      "path": "config/medmnist.yaml",
+      "n": 1
+     },
+     {
+      "path": "results/smoke_ok.txt",
+      "n": 1
+     }
+    ],
+    "writes": [
+     {
+      "path": "results/prompts/{dataset}.json",
+      "n": 1
+     }
+    ],
+    "cpus": null,
+    "mem_mb": null,
+    "runtime": null,
+    "cap": null
+   },
+   {
+    "name": "sample_dataset",
+    "index": 11,
+    "stage": "sample",
+    "source": "rule sample_dataset:\n    \"\"\"One dataset's test sample and labelled pool, streamed out of its release file. x6.\"\"\"\n    input:\n        raw=lambda w: f\"{config['rawdir']}/{RELEASE[w.dataset]['file']}\",\n        release=config[\"release\"],\n        smoke=SMOKE,\n        code=CODE_SAMPLE,\n    params:\n        test_n=lambda w: split_n(w.dataset, \"test\"),\n        pool_n=lambda w: split_n(w.dataset, \"pool\"),\n        seed=config[\"sample\"][\"seed\"],\n    output:\n        json=f\"{OUT}/sample/{{dataset}}.json\",\n        arrays=f\"{config['cachedir']}/{{dataset}}.npz\",\n    log: \"logs/sample/{dataset}.log\"\n    benchmark: \"benchmarks/sample/{dataset}.tsv\"\n    conda: \"envs/priors.yml\"\n    threads: RES[\"sample\"][\"cpus\"]\n    resources: **res(\"sample\")\n    shell: STAGE + \"sample {wildcards.dataset} --out {output.json} --arrays {output.arrays} > {log} 2>&1\"",
+    "local": false,
+    "protected": false,
+    "env": "envs/priors.yml",
+    "modules": [
+     "priors/data.py",
+     "priors/sample.py",
+     "priors/stages.py"
+    ],
+    "throttle": null,
+    "layer": 1,
+    "order": 0,
+    "jobs": 12,
+    "needs": [
+     "fetch",
+     "smoke"
+    ],
+    "feeds": [
+     "classify_dataset",
+     "figures",
+     "pixel_features",
+     "score_gemma_4_12b",
+     "score_gemma_4_31b",
+     "score_qwen3_5_9b",
+     "score_qwen3_8_27b_fp8",
+     "score_reader",
+     "score_reader_gateway"
+    ],
+    "reads": [
+     {
+      "path": "config/medmnist.yaml",
+      "n": 1
+     },
+     {
+      "path": "results/smoke_ok.txt",
+      "n": 1
+     }
+    ],
+    "writes": [
+     {
+      "path": "data/cache/sample/{dataset}.npz",
+      "n": 1
+     },
+     {
+      "path": "results/sample/{dataset}.json",
+      "n": 1
+     }
+    ],
+    "cpus": 1,
+    "mem_mb": 1500,
+    "runtime": 20,
+    "cap": null
+   },
+   {
+    "name": "score_gemma_4_12b",
+    "index": 16,
+    "stage": "score",
+    "source": "rule score_gemma_4_12b:\n    \"\"\"One chunk of gemma-4-12b: a hundred images, one prompt. x30.\"\"\"\n    input:\n        prompts=f\"{OUT}/prompts/{{dataset}}.json\",\n        sample=f\"{OUT}/sample/{{dataset}}.json\",\n        arrays=f\"{config['cachedir']}/{{dataset}}.npz\",\n        smoke=SMOKE,\n        code=CODE_SCORE,\n    params:\n        chunk_size=CHUNK,\n        temperature=config[\"vlm\"][\"temperature\"],\n        reasoning=config[\"vlm\"][\"reasoning\"],\n        max_tokens=config[\"vlm\"][\"max_tokens\"],\n        retries=config[\"vlm\"][\"retries\"],\n    wildcard_constraints:\n        model=\"gemma\\-4\\-12b\",\n    # protected(): the file is read-only once written, which is principle 7 with teeth. Re-scoring\n    # then costs an explicit chmod, so 27,000 calls cannot be spent again by a stray rerun.\n    output: protected(f\"{OUT}/score/{{dataset}}__{{model}}__{{split}}__{{prompt}}__chunk{{chunk}}.json\")\n    log: \"logs/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.log\"\n    benchmark: \"benchmarks/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.tsv\"\n    conda: \"envs/priors.yml\"\n    threads: RES[\"score\"][\"cpus\"]\n    resources: **res(\"score\"), **{\"llm_gemma_4_12b\": 1}\n    shell: SCORE_CMD",
+    "local": false,
+    "protected": true,
+    "env": "envs/priors.yml",
+    "modules": [
+     "priors/llm.py",
+     "priors/score.py",
+     "priors/stages.py"
+    ],
+    "throttle": "llm_gemma_4_12b",
+    "layer": 2,
+    "order": 2,
+    "jobs": 51,
+    "needs": [
+     "render_prompts",
+     "sample_dataset",
+     "smoke"
+    ],
+    "feeds": [
+     "collect_scores"
+    ],
+    "reads": [
+     {
+      "path": "data/cache/sample/{dataset}.npz",
+      "n": 1
+     },
+     {
+      "path": "results/prompts/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/sample/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/smoke_ok.txt",
+      "n": 1
+     }
+    ],
+    "writes": [
+     {
+      "path": "results/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.json",
+      "n": 1
+     }
+    ],
+    "cpus": 1,
+    "mem_mb": 2000,
+    "runtime": 240,
+    "cap": 24
+   },
+   {
+    "name": "score_gemma_4_31b",
+    "index": 18,
+    "stage": "score",
+    "source": "rule score_gemma_4_31b:\n    \"\"\"One chunk of gemma-4-31b: a hundred images, one prompt. x30.\"\"\"\n    input:\n        prompts=f\"{OUT}/prompts/{{dataset}}.json\",\n        sample=f\"{OUT}/sample/{{dataset}}.json\",\n        arrays=f\"{config['cachedir']}/{{dataset}}.npz\",\n        smoke=SMOKE,\n        code=CODE_SCORE,\n    params:\n        chunk_size=CHUNK,\n        temperature=config[\"vlm\"][\"temperature\"],\n        reasoning=config[\"vlm\"][\"reasoning\"],\n        max_tokens=config[\"vlm\"][\"max_tokens\"],\n        retries=config[\"vlm\"][\"retries\"],\n    wildcard_constraints:\n        model=\"gemma\\-4\\-31b\",\n    # protected(): the file is read-only once written, which is principle 7 with teeth. Re-scoring\n    # then costs an explicit chmod, so 27,000 calls cannot be spent again by a stray rerun.\n    output: protected(f\"{OUT}/score/{{dataset}}__{{model}}__{{split}}__{{prompt}}__chunk{{chunk}}.json\")\n    log: \"logs/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.log\"\n    benchmark: \"benchmarks/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.tsv\"\n    conda: \"envs/priors.yml\"\n    threads: RES[\"score\"][\"cpus\"]\n    resources: **res(\"score\"), **{\"llm_gemma_4_31b\": 1}\n    shell: SCORE_CMD",
+    "local": false,
+    "protected": true,
+    "env": "envs/priors.yml",
+    "modules": [
+     "priors/llm.py",
+     "priors/score.py",
+     "priors/stages.py"
+    ],
+    "throttle": "llm_gemma_4_31b",
+    "layer": 2,
+    "order": 4,
+    "jobs": 51,
+    "needs": [
+     "render_prompts",
+     "sample_dataset",
+     "smoke"
+    ],
+    "feeds": [
+     "collect_scores"
+    ],
+    "reads": [
+     {
+      "path": "data/cache/sample/{dataset}.npz",
+      "n": 1
+     },
+     {
+      "path": "results/prompts/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/sample/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/smoke_ok.txt",
+      "n": 1
+     }
+    ],
+    "writes": [
+     {
+      "path": "results/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.json",
+      "n": 1
+     }
+    ],
+    "cpus": 1,
+    "mem_mb": 2000,
+    "runtime": 240,
+    "cap": 12
+   },
+   {
+    "name": "score_qwen3_5_9b",
+    "index": 15,
+    "stage": "score",
+    "source": "rule score_qwen3_5_9b:\n    \"\"\"One chunk of qwen3.5-9b: a hundred images, one prompt. x30.\"\"\"\n    input:\n        prompts=f\"{OUT}/prompts/{{dataset}}.json\",\n        sample=f\"{OUT}/sample/{{dataset}}.json\",\n        arrays=f\"{config['cachedir']}/{{dataset}}.npz\",\n        smoke=SMOKE,\n        code=CODE_SCORE,\n    params:\n        chunk_size=CHUNK,\n        temperature=config[\"vlm\"][\"temperature\"],\n        reasoning=config[\"vlm\"][\"reasoning\"],\n        max_tokens=config[\"vlm\"][\"max_tokens\"],\n        retries=config[\"vlm\"][\"retries\"],\n    wildcard_constraints:\n        model=\"qwen3\\.5\\-9b\",\n    # protected(): the file is read-only once written, which is principle 7 with teeth. Re-scoring\n    # then costs an explicit chmod, so 27,000 calls cannot be spent again by a stray rerun.\n    output: protected(f\"{OUT}/score/{{dataset}}__{{model}}__{{split}}__{{prompt}}__chunk{{chunk}}.json\")\n    log: \"logs/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.log\"\n    benchmark: \"benchmarks/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.tsv\"\n    conda: \"envs/priors.yml\"\n    threads: RES[\"score\"][\"cpus\"]\n    resources: **res(\"score\"), **{\"llm_qwen3_5_9b\": 1}\n    shell: SCORE_CMD",
+    "local": false,
+    "protected": true,
+    "env": "envs/priors.yml",
+    "modules": [
+     "priors/llm.py",
+     "priors/score.py",
+     "priors/stages.py"
+    ],
+    "throttle": "llm_qwen3_5_9b",
+    "layer": 2,
+    "order": 1,
+    "jobs": 51,
+    "needs": [
+     "render_prompts",
+     "sample_dataset",
+     "smoke"
+    ],
+    "feeds": [
+     "collect_scores"
+    ],
+    "reads": [
+     {
+      "path": "data/cache/sample/{dataset}.npz",
+      "n": 1
+     },
+     {
+      "path": "results/prompts/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/sample/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/smoke_ok.txt",
+      "n": 1
+     }
+    ],
+    "writes": [
+     {
+      "path": "results/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.json",
+      "n": 1
+     }
+    ],
+    "cpus": 1,
+    "mem_mb": 2000,
+    "runtime": 240,
+    "cap": 96
+   },
+   {
+    "name": "score_qwen3_8_27b_fp8",
+    "index": 17,
+    "stage": "score",
+    "source": "rule score_qwen3_8_27b_fp8:\n    \"\"\"One chunk of qwen3.8-27b-fp8: a hundred images, one prompt. x180. The primary model: the only one that scores the labelled pool,\n    and the only one asked the zero-shot prompt (arm A).\"\"\"\n    input:\n        prompts=f\"{OUT}/prompts/{{dataset}}.json\",\n        sample=f\"{OUT}/sample/{{dataset}}.json\",\n        arrays=f\"{config['cachedir']}/{{dataset}}.npz\",\n        smoke=SMOKE,\n        code=CODE_SCORE,\n    params:\n        chunk_size=CHUNK,\n        temperature=config[\"vlm\"][\"temperature\"],\n        reasoning=config[\"vlm\"][\"reasoning\"],\n        max_tokens=config[\"vlm\"][\"max_tokens\"],\n        retries=config[\"vlm\"][\"retries\"],\n    wildcard_constraints:\n        model=\"qwen3\\.8\\-27b\\-fp8\",\n    # protected(): the file is read-only once written, which is principle 7 with teeth. Re-scoring\n    # then costs an explicit chmod, so 27,000 calls cannot be spent again by a stray rerun.\n    output: protected(f\"{OUT}/score/{{dataset}}__{{model}}__{{split}}__{{prompt}}__chunk{{chunk}}.json\")\n    log: \"logs/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.log\"\n    benchmark: \"benchmarks/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.tsv\"\n    conda: \"envs/priors.yml\"\n    threads: RES[\"score\"][\"cpus\"]\n    resources: **res(\"score\"), **{\"llm_qwen3_8_27b_fp8\": 1}\n    shell: SCORE_CMD",
+    "local": false,
+    "protected": true,
+    "env": "envs/priors.yml",
+    "modules": [
+     "priors/llm.py",
+     "priors/score.py",
+     "priors/stages.py"
+    ],
+    "throttle": "llm_qwen3_8_27b_fp8",
+    "layer": 2,
+    "order": 3,
+    "jobs": 324,
+    "needs": [
+     "render_prompts",
+     "sample_dataset",
+     "smoke"
+    ],
+    "feeds": [
+     "collect_scores"
+    ],
+    "reads": [
+     {
+      "path": "data/cache/sample/{dataset}.npz",
+      "n": 1
+     },
+     {
+      "path": "results/prompts/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/sample/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/smoke_ok.txt",
+      "n": 1
+     }
+    ],
+    "writes": [
+     {
+      "path": "results/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.json",
+      "n": 1
+     }
+    ],
+    "cpus": 1,
+    "mem_mb": 2000,
+    "runtime": 240,
+    "cap": 24
+   },
+   {
+    "name": "score_reader",
+    "index": 19,
+    "stage": "score",
+    "source": "rule score_reader:\n    \"\"\"One chunk of a thinking reader on the local service: a hundred images, concept prompt. x12.\"\"\"\n    input:\n        prompts=f\"{OUT}/prompts/{{dataset}}.json\",\n        sample=f\"{OUT}/sample/{{dataset}}.json\",\n        arrays=f\"{config['cachedir']}/{{dataset}}.npz\",\n        smoke=SMOKE,\n        code=CODE_SCORE,\n    params:\n        chunk_size=CHUNK,\n        temperature=config[\"vlm\"][\"temperature\"],\n        reader=lambda w: config[\"vlm\"][\"readers\"][w.model],\n        retries=config[\"vlm\"][\"retries\"],\n    wildcard_constraints:\n        model=\"qwen3\\.8\\-27b\\-fp8\\-medium\",\n        split=\"test\",\n        prompt=\"concept\",\n    output: protected(f\"{OUT}/score/{{dataset}}__{{model}}__{{split}}__{{prompt}}__chunk{{chunk}}.json\")\n    log: \"logs/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.log\"\n    benchmark: \"benchmarks/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.tsv\"\n    conda: \"envs/priors.yml\"\n    threads: RES[\"score_reader\"][\"cpus\"]\n    # Its own resource rather than the primary model's, capped at 4 in the profile. It is the same\n    # endpoint, so the two caps have to be read together as a promise about total concurrency; it\n    # gets its own because a thinking chunk is an order of magnitude longer than a thinking-off one\n    # and needs to be throttled harder to finish inside its time limit, which one shared cap cannot\n    # express. Nothing else is scheduled against this model while H4's readers run.\n    resources: **res(\"score_reader\"), **{\"llm_reader_medium\": 1}\n    shell: SCORE_CMD",
+    "local": false,
+    "protected": true,
+    "env": "envs/priors.yml",
+    "modules": [
+     "priors/llm.py",
+     "priors/score.py",
+     "priors/stages.py"
+    ],
+    "throttle": "llm_reader_medium",
+    "layer": 2,
+    "order": 5,
+    "jobs": 22,
+    "needs": [
+     "render_prompts",
+     "sample_dataset",
+     "smoke"
+    ],
+    "feeds": [
+     "collect_scores"
+    ],
+    "reads": [
+     {
+      "path": "data/cache/sample/{dataset}.npz",
+      "n": 1
+     },
+     {
+      "path": "results/prompts/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/sample/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/smoke_ok.txt",
+      "n": 1
+     }
+    ],
+    "writes": [
+     {
+      "path": "results/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.json",
+      "n": 1
+     }
+    ],
+    "cpus": 1,
+    "mem_mb": 2000,
+    "runtime": 600,
+    "cap": 4
+   },
+   {
+    "name": "score_reader_gateway",
+    "index": 20,
+    "stage": "score",
+    "source": "rule score_reader_gateway:\n    \"\"\"One chunk of a gateway reader: a hundred images, concept prompt. x88 over four readers.\"\"\"\n    input:\n        prompts=f\"{OUT}/prompts/{{dataset}}.json\",\n        sample=f\"{OUT}/sample/{{dataset}}.json\",\n        arrays=f\"{config['cachedir']}/{{dataset}}.npz\",\n        smoke=SMOKE,\n        code=CODE_SCORE,\n    params:\n        chunk_size=CHUNK,\n        temperature=config[\"vlm\"][\"temperature\"],\n        reader=lambda w: config[\"vlm\"][\"readers\"][w.model],\n        retries=config[\"vlm\"][\"retries\"],\n    wildcard_constraints:\n        model=\"|\".join(re.escape(m) for m in sorted(GATEWAY_READERS, key=len, reverse=True)),\n        split=\"test\",\n        prompt=\"concept\",\n    output: protected(f\"{OUT}/score/{{dataset}}__{{model}}__{{split}}__{{prompt}}__chunk{{chunk}}.json\")\n    log: \"logs/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.log\"\n    benchmark: \"benchmarks/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.tsv\"\n    conda: \"envs/priors.yml\"\n    threads: RES[\"score_reader_gateway\"][\"cpus\"]\n    resources: **res(\"score_reader_gateway\"), **{\"llm_gateway\": 1}\n    shell: SCORE_CMD",
+    "local": false,
+    "protected": true,
+    "env": "envs/priors.yml",
+    "modules": [
+     "priors/llm.py",
+     "priors/score.py",
+     "priors/stages.py"
+    ],
+    "throttle": "llm_gateway",
+    "layer": 2,
+    "order": 6,
+    "jobs": 88,
+    "needs": [
+     "render_prompts",
+     "sample_dataset",
+     "smoke"
+    ],
+    "feeds": [
+     "collect_scores"
+    ],
+    "reads": [
+     {
+      "path": "data/cache/sample/{dataset}.npz",
+      "n": 1
+     },
+     {
+      "path": "results/prompts/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/sample/{dataset}.json",
+      "n": 1
+     },
+     {
+      "path": "results/smoke_ok.txt",
+      "n": 1
+     }
+    ],
+    "writes": [
+     {
+      "path": "results/score/{dataset}__{model}__{split}__{prompt}__chunk{chunk}.json",
+      "n": 1
+     }
+    ],
+    "cpus": 1,
+    "mem_mb": 2000,
+    "runtime": 60,
+    "cap": 12
+   },
+   {
+    "name": "smoke",
+    "index": 9,
+    "stage": "smoke",
+    "source": "rule smoke:\n    \"\"\"The tests. Nothing below runs until they pass. x1, local, seconds.\"\"\"\n    input:\n        code=code(\"data\", \"prompts\", \"stages\", \"manifest\"),\n        release=config[\"release\"],\n        literature=config[\"literature\"],\n        tests=TEST_FILES,\n    params:\n        datasets=\",\".join(DATASETS),\n        size=config[\"size\"],\n    output: touch(SMOKE)\n    log: \"logs/smoke.log\"\n    conda: \"envs/priors.yml\"\n    shell: \"python -m pytest tests -q > {log} 2>&1\"",
+    "local": true,
+    "protected": false,
+    "env": "envs/priors.yml",
+    "modules": [
+     "priors/data.py",
+     "priors/manifest.py",
+     "priors/prompts.py",
+     "priors/stages.py"
+    ],
+    "throttle": null,
+    "layer": 0,
+    "order": 1,
+    "jobs": 1,
+    "needs": [],
+    "feeds": [
+     "classify_dataset",
+     "evaluate_dataset",
+     "pixel_features",
+     "render_prompts",
+     "sample_dataset",
+     "score_gemma_4_12b",
+     "score_gemma_4_31b",
+     "score_qwen3_5_9b",
+     "score_qwen3_8_27b_fp8",
+     "score_reader",
+     "score_reader_gateway"
+    ],
+    "reads": [
+     {
+      "path": "config/medmnist.yaml",
+      "n": 1
+     },
+     {
+      "path": "data/literature/benchmarks.yaml",
+      "n": 1
+     }
+    ],
+    "writes": [
+     {
+      "path": "results/smoke_ok.txt",
+      "n": 1
+     }
+    ],
+    "cpus": null,
+    "mem_mb": null,
+    "runtime": null,
+    "cap": null
+   },
+   {
+    "name": "tables",
+    "index": 26,
+    "stage": "report",
+    "source": "rule tables:\n    \"\"\"Every table and number macro, from results/ alone. x1, local.\"\"\"\n    input:\n        evaluation=EVALUATION, per_dataset=EVALUATED, code=CODE_REPORT,\n        # The feature-dimension table reads the classify stage's own record of the matrices it\n        # fitted, and the appendix reads the rendered prompts the archive was hashed against, so\n        # both are declared here rather than reached for behind Snakemake's back.\n        classify=CLASSIFIED, prompts=PROMPTS,\n        literature=config[\"literature\"],\n    output: TABLE_TEX\n    log: \"logs/tables.log\"\n    conda: \"envs/priors.yml\"\n    shell: STAGE + \"tables --dest \" + TABS + \" > {log} 2>&1\"",
+    "local": true,
+    "protected": false,
+    "env": "envs/priors.yml",
+    "modules": [
+     "priors/report.py",
+     "priors/stages.py"
+    ],
+    "throttle": null,
+    "layer": 7,
+    "order": 0,
+    "jobs": 1,
+    "needs": [
+     "classify_dataset",
+     "evaluate_across",
+     "evaluate_dataset",
+     "render_prompts"
+    ],
+    "feeds": [
+     "technical_report"
+    ],
+    "reads": [
+     {
+      "path": "data/literature/benchmarks.yaml",
+      "n": 1
+     },
+     {
+      "path": "results/classify/{dataset}.json",
+      "n": 12
+     },
+     {
+      "path": "results/evaluate/{dataset}.json",
+      "n": 12
+     },
+     {
+      "path": "results/evaluation.json",
+      "n": 1
+     },
+     {
+      "path": "results/prompts/{dataset}.json",
+      "n": 12
+     }
+    ],
+    "writes": [
+     {
+      "path": "report/tables/appendix_prompts.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/appendix_samples.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/completeness.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/features.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/h1.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/h2.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/h3.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/h4.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/h5.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/h6h7.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/literature.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/numbers.tex",
+      "n": 1
+     }
+    ],
+    "cpus": null,
+    "mem_mb": null,
+    "runtime": null,
+    "cap": null
+   },
+   {
+    "name": "technical_report",
+    "index": 28,
+    "stage": "report",
+    "source": "rule technical_report:\n    \"\"\"The PDF, from the generated tables and figures. x1.\"\"\"\n    input: tex=\"report/report.tex\", bib=\"report/references.bib\", tables=TABLE_TEX, figs=FIG_FILES\n    output: \"report/report.pdf\"\n    log: \"logs/technical_report.log\"\n    threads: RES[\"report_pdf\"][\"cpus\"]\n    resources: **res(\"report_pdf\")\n    shell:\n        # pdflatex, bibtex, pdflatex twice more: the later passes resolve the citations and the\n        # references. The last line asserts the document was finished, because a pdflatex that dies\n        # part-way still leaves a readable PDF behind. TeX runs without the login environment's\n        # LD_LIBRARY_PATH: a spack zlib-ng there is an illegal instruction on the older nodes.\n        \"cd report && \" + TEX + \"pdflatex -interaction=nonstopmode -halt-on-error report.tex > ../{log} 2>&1 \"\n        \"&& (\" + TEX + \"bibtex report >> ../{log} 2>&1 || test $? -lt 2) \"\n        \"&& \" + TEX + \"pdflatex -interaction=nonstopmode -halt-on-error report.tex >> ../{log} 2>&1 \"\n        \"&& \" + TEX + \"pdflatex -interaction=nonstopmode -halt-on-error report.tex >> ../{log} 2>&1 \"\n        \"&& grep -q 'Output written on report.pdf' ../{log}\"",
+    "local": false,
+    "protected": false,
+    "env": null,
+    "modules": [],
+    "throttle": null,
+    "layer": 8,
+    "order": 0,
+    "jobs": 1,
+    "needs": [
+     "figures",
+     "tables"
+    ],
+    "feeds": [
+     "all"
+    ],
+    "reads": [
+     {
+      "path": "report/figs/fig_curve.png",
+      "n": 1
+     },
+     {
+      "path": "report/figs/fig_h5.png",
+      "n": 1
+     },
+     {
+      "path": "report/figs/fig_h6.png",
+      "n": 1
+     },
+     {
+      "path": "report/figs/fig_h7.png",
+      "n": 1
+     },
+     {
+      "path": "report/figs/fig_ladder.png",
+      "n": 1
+     },
+     {
+      "path": "report/figs/fig_n_b.png",
+      "n": 1
+     },
+     {
+      "path": "report/figs/fig_readers.png",
+      "n": 1
+     },
+     {
+      "path": "report/figs/fig_samples_{dataset}.png",
+      "n": 12
+     },
+     {
+      "path": "report/figs/fig_thinking.png",
+      "n": 1
+     },
+     {
+      "path": "report/references.bib",
+      "n": 1
+     },
+     {
+      "path": "report/report.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/appendix_prompts.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/appendix_samples.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/completeness.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/features.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/h1.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/h2.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/h3.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/h4.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/h5.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/h6h7.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/literature.tex",
+      "n": 1
+     },
+     {
+      "path": "report/tables/numbers.tex",
+      "n": 1
+     }
+    ],
+    "writes": [
+     {
+      "path": "report/report.pdf",
+      "n": 1
+     }
+    ],
+    "cpus": 1,
+    "mem_mb": 4000,
+    "runtime": 20,
+    "cap": null
+   }
+  ],
+  "edges": [
+   {
+    "from": "classify_dataset",
+    "to": "evaluate_dataset"
+   },
+   {
+    "from": "classify_dataset",
+    "to": "tables"
+   },
+   {
+    "from": "collect_scores",
+    "to": "classify_dataset"
+   },
+   {
+    "from": "evaluate_across",
+    "to": "figures"
+   },
+   {
+    "from": "evaluate_across",
+    "to": "tables"
+   },
+   {
+    "from": "evaluate_dataset",
+    "to": "evaluate_across"
+   },
+   {
+    "from": "evaluate_dataset",
+    "to": "figures"
+   },
+   {
+    "from": "evaluate_dataset",
+    "to": "tables"
+   },
+   {
+    "from": "fetch",
+    "to": "sample_dataset"
+   },
+   {
+    "from": "figures",
+    "to": "technical_report"
+   },
+   {
+    "from": "pixel_features",
+    "to": "classify_dataset"
+   },
+   {
+    "from": "render_prompts",
+    "to": "classify_dataset"
+   },
+   {
+    "from": "render_prompts",
+    "to": "collect_scores"
+   },
+   {
+    "from": "render_prompts",
+    "to": "figures"
+   },
+   {
+    "from": "render_prompts",
+    "to": "score_gemma_4_12b"
+   },
+   {
+    "from": "render_prompts",
+    "to": "score_gemma_4_31b"
+   },
+   {
+    "from": "render_prompts",
+    "to": "score_qwen3_5_9b"
+   },
+   {
+    "from": "render_prompts",
+    "to": "score_qwen3_8_27b_fp8"
+   },
+   {
+    "from": "render_prompts",
+    "to": "score_reader"
+   },
+   {
+    "from": "render_prompts",
+    "to": "score_reader_gateway"
+   },
+   {
+    "from": "render_prompts",
+    "to": "tables"
+   },
+   {
+    "from": "sample_dataset",
+    "to": "classify_dataset"
+   },
+   {
+    "from": "sample_dataset",
+    "to": "figures"
+   },
+   {
+    "from": "sample_dataset",
+    "to": "pixel_features"
+   },
+   {
+    "from": "sample_dataset",
+    "to": "score_gemma_4_12b"
+   },
+   {
+    "from": "sample_dataset",
+    "to": "score_gemma_4_31b"
+   },
+   {
+    "from": "sample_dataset",
+    "to": "score_qwen3_5_9b"
+   },
+   {
+    "from": "sample_dataset",
+    "to": "score_qwen3_8_27b_fp8"
+   },
+   {
+    "from": "sample_dataset",
+    "to": "score_reader"
+   },
+   {
+    "from": "sample_dataset",
+    "to": "score_reader_gateway"
+   },
+   {
+    "from": "score_gemma_4_12b",
+    "to": "collect_scores"
+   },
+   {
+    "from": "score_gemma_4_31b",
+    "to": "collect_scores"
+   },
+   {
+    "from": "score_qwen3_5_9b",
+    "to": "collect_scores"
+   },
+   {
+    "from": "score_qwen3_8_27b_fp8",
+    "to": "collect_scores"
+   },
+   {
+    "from": "score_reader",
+    "to": "collect_scores"
+   },
+   {
+    "from": "score_reader_gateway",
+    "to": "collect_scores"
+   },
+   {
+    "from": "smoke",
+    "to": "classify_dataset"
+   },
+   {
+    "from": "smoke",
+    "to": "evaluate_dataset"
+   },
+   {
+    "from": "smoke",
+    "to": "pixel_features"
+   },
+   {
+    "from": "smoke",
+    "to": "render_prompts"
+   },
+   {
+    "from": "smoke",
+    "to": "sample_dataset"
+   },
+   {
+    "from": "smoke",
+    "to": "score_gemma_4_12b"
+   },
+   {
+    "from": "smoke",
+    "to": "score_gemma_4_31b"
+   },
+   {
+    "from": "smoke",
+    "to": "score_qwen3_5_9b"
+   },
+   {
+    "from": "smoke",
+    "to": "score_qwen3_8_27b_fp8"
+   },
+   {
+    "from": "smoke",
+    "to": "score_reader"
+   },
+   {
+    "from": "smoke",
+    "to": "score_reader_gateway"
+   },
+   {
+    "from": "tables",
+    "to": "technical_report"
+   },
+   {
+    "from": "technical_report",
+    "to": "all"
+   }
+  ],
+  "jobs": 677,
+  "snakemake": "8.25.0",
+  "how": "snakemake --rulegraph / --filegraph / -n -F, all dry runs"
+ }
 }

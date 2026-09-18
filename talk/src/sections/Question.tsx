@@ -3,7 +3,7 @@ import { useTalk } from "../state";
 import { Band, Bullets, Callouts, DatasetPicker, Deep, Header } from "../components/ui";
 import { question } from "../content";
 import { useAsync } from "../hooks";
-import { LAZY, asset, loadBank } from "../data";
+import { LAZY, asset, loadBank, loadBanks } from "../data";
 
 /** The bank writes a feature's name in one word; a reader should not have to. */
 const plain = (s: string) => s.replace(/_/g, " ");
@@ -17,6 +17,15 @@ export function Question() {
   const { study, meta, dataset } = useTalk();
   const { data: bank, error } = useAsync(() => loadBank(dataset), [dataset]);
   const [open, setOpen] = useState<string | null>(null);
+
+  // How many distinct sources the whole bank cites, counted from the bank files rather than
+  // written down: one citation key can be cited by several tasks.
+  const names = study.datasets.map((d) => d.name);
+  const { data: banks } = useAsync(() => loadBanks(names), [names.join(",")]);
+  const sources = banks
+    ? new Set(banks.flatMap((b) =>
+        ((b.provenance.sources ?? []) as { key: string }[]).map((s) => s.key))).size
+    : null;
 
   // Two samples a class, and the class named once under the pair rather than under each image.
   const byClass = meta.samples.reduce<[string, typeof meta.samples][]>((acc, s) => {
@@ -32,7 +41,12 @@ export function Question() {
     .replace("{minClasses}", String(Math.min(...all.map((d) => d.n_classes))))
     .replace("{maxClasses}", String(Math.max(...all.map((d) => d.n_classes))))
     .replace("{minConcepts}", String(Math.min(...all.map((d) => d.n_concepts))))
-    .replace("{maxConcepts}", String(Math.max(...all.map((d) => d.n_concepts)))));
+    .replace("{maxConcepts}", String(Math.max(...all.map((d) => d.n_concepts))))
+    .replace("{sources}", String(sources)));
+
+  // The sources bullet waits for its count rather than showing a placeholder.
+  const bankBullets = question.bank.bulletShapes
+    .filter((b) => sources != null || !b.includes("{sources}"));
 
   return (
     <Band id="question">
@@ -72,7 +86,7 @@ export function Question() {
         <div>
           <h3>{question.bank.header}</h3>
           <p className="lede">{question.bank.lede}</p>
-          <Bullets items={fill(question.bank.bulletShapes)} />
+          <Bullets items={fill(bankBullets)} />
           {error && <p className="note">Could not load the bank: {error}</p>}
           {bank && (
             <>
@@ -120,7 +134,7 @@ export function Question() {
                 </div>
               )}
 
-              <Deep summary="The level the textbook expects for each feature, class by class">
+              <Deep summary="The level the literature expects for each feature, class by class">
                 <div className="chart-scroll">
                   <table className="data">
                     <thead>

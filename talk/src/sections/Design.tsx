@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Bullets, Header } from "../components/ui";
+import { Band, Bullets, Deep, Header } from "../components/ui";
 import { ArmDiagram } from "../components/diagrams";
 import { design } from "../content";
 
@@ -58,10 +58,12 @@ export function Design() {
         retrained. Arms C, P and C+P each fit their own, the same way, on the same labels.
       </p>
 
-      <h3>Two limits</h3>
-      <ul style={{ fontSize: "0.9rem", color: "var(--ink-secondary)" }}>
-        {design.limits.map((l, i) => <li key={i}>{l}</li>)}
-      </ul>
+      {/* Not covered in the room: the speaker walks past it and a reader can open it. */}
+      <Deep summary="Limitations">
+        <ul style={{ fontSize: "0.9rem", color: "var(--ink-secondary)" }}>
+          {design.limits.map((l, i) => <li key={i}>{l}</li>)}
+        </ul>
+      </Deep>
 
     </Band>
   );

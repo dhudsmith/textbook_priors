@@ -12,13 +12,14 @@ export const SECTIONS = [
   { id: "question", short: "Images and features" },
   { id: "design", short: "Classification arms" },
   { id: "models", short: "Models tested" },
-  { id: "workflow", short: "How it is built" },
+  { id: "workflow", short: "How it is structured" },
   { id: "machine", short: "How it runs" },
   { id: "results", short: "Results" },
+  { id: "size", short: "Model size and price" },
   { id: "thinking", short: "Thinking" },
   { id: "verdicts", short: "Verdicts" },
   { id: "premise", short: "How it unfolded" },
-  { id: "close", short: "What it cost" },
+  { id: "takeaways", short: "Takeaways" },
   { id: "explore", short: "Extra" },
 ] as const;
 

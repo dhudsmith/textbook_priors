@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { SECTIONS, useTalk } from "../state";
-import { KIND_LABEL, type Callout as CalloutSpec } from "../content";
+import { NOTE_LABEL, type Callout as CalloutSpec } from "../content";
 import { STATIC } from "../data";
 
 /* ---- section --------------------------------------------------------------------------- */
@@ -59,15 +59,16 @@ export function Bullets({ items }: { items: readonly string[] }) {
 
 /* ---- callouts -------------------------------------------------------------------------- */
 
-/** A callout card: a left rule in its kind's colour, a small-caps label, a title that collapses
-    the body, and a footer naming the file the claim can be checked against. The title is what
-    the room reads; the body is for whoever opens it on their own device. */
+/** A callout card: a left rule, a small-caps label, a title that collapses the body, and a
+    footer naming the file the claim can be checked against. There is one kind and it is labelled
+    Note. The title is what the room reads; the body is for whoever opens it on their own
+    device. */
 export function Callout({ spec }: { spec: CalloutSpec }) {
   const [open, setOpen] = useState(true);
   const bodyId = useId();
   return (
-    <aside className={`callout ${spec.kind}`} data-open={open}>
-      <div className="label">{KIND_LABEL[spec.kind]}</div>
+    <aside className="callout" data-open={open}>
+      <div className="label">{NOTE_LABEL}</div>
       <button className="title" aria-expanded={open} aria-controls={bodyId}
               onClick={() => setOpen((v) => !v)}>
         {spec.title}

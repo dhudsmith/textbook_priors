@@ -74,6 +74,29 @@ export const loadContention = () => json<Contention>("data/contention.json");
 export const loadEffort = () => json<Effort>("data/effort.json");
 export const loadArchive = () => json<ArchiveSample>("data/archive_sample.json");
 export const loadBank = (dataset: string) => json<Bank>(`data/bank/${dataset}.json`);
+
+/** Every bank at once. One sentence on the page counts the distinct sources the whole bank
+    cites, and that count spans the twelve files. Each file goes through the cache above, so the
+    per-dataset load a section makes afterwards costs nothing. */
+export function loadBanks(datasets: string[]): Promise<Bank[]> {
+  const key = `banks:${datasets.join(",")}`;
+  let pending = cache.get(key) as Promise<Bank[]> | undefined;
+  if (!pending) {
+    const parts = datasets.map(loadBank);
+    const now = parts.map(settledValue);
+    if (now.every((v) => v !== undefined)) {
+      const value = now as Bank[];
+      pending = Promise.resolve(value);
+      settled.set(pending as Promise<unknown>, value);
+    } else {
+      const all = Promise.all(parts);
+      all.then((value) => settled.set(all as Promise<unknown>, value), () => undefined);
+      pending = all;
+    }
+    cache.set(key, pending as Promise<unknown>);
+  }
+  return pending;
+}
 export const loadPrompt = (dataset: string) => text(`data/prompts/${dataset}.txt`);
 
 /** A promise read by Suspense-free components: `use`-style hook lives in hooks.ts. */

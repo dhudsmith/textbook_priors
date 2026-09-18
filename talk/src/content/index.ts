@@ -4,12 +4,13 @@
    in `public/data/`. Where a sentence needs a number it is assembled in the section component
    from the snapshot.
 
-   Twenty-five minutes, ten sections: two and a half minutes each. The spine is short and the
+   Twenty-five minutes, twelve sections: two and a half minutes each. The spine is short and the
    depth is one level down - a collapsed panel beside the thing it belongs to, or Extra.
 
-   A callout earns its place only if it is a principle about what is genuinely different about
-   doing science with an AI coding agent, or an observation that is genuinely surprising. Ordinary
-   good practice does not qualify, and a section with nothing that clears the bar has no callout.
+   There is one kind of callout and it is labelled Note. A note earns its place only if it says
+   something genuinely different about doing science with an AI coding agent, or something
+   genuinely surprising. Ordinary good practice does not qualify, and a section with nothing that
+   clears the bar has no note.
 
    The division of labour with the bullets matters: bullets carry the facts and the numbers, and
    the speaker supplies the meaning. A bullet that states a conclusion belongs in a callout.
@@ -18,25 +19,24 @@
    repositories or schemas - except the terms the page itself teaches and is about: Snakemake,
    arm, probe, AUC, chunk, reader, concept bank.
 
-   One name per thing, and it names the thing rather than its shape. The textbook's list is
-   "visual features"; what the model returns for them is "feature scores" or "scored visual
-   features"; what arms C, P and C+P each fit is a "classifier". Not "checklist", which says a
-   list is being checked without ever saying of what.
+   One name per thing, and it names the thing rather than its shape. The visual features and the
+   levels expected for each class were compiled from the published literature - the scholarly
+   record - and not from a textbook, so the page says "the literature" and never "the textbook".
+   The literature's list is "visual features"; what the model returns for them is "feature scores"
+   or "scored visual features"; what arms C, P and C+P each fit is a "classifier". Not
+   "checklist", which says a list is being checked without ever saying of what.
 
    Style: short sentences, a doer as the subject and its action as the verb, one idea each. Say
    what happened; let the reader judge it. */
 
-export type CalloutKind = "principle" | "nearmiss" | "agent";
-
 export interface Callout {
-  kind: CalloutKind;
   title: string;
   body: string[];
   source: string;
 }
 
-export const REFRAIN =
-  "The workflow turns hidden work into inspectable work. It does not inspect it for you.";
+/** One kind of callout, one label. A reader should not have to keep a taxonomy in their head. */
+export const NOTE_LABEL = "Note";
 
 export const REPO = "https://github.com/dhudsmith/textbook_priors";
 
@@ -48,12 +48,6 @@ export const LINKS = [
   { label: "CONCEPT_BANK.md — how the bank was built", href: `${REPO}/blob/main/CONCEPT_BANK.md` },
   { label: "the Snakefile", href: `${REPO}/blob/main/Snakefile` },
 ];
-
-export const KIND_LABEL: Record<CalloutKind, string> = {
-  principle: "Principle",
-  nearmiss: "Near miss",
-  agent: "Agent note",
-};
 
 /* ------------------------------------------------------------------------------------------ */
 
@@ -77,7 +71,7 @@ export const title = {
     ],
   },
   workflow: {
-    header: "How the study is put together",
+    header: "How the project is structured",
     lede:
       "Trying to get AI to do it the way I want.",
   },
@@ -100,7 +94,6 @@ export const premise = {
     "Prompts, code, jobs and calls over {days} days.",
   callouts: [
     {
-      kind: "agent",
       title: "The outputs are not the product",
       body: [
         "The model's outputs are not the product of science. The claims are.",
@@ -125,27 +118,28 @@ export const question = {
     "Official splits, untouched, at 224 pixels",
     "Published, so there is a fully supervised number to compare against",
   ],
-  /* The second half of the section: what a textbook says these images contain. */
+  /* The second half of the section: what the published literature says these images contain.
+     The number of sources is filled from the bank files themselves in Question.tsx. */
   bank: {
-    header: "What the textbook says to look for",
+    header: "What the literature says to look for",
     lede:
-      "For each task, a short list of visual features a clinician is taught to check. The " +
-      "model may have read the same textbooks.",
+      "For each task, a short list of visual features a clinician is taught to check, taken " +
+      "from the published papers. The model may have read the same papers.",
     bulletShapes: [
       "{minConcepts} to {maxConcepts} features per task, each on an ordered scale",
       "Every level carries the wording the model is shown, and a citation for it",
-      "For each class, the level the textbook expects for every feature",
+      "{sources} sources from the literature, cited across the {datasets} tasks",
+      "For each class, the level the literature expects for every feature",
       "Written down before any call went out",
     ],
   },
   callouts: [
         {
-      kind: "agent",
       title: "No clinician has read this bank",
       body: [
-        "The bank was compiled by a model — Claude Opus 5 — from the literature, and every " +
-          "feature and every level it expects carries a citation. No clinician has read them. " +
-          "The review is simulated too, and each file says so.",
+        "The bank was compiled by a model — Claude Opus 5 — from the published papers, and " +
+          "every feature and every level it expects carries a citation. No clinician has read " +
+          "them. The review is simulated too, and each file says so.",
         "A citation lets a reader check the claim. A credential only lets them defer to it.",
       ],
       source: "CONCEPT_BANK.md; data/concepts/*.yaml",
@@ -155,7 +149,7 @@ export const question = {
 
 export const design = {
   headerShape: "{arms} classification arms",
-  lede: "What is the textbook worth in labelled images? Two arms use none. Three use n.",
+  lede: "What is the literature worth in labelled images? Two arms use none. Three use n.",
   bullets: [
     "Three arms each fit their own classifier — fitted the same way, on different features",
     "Every comparison is paired: the same test images for every arm",
@@ -191,7 +185,7 @@ export const models = {
 };
 
 export const machine = {
-  header: "How the study runs",
+  header: "How the project runs",
   lede: "Seven stages, one file, every number with a rule.",
   bullets: [
     "A chunk is one job's hundred images",
@@ -216,11 +210,11 @@ export const results = {
   choices: [
     {
       id: "h1",
-      chip: "Can the textbook replace labels?",
+      chip: "Can the literature replace labels?",
       asks:
-        "Three arms: the feature scores read against the textbook with no labels, a classifier " +
-        "fitted on pretrained image features, and a second classifier fitted the same way on " +
-        "the feature scores.",
+        "Three arms: the feature scores read against what the literature expects, with no " +
+        "labels; a classifier fitted on pretrained image features; and a second classifier " +
+        "fitted the same way on the feature scores.",
       hidden: ["CP", "A", "lit"],
     },
     {
@@ -228,12 +222,13 @@ export const results = {
       chip: "Score the features, or just ask for the diagnosis?",
       asks:
         "Two prompts on the same image, neither using a label: name the diagnosis, or score " +
-        "the visual features and match those scores to the textbook's description of each class.",
+        "the visual features and match those scores to the literature's description of each " +
+        "class.",
       hidden: ["C", "P", "CP", "lit"],
     },
     {
       id: "h5",
-      chip: "Does the textbook add to the image features?",
+      chip: "Does the literature add to the image features?",
       asks:
         "A classifier fitted on pretrained image features, then a second one, fitted the same " +
         "way, on those features with the feature scores alongside them. Nothing else changes.",
@@ -269,16 +264,16 @@ export const verdicts = {
     "Five of these rest on one model, {primary}. The other two compare models: one across the " +
     "open families, one across the closed models ranked by price.",
   bullets: [
-    "The textbook cannot replace labelled images",
+    "The literature cannot replace labelled images",
     "Added to them, it adds a small but consistent gain",
   ],
   /* The plain-language reading of each question, for the one column a listener actually reads.
      H3 and H7 are presented nowhere else, so their sentences name the comparison outright. */
   asks: {
-    h1: "With no labels at all, do the feature scores read against the textbook beat " +
-      "pretrained image features given the smallest labelled set?",
-    h2: "Does scoring the textbook's visual features beat simply asking the model for the " +
-      "diagnosis?",
+    h1: "With no labels at all, do the feature scores read against what the literature expects " +
+      "beat pretrained image features given the smallest labelled set?",
+    h2: "Does scoring the visual features the literature names beat simply asking the model for " +
+      "the diagnosis?",
     h3: "Within each open model family, does the bigger model read the images better than the " +
       "smaller one?",
     h4: "Does a better reader — told to think, or a stronger model — get more out of the same " +
@@ -291,16 +286,45 @@ export const verdicts = {
   } as Record<string, string>,
 };
 
-export const close = {
-  header: "What four days cost",
+/* The last section of the talk, and the one the speaker speaks from. These are his words,
+   lightly edited for the page; they stay bullets rather than becoming paragraphs. The three
+   under `added` were written by the agent and are kept apart so he can see which are his. */
+export const takeaways = {
+  header: "Takeaways",
   bullets: [
-    "The graph shows a stage exists, not that it computes the right thing",
-    "The workflow gives you what was done, for free",
-    "The session log is the other half: why it was done. You need both.",
+    "It feels like magic: whatever I can imagine adding to this study, I can speak into my " +
+      "phone and it goes.",
+    "But this was too fast. My understanding has not caught up with the work that was done.",
+    "There is a big gap between this and what I would need, as a scientist, before publishing " +
+      "it.",
+    "I had big surprises, while making this talk, about how the workflow actually worked. That " +
+      "is not a good situation.",
+    "With great power comes great responsibility.",
+    "A workflow manager like Snakemake is useful twice: as context for the AI, and as a way for " +
+      "me to see what the AI built. It documents the design instead of leaving a pile of scripts.",
+    "Moving toward AI-generated work means being more prescriptive about your standards, " +
+      "because they will not be enforced implicitly.",
+    "Keep the distance between what you want and what the AI produces as small as possible. " +
+      "That means specifying what you want very clearly.",
+    "Generating this talk was the bottleneck. It took far more of my input than the scientific " +
+      "work did.",
+    "Presentation is still hard for AI. I have a model of the audience; the AI's is very " +
+      "different, and closing that gap took a lot of work. It is still not perfect.",
   ],
+  added: {
+    header: "Added by the agent — keep, revise or cut",
+    bullets: [
+      "Generating got faster; checking did not. Reading a stage, running it small and judging " +
+        "what came back take the time they always took.",
+      "One prompt now buys hours of machine time, so the cost of asking is no longer what " +
+        "limits what gets asked.",
+      "Every mistake here was caught by reading a record — the plan, one chunk run before the " +
+        "rest, a timed call, the note filed beside a result. None was caught by the workflow " +
+        "noticing.",
+    ],
+  },
   callouts: [
     {
-      kind: "agent",
       title: "Understanding debt",
       body: [
         "Every stage the agent wrote faster than I could read it is a loan.",
@@ -322,21 +346,25 @@ export const notClaimed = [
   "The feature scores are not clinically validated.",
   "A simulated expert review is not a clinician's review.",
   "No arm here is state of the art.",
-  "Every source dataset is public and labelled, so “the model carries textbook knowledge” " +
-    "and “the model has seen this benchmark” cannot be told apart with these data.",
+  "Every source dataset is public and labelled, so “the model carries knowledge from the " +
+    "literature” and “the model has seen this benchmark” cannot be told apart with these data.",
 ];
 
-/* H3 and H7 left the talk: the detail is in Extra and the verdict table is where the room meets
-   them. This is the prose that went with the model comparison. */
-export const ladderExtra = {
-  header: "Does a bigger model read better?",
-  ledeShape:
-    "Two open families, {qLo}B to {qHi}B and {gLo}B to {gHi}B, then a closed family ranked only " +
-    "by price — gpt-5.6-luna, then terra, then sol.",
-  bullets: [
-    "Read within family only: the larger models are also the newer ones",
-    "Both size steps also change the numerical precision the model runs at",
-    "Nothing public ranks the closed models, so price is the only order there is",
-    "Whatever separates them, parameter count did not capture it",
-  ],
+/* The model comparison, back on the spine right after the results figure and out of Extra. One
+   chart with two views and one sentence of what it found: it was cut for length once, so it
+   stays under two minutes and carries nothing else. */
+export const modelSize = {
+  header: "Model size and price",
+  toggle: { open: "open models, by size", closed: "closed models, by price" },
+  captions: {
+    open: "One line per dataset across the four open models, in size order within family. " +
+      "Hover a line to isolate it.",
+    closed: "One line per dataset across the three closed models, in price order. Hover a line " +
+      "to isolate it.",
+  },
+  notes: {
+    open: "The divider separates the two families, and the comparison is within a family only.",
+    closed: "One classifier per model, all fitted the same way. Price is the vendor's ranking, " +
+      "not a parameter count.",
+  },
 };

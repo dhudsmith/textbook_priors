@@ -17,6 +17,10 @@ Run it with the base python (numpy, Pillow, PyYAML), or through the opt-in `talk
 Two fields are hand-authored rather than read, both marked and both cited in the output: the
 timeline's `kind` per session-log entry (TIMELINE_KINDS), and the contention measurements
 transcribed from CHANGELOG.md 2026-09-12 (CONTENTION). Everything else comes from a file.
+
+The workflow section also asks Snakemake itself about the Snakefile - three dry runs that plan
+and execute nothing - so `snakemake` has to be on PATH (`conda activate snakemake`), or named in
+PRIORS_SNAKEMAKE. See the workflow block below for which calls and why.
 """
 from __future__ import annotations
 
@@ -183,7 +187,7 @@ def model_table(config: dict, by_model: dict, primary: str, price_order: list[st
 ARM_STYLE = [
     {"id": "A", "label": "arm A: the model's own guess", "colour": "#7f7f7f", "dark": "#a8a8a6",
      "dash": "2 3", "labels": 0},
-    {"id": "B", "label": "arm B: feature scores matched to the textbook", "colour": "#2ca02c",
+    {"id": "B", "label": "arm B: feature scores matched to the literature", "colour": "#2ca02c",
      "dark": "#5cc45c", "dash": "6 4", "labels": 0},
     {"id": "C", "label": "arm C: classifier on the feature scores", "colour": "#1f77b4",
      "dark": "#5aa7dd", "dash": None, "labels": "n"},
@@ -345,7 +349,7 @@ def build_study(args) -> dict:
     verdicts = []
     for spec in [
         dict(id="h1", section="h1", title="Substitution",
-             question="Are textbook features worth a measurable number of labelled images?",
+             question="Are the literature's visual features worth a measurable number of labelled images?",
              rule=("median n_B ≥ 100 over the eleven arm-B datasets AND AUC(C) > AUC(P) at "
                    "n = 50 on at least 10 of the 12 datasets (p < 0.05)"),
              wins=h["h1"]["c_beats_p_wins"], threshold=h["h1"]["min_wins"],
@@ -382,7 +386,7 @@ def build_study(args) -> dict:
              metric="cross-validated probe AUC, thinking step (H4a)",
              registered=registration("H4 — Reading")),
         dict(id="h5", section="h5", title="Complement",
-             question="Does the textbook add anything the pixels do not already carry?",
+             question="Do the feature scores add anything the image features do not already carry?",
              rule="AUC(C+P) > AUC(P) at n = 50 on at least 10 of the 12 datasets (p < 0.05)",
              wins=h["h5"]["wins"], threshold=h["h5"]["min_wins"], n_datasets=h["h5"]["n_datasets"],
              p=h["h5"]["sign_test_p"], supported=h["h5"]["supported"],
@@ -1062,6 +1066,241 @@ def copy_figures() -> list[str]:
     return names
 
 
+# ---------------------------------------------------------------------------------------------
+# The workflow itself: its rules, the graph they form, and each rule's own source.
+#
+# Everything below is read out of the Snakefile and out of Snakemake's own answers about it. The
+# site draws a rule table and a graph, and neither is allowed to be a second, hand-kept copy of
+# the workflow: a rule renamed, re-wired or given a different time limit has to move the page.
+#
+# Three read-only Snakemake invocations, all of them dry runs that plan and execute nothing (the
+# Snakefile's own guard lists each of these flags as read-only, and none of them takes the lock):
+#
+#   --rulegraph   one node per rule and the edges between them. NOT --dag, which is one node per
+#                 job: this workflow plans 677 of those and the picture is unreadable at that
+#                 size, while the rule graph is the shape a reader can actually follow.
+#   --filegraph   the same rules with the input and output patterns Snakemake itself resolved,
+#                 so "what it reads" and "what it writes" are the workflow's own strings rather
+#                 than a regex's reading of an f-string.
+#   -n -F         a forced dry run, whose job-stats table is how many jobs each rule stands for
+#                 in a full pass. The score rules' counts sum to the archived chunks on disk,
+#                 which is the check that this is the run the rest of the snapshot came from.
+#
+# Snakemake has to be on PATH (`conda activate snakemake`). It is not a dependency of the export's
+# own environment and is not imported here; it is asked, as a person would ask it.
+# ---------------------------------------------------------------------------------------------
+
+SNAKEFILE = "Snakefile"
+
+# A wildcard carries its constraint inside the brace in Snakemake's own rendering
+# ({dataset,pathmnist|dermamnist|...}); the page shows the wildcard.
+_CONSTRAINT = re.compile(r"\{(\w+),[^{}]*\}")
+_STAGE_BANNER = re.compile(r"^# (\d)  ([A-Z]+)$")
+_RULE_HEAD = re.compile(r"^rule (\w+):")
+
+
+def snakemake_dry(*args: str) -> str:
+    """One read-only Snakemake call, from the checkout the workflow runs in."""
+    exe = os.environ.get("PRIORS_SNAKEMAKE") or shutil.which("snakemake")
+    if not exe:
+        raise SystemExit(
+            "snakemake is not on PATH, and the workflow graph is read from it rather than "
+            "kept by hand.\n    conda activate snakemake   # then re-run this export\n"
+            "or set PRIORS_SNAKEMAKE to the executable.")
+    done = subprocess.run([exe, *args], cwd=ROOT, capture_output=True, text=True)
+    if done.returncode != 0:
+        raise SystemExit(f"`snakemake {' '.join(args)}` failed:\n{done.stderr[-2000:]}")
+    return done.stdout
+
+
+def rule_blocks() -> dict[str, dict]:
+    """Every `rule x:` block of the Snakefile, verbatim, with what can be read off it.
+
+    The source is sliced out of the file rather than transcribed, so the block the page shows is
+    the block that ran; there is no second copy to drift. A rule body is indented, so a block ends
+    at the next line that starts in the first column.
+    """
+    text = read_text(SNAKEFILE)
+    lines = text.splitlines()
+
+    # priors/ modules a rule declares through the Snakefile's own `code()` lists.
+    named = {m.group(1): re.findall(r'"(\w+)"', m.group(2))
+             for m in re.finditer(r"^CODE_(\w+) = code\(([^)]*)\)", text, re.M)}
+    local = set(re.findall(r"\w+", re.search(r"^localrules:\n((?:\s+.*\n)+)", text, re.M).group(1)))
+
+    blocks: dict[str, dict] = {}
+    stage = None
+    for i, line in enumerate(lines):
+        if (m := _STAGE_BANNER.match(line)):
+            stage = m.group(2).lower()
+            continue
+        if not (m := _RULE_HEAD.match(line)):
+            continue
+        end = next((j for j in range(i + 1, len(lines))
+                    if lines[j] and not lines[j][0].isspace()), len(lines))
+        source = "\n".join(lines[i:end]).rstrip()
+        name = m.group(1)
+        modules = [f"priors/{p}.py" for k in re.findall(r"code=CODE_(\w+)", source)
+                   for p in named.get(k, [])]
+        for inline in re.findall(r"code=code\(([^)]*)\)", source):
+            modules += [f"priors/{p}.py" for p in re.findall(r'"(\w+)"', inline)]
+        res_name = (m2.group(1) if (m2 := re.search(r'res\("(\w+)"\)', source)) else None)
+        blocks[name] = {
+            "name": name,
+            # Where it sits in the Snakefile. The file reads top to bottom through the stages, so
+            # this is the order a person reading the workflow meets its rules, and the order the
+            # table shows them in; the graph's own order is the layering instead.
+            "index": len(blocks),
+            "stage": stage,
+            "source": source,
+            "local": name in local,
+            "protected": "protected(" in source,
+            "env": (m2.group(1) if (m2 := re.search(r'conda: "([^"]+)"', source)) else None),
+            "modules": sorted(set(modules)),
+            "res": res_name,
+            "throttle": (m2.group(1) if (m2 := re.search(r'"(llm_\w+)": 1', source)) else None),
+        }
+    return blocks
+
+
+def rule_graph() -> tuple[list[str], list[tuple[str, str]]]:
+    """The rule graph of `rule all`: one node per rule, an edge from producer to consumer."""
+    dot = snakemake_dry("--rulegraph", "-n", "--cores", "1")
+    names = {int(m.group(1)): m.group(2)
+             for m in re.finditer(r'(\d+)\[label = "([^"]+)"', dot)}
+    # Sorted, because Snakemake numbers the nodes from a set and the order it prints them in
+    # moves between runs; the export has to be reproducible from the same Snakefile.
+    edges = sorted({(names[int(a)], names[int(b)])
+                    for a, b in re.findall(r"(\d+) -> (\d+)", dot)})
+    return sorted(names.values()), edges
+
+
+def rule_files() -> dict[str, dict[str, list[str]]]:
+    """Each rule's input and output patterns, as Snakemake resolved them."""
+    dot = snakemake_dry("--filegraph", "-n", "--cores", "1")
+    def paths(part: str) -> list[str]:
+        out = []
+        for f in re.findall(r'face="monospace">(.*?)</font>', part):
+            f = _CONSTRAINT.sub(r"{\1}", f).replace("\\\\", "\\")
+            f = f.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
+            # A rule whose input is computed from the wildcards has no pattern to show; the
+            # graph edge says where those files come from, which is the honest answer anyway.
+            if not f.startswith("<"):
+                out.append(f)
+        return out
+
+    out: dict[str, dict[str, list[str]]] = {}
+    for node in re.findall(r"shape=none, margin=0, label=<(.*?)>\]", dot, re.S):
+        name = re.search(r'point-size="18">(\w+)<', node).group(1)
+        head, _, tail = node.partition("output &rarr;")
+        out[name] = {"reads": paths(head), "writes": paths(tail)}
+    return out
+
+
+def rule_jobs() -> dict[str, int]:
+    """How many jobs each rule stands for in a full pass, from a forced dry run's job stats."""
+    stats = snakemake_dry("-n", "-F", "--cores", "1", "--quiet", "rules")
+    body = stats.partition("Job stats:")[2]
+    return {m.group(1): int(m.group(2))
+            for m in re.finditer(r"^(\w+)\s+(\d+)\s*$", body, re.M) if m.group(1) != "total"}
+
+
+def layered(names: list[str], edges: list[tuple[str, str]],
+            rank: dict[str, int]) -> dict[str, tuple[int, int]]:
+    """Layer and within-layer order for a top-to-bottom reading of the graph.
+
+    The layer is the longest path from a rule with no dependencies, which is what puts every
+    scoring rule on one row and makes the drawing a funnel. The order inside a layer is four
+    barycentre sweeps - the standard cheap way to keep the lines from crossing - alternating down
+    the graph and back up it, and ending on an upward one so that a row is ordered by the rules
+    it waits for. Rules whose neighbours give them the same position, which is every scoring rule,
+    fall back to the order they appear in the Snakefile, so the drawing and the table agree.
+    """
+    up: dict[str, list[str]] = {n: [] for n in names}
+    down: dict[str, list[str]] = {n: [] for n in names}
+    for a, b in edges:
+        up[b].append(a)
+        down[a].append(b)
+
+    layer = {n: 0 for n in names}
+    for _ in range(len(names)):
+        moved = False
+        for n in names:
+            want = max((layer[p] + 1 for p in up[n]), default=0)
+            if want != layer[n]:
+                layer[n], moved = want, True
+        if not moved:
+            break
+
+    rows: dict[int, list[str]] = {}
+    for n in names:
+        rows.setdefault(layer[n], []).append(n)
+    for row in rows.values():
+        row.sort(key=lambda n: rank[n])
+    order = {n: i for row in rows.values() for i, n in enumerate(row)}
+    for sweep in range(4):
+        upward = sweep % 2 == 1
+        neighbours = up if upward else down
+        for depth in sorted(rows, reverse=not upward):
+            row = rows[depth]
+            key = {n: (sum(order[m] for m in neighbours[n]) / len(neighbours[n])
+                       if neighbours[n] else order[n]) for n in row}
+            row.sort(key=lambda n: (key[n], rank[n]))
+            order.update({n: i for i, n in enumerate(row)})
+    return {n: (layer[n], order[n]) for n in names}
+
+
+def collapse(paths: list[str], datasets: list[str]) -> list[dict]:
+    """Per-dataset file lists as the one pattern they are, with how many files that is.
+
+    `figures` declares thirty-six inputs and they are three patterns over twelve datasets; a
+    reader learns nothing from the other thirty-three names.
+    """
+    counted: dict[str, int] = {}
+    for path in paths:
+        for d in sorted(datasets, key=len, reverse=True):
+            path = path.replace(d, "{dataset}")
+        counted[path] = counted.get(path, 0) + 1
+    return [{"path": k, "n": v} for k, v in counted.items()]
+
+
+def export_workflow(config: dict, datasets: list[str]) -> dict:
+    """The rule table and the graph the site draws, from the Snakefile and from Snakemake."""
+    blocks = rule_blocks()
+    names, edges = rule_graph()
+    files = rule_files()
+    jobs = rule_jobs()
+    place = layered(names, edges, {n: blocks[n]["index"] for n in names})
+    caps = yaml.safe_load(read_text("profiles/palmetto/config.yaml")).get("resources", {})
+
+    rules = []
+    for name in names:
+        b = dict(blocks[name])
+        res = config["resources"].get(b.pop("res") or "", {})
+        code_files = set(b["modules"]) | {"tests/"}
+        rules.append({
+            **b,
+            "layer": place[name][0], "order": place[name][1],
+            "jobs": jobs.get(name, 0),
+            "needs": sorted({a for a, c in edges if c == name}),
+            "feeds": sorted({c for a, c in edges if a == name}),
+            "reads": collapse([f for f in files.get(name, {}).get("reads", [])
+                               if not any(f.startswith(c) for c in code_files)], datasets),
+            "writes": collapse(files.get(name, {}).get("writes", []), datasets),
+            "cpus": res.get("cpus"), "mem_mb": res.get("mem_mb"), "runtime": res.get("runtime"),
+            "cap": caps.get(b["throttle"]) if b["throttle"] else None,
+        })
+
+    note("profiles/palmetto/config.yaml")
+    return {
+        "rules": rules,
+        "edges": [{"from": a, "to": b} for a, b in edges],
+        "jobs": sum(jobs.values()),
+        "snakemake": snakemake_dry("--version").strip(),
+        "how": "snakemake --rulegraph / --filegraph / -n -F, all dry runs",
+    }
+
+
 def verify(study: dict) -> list[tuple[str, str, str, bool]]:
     """Three exported numbers against the report's own generated tables (talk/PLAN.md section 7).
 
@@ -1089,6 +1328,14 @@ def verify(study: dict) -> list[tuple[str, str, str, bool]]:
     want = row.split("&")[5].strip().rstrip("\\").split("[")[0].strip()
     got = f"{study['across']['h7']['differences']['retinamnist']['median']:.3f}"
     checks.append(("H7 sol-luna on retinamnist", want, got, want == got))
+
+    # Not a table check, but the same kind of one: the rule table and the response archive are
+    # read out of two different places - a forced dry run's job stats, and the chunk files on
+    # disk - and they have to be counting the same run.
+    want = str(study["archive"]["chunks"])
+    got = str(sum(r["jobs"] for r in study["workflow"]["rules"] if r["stage"] == "score"
+                  and r["name"].startswith("score_")))
+    checks.append(("score jobs vs archived chunks", want, got, want == got))
     return checks
 
 
@@ -1115,6 +1362,7 @@ def main() -> int:
     for meta in study["datasets"]:
         meta["samples"] = samples[meta["name"]]
     study["figures"] = figures
+    study["workflow"] = export_workflow(read_yaml("config/config.yaml"), datasets)
     study["provenance"]["source_files"] = list(SOURCES)
 
     prov = {"run_git_commit": study["provenance"]["run_git_commit"],
@@ -1148,6 +1396,9 @@ def main() -> int:
     print(f"  timeline.json         {len(timeline['entries'])} session-log entries")
     print(f"  effort.json           {len(effort['lanes'])} lanes over "
           f"{effort['span']['minutes'] / 1440:.1f} days; {effort['headline']}")
+    print(f"  workflow              {len(study['workflow']['rules'])} rules, "
+          f"{len(study['workflow']['edges'])} edges, "
+          f"{study['workflow']['jobs']} jobs in a full pass")
     print(f"  img/figs/             {len(figures)} report figures")
     print(f"  img/samples/          {sum(len(v) for v in samples.values())} images")
     total = sum(f.stat().st_size for f in PUBLIC.rglob("*") if f.is_file())
