@@ -58,6 +58,7 @@ export const KIND_LABEL: Record<CalloutKind, string> = {
 /* ------------------------------------------------------------------------------------------ */
 
 export const title = {
+  eyebrow: "Clemson HPC Day · 18 September 2026",
   header: "Reproducible Scientific Computing with AI Coding Agents",
   byline: { who: "D. Hudson Smith", where: "School of Mathematical and Statistical Sciences" },
   standfirst:

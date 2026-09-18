@@ -26,7 +26,7 @@ export function Title() {
     <Band id="top">
       <div className="title-band title-grid">
         <div>
-          <Header id="top" eyebrow="Clemson HPC Day">{copy.header}</Header>
+          <Header id="top" eyebrow={copy.eyebrow}>{copy.header}</Header>
           <p className="byline">
             <span className="who">{copy.byline.who}</span>
             <span className="where">{copy.byline.where}</span>
