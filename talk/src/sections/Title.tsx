@@ -7,13 +7,13 @@ import { title as copy } from "../content";
 
 /* The QR code is rendered client-side from the page's own URL, so it is right wherever the site
    is deployed and needs no image file. */
-function PageQR({ caption }: { caption: string }) {
+function PageQR({ caption, size = 196 }: { caption: string; size?: number }) {
   const [href, setHref] = useState("");
   useEffect(() => setHref(window.location.href.split("#")[0].split("?")[0]), []);
   if (!href) return null;
   return (
     <div className="qr">
-      <QRCodeSVG value={href} size={132} level="M" marginSize={0} bgColor="#ffffff"
+      <QRCodeSVG value={href} size={size} level="M" marginSize={0} bgColor="#ffffff"
                  fgColor="#17171a" title={`QR code for ${href}`} />
       <div className="cap">{caption}</div>
     </div>
@@ -40,6 +40,11 @@ export function Title() {
         </div>
         <PageQR caption={copy.qr} />
       </div>
+      </Slide>
+
+      {/* The title card carries the proposition; the project it is demonstrated on is the next
+          beat, and on the page the two run together as they always did. */}
+      <Slide>
       <p className="presenter-hide">{copy.intro.lede}</p>
       <p className="pullquote">{copy.intro.question}</p>
       <Body paras={[copy.intro.body]} bullets={copy.intro.bullets} />

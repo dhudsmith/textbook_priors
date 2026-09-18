@@ -72,8 +72,9 @@ Each interactive element earns its place by letting a listener check a claim the
   whatever has focus. Section jumps wear keys no remote sends: `]` and `[`, or shift with an
   arrow. `?presenter=1` opens straight into presenter mode, for rehearsal and for a screenshot
   of the projected page. The URL hash follows the section on screen however the reader got
-  there, and in presenter mode a small QR in the mode flag encodes it, so the room can be sent
-  to the section under discussion.
+  there, so a link copied from the address bar points at the section under discussion. The
+  corner mode flag that used to carry a per-section QR was cut: it sat over the projected page
+  for the whole talk to save the speaker one copied link.
 - **Dataset picker** (sections 2, 5, 12): shared state, remembered across sections, so the
   audience member who chose dermamnist at the top sees dermamnist all the way down.
 - **Charts**: hover for the value and the interval; click a legend entry to toggle a series; every

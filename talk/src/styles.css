@@ -459,13 +459,6 @@ body.presenter .slide .conthead {
 html.presenter { font-size: 19px; }
 html.presenter body { --chart-text: 14px; --chart-tick: 13px; --chart-row: 14px; }
 
-.modeflag {
-  position: fixed; right: 0.8rem; bottom: 0.8rem; z-index: 60; font-family: var(--mono);
-  font-size: 0.7rem; background: var(--ink); color: var(--surface); border-radius: 8px;
-  padding: 0.4rem 0.6rem; display: flex; align-items: center; gap: 0.5rem; max-width: 16rem;
-}
-.modeflag svg { background: #fff; padding: 3px; border-radius: 4px; display: block; }
-
 /* ---- title ------------------------------------------------------------------------------- */
 .title-band { padding-top: clamp(2rem, 6vh, 4rem); }
 .title-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2rem; align-items: start; }

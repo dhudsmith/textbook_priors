@@ -1,6 +1,5 @@
-import { Suspense, lazy, useEffect, useLayoutEffect, useState } from "react";
-import { QRCodeSVG } from "qrcode.react";
-import { TalkProvider, useTalk } from "./state";
+import { Suspense, lazy, useEffect, useLayoutEffect } from "react";
+import { TalkProvider } from "./state";
 import { STATIC, loadStudy } from "./data";
 import { useAsync, useInView } from "./hooks";
 import { Band, Header, Rail } from "./components/ui";
@@ -35,26 +34,6 @@ function ExploreBand() {
         )}
       </div>
     </Band>
-  );
-}
-
-/* The projector's corner flag, and the one QR that carries the hash: the speaker can send the
-   room to the section on screen, which is what the section ids are for. The title and close
-   codes still point at the page itself. */
-function ModeFlag() {
-  const { presenter, active } = useTalk();
-  const [base, setBase] = useState("");
-  useEffect(() => setBase(window.location.href.split("#")[0].split("?")[0]), []);
-  if (!presenter) return null;
-  const href = base ? `${base}#${active}` : "";
-  return (
-    <div className="modeflag">
-      {href && (
-        <QRCodeSVG value={href} size={76} level="L" marginSize={0} bgColor="#ffffff"
-                   fgColor="#17171a" title={`QR code for ${href}`} />
-      )}
-      <span>presenter mode · p to leave · #{active}</span>
-    </div>
   );
 }
 
@@ -97,7 +76,6 @@ function Page() {
         <Close />
         <ExploreBand />
       </main>
-      <ModeFlag />
     </div>
   );
 }
