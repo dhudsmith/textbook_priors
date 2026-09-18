@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTalk } from "../state";
-import { Band, Body, Callouts, ChartFrame, Dots, Header, Slide } from "../components/ui";
+import { Band, Body, Callouts, ChartFrame, Dots, Header } from "../components/ui";
 import { Forest } from "../charts/Forest";
 import { h5 as copy } from "../content";
 import { fmt3, signed } from "../charts/primitives";
@@ -28,49 +28,7 @@ export function H5() {
 
   return (
     <Band id="h5">
-      <Slide
-        title={<Header id="h5" eyebrow="9">{copy.header}</Header>}
-        figure={<div>
-  <div className="controls" role="group" aria-label="Labels (n)">
-          <span className="group-label">labels (n)</span>
-          {ns.map((v2) => (
-            <button key={v2} className="chip" aria-pressed={n === v2} onClick={() => setN(v2)}>
-              {v2}{v2 === h5.n ? " (registered)" : ""}
-            </button>
-          ))}
-        </div>
-        {!registered && (
-          <p className="note">
-            Every grid point other than n = {h5.n} is reported and decides nothing — the rule names
-            one n, and this slider does not move it.
-          </p>
-        )}
-
-        <ChartFrame
-          caption={`Arm C+P minus arm P at n = ${n}: the same classifier, with the concept block ` +
-                   "concatenated to the pixel block and nothing else changed."}
-          source="public/data/study.json ← results/evaluation.json (H5)"
-          summary={
-            <table className="data" style={{ maxWidth: "34rem" }}>
-              <thead>
-                <tr><th>dataset</th><th style={{ textAlign: "left" }}>C+P − P, 95%</th></tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.dataset}>
-                    <td>{r.dataset}</td>
-                    <td style={{ textAlign: "left" }}>
-                      {signed(r.median)} [{fmt3(r.lo)}, {fmt3(r.hi)}]
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          }>
-          <Forest rows={rows} colour={armHue("CP")} label={`arm C+P minus arm P at n = ${n}`}
-                  annotate={["no gain", "gain"]} />
-        </ChartFrame>
-        </div>}>
+      <Header id="h5" eyebrow="9">{copy.header}</Header>
       <p className="lede">{copy.lede}</p>
       <p>
         At n = {h5.n}, the registered comparison, arm C+P beats arm P on {h5.wins} of{" "}
@@ -81,14 +39,50 @@ export function H5() {
       </p>
       <Body paras={copy.body} bullets={copy.bullets} />
 
+      <div className="controls" role="group" aria-label="Labels (n)">
+        <span className="group-label">labels (n)</span>
+        {ns.map((v2) => (
+          <button key={v2} className="chip" aria-pressed={n === v2} onClick={() => setN(v2)}>
+            {v2}{v2 === h5.n ? " (registered)" : ""}
+          </button>
+        ))}
+      </div>
+      {!registered && (
+        <p className="note">
+          Every grid point other than n = {h5.n} is reported and decides nothing — the rule names
+          one n, and this slider does not move it.
+        </p>
+      )}
+
+      <ChartFrame
+        caption={`Arm C+P minus arm P at n = ${n}: the same classifier, with the concept block ` +
+                 "concatenated to the pixel block and nothing else changed."}
+        source="public/data/study.json ← results/evaluation.json (H5)"
+        summary={
+          <table className="data" style={{ maxWidth: "34rem" }}>
+            <thead>
+              <tr><th>dataset</th><th style={{ textAlign: "left" }}>C+P − P, 95%</th></tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.dataset}>
+                  <td>{r.dataset}</td>
+                  <td style={{ textAlign: "left" }}>
+                    {signed(r.median)} [{fmt3(r.lo)}, {fmt3(r.hi)}]
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        }>
+        <Forest rows={rows} colour={armHue("CP")} label={`arm C+P minus arm P at n = ${n}`}
+                annotate={["no gain", "gain"]} />
+      </ChartFrame>
       <p className="note">
         {clear.length} of {rows.length} gains are clear of zero at n = {n}. Rows whose interval
         spans zero are drawn at half strength, the report's own convention.
       </p>
 
-      </Slide>
-
-      <Slide cont title={<div className="conthead">{copy.header}</div>}>
       <p className="tally">
         <Dots per={v.per_dataset} order={study.study.datasets} label="H5 per dataset" />{" "}
         <span className="note" style={{ display: "inline" }}>
@@ -97,7 +91,6 @@ export function H5() {
       </p>
 
       <Callouts items={copy.callouts} />
-      </Slide>
     </Band>
   );
 }

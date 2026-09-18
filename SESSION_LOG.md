@@ -1018,3 +1018,54 @@ prompt: 45 prompts bought 6.45 machine-hours and 1,298 model calls each.
 those files plus `git log --numstat`, and `talk/src/charts/EffortWaterfall.tsx` draws it. Both
 attribution rules are in the export's own `method` and both hold their objections in `caveats`,
 so a caption cannot drift from the bars it describes.
+
+## 2026-09-17 21:55 — Not a waterfall: a project timeline, with points where there are no durations
+
+The user's verdict on the two-band waterfall was that "waterfall" had been the wrong word, and
+that what he wanted was a project-timeline Gantt: named steps as lanes down the left, one clock
+across the top, a bar spanning the period each step occupied. The kind-of-work band is gone, and
+with it the last of the estimated human time: "if we have durations for some event types, great;
+if not, let's just clearly mark the point in time when the event was."
+
+That instruction is now the figure's rule. A prompt and a commit are dated to the minute and
+nothing in the repository says how long either took, so they are marks with no width — a tick, a
+dot — and no bar. A job's manifest states its own `wall_seconds`, so a job is a bar.
+
+Two findings came out of building it, both of which changed what the picture could claim:
+
+- The CPU/GPU split the user asked for cannot be read off the workflow, because **no rule in it
+  requests a GPU**. `res()` passes `mem_mb`, `runtime` and `cpus_per_task` and nothing else, the
+  Palmetto profile names one partition for everything, and there is no `gres` or `gpu` key in the
+  Snakefile, `config/` or `profiles/`. What the score rules do declare is an `llm_*` throttle
+  token, so the two job lanes are split on that instead: jobs waiting on the model service (587,
+  288 h of wall time for 0.61 h of this cluster's CPU) against jobs computing here (75, 2.2 h of
+  wall for 4.11 h of CPU). The GPUs that answered 58,409 calls belong to a service this project
+  never meters, and the caption says so.
+- Git *can* tell an agent's commit from a hand one after all, though not by authorship: every
+  commit here is authored by the owner, but 110 of 112 carry a `Co-Authored-By: Claude` trailer.
+  That trailer is the AI lane's claim — not "the AI did this" but "this commit says an agent
+  co-authored it" — and the two without it are drawn hollow.
+
+## 2026-09-17 19:35 — The slides come back out
+
+The user tried the deck and rejected the constraint: "the slides idea appears to be too difficult a
+constraint on differently sized screens." Fixed 100vh panels assume a projector's aspect ratio and
+punish every other one. Keep the text idea, drop the layout, keep the heading-skip controls.
+
+So the `Slide` component and its fifty-three lines of presenter CSS are gone, and the thirteen
+section files are restored to their pre-slides shape — which the restore made easy, because each
+had been changed in one commit and nothing since had touched them except two changes worth
+keeping: the effort chart replacing the timeline strip in the premise, and the page QR's size.
+Both were re-applied by hand onto the restored files. Presenter mode is now what it was plus the
+bulletised prose: the page scrolls normally, the bullets stand in for the paragraphs, the deep
+panels and callout bodies stay hidden, and `[` and `]` still jump between sections, since those
+never lived in the slide code at all.
+
+Two lessons from the attempt, both worth keeping even though its output is gone. The first is that
+`display: contents` made the experiment free: the slide wrapper had no effect on the page, so
+removing it could not regress the scrolling site, and the revert was a restore rather than an
+untangling. The second is about verification. A screenshot came back blank, and the obvious
+reading was that the revert had broken the page. It had not: this session and the chart agent
+share one checkout, so they share `talk/dist/`, and the preview server was serving the agent's
+half-finished build. Two sessions on one checkout, exactly as this file has recorded before, in a
+new costume. Verification now builds to a private output directory of its own.

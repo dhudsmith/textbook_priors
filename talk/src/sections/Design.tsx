@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTalk } from "../state";
-import { Band, Body, Callouts, Header, Slide } from "../components/ui";
+import { Band, Body, Callouts, Header } from "../components/ui";
 import { ArmDiagram } from "../components/diagrams";
 import { design } from "../content";
 
@@ -21,14 +21,12 @@ export function Design() {
 
   return (
     <Band id="design">
-      <Slide
-        title={<Header id="design" eyebrow="3">{design.header}</Header>}
-        figure={<ArmDiagram />}>
-        <p className="lede">{design.lede}</p>
-        <Body paras={design.body} bullets={design.bullets} />
-      </Slide>
+      <Header id="design" eyebrow="3">{design.header}</Header>
+      <p className="lede">{design.lede}</p>
+      <Body paras={design.body} bullets={design.bullets} />
 
-      <Slide cont title={<div className="conthead">{design.header}</div>}>
+      <ArmDiagram />
+
       <div className="table-scroll" style={{ margin: "1.2rem 0" }}>
       <table className="data" style={{ maxWidth: "52rem" }}>
         <thead>
@@ -64,9 +62,6 @@ export function Design() {
         probe on different feature blocks.
       </p>
 
-      </Slide>
-
-      <Slide cont title={<div className="conthead">{design.header}</div>}>
       <h3>Seven questions, each with a rule fixed before its numbers</h3>
       <p className="note">Click a card to turn it over.</p>
       <div className="cards">
@@ -102,16 +97,12 @@ export function Design() {
         })}
       </div>
 
-      </Slide>
-
-      <Slide cont title={<div className="conthead">{design.header}</div>}>
       <h3>Three limits</h3>
       <ul style={{ fontSize: "0.9rem", color: "var(--ink-secondary)" }}>
         {design.limits.map((l, i) => <li key={i}>{l}</li>)}
       </ul>
 
       <Callouts items={design.callouts} />
-      </Slide>
     </Band>
   );
 }
