@@ -1159,3 +1159,28 @@ proposition among them; the chart summary went from four paragraphs to two sente
 chart-reading notes that explained their encoding twice were cut to one line. Thirty-six long
 blocks became thirty, and most of what remains is callout bodies, which are closed until asked
 for. PLAN.md now says the page is the presentation and that prose belongs in the report.
+
+## 2026-09-17 21:10 — Say the thing instead of gesturing at it
+
+The user named the failure mode with an example: "'The shape of the thing' is just so vague. Please
+make the language more direct while still being candid and simple, not pretentious." A metaphor
+that saves the writer from deciding what they mean costs the reader the sentence.
+
+Four headers were naming their sections by gesture and now say what the section is: *How the study
+is put together* for the workflow diagram, *How this talk was built* for the premise — which also
+loses the awkward "the way it is about" — *What we asked the model* for the question, and *How the
+study runs* for the machine. Fourteen phrases followed, found by reading the rendered page rather
+than the source: two machines no longer "wear the word AI"; prompts set off hundreds of jobs
+rather than waves of machine work; labelled images are what everything is measured in rather than
+the study's currency; a negative result is the point of working this way rather than what the
+recipe is for; write-protection means re-running has to be deliberate rather than being a decision
+and not a timestamp; thinking helps and hurts rather than rescuing and costing; a null means more
+thinking is not what the model lacked rather than that the reading is not attention-limited; and
+the coda became "then a prediction". Two callout titles that were riddles — "One chunk before 270"
+and "A runtime request that costs everything" — now summarise instead: *One chunk run before the
+other 270*, *A time limit that loses the whole chunk*.
+
+Kept deliberately: "understanding debt", which the talk coins and then explains, and which is the
+argument rather than an ornament; the refrain; and "largely automated — and largely is the honest
+word", where the hedge is the point. PLAN.md's section table carries the new headers, and its row
+for section 1 now describes the timeline that replaced the strip.

@@ -56,14 +56,14 @@ export const title = {
       "my mind for a while.",
     question: "Can out-of-the-box vision-language models (VLMs) classify medical images?",    bullets: [
       "Largely automated — and largely is the honest word",
-      "What the human still had to do is the talk",
+      "What the human still had to do is what this talk is about",
     ],
   },
   workflow: {
-    header: "The shape of the thing",
+    header: "How the study is put together",
     lede:
-      "Fixed inputs, one workflow, generated outputs. Two machines wear the word AI: the agent " +
-      "wrote the workflow; the model under study is something the workflow calls.",
+      "Fixed inputs, one workflow, generated outputs. Two different things here are called AI: the " +
+      "agent that wrote the workflow, and the model the workflow calls.",
     caption:
       "Solid arrows are data. Dashed arrows are authorship — what the agent wrote, rather than " +
       "what the workflow ran.",
@@ -72,12 +72,12 @@ export const title = {
 };
 
 export const premise = {
-  header: "This talk was built the way it is about",
+  header: "How this talk was built",
   lede:
     "Planned in a day, built and run and reported in three more. An agent wrote most of the " +
     "code. A workflow made its work inspectable.",
   bullets: [
-    "A few dozen prompts set off waves of machine work",
+    "A few dozen prompts set off hundreds of jobs",
     "A tick is a moment; a bar is a period; an area is a rate",
     "Directing the work is cheap now. Understanding it is not.",
     "The code is not the product. The claim is.",
@@ -100,16 +100,16 @@ export const premise = {
 };
 
 export const question = {
-  header: "The question",
+  header: "What we asked the model",
   lede:
     "A chest radiograph at 224 pixels, and the textbook's checklist of what to look for. The " +
     "model has read the textbook. How much of the checklist does it see?",
   bullets: [
-    "The bank is the study's prior — committed before any call",
+    "The bank is the study's prior knowledge, committed before any call",
     "Visual features on ordered scales, every level cited",
     "The concept prompt never names a class",
     "The zero-shot prompt never mentions a concept",
-    "The currency is labelled images",
+    "Everything is measured in labelled images",
   ],
   callouts: [
     {
@@ -186,20 +186,20 @@ export const design = {
 };
 
 export const machine = {
-  header: "The machine",
+  header: "How the study runs",
   lede:
     "Seven stages, one file, every number with a rule. Every response archived; everything " +
     "downstream a function of that archive.",
   bullets: [
     "A chunk is one job's hundred images",
     "A reader is a model plus a reasoning effort",
-    "Write-protected: re-querying is a decision, not a timestamp",
+    "Write-protected, so re-running the calls has to be deliberate",
     "The call below is drawn at random — yours differs from mine",
   ],
   callouts: [
     {
       kind: "nearmiss",
-      title: "One chunk before 270",
+      title: "One chunk run before the other 270",
       body: [
         "Four scoring rules were generated in a loop, and all four inherited the last iteration's " +
           "command. The first chunk, run alone on purpose, came back with the primary model in its " +
@@ -231,7 +231,7 @@ export const h1 = {
   bullets: [
     "The rule was fixed before the numbers existed",
     "The numbers do not meet it",
-    "A negative result you can stand behind is what the recipe is for",
+    "A negative result you can stand behind is the point of working this way",
   ],
   callouts: [
     {
@@ -288,9 +288,9 @@ export const h3 = {
     "Two open families, 9B to 27B and 12B to 31B: no trend. One closed family ordered only by " +
     "price — gpt-5.6-luna, then terra, then sol: the top beats the bottom.",
   bullets: [
-    "Read within family only — larger travels with newer",
+    "Read within family only: the larger models are also the newer ones",
     "Both size steps also change quantisation",
-    "Nothing public orders the closed models, so price stands in",
+    "Nothing public ranks the closed models, so price is the proxy",
     "Whatever separates them, parameter count did not capture it",
   ],
   callouts: [
@@ -329,10 +329,10 @@ export const h4 = {
     "One day, by the clock. A claim overturned at 15:20. A rule written at 16:05, before a call " +
     "was bought. A wave capped at 17:35.",
   bullets: [
-    "Thinking is conditional: it rescues bad reads and costs good ones",
+    "Thinking helps where the model read badly and hurts where it read well",
     "A frontier model reads no better than a 27B open model",
-    "A null is a result — the reading is not attention-limited",
-    "The coda: one concept collapsed; less effort fixed that dataset, and nothing else",
+    "A null is a result: more thinking is not what the model lacked",
+    "Then a prediction: one concept collapsed, and less effort fixed that dataset alone",
     "A prediction named before the calls, confirmed only where it was aimed",
     "Limits: closed model, unknown size, and it refuses temperature zero",
   ],
@@ -363,7 +363,7 @@ export const h4 = {
     },
     {
       kind: "nearmiss",
-      title: "A runtime request that costs everything",
+      title: "A time limit that loses the whole chunk",
       body: [
         "Eleven thinking chunks went out at once, and a timed call came back at over two " +
           "minutes. The wave was cancelled and capped at four in flight: not for throughput, which " +
@@ -386,7 +386,7 @@ export const h5 = {
     "H5 asks: do they carry anything pixels lack? Yes.",
     "Unequal and complementary are not the same thing",
     "The textbook cannot replace labels. It adds.",
-    "Limit: a dozen concept columns join 512 under one penalty",
+    "Limit: a dozen concept columns share one penalty with 512 pixel columns",
   ],
   callouts: [
     {
