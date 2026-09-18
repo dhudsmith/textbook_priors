@@ -1,17 +1,19 @@
 import { scaleLinear } from "d3-scale";
 import { useTalk } from "../state";
 import { useWidth } from "../hooks";
-import { AxisBottom, AxisLeft, Marker, fmt3, plotBox, short, signed, spreadLabels, useHover }
-  from "./primitives";
+import { AxisBottom, AxisLeft, Marker, fmt3, leftGutter, plotBox, short, signed, spreadLabels,
+  useHover } from "./primitives";
 
 /* Thinking's effect against how well the model scored the visual features without it. The slope
    is the claim: thinking helps on the tasks the model read badly and hurts on the ones it read
    well. One point per dataset, in the dataset's own colour and marker. */
 
+const Y_LABEL = "thinking − no thinking (AUC)";
+
 export function ThinkingScatter({ height = 360 }: { height?: number }) {
   const { study, hue, metaOf } = useTalk();
   const { ref, width: measured } = useWidth<HTMLDivElement>(700);
-  const { width, margin: MARGIN } = plotBox(measured);
+  const { width, margin: base } = plotBox(measured);
   const { show, hide, tip } = useHover();
 
   const h4a = study.across.h4.h4a;
@@ -22,21 +24,28 @@ export function ThinkingScatter({ height = 360 }: { height?: number }) {
     diff: h4a.differences[d] as { median: number; lo: number; hi: number },
   }));
 
+  // Signed ticks are the widest on the page, so the gutter is measured from them before the
+  // scales are built rather than assumed.
+  const yDomain: [number, number] = [Math.min(...rows.map((r) => r.diff.lo)) - 0.02,
+                                     Math.max(...rows.map((r) => r.diff.hi)) + 0.02];
+  const yFormat = (v: number) => signed(v, 2);
+  const yTicks = scaleLinear().domain(yDomain).ticks(5);
+  const MARGIN = {
+    ...base, left: Math.max(base.left, leftGutter(yTicks, yFormat, Y_LABEL)),
+  };
   const innerW = Math.max(220, width - MARGIN.left - MARGIN.right);
   const innerH = height - MARGIN.top - MARGIN.bottom;
   const x = scaleLinear().domain([Math.min(...rows.map((r) => r.base)) - 0.05,
                                   Math.max(...rows.map((r) => r.base)) + 0.05])
     .range([MARGIN.left, MARGIN.left + innerW]);
-  const y = scaleLinear().domain([Math.min(...rows.map((r) => r.diff.lo)) - 0.02,
-                                  Math.max(...rows.map((r) => r.diff.hi)) + 0.02])
-    .range([MARGIN.top + innerH, MARGIN.top]);
+  const y = scaleLinear().domain(yDomain).range([MARGIN.top + innerH, MARGIN.top]);
 
   const labels = spreadLabels(
     rows.map((r) => ({
       id: r.dataset, text: short(r.dataset), x: x(r.base) + 11,
       ax: x(r.base), ay: y(r.diff.median), y: y(r.diff.median) + 4,
     })),
-    13, MARGIN.top + 8, MARGIN.top + innerH,
+    17, MARGIN.top + 8, MARGIN.top + innerH,
   );
 
   return (
@@ -45,8 +54,8 @@ export function ThinkingScatter({ height = 360 }: { height?: number }) {
            aria-label={"One point per dataset: how much the thinking step changed the probe's " +
                        "AUC, against how well the same model scored the visual features with " +
                        "thinking off. The points slope downwards."}>
-        <AxisLeft scale={y} x={MARGIN.left} ticks={y.ticks(5)} width={innerW}
-                  label="thinking − no thinking (AUC)" format={(v) => signed(v, 2)} />
+        <AxisLeft scale={y} x={MARGIN.left} ticks={yTicks} width={innerW}
+                  label={Y_LABEL} format={yFormat} />
         <AxisBottom scale={x} y={MARGIN.top + innerH} ticks={x.ticks(5)}
                     label="probe AUC with thinking off" format={(v) => v.toFixed(2)} />
         <line x1={MARGIN.left} x2={MARGIN.left + innerW} y1={y(0)} y2={y(0)}

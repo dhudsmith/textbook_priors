@@ -35,17 +35,17 @@ export function Forest({ rows, colour, label, unit = "AUC", height, annotate }: 
               {signed(t, 2)}
             </text>
           ))}
-          <text x={left + innerW / 2} y={MARGIN.top + rows.length * rowH + 33 + extra}
+          <text x={left + innerW / 2} y={MARGIN.top + rows.length * rowH + 38 + extra}
                 textAnchor="middle" style={{ fontWeight: 600 }}>
             {label.toLowerCase().includes(unit.toLowerCase()) ? label : `${label} (${unit})`}
           </text>
         </g>
         {annotate && (
           <g className="axis">
-            <text x={x(0) - 8} y={MARGIN.top + rows.length * rowH + 33} textAnchor="end">
+            <text x={x(0) - 8} y={MARGIN.top + rows.length * rowH + 38} textAnchor="end">
               ← {annotate[0]}
             </text>
-            <text x={x(0) + 8} y={MARGIN.top + rows.length * rowH + 33} textAnchor="start">
+            <text x={x(0) + 8} y={MARGIN.top + rows.length * rowH + 38} textAnchor="start">
               {annotate[1]} →
             </text>
           </g>

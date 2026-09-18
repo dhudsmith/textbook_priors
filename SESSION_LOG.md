@@ -1629,3 +1629,35 @@ the page through `export_talk_data.py` — arm B's label and the H1 and H5 quest
 rather than nine-tenths done; and `StageStrip`, the diagram the rules table replaced, was deleted
 along with the import it was the last user of. The export was re-run and diffed to confirm it
 reproduces its own output: exactly three changes, the three strings, and nothing else moved.
+
+## 2026-09-18 22:40 — The fourteen label collisions, and what a collision actually is
+
+The sweep that ended the last entry was measuring the wrong thing. It compared the upright
+rectangles the browser reports for each label, and a tilted label's upright rectangle is far larger
+than the label: nine of the fourteen "collisions" were the model names on the readers ladder, which
+sit on parallel diagonals and never touch. Rewritten to take each label's own box through its
+transform and test the two shapes for real, the sweep found six, and every one of them was a
+genuine overprint. Measuring badly is worse than not measuring; the tool is now worth keeping.
+
+The real faults, all of them the same mistake — a distance guessed once and then relied on:
+
+- The rotated y-axis title sat 40 px from the axis whatever the ticks said, so on the thinking
+  chart, whose ticks carry a sign and are the widest on the page, it printed straight through
+  them. The gutter is now worked out from the ticks the axis will actually draw, which needs the
+  tick values but not the scale's range, so each chart settles its left margin before it places
+  anything. The character widths behind that arithmetic were measured off the built page rather
+  than guessed: the sans figures are tabular at 7.8 px, a leading sign is 11.7, the mono ticks are
+  7.85.
+- The same wrong habit under the axis: the title sat 15 px below the numbers, close enough that on
+  a phone its descenders met three of them.
+- Direct end labels were pushed 12 or 13 px apart when the labels are 16 px tall, so arm B under
+  arm C, path under pneumonia and retina under organs all touched. The gap is the height of the
+  text now. Where a ladder has a grey band, its one label holds the floor and the named ones stop
+  above it.
+- The ladder's model names were tilted 22° regardless of how many there were, and the room made
+  for them was computed at 6.3 px a character — the figure for a smaller size than they are drawn
+  at. The tilt is now whatever it takes for a name to fit the column it labels, and the margin
+  follows from the tilt.
+
+Zero collisions at 390, 768 and 1500 px, with every collapsible section open; thirteen bands and no
+page errors in light or dark. Nothing about what the figures say changed.

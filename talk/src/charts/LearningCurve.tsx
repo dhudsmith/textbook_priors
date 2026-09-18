@@ -3,7 +3,8 @@ import { scaleLinear, scaleLog } from "d3-scale";
 import { line as d3line, area as d3area, curveMonotoneX } from "d3-shape";
 import { useTalk } from "../state";
 import { useWidth } from "../hooks";
-import { AxisBottom, AxisLeft, Legend, fmt3, plotBox, spreadLabels, useHover } from "./primitives";
+import { AxisBottom, AxisLeft, Legend, fmt2, fmt3, leftGutter, plotBox, spreadLabels, useHover }
+  from "./primitives";
 
 /* H1's learning curve. Arms C, P and C+P move with n; arms A and B are horizontal lines, because
    they use no labels at all; the published ceiling is a fixed reference and deliberately not one
@@ -19,7 +20,7 @@ export function LearningCurve({ height = 400, initialHidden = [] }: {
   const { study, dataset, meta, armHue, armDash } = useTalk();
   const per = study.per_dataset[dataset];
   const { ref, width: measured } = useWidth<HTMLDivElement>(820);
-  const { width, margin: MARGIN } = plotBox(measured);
+  const { width, margin: base } = plotBox(measured);
   const { show, hide, tip } = useHover();
   // The series the speaker adds live start hidden; the legend still lists every one of them.
   const [hidden, setHidden] = useState<Set<string>>(() => new Set(initialHidden));
@@ -58,11 +59,14 @@ export function LearningCurve({ height = 400, initialHidden = [] }: {
   const lo = Math.max(0, Math.min(...values) - 0.03);
   const hi = Math.min(1.001, Math.max(...values) + 0.03);
 
+  // The gutter is worked out from the ticks the axis will actually draw, which needs the tick
+  // values but not the scale's range, so the left margin is settled before anything is placed.
+  const yTicks = scaleLinear().domain([lo, hi]).ticks(5);
+  const MARGIN = { ...base, left: Math.max(base.left, leftGutter(yTicks, fmt2, "test AUC")) };
   const innerW = Math.max(240, width - MARGIN.left - MARGIN.right);
   const innerH = height - MARGIN.top - MARGIN.bottom;
   const x = scaleLog().domain([ns[0], ns[ns.length - 1]]).range([MARGIN.left, MARGIN.left + innerW]);
   const y = scaleLinear().domain([lo, hi]).range([MARGIN.top + innerH, MARGIN.top]);
-  const yTicks = y.ticks(5);
 
   const path = d3line<{ n: number; point: number }>()
     .x((p) => x(p.n)).y((p) => y(p.point)).curve(curveMonotoneX);
@@ -100,7 +104,7 @@ export function LearningCurve({ height = 400, initialHidden = [] }: {
         text: s.id === "CP" ? "C+P" : `arm ${s.id}`,
       })),
     ],
-    13, MARGIN.top + 8, MARGIN.top + innerH,
+    17, MARGIN.top + 8, MARGIN.top + innerH,
   );
 
   return (

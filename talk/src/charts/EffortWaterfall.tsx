@@ -174,7 +174,9 @@ export function EffortWaterfall({ data, height }: { data: Effort; height?: numbe
                     style={{ fontSize: "var(--chart-row)", fontWeight: 600, fill: "var(--ink)" }}>
                 {tight && lane.label.length > 24 ? `${lane.label.slice(0, 23)}…` : lane.label}
               </text>
-              <text x={8} y={mid + 11} className="axis"
+              {/* Two clear pixels under the lane's name: at 14 px apart the tally's ascenders
+                  met the name's descenders. */}
+              <text x={8} y={mid + 14} className="axis"
                     style={{ fontSize: "var(--chart-tick)", fill: "var(--ink-muted)" }}>
                 {laneTally(lane)}
               </text>

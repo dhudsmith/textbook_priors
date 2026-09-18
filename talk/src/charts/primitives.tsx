@@ -8,7 +8,7 @@ import type { ScaleLinear } from "d3-scale";
    solid hairlines one shade off the surface; marks are thin; a legend is always present for two
    or more series and the ones that fit are direct-labelled as well. */
 
-export const MARGIN = { top: 16, right: 92, bottom: 38, left: 52 };
+export const MARGIN = { top: 16, right: 92, bottom: 42, left: 52 };
 
 /* A plot has a floor width. Measuring the container and drawing to it meant `.chart-scroll` never
    engaged, so at 390 px the fixed margins ate 45% of the frame and the labels overprinted each
@@ -44,6 +44,25 @@ export function widestSpread(
     .sort((a, b) => span(b) - span(a))
     .slice(0, keep);
   return [...new Set([...always.filter((d) => d in values), ...ranked])];
+}
+
+/* Text width without a browser. Every chart needs its gutters before there is an SVG to measure,
+   and the strings on an axis are digits, a point and a sign. Measured off the built page: the
+   sans figures are tabular at 7.8 px and a leading + or − is 11.7 px at the chart's 14 px, and
+   the mono ticks are 7.85 px a character at 13 px. */
+export const tickWidth = (s: string) =>
+  [...s].reduce((w, c) => w + (c === "−" || c === "+" ? 11.7 : 7.8), 0);
+export const monoWidth = (s: string) => s.length * 7.85;
+
+/** The room the left gutter needs: the widest tick label, then the rotated axis title behind it.
+    A fixed 52 px printed the title over the ticks on every chart whose ticks carry a sign. */
+export function leftGutter(
+  ticks: number[], format: (v: number) => string, label?: string,
+): number {
+  const w = Math.max(0, ...ticks.map((t) => tickWidth(format(t))));
+  // 8 to the ticks, the ticks themselves, 6 of air, the 16 the title's own box stands in, and
+  // 6 so it is not flush against the edge of the figure.
+  return Math.ceil(8 + w + (label ? 28 : 4));
 }
 
 export const fmt3 = (v: number) => v.toFixed(3);
@@ -112,8 +131,10 @@ export function AxisBottom({ scale, y, ticks, label, format = String }: {
           <text y={18} textAnchor="middle">{format(t)}</text>
         </g>
       ))}
+      {/* Far enough below the numbers that the title's descenders clear their tops: at 16 px
+          apart the two rows of text touched on a phone. */}
       {label && (
-        <text x={(at(ticks[0]) + at(ticks[ticks.length - 1])) / 2} y={34} textAnchor="middle"
+        <text x={(at(ticks[0]) + at(ticks[ticks.length - 1])) / 2} y={38} textAnchor="middle"
               style={{ fontWeight: 600 }}>{label}</text>
       )}
     </g>
@@ -135,8 +156,10 @@ export function AxisLeft({ scale, x, ticks, width, label, format = fmt2 }: {
         {ticks.map((t) => (
           <text key={t} x={x - 8} y={scale(t) + 4} textAnchor="end">{format(t)}</text>
         ))}
+        {/* The title stands clear of the widest tick rather than at a fixed offset, which is what
+            put "thinking − no thinking (AUC)" across the numbers it was labelling. */}
         {label && (
-          <text transform={`translate(${x - 40} ` +
+          <text transform={`translate(${x - leftGutter(ticks, format, label) + 14} ` +
                            `${(scale(ticks[0]) + scale(ticks[ticks.length - 1])) / 2}) rotate(-90)`}
                 textAnchor="middle" style={{ fontWeight: 600 }}>{label}</text>
         )}
@@ -177,7 +200,7 @@ export function useHover() {
     the plot. Label collisions are the one layout fault a chart cannot be forgiven, and a series
     whose value coincides with another's - arm B and arm C on pneumoniamnist - always causes one. */
 export function spreadLabels<T extends { y: number }>(
-  items: T[], gap = 13, top = -Infinity, bottom = Infinity,
+  items: T[], gap = 17, top = -Infinity, bottom = Infinity,
 ): T[] {
   const out = items.map((it) => ({ ...it })).sort((a, b) => a.y - b.y);
   for (let i = 1; i < out.length; i++) {

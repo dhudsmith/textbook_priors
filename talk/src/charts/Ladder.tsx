@@ -3,8 +3,8 @@ import { scalePoint, scaleLinear } from "d3-scale";
 import { line as d3line } from "d3-shape";
 import { useTalk } from "../state";
 import { useWidth } from "../hooks";
-import { AxisLeft, MARGIN, Marker, fmt3, plotBox, readerTick, short, spreadLabels, useHover }
-  from "./primitives";
+import { AxisLeft, MARGIN, Marker, fmt2, fmt3, leftGutter, monoWidth, plotBox, readerTick, short,
+  spreadLabels, useHover } from "./primitives";
 
 /* One line per dataset across an ordered list of models or readers. Used three times - the open
    models by size (H3), the closed models by price (H7) and the nine readers (H4) - because they
@@ -40,26 +40,36 @@ export function Ladder({ order, values, yLabel, label, height = 380, divideAfter
   const anyGrey = datasets.some((d) => !isNamed(d));
   const all = datasets.flatMap((d) => order.map((m) => values[d][m]).filter((v) => v != null));
 
-  // Tick text is the model stem, and the bottom margin is computed from the longest one at the
-  // tilt it is drawn at. Nothing here relies on `overflow: visible` for its room.
+  // Tick text is the model stem, drawn in the mono face at 13 px, which is 7.85 px a character:
+  // the old 6.3 was the figure for a smaller size and left the longest label short of room.
   const ticks = order.map(readerTick);
-  const tilt = order.length > 4;
-  const longest = Math.max(...ticks.map((t) => t.length));
-  const bottom = tilt
-    ? Math.ceil(longest * 6.3 * Math.sin((22 * Math.PI) / 180)) + 30
-    : 46;
+  const widestTick = Math.max(0, ...ticks.map(monoWidth));
   /* The right margin holds the direct end labels, so it is measured from the longest one drawn
      rather than fixed: "other datasets" ran off the edge of the plot at 108. */
   const rightLabels = [...datasets.filter(isNamed).map(short), ...(anyGrey ? [GREY_LABEL] : [])];
   const rightNeeded = Math.ceil(Math.max(0, ...rightLabels.map((t) => t.length)) * 7.6) + 16;
+  // The y gutter comes from the tick values, which the domain fixes without a range, so the
+  // width of the plot is settled before the tilt of the model names is worked out from it.
+  const yDomain: [number, number] = [Math.min(...all) - 0.03, Math.max(...all) + 0.03];
+  const yTicks = scaleLinear().domain(yDomain).ticks(5);
   const { width, margin: base } = plotBox(measured,
     { ...MARGIN, right: Math.max(108, rightNeeded) });
-  const margin = { ...base, bottom };
-  const innerW = Math.max(220, width - margin.left - margin.right);
+  const left = Math.max(base.left, leftGutter(yTicks, fmt2, yLabel));
+  const innerW = Math.max(220, width - left - base.right);
+  /* Nine model names do not fit side by side, so they are tilted; the angle is whatever it takes
+     for a name to fit in the column it labels, rather than a fixed 22° that ran them together. */
+  const step = innerW / order.length;
+  const tilt = order.length > 4 && widestTick > step;
+  const angle = tilt
+    ? Math.min(45, Math.max(22, (Math.acos(Math.min(1, step / widestTick)) * 180) / Math.PI))
+    : 0;
+  const bottom = tilt
+    ? Math.ceil(widestTick * Math.sin((angle * Math.PI) / 180)) + 30
+    : 46;
+  const margin = { ...base, left, bottom };
   const innerH = height - margin.top - margin.bottom;
   const x = scalePoint<string>().domain(order).range([margin.left, margin.left + innerW]).padding(0.5);
-  const y = scaleLinear().domain([Math.min(...all) - 0.03, Math.max(...all) + 0.03])
-    .range([margin.top + innerH, margin.top]);
+  const y = scaleLinear().domain(yDomain).range([margin.top + innerH, margin.top]);
 
   // Twelve lines end in a narrow band of AUC, so the direct labels have to be pushed apart or
   // half of them are unreadable. Order is kept, so a label still sits nearest its own line.
@@ -75,13 +85,15 @@ export function Ladder({ order, values, yLabel, label, height = 380, divideAfter
     labelled.map((d) => ({
       id: d, y: anchors.get(d)! + 3.5, colour: hue(d), text: short(d),
     })),
-    12, margin.top + 6, margin.top + innerH + 6,
+    // The grey band's one label sits on the floor of the plot, so when there is one the named
+    // labels stop short of it rather than settling on top of it.
+    17, margin.top + 6, margin.top + innerH + (anyGrey ? -13 : 6),
   );
 
   return (
     <div ref={ref}>
       <svg className="plot" width={width} height={height} role="img" aria-label={label}>
-        <AxisLeft scale={y} x={margin.left} ticks={y.ticks(5)} width={innerW} label={yLabel} />
+        <AxisLeft scale={y} x={margin.left} ticks={yTicks} width={innerW} label={yLabel} />
         <line x1={margin.left} x2={margin.left + innerW} y1={y(0.5)} y2={y(0.5)}
               stroke="var(--ink-muted)" strokeDasharray="1 4"
               opacity={y(0.5) > margin.top && y(0.5) < margin.top + innerH ? 1 : 0} />
@@ -91,7 +103,7 @@ export function Ladder({ order, values, yLabel, label, height = 380, divideAfter
             const ty = margin.top + innerH + 18;
             return (
               <text key={m} x={tx} y={ty} textAnchor={tilt ? "end" : "middle"}
-                    transform={tilt ? `rotate(-22 ${tx} ${ty})` : undefined}
+                    transform={tilt ? `rotate(${-angle} ${tx} ${ty})` : undefined}
                     style={{ fontFamily: "var(--mono)", fontSize: "var(--chart-tick)" }}>
                 {ticks[i]}
               </text>
