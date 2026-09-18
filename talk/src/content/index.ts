@@ -186,41 +186,23 @@ export const models = {
 
 export const machine = {
   header: "The compute workflow",
-  lede: "Seven stages, one file, every number with a rule.",
+  /* Four short lines and a logo. The long version - what a rule is, what make does, the three
+     words the project uses for its own parts - was cut on 2026-09-19: too long and too much
+     jargon for a slide the room reads in ten seconds. The table and the graph below say the
+     rest, for anyone who wants it. */
+  lede: "Use a workflow tool to structure the compute.",
   bullets: [
-    "A chunk is one job's hundred images",
-    "A reader is a model plus a reasoning effort",
-    "Once a reply is written it stays written: buying the calls again has to be deliberate",
+    "Tells the AI what context to pull",
+    "Shows me what the AI built",
+    "Maps what depends on what, and re-runs what a change touches",
+    "Tames the pile of scripts",
   ],
-  /* Why a workflow manager, when an agent is the one writing the code. The table and the graph
-     below are the argument; this is only the reason to look at them, so it stays short. */
-  why: {
-    lede: "A rule says what it produces, what it needs, and the command between them — a " +
-      "Makefile, with the cluster written in. What that is worth when an agent writes the " +
-      "code:",
-    bullets: [
-      "It is the context the agent works from: what exists already, and what it is for",
-      "It reads back to me — the agent writes the rules, and the file is where I see what it " +
-        "built",
-      "It states what depends on what",
-      "It is where checking starts: ask for one thing, and every step behind it is named and " +
-        "can be run again",
-    ],
-    close: "A pile of scripts does none of this, and only whoever ran it knows the order.",
-  },
 };
 
-/* The one image every later number is made of. Short on purpose: it is the hinge between how
-   the project runs and what it found, and the widget is the content. */
+/* The one image every later number is made of. The heading stands alone: the widget under it
+   shows what it is, and a lede saying so in words was noise in front of it. */
 export const sample = {
   header: "Model input and output",
-  lede: "One image, the two calls it was put through, and what came back. Every result after " +
-    "this is computed from answers of exactly this shape.",
-  bullets: [
-    "Two separate calls on the same image, neither shown the other's answer",
-    "One returns a level for each visual feature; the other, a number for each class",
-    "These are archived replies, read off the file the run wrote, not fresh calls",
-  ],
 };
 
 /* The headline results figure, and the three questions it answers. The per-question detail sits
@@ -231,9 +213,11 @@ export const results = {
     "Every arm on the same chart: how well it separates the classes, against how many " +
     "labelled images it was given. One model read every image here — {primary}. Arm P uses " +
     "no model at all. Pick a question and the figure draws the arms that answer it.",
-  bullets: [
+  bulletShapes: [
     "Arms given no labels are flat lines; arms given labels climb",
-    "Shaded bands are 95% intervals — hover a point to read one",
+    /* "95% intervals" said nothing about where they came from. The numbers are the run's own. */
+    "Shaded bands are the middle {ci}% over {boot} bootstrap resamples of the test images, " +
+      "every arm recomputed on each resample — hover a point to read one",
   ],
   /* One chip each. `hidden` is the preset: the series the figure starts without. */
   choices: [

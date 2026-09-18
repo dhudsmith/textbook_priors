@@ -170,7 +170,9 @@ export function Results() {
         </span>
       </p>
 
-      <Bullets items={copy.bullets} />
+      <Bullets items={copy.bulletShapes.map((b) => b
+        .replace("{ci}", String(Math.round((1 - study.study.alpha) * 100)))
+        .replace("{boot}", study.study.bootstrap.toLocaleString("en-US")))} />
     </Band>
   );
 }

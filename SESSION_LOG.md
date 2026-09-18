@@ -1723,3 +1723,31 @@ the rail counted the same list independently, so inserting a section meant editi
 and getting a heading that said 6 over a rail that said 7. The heading now reads its number off
 `SECTIONS`, which is also what the rail reads, and the two cannot disagree. Verified: fourteen
 bands, eyebrows 1 to 13 under a title that keeps its date, and a rail that agrees line for line.
+
+## 2026-09-19 01:10 — Four lines and a logo; the heading stands alone; what the bands are
+
+Three corrections in quick succession, all in the same direction: less.
+
+*"Way too long and too much jargon."* The workflow section's opening was a lede, three definition
+bullets, a paragraph about `make` and a closing line — and he replaced it with four lines. It now
+reads *Use a workflow tool to structure the compute*, with Snakemake's own wordmark beside it, and
+four bullets: tells the AI what context to pull, shows me what the AI built, maps what depends on
+what and re-runs what a change touches, tames the pile of scripts. Gone with it: what a rule is,
+what `make` does, and the project's three words for its own parts. *Chunk* is still defined where
+it is used, in the `score_qwen3_5_9b` row; *reader* in the caption under the readers ladder; the
+write-protected archive is said in the section that shows one of its records. Nothing lost, three
+fewer places to say it.
+
+The logo is `biglogo.svg` from the Snakemake repository, MIT, copied into `public/img/` and served
+from this site rather than hot-linked. It is greyscale, so dark mode inverts it rather than
+carrying a second file.
+
+*"Just remove all this. Not helpful. The title stands alone."* The lede and three bullets written
+an hour earlier for **Model input and output** are gone; the heading sits directly above the
+widget, which is what the section is.
+
+*"'95% intervals' is not descriptive enough."* True, and it was the kind of number that says
+nothing about where it came from. The bullet now reads: the middle 95% over 10,000 bootstrap
+resamples of the test images, every arm recomputed on each resample. Both numbers come through the
+export from `evaluate.ci` and `evaluate.bootstrap` rather than being typed, so a change to the
+config moves the sentence.

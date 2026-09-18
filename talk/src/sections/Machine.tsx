@@ -3,6 +3,7 @@ import { useTalk } from "../state";
 import { Band, Bullets, ChartFrame, Header } from "../components/ui";
 import { RuleGraph, RuleTable, useWorkflow } from "../components/rules";
 import { machine } from "../content";
+import { asset } from "../data";
 
 /* How the project runs: the rules, one per row, and the shape they make.
 
@@ -111,12 +112,15 @@ export function Machine() {
   return (
     <Band id="machine">
       <Header id="machine">{machine.header}</Header>
-      <p className="lede">{machine.lede}</p>
+      {/* Snakemake's own wordmark, which is where the tool is named: the sentence says what it
+          is for, the mark says which one. MIT-licensed, taken from the project's repository and
+          served from this site rather than hot-linked. */}
+      <p className="lede withlogo">
+        <span>{machine.lede}</span>
+        <img src={asset("img/snakemake-logo.svg")} alt="Snakemake" width={158} height={21}
+             className="toollogo" />
+      </p>
       <Bullets items={machine.bullets} />
-
-      <p style={{ maxWidth: "var(--measure)" }}>{machine.why.lede}</p>
-      <Bullets items={machine.why.bullets} />
-      <p style={{ maxWidth: "var(--measure)" }}>{machine.why.close}</p>
 
       <RuleTable blurbs={BLURBS} details={DETAILS} open={open} setOpen={setOpen} />
       <p className="note">

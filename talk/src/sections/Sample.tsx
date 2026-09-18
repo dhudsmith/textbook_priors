@@ -1,4 +1,4 @@
-import { Band, Bullets, Header } from "../components/ui";
+import { Band, Header } from "../components/ui";
 import { ArchiveCall } from "../components/ArchiveCall";
 import { sample as copy } from "../content";
 import { useAsync, useInView } from "../hooks";
@@ -9,7 +9,8 @@ import { loadArchive } from "../data";
    model was given, the two questions it was asked, and the two replies the archive holds.
 
    It sat at the foot of the workflow section, where it was the last thing under a heading about
-   rules and nobody could tell what it was for. */
+   rules and nobody could tell what it was for. The heading stands alone here: the widget is what
+   the section says, and a paragraph describing it first was in the way. */
 
 export function Sample() {
   const { ref, seen } = useInView<HTMLDivElement>();
@@ -19,8 +20,6 @@ export function Sample() {
   return (
     <Band id="sample">
       <Header id="sample">{copy.header}</Header>
-      <p className="lede">{copy.lede}</p>
-      <Bullets items={copy.bullets} />
 
       <div ref={ref}>
         {error && <p className="note">Could not load the archive sample: {error}</p>}
