@@ -332,26 +332,32 @@ table.data tbody tr:hover { background: var(--surface-sunken); }
 .dots { display: inline-flex; gap: 3.5px; align-items: center; }
 .dots svg { display: block; }
 
-/* ---- prompt / archive -------------------------------------------------------------------- */
+/* ---- prompt, and the archived answers -------------------------------------------------------------------- */
 pre.file {
   font-family: var(--mono); font-size: 0.74rem; line-height: 1.45; background: var(--surface-sunken);
   border: 1px solid var(--rule); border-radius: 6px; padding: 0.7rem 0.85rem; overflow-x: auto;
   white-space: pre-wrap; word-break: break-word; max-height: 26rem; overflow-y: auto;
   margin: 0 0 1rem;
 }
-pre.file.reply { max-width: var(--measure); }
-.kv { font-family: var(--mono); font-size: 0.74rem; display: grid; gap: 0.15rem 0.7rem;
-      grid-template-columns: max-content minmax(0, 1fr); }
-.kv dt { color: var(--ink-muted); }
-.kv dd { margin: 0; overflow-wrap: anywhere; }
 .imgcard {
   border: 1px solid var(--rule-strong); border-radius: 6px; overflow: hidden;
   background: var(--surface-sunken);
 }
 .imgcard img { display: block; width: 100%; height: auto; }
-.archivegrid { display: grid; gap: 1rem;
-               grid-template-columns: minmax(150px, 210px) minmax(0, 1fr); }
-@media (max-width: 640px) { .archivegrid { grid-template-columns: minmax(0, 1fr); } }
+/* One archived image and the two answers it got: the picture on the left, the two questions
+   beside it, because the contrast between the two kinds of answer is the point. Both tables
+   drop under the picture before either is squeezed into a column of wrapped lines. */
+.answergrid { display: grid; gap: 1.1rem 1.4rem; align-items: start;
+              grid-template-columns: minmax(140px, 200px) minmax(0, 1fr); max-width: var(--figure); }
+.answerpair { display: grid; gap: 1.1rem 1.6rem;
+              grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
+.answerpair h4 { margin: 0 0 0.2rem; }
+@media (max-width: 720px) { .answergrid { grid-template-columns: minmax(0, 1fr); } }
+/* A probability read at a glance: the bar carries the size, the number carries the value. */
+.meter { display: inline-block; vertical-align: middle; width: 4.5rem; height: 0.5rem;
+         margin-right: 0.45rem; border-radius: 3px; background: var(--surface-sunken);
+         border: 1px solid var(--rule); overflow: hidden; }
+.meter > span { display: block; height: 100%; }
 .gallery { display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
            max-width: var(--figure); }
 .gallery figcaption { font-size: 0.68rem; margin-top: 0.15rem; }

@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useTalk } from "../state";
 
 /* Two structural diagrams: what each arm is made of, and the seven stages. Both are drawn rather
-   than described because the shape is the point - in the arm diagram, that three arms share one
-   classifier and differ only in the features that reach it. */
+   than described because the shape is the point - in the arm diagram, that the three arms given
+   labels are three separate fits, one per arm, of the same linear classification head, and that
+   each one sees only the features that reach it. Nothing is shared between the arms but the
+   procedure. */
 
 /* A white letter on the arm's own light step measured 4.0:1 and its dark step 2.2 to 3.2 - all
    of them under the floor. The letter wears the surface colour, which is white in light and near
@@ -21,85 +23,117 @@ function step(colour: string, k: number): string {
 export function ArmDiagram() {
   const { armHue, dark } = useTalk();
   const badge = (id: string) => (dark ? armHue(id) : step(armHue(id), 0.72));
-  const box = (x: number, y: number, w: number, h: number, fill: string) =>
-    <rect x={x} y={y} width={w} height={h} rx={6} fill={fill} stroke="var(--rule-strong)" />;
+  const box = (x: number, y: number, w: number, h: number, fill: string, stroke?: string) =>
+    <rect x={x} y={y} width={w} height={h} rx={6} fill={fill}
+          stroke={stroke ?? "var(--rule-strong)"} />;
+  const column = (x: number, label: string) => (
+    <text x={x} y={18} textAnchor="middle" fill="var(--ink-muted)"
+          style={{ fontSize: 10, letterSpacing: "0.09em" }}>{label}</text>
+  );
+
+  /* One head per arm that gets labels, drawn at the height of its own badge and outlined in its
+     own colour, so a reader can follow a colour from a feature block through a head to an arm.
+     C+P sits in the middle on purpose: both feature blocks reach it without crossing anything. */
+  const heads: [string, number][] = [["C", 112], ["CP", 172], ["P", 232]];
 
   return (
-    <svg className="plot" viewBox="0 0 720 260" width="100%" role="img" style={{ maxWidth: "46rem" }}
+    <svg className="plot" viewBox="0 0 720 296" width="100%" role="img" style={{ maxWidth: "46rem" }}
          aria-label={
-           "The image goes to the vision-language model, which produces a concept vector feeding " +
-           "arm B (nearest class fingerprint, no labels) and arm C (logistic regression on n " +
-           "labels); the same image goes to a frozen ImageNet ResNet-18, whose features feed arm " +
-           "P under the identical classifier; both feature blocks together feed arm C+P. Arm A " +
-           "asks the model for the class directly, from a separate prompt."}>
+           "The image is read three ways. A zero-shot prompt to the vision-language model gives " +
+           "arm A, the model's own class guess, with no labels. A concept prompt gives the " +
+           "concept vector, which matched against the textbook's class fingerprints gives arm B, " +
+           "also with no labels. The same image goes to a frozen ImageNet ResNet-18, which gives " +
+           "the pixel features. The three arms that get labels each have their own linear " +
+           "classification head, fitted separately by the same procedure on the same n labels: " +
+           "arm C's head takes the concept vector, arm P's head takes the pixel features, and " +
+           "arm C+P's head takes both. What those three share is the procedure, not the " +
+           "classifier."}>
       <g style={{ fontFamily: "var(--sans)", fontSize: 12 }}>
-        {box(8, 100, 82, 42, "var(--surface-sunken)")}
-        <text x={49} y={118} textAnchor="middle" fill="var(--ink)">image</text>
-        <text x={49} y={133} textAnchor="middle" fill="var(--ink-muted)"
+        {column(49, "IMAGE")}
+        {column(190, "WHAT READS IT")}
+        {column(348, "FEATURES")}
+        {column(494, "ONE PROCEDURE, THREE FITS")}
+        {column(618, "ARM")}
+
+        {box(8, 120, 82, 42, "var(--surface-sunken)")}
+        <text x={49} y={138} textAnchor="middle" fill="var(--ink)">image</text>
+        <text x={49} y={153} textAnchor="middle" fill="var(--ink-muted)"
               style={{ fontSize: 10.5 }}>224 px</text>
 
-        {box(116, 28, 148, 40, "var(--surface-raised)")}
-        <text x={190} y={53} textAnchor="middle" fill="var(--ink)">VLM, zero-shot prompt</text>
+        {box(116, 30, 148, 40, "var(--surface-raised)")}
+        <text x={190} y={55} textAnchor="middle" fill="var(--ink)">VLM, zero-shot prompt</text>
         {box(116, 96, 148, 50, "var(--surface-raised)")}
         <text x={190} y={116} textAnchor="middle" fill="var(--ink)">VLM, concept prompt</text>
         <text x={190} y={132} textAnchor="middle" fill="var(--ink-muted)"
               style={{ fontSize: 10.5 }}>one level per feature</text>
-        {box(116, 178, 148, 50, "var(--surface-raised)")}
-        <text x={190} y={198} textAnchor="middle" fill="var(--ink)">frozen ImageNet</text>
-        <text x={190} y={214} textAnchor="middle" fill="var(--ink-muted)"
+        {box(116, 226, 148, 50, "var(--surface-raised)")}
+        <text x={190} y={246} textAnchor="middle" fill="var(--ink)">frozen ImageNet</text>
+        <text x={190} y={262} textAnchor="middle" fill="var(--ink-muted)"
               style={{ fontSize: 10.5 }}>ResNet-18 features</text>
 
         {box(296, 96, 104, 50, "var(--surface-sunken)")}
         <text x={348} y={116} textAnchor="middle" fill="var(--ink)">concept</text>
         <text x={348} y={131} textAnchor="middle" fill="var(--ink)">vector</text>
-        {box(296, 178, 104, 50, "var(--surface-sunken)")}
-        <text x={348} y={203} textAnchor="middle" fill="var(--ink)">pixel features</text>
+        {box(296, 226, 104, 50, "var(--surface-sunken)")}
+        <text x={348} y={255} textAnchor="middle" fill="var(--ink)">pixel features</text>
 
-        {box(446, 130, 122, 64, "var(--surface-sunken)")}
-        <text x={507} y={152} textAnchor="middle" fill="var(--ink)">one identical</text>
-        <text x={507} y={167} textAnchor="middle" fill="var(--ink)">classifier</text>
-        <text x={507} y={183} textAnchor="middle" fill="var(--ink-muted)"
-              style={{ fontSize: 10.5 }}>on n labels</text>
+        {heads.map(([id, y]) => (
+          <g key={`head-${id}`}>
+            {box(424, y, 140, 44, "var(--surface-sunken)", armHue(id))}
+            <text x={494} y={y + 19} textAnchor="middle" fill="var(--ink)"
+                  style={{ fontSize: 11.5 }}>linear classification</text>
+            <text x={494} y={y + 34} textAnchor="middle" fill="var(--ink-muted)"
+                  style={{ fontSize: 10.5 }}>head, fitted on n labels</text>
+          </g>
+        ))}
 
         {[
-          ["A", 28, "zero labels"], ["B", 62, "zero labels"],
-          ["C", 126, "n labels"], ["P", 166, "n labels"], ["C+P", 206, "n labels"],
-        ].map(([id, y, sub]) => {
+          ["A", 50, "zero labels"], ["B", 88, "zero labels"],
+          ["C", 134, "n labels"], ["C+P", 194, "n labels"], ["P", 254, "n labels"],
+        ].map(([id, cy, sub]) => {
           const wide = (id as string).length > 1;
-          const cy = Number(y) + 14;
+          const y = Number(cy);
+          const key = id === "C+P" ? "CP" : (id as string);
           return (
-            <g key={id as string}>
+            <g key={key}>
               {wide
-                ? <rect x={624 - 22} y={cy - 13} width={44} height={26} rx={13}
-                        fill={badge(id === "C+P" ? "CP" : (id as string))} />
-                : <circle cx={624} cy={cy} r={13} fill={badge(id as string)} />}
-              <text x={624} y={cy + 5} textAnchor="middle" fill="var(--surface)"
+                ? <rect x={618 - 22} y={y - 13} width={44} height={26} rx={13} fill={badge(key)} />
+                : <circle cx={618} cy={y} r={13} fill={badge(key)} />}
+              <text x={618} y={y + 5} textAnchor="middle" fill="var(--surface)"
                     style={{ fontWeight: 700 }}>{id as string}</text>
-              <text x={wide ? 652 : 646} y={cy + 4} fill="var(--ink-muted)"
+              <text x={wide ? 646 : 637} y={y + 4} fill="var(--ink-muted)"
                     style={{ fontSize: 10.5 }}>{sub as string}</text>
             </g>
           );
         })}
 
-        <g stroke="var(--rule-strong)" strokeWidth={1.4} fill="none">
-          {/* image to the three encoders */}
-          <path d="M90 116 C103 116 103 48 116 48" />
-          <path d="M90 121 H116" />
-          <path d="M90 126 C103 126 103 203 116 203" />
-          {/* encoders to their feature blocks; arm A straight to its circle */}
-          <path d="M264 121 H296" />
-          <path d="M264 203 H296" />
-          <path d="M264 48 C540 48 560 42 611 42" />
-          {/* the concept vector leaves by two ports: up to arm B, which needs no classifier,
-              and down into the shared classifier; the pixel block enters from below. Neither
-              path crosses the other or a box. */}
-          <path d="M400 110 C440 110 440 76 611 76" stroke={armHue("B")} />
-          <path d="M400 134 C423 134 423 150 446 150" />
-          <path d="M400 203 C423 203 423 176 446 176" />
-          {/* one classifier, three arms: fan out from three ports on its right edge */}
-          <path d="M568 150 C590 150 590 140 611 140" />
-          <path d="M568 162 C590 162 590 180 611 180" />
-          <path d="M568 174 C590 174 590 220 611 220" />
+        <g strokeWidth={1.4} fill="none">
+          {/* the image into the three things that read it */}
+          <g stroke="var(--rule-strong)">
+            <path d="M90 132 C104 132 102 50 116 50" />
+            <path d="M90 141 C104 141 104 121 116 121" />
+            <path d="M90 150 C104 150 102 251 116 251" />
+            <path d="M264 121 H296" />
+            <path d="M264 251 H296" />
+          </g>
+
+          {/* Every line that reaches an arm wears that arm's colour, because the provenance is
+              the point: A never becomes features at all, B reads the concept vector with no head,
+              and each head is entered only by the block or blocks its arm is defined on. */}
+          <path d="M264 50 C420 50 470 50 605 50" stroke={armHue("A")} />
+          <path d="M400 106 C414 106 414 88 605 88" stroke={armHue("B")} />
+
+          <path d="M400 126 C412 126 412 134 424 134" stroke={armHue("C")} />
+          <path d="M564 134 H605" stroke={armHue("C")} />
+
+          <path d="M400 140 C410 140 410 154 410 176 C410 185 413 188 424 188"
+                stroke={armHue("CP")} />
+          <path d="M400 232 C418 232 418 218 418 210 C418 203 420 200 424 200"
+                stroke={armHue("CP")} />
+          <path d="M564 194 H605" stroke={armHue("CP")} />
+
+          <path d="M400 246 C412 246 412 254 424 254" stroke={armHue("P")} />
+          <path d="M564 254 H605" stroke={armHue("P")} />
         </g>
       </g>
     </svg>

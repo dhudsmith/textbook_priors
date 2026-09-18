@@ -88,7 +88,7 @@ export function LadderBlock() {
           named={widestSpread(values, order)}
           yLabel={which === "open"
             ? "arm B test AUC"
-            : "probe AUC (one classifier reads every model's answers)"}
+            : "probe AUC (one head per model, all fitted the same way)"}
           label={which === "open"
             ? "Arm B AUC per dataset across the four open models"
             : "Probe AUC per dataset across the closed price ladder"}

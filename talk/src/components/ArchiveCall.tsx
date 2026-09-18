@@ -1,125 +1,178 @@
 import { useMemo, useState } from "react";
-import type { ArchiveSample } from "../types";
-import { LAZY, asset, loadPrompt } from "../data";
-import { useAsync } from "../hooks";
-import { Deep } from "./ui";
+import type { ArchiveRecord, ArchiveSample } from "../types";
+import { useTalk } from "../state";
+import { LAZY, asset } from "../data";
 
-/* One real archived call: the image, the rendered prompt, the raw reply, the parsed answer and
-   the chunk manifest's fields. The draw is random, so no two people in the room see the same one
-   and the speaker can show a call without buying one. Nothing here is live: results/score/ is
-   write-protected and this is a copy of four records per dataset. */
+/* One archived image, and the two answers the study bought for it.
+
+   The study asks the same picture two different questions, in two separate calls, and gets two
+   different shapes of answer back: the checklist comes back as a level for each visual feature,
+   the other prompt as a number for each class. Showing them together is the point of the panel,
+   so they are drawn side by side rather than one at a time. The archived records pair on the
+   dataset and the position in the test sample, which is the same image in both.
+
+   Nothing here is live and nothing is re-read: results/score/ is write-protected and this is a
+   copy of a few of its records, taken by the export. The reply text is deliberately not shown -
+   a reader should see the answer, not the shape it arrived in. */
+
+/** The bank writes a feature and its levels in one word; a reader should not have to. */
+const plain = (s: string) => s.replace(/_/g, " ");
+
+interface Pair {
+  key: string; dataset: string; position: number;
+  concept?: ArchiveRecord; zero?: ArchiveRecord;
+}
 
 export function ArchiveCall({ sample, fixedDataset }: {
   sample: ArchiveSample; fixedDataset?: string;
 }) {
-  const pool = useMemo(
-    () => sample.records.filter((r) => !fixedDataset || r.dataset === fixedDataset),
-    [sample.records, fixedDataset]);
-  const [i, setI] = useState(() => Math.floor(Math.random() * Math.max(1, pool.length)));
-  const [native, setNative] = useState<number | null>(null);
-  const rec = pool[i % Math.max(1, pool.length)];
-  // "Another" means another: the draw skips the record already on screen.
-  const here = pool.length ? i % pool.length : 0;
+  const { metaOf, armHue } = useTalk();
+
+  const pairs = useMemo<Pair[]>(() => {
+    const by = new Map<string, Pair>();
+    for (const r of sample.records) {
+      if (fixedDataset && r.dataset !== fixedDataset) continue;
+      const key = `${r.dataset}__${r.position}`;
+      const pair = by.get(key) ?? { key, dataset: r.dataset, position: r.position };
+      if (r.prompt === "concept") pair.concept = r; else pair.zero = r;
+      by.set(key, pair);
+    }
+    const all = [...by.values()].sort((a, b) => a.key.localeCompare(b.key));
+    // On the spine both answers have to be there, because the contrast is the whole point. Asked
+    // for one dataset in Extra, show what that dataset has: chestmnist is scored on the checklist
+    // alone, and saying so is better than dropping the dataset.
+    const both = all.filter((p) => p.concept && p.zero);
+    return fixedDataset ? (both.length ? both : all) : both;
+  }, [sample.records, fixedDataset]);
+
+  const [i, setI] = useState(() => Math.floor(Math.random() * Math.max(1, pairs.length)));
+  const here = pairs.length ? i % pairs.length : 0;
+  const pair = pairs[here];
+  // "Another" means another: the draw skips the image already on screen.
   const drawAnother = () => {
-    if (pool.length < 2) return;
-    let k = Math.floor(Math.random() * (pool.length - 1));
+    if (pairs.length < 2) return;
+    let k = Math.floor(Math.random() * (pairs.length - 1));
     if (k >= here) k += 1;
     setI(k);
   };
-  const manifest = rec ? sample.manifests[rec.manifest_key] : null;
-  const { data: prompt } = useAsync(
-    () => (rec ? loadPrompt(rec.dataset) : Promise.resolve("")), [rec?.dataset]);
 
-  if (!rec || !manifest) return <p className="note">No archived record for this dataset.</p>;
+  if (!pair) return <p className="note">No archived answers for this dataset.</p>;
+
+  const rec = pair.concept ?? pair.zero!;
+  const meta = metaOf(pair.dataset);
+  const manifest = sample.manifests[rec.manifest_key];
+  const label = rec.label;
+  const trueClass = typeof label === "number" ? meta.classes[label] : null;
+
+  const levels = Object.entries(pair.concept?.answers ?? {});
+  const scores = Object.entries(pair.zero?.scores ?? {})
+    .filter(([, v]) => v != null)
+    .sort((a, b) => (b[1] as number) - (a[1] as number));
+  const guess = armHue("A");
 
   return (
     <div>
       <div className="controls">
-        <button className="plain" onClick={drawAnother}>Draw another archived call</button>
+        <button className="plain" onClick={drawAnother}>Show another image</button>
         <span className="note" style={{ margin: 0 }}>
-          {pool.length} calls to draw from{fixedDataset ? `, all ${fixedDataset}` : ""}
+          {pairs.length} to choose from{fixedDataset ? `, all ${fixedDataset}` : ""}
         </span>
       </div>
 
-      <div className="archivegrid">
+      <div className="answergrid">
         <div>
           <div className="imgcard">
-            <img src={asset(rec.image)} alt={`${rec.dataset} test image ${rec.position}`}
-                 width={224} height={224} loading={LAZY}
-                 onLoad={(e) => setNative(e.currentTarget.naturalWidth)} />
+            <img src={asset(rec.image)} alt={`a ${pair.dataset} test image`}
+                 width={224} height={224} loading={LAZY} />
           </div>
-          <p className="note" style={{ marginTop: "0.4rem" }}>
-            {rec.dataset}, test position {rec.position} (release row {rec.index})
-            {native ? `. ${native} px, the size the model was shown.` : ""}
+          <p className="note" style={{ marginTop: "0.4rem", marginBottom: "0.3rem" }}>
+            {pair.dataset}, at the size the model was shown.
           </p>
-        </div>
-        <div>
-          <h4>What came back, verbatim</h4>
-          <pre className="file reply">{rec.text ?? "(nothing readable)"}</pre>
-          {/* The panel earns its space only where parsing added something. On a zero-shot draw it
-              says what actually happened instead of reading as a failure. */}
-          {rec.answers && Object.keys(rec.answers).length ? (
-            <>
-              <h4>What was parsed out of it</h4>
-              <dl className="kv">
-                {Object.entries(rec.answers).map(([k, v]) => (
-                  <div key={k} style={{ display: "contents" }}>
-                    <dt>{k}</dt><dd>{String(v)}</dd>
-                  </div>
-                ))}
-              </dl>
-            </>
-          ) : (
-            <p className="note">
-              A zero-shot call carries no concept answers; the class distribution above is the
-              whole answer.
+          {trueClass && (
+            <p className="note" style={{ marginBottom: "0.3rem" }}>
+              It really is <strong>{plain(trueClass)}</strong>.
+            </p>
+          )}
+          {manifest && (
+            <p className="note" style={{ marginBottom: 0 }}>
+              Answered by <span className="mono">{manifest.served_model}</span>,{" "}
+              {manifest.reasoning && manifest.reasoning !== "none"
+                ? `thinking at ${manifest.reasoning} effort.`
+                : "with no thinking step."}
             </p>
           )}
         </div>
+
+        <div className="answerpair">
+          <div>
+            <h4>Asked the checklist</h4>
+            <p className="note">
+              One call: every visual feature the textbook lists for this kind of image, and the
+              level the model picked for it.
+            </p>
+            {levels.length ? (
+              <table className="data">
+                <thead>
+                  <tr><th>visual feature</th><th style={{ textAlign: "left" }}>the model's level</th></tr>
+                </thead>
+                <tbody>
+                  {levels.map(([k, v]) => (
+                    <tr key={k}>
+                      <td>{plain(k)}</td>
+                      <td style={{ textAlign: "left" }}>{plain(String(v))}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : <p className="note">This image has no checklist answers on file.</p>}
+          </div>
+
+          <div>
+            <h4>Asked what it is</h4>
+            <p className="note">
+              A second call, on a prompt of its own: how likely is each class? The checklist above
+              never sees this answer, and this answer never sees the checklist.
+            </p>
+            {scores.length ? (
+              <table className="data">
+                <thead>
+                  <tr><th>class</th><th style={{ textAlign: "left" }}>how likely the model said</th></tr>
+                </thead>
+                <tbody>
+                  {scores.map(([name, v]) => (
+                    <tr key={name}>
+                      <td>
+                        {plain(name)}
+                        {name === trueClass && (
+                          <span className="note" style={{ display: "inline", marginLeft: "0.35rem" }}>
+                            — the true class
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ textAlign: "left" }}>
+                        <span className="meter">
+                          <span style={{ width: `${Math.max(0, Math.min(1, v as number)) * 100}%`,
+                                         background: guess }} />
+                        </span>
+                        <span className="mono" style={{ fontSize: "0.72rem" }}>
+                          {(v as number).toFixed(2)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="note">
+                {meta.multi_label
+                  ? `${pair.dataset} marks several findings at once rather than one class, so ` +
+                    "this question is not asked of it. Only the checklist is."
+                  : "This image has no class answer on file."}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
-
-      <h4 style={{ marginTop: "1rem" }}>The record filed beside it</h4>
-      <dl className="kv" style={{ maxWidth: "46rem" }}>
-        <dt>served_model</dt><dd>{manifest.served_model}</dd>
-        <dt>prompt_sha256</dt><dd>{manifest.prompt_sha256}</dd>
-        {manifest.bank_sha256 && (<><dt>bank_sha256</dt><dd>{manifest.bank_sha256}</dd></>)}
-        <dt>git_commit</dt><dd>{manifest.git_commit}</dd>
-        <dt>slurm_job</dt><dd>{manifest.slurm_job ?? "—"}</dd>
-        <dt>host</dt><dd>{manifest.host}</dd>
-        <dt>written</dt><dd>{manifest.written}</dd>
-        <dt>temperature</dt><dd>{String(manifest.temperature)}</dd>
-        <dt>reasoning</dt><dd>{String(manifest.reasoning)}</dd>
-        <dt>this call</dt>
-        <dd>
-          {rec.elapsed_s != null ? `${rec.elapsed_s} s` : "—"}
-          {rec.usage ? `, ${rec.usage.prompt_tokens} prompt + ${rec.usage.completion_tokens} ` +
-                       "completion tokens" : ""}
-          {rec.finish_reason ? `, finish_reason ${rec.finish_reason}` : ""}
-          {rec.from_reasoning ? ", answered in the reasoning field" : ""}
-        </dd>
-        <dt>this chunk</dt>
-        <dd>
-          {manifest.file} — {manifest.calls} calls, {manifest.complete} complete, median{" "}
-          {manifest.seconds_per_call.median} s per call
-        </dd>
-      </dl>
-
-      <Deep summary={`The rendered ${rec.prompt === "concept" ? "concept" : "zero-shot"} prompt, verbatim`}>
-        <pre className="file">{promptSection(prompt, rec.prompt)}</pre>
-      </Deep>
     </div>
   );
-}
-
-/** The txt render holds both prompts under their own headers; show the one this record bought. */
-function promptSection(text: string | null, prompt: string): string {
-  if (!text) return "loading…";
-  const marks = [...text.matchAll(/^--- .*prompt \(sha256 [0-9a-f]+\) ---$/gm)];
-  if (marks.length < 2) return text;
-  const wanted = marks.find((m) =>
-    prompt === "concept" ? m[0].includes("concept prompt") : m[0].includes("zero_shot"));
-  if (!wanted) return text;
-  const start = wanted.index ?? 0;
-  const next = marks.find((m) => (m.index ?? 0) > start);
-  return text.slice(start, next ? next.index : undefined).trim();
 }

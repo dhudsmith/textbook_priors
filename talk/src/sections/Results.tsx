@@ -46,7 +46,7 @@ export function Results() {
 
   return (
     <Band id="results">
-      <Header id="results" eyebrow="5">{copy.header}</Header>
+      <Header id="results" eyebrow="6">{copy.header}</Header>
       <p className="lede">{copy.lede}</p>
 
       <div className="controls" role="group" aria-label="Question">
@@ -148,8 +148,9 @@ export function Results() {
           </p>
           <Deep summary="The gain on every dataset, with its interval">
             <ChartFrame
-              caption={`Arm C+P minus arm P at n = ${h5.n}: the same classifier, with the ` +
-                       "checklist answers alongside the image features and nothing else changed."}>
+              caption={`Arm C+P minus arm P at n = ${h5.n}: two heads fitted the same way, ` +
+                       "one on the image features alone and one with the checklist answers " +
+                       "alongside them."}>
               <Forest rows={h5rows} colour={armHue("CP")}
                       label={`arm C+P minus arm P at n = ${h5.n}`}
                       annotate={["no gain", "gain"]} />

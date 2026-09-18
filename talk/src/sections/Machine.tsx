@@ -33,7 +33,7 @@ export function Machine() {
 
   return (
     <Band id="machine">
-      <Header id="machine" eyebrow="4">{machine.header}</Header>
+      <Header id="machine" eyebrow="5">{machine.header}</Header>
       <p className="lede">{machine.lede}</p>
       <Bullets items={machine.bullets} />
 
@@ -43,11 +43,11 @@ export function Machine() {
         {study.archive.calls.toLocaleString("en-US")} calls.
       </p>
 
-      <h3>One real archived call</h3>
+      <h3>One archived image, and the two answers it got</h3>
       <div ref={ref}>
         {error && <p className="note">Could not load the archive sample: {error}</p>}
         {archive ? <ArchiveCall sample={archive} />
-                 : <p className="note">Loading one archived call…</p>}
+                 : <p className="note">Loading the archived answers…</p>}
       </div>
 
       <Deep summary="How many calls each model answered, and under what name">

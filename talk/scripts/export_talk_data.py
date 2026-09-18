@@ -117,6 +117,66 @@ CATCHES = [
 
 # The report's own colour tables (priors/report.py), so a listener who has seen the PDF recognises
 # them. Read, not re-chosen. The dark-mode steps are the same hues lifted off a dark surface.
+# What is true of each model the study called, beyond what config/config.yaml records. Two facts
+# are not in the configuration and must not be guessed from it: whether the weights are open, and
+# which reasoning efforts the model accepts. Both are transcribed here from
+# docs/rcd_llm_service.md - the vision-capable table read 2026-09-12 from the service's own
+# `/v1/models?full=true`, and the note that the gateway models take `reasoning_effort` but reject
+# `minimal`, which is why no closed model here can be asked not to think. `api: gateway` in the
+# configuration is a transport, not a licence, so it is not used as a stand-in for either.
+#
+# `params_b: None` is not missing data: the closed family publishes no parameter count, which is
+# itself a finding - it is why H7 had to order that family by price instead of by size.
+MODEL_FACTS = {
+    "qwen3.5-9b":      {"weights": "open",   "reasoning": ["none", "high"]},
+    "gemma-4-12b":     {"weights": "open",   "reasoning": ["none", "high"]},
+    "qwen3.8-27b-fp8": {"weights": "open",   "reasoning": ["none", "low", "medium", "xhigh"]},
+    "gemma-4-31b":     {"weights": "open",   "reasoning": ["none", "high"]},
+    "gpt-5.6-luna":    {"weights": "closed", "reasoning": ["low", "medium"],
+                        "family": "gpt-5.6", "params_b": None},
+    "gpt-5.6-terra":   {"weights": "closed", "reasoning": ["low", "medium"],
+                        "family": "gpt-5.6", "params_b": None},
+    "gpt-5.6-sol":     {"weights": "closed", "reasoning": ["low", "medium"],
+                        "family": "gpt-5.6", "params_b": None},
+}
+MODEL_FACTS_SOURCE = "docs/rcd_llm_service.md (read from /v1/models?full=true, 2026-09-12)"
+
+
+def model_table(config: dict, by_model: dict, primary: str, price_order: list[str]) -> list[dict]:
+    """One row per model the study actually called, in the order the talk meets them.
+
+    The open models come first in size order, because that is the ladder H3 climbs, and the closed
+    family follows in the price order H7 used. `calls` is every call the model answered under any
+    reasoning effort, so a model that was also read as a thinking reader carries one number rather
+    than two rows.
+    """
+    readers = config["vlm"]["readers"]
+    served = {}
+    for key, entry in by_model.items():
+        name = readers[key]["model"] if key in readers else key
+        got = served.setdefault(name, {"calls": 0, "served": []})
+        got["calls"] += entry["calls"]
+        got["served"] += [n for n in entry["served"] if n not in got["served"]]
+
+    order = sorted(config["vlm"]["models"], key=lambda m: config["vlm"]["models"][m]["params_b"])
+    order += [m for m in price_order if m not in order]
+    rows = []
+    for name in order:
+        facts = MODEL_FACTS[name]
+        spec = config["vlm"]["models"].get(name, {})
+        rows.append({
+            "name": name,
+            "family": spec.get("family", facts.get("family")),
+            "params_b": spec.get("params_b", facts.get("params_b")),
+            "weights": facts["weights"],
+            "reasoning": facts["reasoning"],
+            "calls": served.get(name, {}).get("calls", 0),
+            "served": served.get(name, {}).get("served", []),
+            "primary": name == primary,
+        })
+    return rows
+
+
 ARM_STYLE = [
     {"id": "A", "label": "arm A: zero-shot (no labels)", "colour": "#7f7f7f", "dark": "#a8a8a6",
      "dash": "2 3", "labels": 0},
@@ -464,6 +524,10 @@ def build_study(args) -> dict:
             "readers": {r: {k: v for k, v in spec.items()
                             if k in ("model", "effort", "api", "subsample")}
                         for r, spec in config["vlm"]["readers"].items()},
+            "model_table": model_table(
+                config, by_model, primary,
+                [config["vlm"]["readers"][r]["model"] for r in h["h7"]["ladder"]]),
+            "model_facts_source": MODEL_FACTS_SOURCE,
             "zenodo_record": release["zenodo_record"],
             "medmnist_version": release["medmnist_version"],
             "literature": {"citation": literature["citation"], "title": literature["source_title"],
@@ -549,11 +613,14 @@ def export_samples(datasets: list[str], per_class: int, cap: int, names: dict) -
 
 
 def export_archive(datasets: list[str], per_dataset: int, primary: str) -> dict:
-    """A handful of real archived calls, with the image, the reply and the chunk's manifest.
+    """A handful of real archived calls, with the image, both answers and the chunk's manifest.
 
-    The site draws one at random so the speaker can show a live-looking call without buying one.
-    Only chunk 00 of each dataset is read, and only the primary model's: four records is enough to
-    show what an archived call is, and the archive is write-protected and read here and nowhere else.
+    The site draws an image at random and shows the two answers it got - the checklist levels
+    and the class distribution - side by side, so the speaker can show real answers without
+    buying a call. The two prompts are archived in separate chunks but cover the same test
+    positions, so the records pair up on (dataset, position). Only chunk 00 of each dataset is
+    read, and only the primary model's: two positions is enough, and the archive is
+    write-protected and read here and nowhere else.
     """
     records, manifests = [], {}
     for d in datasets:
@@ -594,6 +661,11 @@ def export_archive(datasets: list[str], per_dataset: int, primary: str) -> dict:
                     "label": rec["label"] if not isinstance(rec["label"], list) else rec["label"],
                     "image": img_rel,
                     "answers": rec.get("answers"), "parsed": rec.get("parsed"),
+                    # The zero-shot reply is a number per class, parsed by the score stage
+                    # against the release's own class names. Carrying it here is what lets
+                    # the page show the answer as a table of names and numbers instead of
+                    # the reply text, which no reader should have to decode.
+                    "scores": rec.get("scores"),
                     "complete": rec.get("complete"), "invalid": rec.get("invalid"),
                     "text": reply.get("text"), "served_model": reply.get("served_model"),
                     "finish_reason": reply.get("finish_reason"),

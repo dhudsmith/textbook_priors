@@ -1749,6 +1749,7 @@
     "necrotic_debris": "absent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "```json\n{\n  \"tissue_content\": \"sparse\",\n  \"nuclear_density\": \"none\",\n  \"nuclear_pleomorphism\": \"uniform\",\n  \"gland_formation\": \"absent\",\n  \"gland_regularity\": \"no_glands\",\n  \"goblet_cells\": \"absent\",\n  \"fibre_alignment\": \"no_fibres\",\n  \"cytoplasm_eosinophilia\": \"pale_or_basophilic\",\n  \"extracellular_mucin\": \"absent\",\n  \"fat_vacuoles\": \"many\",\n  \"small_round_cell_infiltrate\": \"absent\",\n  \"necrotic_debris\": \"absent\"\n}\n```",
@@ -1786,6 +1787,7 @@
     "necrotic_debris": "absent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "```json\n{\n  \"tissue_content\": \"abundant\",\n  \"nuclear_density\": \"few\",\n  \"nuclear_pleomorphism\": \"uniform\",\n  \"gland_formation\": \"absent\",\n  \"gland_regularity\": \"no_glands\",\n  \"goblet_cells\": \"absent\",\n  \"fibre_alignment\": \"loose_and_haphazard\",\n  \"cytoplasm_eosinophilia\": \"pale_or_basophilic\",\n  \"extracellular_mucin\": \"extensive\",\n  \"fat_vacuoles\": \"absent\",\n  \"small_round_cell_infiltrate\": \"absent\",\n  \"necrotic_debris\": \"absent\"\n}\n```",
@@ -1810,6 +1812,17 @@
    "image": "img/archive/pathmnist_000.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "adipose": 0.92,
+    "background": 0.03,
+    "debris": 0.01,
+    "lymphocytes": 0.01,
+    "mucus": 0.01,
+    "smooth muscle": 0.01,
+    "normal colon mucosa": 0.0,
+    "cancer-associated stroma": 0.0,
+    "colorectal adenocarcinoma epithelium": 0.01
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"adipose\": 0.92,\n  \"background\": 0.03,\n  \"debris\": 0.01,\n  \"lymphocytes\": 0.01,\n  \"mucus\": 0.01,\n  \"smooth muscle\": 0.01,\n  \"normal colon mucosa\": 0.0,\n  \"cancer-associated stroma\": 0.0,\n  \"colorectal adenocarcinoma epithelium\": 0.01\n}",
@@ -1834,6 +1847,17 @@
    "image": "img/archive/pathmnist_050.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "adipose": 0.01,
+    "background": 0.05,
+    "debris": 0.1,
+    "lymphocytes": 0.05,
+    "mucus": 0.75,
+    "smooth muscle": 0.02,
+    "normal colon mucosa": 0.01,
+    "cancer-associated stroma": 0.03,
+    "colorectal adenocarcinoma epithelium": 0.03
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"adipose\": 0.01,\n  \"background\": 0.05,\n  \"debris\": 0.1,\n  \"lymphocytes\": 0.05,\n  \"mucus\": 0.75,\n  \"smooth muscle\": 0.02,\n  \"normal colon mucosa\": 0.01,\n  \"cancer-associated stroma\": 0.03,\n  \"colorectal adenocarcinoma epithelium\": 0.03\n}",
@@ -1871,6 +1895,7 @@
     "background_erythema": "absent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "{\n  \"asymmetry_and_border\": \"mild\",\n  \"colour_count\": \"two\",\n  \"pigment_network\": \"present\",\n  \"network_atypia\": \"absent\",\n  \"blue_white_structures\": \"absent\",\n  \"arborizing_vessels\": \"absent\",\n  \"leaf_like_or_spoke_wheel_areas\": \"absent\",\n  \"milia_like_cysts_and_comedo_openings\": \"absent\",\n  \"surface_keratin_or_scale\": \"absent\",\n  \"red_lacunae\": \"absent\",\n  \"central_white_patch\": \"absent\",\n  \"background_erythema\": \"absent\"\n}",
@@ -1908,6 +1933,7 @@
     "background_erythema": "absent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "{\n  \"asymmetry_and_border\": \"mild\",\n  \"colour_count\": \"two\",\n  \"pigment_network\": \"absent\",\n  \"network_atypia\": \"absent\",\n  \"blue_white_structures\": \"present\",\n  \"arborizing_vessels\": \"absent\",\n  \"leaf_like_or_spoke_wheel_areas\": \"absent\",\n  \"milia_like_cysts_and_comedo_openings\": \"absent\",\n  \"surface_keratin_or_scale\": \"absent\",\n  \"red_lacunae\": \"absent\",\n  \"central_white_patch\": \"absent\",\n  \"background_erythema\": \"absent\"\n}",
@@ -1932,6 +1958,15 @@
    "image": "img/archive/dermamnist_000.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "actinic keratoses and intraepithelial carcinoma": 0.02,
+    "basal cell carcinoma": 0.03,
+    "benign keratosis-like lesions": 0.15,
+    "dermatofibroma": 0.05,
+    "melanoma": 0.15,
+    "melanocytic nevi": 0.55,
+    "vascular lesions": 0.05
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"actinic keratoses and intraepithelial carcinoma\": 0.02,\n  \"basal cell carcinoma\": 0.03,\n  \"benign keratosis-like lesions\": 0.15,\n  \"dermatofibroma\": 0.05,\n  \"melanoma\": 0.15,\n  \"melanocytic nevi\": 0.55,\n  \"vascular lesions\": 0.05\n}",
@@ -1956,6 +1991,15 @@
    "image": "img/archive/dermamnist_050.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "actinic keratoses and intraepithelial carcinoma": 0.02,
+    "basal cell carcinoma": 0.05,
+    "benign keratosis-like lesions": 0.15,
+    "dermatofibroma": 0.05,
+    "melanoma": 0.55,
+    "melanocytic nevi": 0.18,
+    "vascular lesions": 0.0
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"actinic keratoses and intraepithelial carcinoma\": 0.02,\n  \"basal cell carcinoma\": 0.05,\n  \"benign keratosis-like lesions\": 0.15,\n  \"dermatofibroma\": 0.05,\n  \"melanoma\": 0.55,\n  \"melanocytic nevi\": 0.18,\n  \"vascular lesions\": 0.0\n}",
@@ -1990,6 +2034,7 @@
     "shadowing_beneath_lesion": "absent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "{\n  \"retinal_layer_integrity\": \"intact\",\n  \"foveal_contour\": \"depressed\",\n  \"retinal_thickness\": \"not_increased\",\n  \"intraretinal_cystoid_spaces\": \"absent\",\n  \"subretinal_fluid\": \"absent\",\n  \"rpe_line_contour\": \"small_domed_undulations\",\n  \"subretinal_hyperreflective_material\": \"absent\",\n  \"hyperreflective_foci\": \"absent\",\n  \"shadowing_beneath_lesion\": \"absent\"\n}",
@@ -2024,6 +2069,7 @@
     "shadowing_beneath_lesion": "absent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "```json\n{\n  \"retinal_layer_integrity\": \"markedly_disrupted\",\n  \"foveal_contour\": \"flattened\",\n  \"retinal_thickness\": \"markedly_increased\",\n  \"intraretinal_cystoid_spaces\": \"many_or_large\",\n  \"subretinal_fluid\": \"absent\",\n  \"rpe_line_contour\": \"smooth\",\n  \"subretinal_hyperreflective_material\": \"absent\",\n  \"hyperreflective_foci\": \"absent\",\n  \"shadowing_beneath_lesion\": \"absent\"\n}\n```",
@@ -2048,6 +2094,12 @@
    "image": "img/archive/octmnist_000.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "choroidal neovascularization": 0.05,
+    "diabetic macular edema": 0.1,
+    "drusen": 0.8,
+    "normal": 0.05
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"choroidal neovascularization\": 0.05,\n  \"diabetic macular edema\": 0.1,\n  \"drusen\": 0.8,\n  \"normal\": 0.05\n}",
@@ -2072,6 +2124,12 @@
    "image": "img/archive/octmnist_050.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "choroidal neovascularization": 0.05,
+    "diabetic macular edema": 0.85,
+    "drusen": 0.05,
+    "normal": 0.05
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"choroidal neovascularization\": 0.05,\n  \"diabetic macular edema\": 0.85,\n  \"drusen\": 0.05,\n  \"normal\": 0.05\n}",
@@ -2105,6 +2163,7 @@
     "costophrenic_angle_blunting": "marked"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "```json\n{\n  \"parenchymal_opacity\": \"definite\",\n  \"opacity_extent\": \"lobe_sized\",\n  \"opacity_density\": \"solid_lines_hidden\",\n  \"linear_streaky_markings\": \"absent\",\n  \"air_bronchogram\": \"absent\",\n  \"peribronchial_thickening\": \"absent\",\n  \"border_obscuration\": \"complete\",\n  \"costophrenic_angle_blunting\": \"marked\"\n}\n```",
@@ -2138,6 +2197,7 @@
     "costophrenic_angle_blunting": "absent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "```json\n{\n  \"parenchymal_opacity\": \"absent\",\n  \"opacity_extent\": \"none\",\n  \"opacity_density\": \"none\",\n  \"linear_streaky_markings\": \"absent\",\n  \"air_bronchogram\": \"absent\",\n  \"peribronchial_thickening\": \"absent\",\n  \"border_obscuration\": \"absent\",\n  \"costophrenic_angle_blunting\": \"absent\"\n}\n```",
@@ -2162,6 +2222,10 @@
    "image": "img/archive/pneumoniamnist_000.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "normal": 0.2,
+    "pneumonia": 0.8
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"normal\": 0.2,\n  \"pneumonia\": 0.8\n}",
@@ -2186,6 +2250,10 @@
    "image": "img/archive/pneumoniamnist_050.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "normal": 0.85,
+    "pneumonia": 0.15
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"normal\": 0.85,\n  \"pneumonia\": 0.15\n}",
@@ -2220,6 +2288,7 @@
     "granules_obscure_nucleus": "absent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "{\n  \"nucleus_present\": \"present\",\n  \"cell_size\": \"larger\",\n  \"nuclear_lobation\": \"indented\",\n  \"chromatin_density\": \"dense_clumped\",\n  \"nucleus_to_cytoplasm_ratio\": \"high\",\n  \"cytoplasm_basophilia\": \"pale_grey_blue\",\n  \"granule_abundance\": \"fine_sparse\",\n  \"granule_colour\": \"pale_neutral\",\n  \"granules_obscure_nucleus\": \"absent\"\n}",
@@ -2254,6 +2323,7 @@
     "granules_obscure_nucleus": "absent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "{\n  \"nucleus_present\": \"present\",\n  \"cell_size\": \"larger\",\n  \"nuclear_lobation\": \"indented\",\n  \"chromatin_density\": \"dense_clumped\",\n  \"nucleus_to_cytoplasm_ratio\": \"moderate\",\n  \"cytoplasm_basophilia\": \"pale_grey_blue\",\n  \"granule_abundance\": \"fine_sparse\",\n  \"granule_colour\": \"pale_neutral\",\n  \"granules_obscure_nucleus\": \"absent\"\n}",
@@ -2278,6 +2348,16 @@
    "image": "img/archive/bloodmnist_000.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "basophil": 0.01,
+    "eosinophil": 0.01,
+    "erythroblast": 0.01,
+    "immature granulocytes(myelocytes, metamyelocytes and promyelocytes)": 0.05,
+    "lymphocyte": 0.02,
+    "monocyte": 0.05,
+    "neutrophil": 0.85,
+    "platelet": 0.0
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"basophil\": 0.01,\n  \"eosinophil\": 0.01,\n  \"erythroblast\": 0.01,\n  \"immature granulocytes(myelocytes, metamyelocytes and promyelocytes)\": 0.05,\n  \"lymphocyte\": 0.02,\n  \"monocyte\": 0.05,\n  \"neutrophil\": 0.85,\n  \"platelet\": 0.0\n}",
@@ -2302,6 +2382,16 @@
    "image": "img/archive/bloodmnist_050.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "basophil": 0.01,
+    "eosinophil": 0.01,
+    "erythroblast": 0.01,
+    "immature granulocytes(myelocytes, metamyelocytes and promyelocytes)": 0.05,
+    "lymphocyte": 0.02,
+    "monocyte": 0.05,
+    "neutrophil": 0.85,
+    "platelet": 0.0
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"basophil\": 0.01,\n  \"eosinophil\": 0.01,\n  \"erythroblast\": 0.01,\n  \"immature granulocytes(myelocytes, metamyelocytes and promyelocytes)\": 0.05,\n  \"lymphocyte\": 0.02,\n  \"monocyte\": 0.05,\n  \"neutrophil\": 0.85,\n  \"platelet\": 0.0\n}",
@@ -2339,6 +2429,7 @@
     "adjacent_bone": "small"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "{\n  \"body_side\": \"patient_left\",\n  \"craniocaudal_level\": \"upper_abdominal\",\n  \"anteroposterior_position\": \"posterior\",\n  \"relative_size\": \"medium\",\n  \"elongation\": \"oval\",\n  \"contour_lobulation\": \"mildly_lobulated\",\n  \"hilar_notch\": \"subtle\",\n  \"relative_attenuation\": \"brighter\",\n  \"interior_homogeneity\": \"mildly_heterogeneous\",\n  \"bright_cortical_rim\": \"absent\",\n  \"boundary_definition\": \"sharp\",\n  \"adjacent_bone\": \"small\"\n}",
@@ -2376,6 +2467,7 @@
     "adjacent_bone": "absent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "{\n  \"body_side\": \"midline\",\n  \"craniocaudal_level\": \"upper_abdominal\",\n  \"anteroposterior_position\": \"central\",\n  \"relative_size\": \"large\",\n  \"elongation\": \"round\",\n  \"contour_lobulation\": \"smooth\",\n  \"hilar_notch\": \"absent\",\n  \"relative_attenuation\": \"much_brighter\",\n  \"interior_homogeneity\": \"homogeneous\",\n  \"bright_cortical_rim\": \"absent\",\n  \"boundary_definition\": \"sharp\",\n  \"adjacent_bone\": \"absent\"\n}",
@@ -2400,6 +2492,19 @@
    "image": "img/archive/organamnist_000.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "bladder": 0.01,
+    "femur-left": 0.01,
+    "femur-right": 0.01,
+    "heart": 0.01,
+    "kidney-left": 0.05,
+    "kidney-right": 0.05,
+    "liver": 0.05,
+    "lung-left": 0.01,
+    "lung-right": 0.01,
+    "pancreas": 0.83,
+    "spleen": 0.02
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"bladder\": 0.01,\n  \"femur-left\": 0.01,\n  \"femur-right\": 0.01,\n  \"heart\": 0.01,\n  \"kidney-left\": 0.05,\n  \"kidney-right\": 0.05,\n  \"liver\": 0.05,\n  \"lung-left\": 0.01,\n  \"lung-right\": 0.01,\n  \"pancreas\": 0.83,\n  \"spleen\": 0.02\n}",
@@ -2424,6 +2529,19 @@
    "image": "img/archive/organamnist_050.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "bladder": 0.01,
+    "femur-left": 0.01,
+    "femur-right": 0.01,
+    "heart": 0.01,
+    "kidney-left": 0.01,
+    "kidney-right": 0.01,
+    "liver": 0.01,
+    "lung-left": 0.01,
+    "lung-right": 0.01,
+    "pancreas": 0.01,
+    "spleen": 0.92
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"bladder\": 0.01,\n  \"femur-left\": 0.01,\n  \"femur-right\": 0.01,\n  \"heart\": 0.01,\n  \"kidney-left\": 0.01,\n  \"kidney-right\": 0.01,\n  \"liver\": 0.01,\n  \"lung-left\": 0.01,\n  \"lung-right\": 0.01,\n  \"pancreas\": 0.01,\n  \"spleen\": 0.92\n}",
@@ -2456,6 +2574,7 @@
     "tissue_plane_distortion": "marked"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "{\n  \"focal_lesion_present\": \"present\",\n  \"shape_irregularity\": \"irregular\",\n  \"margin_circumscription\": \"angular_or_spiculated\",\n  \"taller_than_wide\": \"present\",\n  \"posterior_shadowing\": \"marked\",\n  \"thick_echogenic_halo\": \"absent\",\n  \"tissue_plane_distortion\": \"marked\"\n}",
@@ -2488,6 +2607,7 @@
     "tissue_plane_distortion": "absent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "{\n  \"focal_lesion_present\": \"present\",\n  \"shape_irregularity\": \"irregular\",\n  \"margin_circumscription\": \"indistinct\",\n  \"taller_than_wide\": \"absent\",\n  \"posterior_shadowing\": \"absent\",\n  \"thick_echogenic_halo\": \"absent\",\n  \"tissue_plane_distortion\": \"absent\"\n}",
@@ -2512,6 +2632,10 @@
    "image": "img/archive/breastmnist_000.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "malignant": 0.4,
+    "normal, benign": 0.6
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"malignant\": 0.4,\n  \"normal, benign\": 0.6\n}",
@@ -2536,6 +2660,10 @@
    "image": "img/archive/breastmnist_050.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "malignant": 0.85,
+    "normal, benign": 0.15
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"malignant\": 0.85,\n  \"normal, benign\": 0.15\n}",
@@ -2571,6 +2699,7 @@
     "fibrous_proliferation": "absent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "{\n  \"microaneurysms_dot_haemorrhages\": \"none\",\n  \"blot_haemorrhages\": \"none\",\n  \"hard_exudates\": \"none\",\n  \"cotton_wool_spots\": \"none\",\n  \"venous_beading\": \"absent\",\n  \"irma\": \"absent\",\n  \"lesion_quadrant_spread\": \"none\",\n  \"neovascularisation\": \"absent\",\n  \"preretinal_or_vitreous_haemorrhage\": \"absent\",\n  \"fibrous_proliferation\": \"absent\"\n}",
@@ -2606,6 +2735,7 @@
     "fibrous_proliferation": "absent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "{\n  \"microaneurysms_dot_haemorrhages\": \"none\",\n  \"blot_haemorrhages\": \"none\",\n  \"hard_exudates\": \"none\",\n  \"cotton_wool_spots\": \"none\",\n  \"venous_beading\": \"absent\",\n  \"irma\": \"absent\",\n  \"lesion_quadrant_spread\": \"none\",\n  \"neovascularisation\": \"absent\",\n  \"preretinal_or_vitreous_haemorrhage\": \"absent\",\n  \"fibrous_proliferation\": \"absent\"\n}",
@@ -2630,6 +2760,13 @@
    "image": "img/archive/retinamnist_000.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "0": 0.1,
+    "1": 0.2,
+    "2": 0.25,
+    "3": 0.3,
+    "4": 0.15
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"0\": 0.1,\n  \"1\": 0.2,\n  \"2\": 0.25,\n  \"3\": 0.3,\n  \"4\": 0.15\n}",
@@ -2654,6 +2791,13 @@
    "image": "img/archive/retinamnist_050.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "0": 0.7,
+    "1": 0.2,
+    "2": 0.05,
+    "3": 0.03,
+    "4": 0.02
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"0\": 0.7,\n  \"1\": 0.2,\n  \"2\": 0.05,\n  \"3\": 0.03,\n  \"4\": 0.02\n}",
@@ -2687,6 +2831,7 @@
     "size_versus_neighbours": "similar"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "{\n  \"nucleus_size\": \"small\",\n  \"nucleus_elongation\": \"oval\",\n  \"outline_regularity\": \"smooth\",\n  \"chromatin_texture\": \"mottled\",\n  \"staining_intensity\": \"bright\",\n  \"neighbouring_nuclei\": \"several\",\n  \"neighbour_variety\": \"somewhat_mixed\",\n  \"size_versus_neighbours\": \"similar\"\n}",
@@ -2720,6 +2865,7 @@
     "size_versus_neighbours": "similar"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "{\n  \"nucleus_size\": \"small\",\n  \"nucleus_elongation\": \"oval\",\n  \"outline_regularity\": \"smooth\",\n  \"chromatin_texture\": \"mottled\",\n  \"staining_intensity\": \"moderate\",\n  \"neighbouring_nuclei\": \"several\",\n  \"neighbour_variety\": \"somewhat_mixed\",\n  \"size_versus_neighbours\": \"similar\"\n}",
@@ -2744,6 +2890,16 @@
    "image": "img/archive/tissuemnist_000.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "Collecting Duct, Connecting Tubule": 0.05,
+    "Distal Convoluted Tubule": 0.05,
+    "Glomerular endothelial cells": 0.05,
+    "Interstitial endothelial cells": 0.05,
+    "Leukocytes": 0.75,
+    "Podocytes": 0.05,
+    "Proximal Tubule Segments": 0.05,
+    "Thick Ascending Limb": 0.05
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"Collecting Duct, Connecting Tubule\": 0.05,\n  \"Distal Convoluted Tubule\": 0.05,\n  \"Glomerular endothelial cells\": 0.05,\n  \"Interstitial endothelial cells\": 0.05,\n  \"Leukocytes\": 0.75,\n  \"Podocytes\": 0.05,\n  \"Proximal Tubule Segments\": 0.05,\n  \"Thick Ascending Limb\": 0.05\n}",
@@ -2768,6 +2924,16 @@
    "image": "img/archive/tissuemnist_050.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "Collecting Duct, Connecting Tubule": 0.05,
+    "Distal Convoluted Tubule": 0.05,
+    "Glomerular endothelial cells": 0.05,
+    "Interstitial endothelial cells": 0.05,
+    "Leukocytes": 0.75,
+    "Podocytes": 0.05,
+    "Proximal Tubule Segments": 0.05,
+    "Thick Ascending Limb": 0.05
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"Collecting Duct, Connecting Tubule\": 0.05,\n  \"Distal Convoluted Tubule\": 0.05,\n  \"Glomerular endothelial cells\": 0.05,\n  \"Interstitial endothelial cells\": 0.05,\n  \"Leukocytes\": 0.75,\n  \"Podocytes\": 0.05,\n  \"Proximal Tubule Segments\": 0.05,\n  \"Thick Ascending Limb\": 0.05\n}",
@@ -2805,6 +2971,7 @@
     "adjacent_bone": "prominent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "```json\n{\n  \"body_side\": \"midline\",\n  \"craniocaudal_level\": \"upper_abdominal\",\n  \"anteroposterior_position\": \"posterior\",\n  \"relative_size\": \"large\",\n  \"elongation\": \"oval\",\n  \"contour_lobulation\": \"smooth\",\n  \"hilar_notch\": \"absent\",\n  \"relative_attenuation\": \"similar\",\n  \"interior_homogeneity\": \"homogeneous\",\n  \"bright_cortical_rim\": \"absent\",\n  \"boundary_definition\": \"sharp\",\n  \"adjacent_bone\": \"prominent\"\n}\n```",
@@ -2842,6 +3009,7 @@
     "adjacent_bone": "prominent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "```json\n{\n  \"body_side\": \"patient_left\",\n  \"craniocaudal_level\": \"upper_abdominal\",\n  \"anteroposterior_position\": \"posterior\",\n  \"relative_size\": \"large\",\n  \"elongation\": \"oval\",\n  \"contour_lobulation\": \"smooth\",\n  \"hilar_notch\": \"absent\",\n  \"relative_attenuation\": \"similar\",\n  \"interior_homogeneity\": \"mildly_heterogeneous\",\n  \"bright_cortical_rim\": \"absent\",\n  \"boundary_definition\": \"sharp\",\n  \"adjacent_bone\": \"prominent\"\n}\n```",
@@ -2866,6 +3034,19 @@
    "image": "img/archive/organcmnist_000.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "bladder": 0.01,
+    "femur-left": 0.01,
+    "femur-right": 0.01,
+    "heart": 0.01,
+    "kidney-left": 0.01,
+    "kidney-right": 0.01,
+    "liver": 0.01,
+    "lung-left": 0.92,
+    "lung-right": 0.01,
+    "pancreas": 0.01,
+    "spleen": 0.01
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"bladder\": 0.01,\n  \"femur-left\": 0.01,\n  \"femur-right\": 0.01,\n  \"heart\": 0.01,\n  \"kidney-left\": 0.01,\n  \"kidney-right\": 0.01,\n  \"liver\": 0.01,\n  \"lung-left\": 0.92,\n  \"lung-right\": 0.01,\n  \"pancreas\": 0.01,\n  \"spleen\": 0.01\n}",
@@ -2890,6 +3071,19 @@
    "image": "img/archive/organcmnist_050.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "bladder": 0.01,
+    "femur-left": 0.01,
+    "femur-right": 0.01,
+    "heart": 0.01,
+    "kidney-left": 0.05,
+    "kidney-right": 0.05,
+    "liver": 0.8,
+    "lung-left": 0.02,
+    "lung-right": 0.02,
+    "pancreas": 0.02,
+    "spleen": 0.01
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"bladder\": 0.01,\n  \"femur-left\": 0.01,\n  \"femur-right\": 0.01,\n  \"heart\": 0.01,\n  \"kidney-left\": 0.05,\n  \"kidney-right\": 0.05,\n  \"liver\": 0.8,\n  \"lung-left\": 0.02,\n  \"lung-right\": 0.02,\n  \"pancreas\": 0.02,\n  \"spleen\": 0.01\n}",
@@ -2927,6 +3121,7 @@
     "adjacent_bone": "absent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "{\n  \"body_side\": \"patient_left\",\n  \"craniocaudal_level\": \"upper_abdominal\",\n  \"anteroposterior_position\": \"posterior\",\n  \"relative_size\": \"medium\",\n  \"elongation\": \"oval\",\n  \"contour_lobulation\": \"smooth\",\n  \"hilar_notch\": \"prominent\",\n  \"relative_attenuation\": \"brighter\",\n  \"interior_homogeneity\": \"markedly_heterogeneous\",\n  \"bright_cortical_rim\": \"absent\",\n  \"boundary_definition\": \"sharp\",\n  \"adjacent_bone\": \"absent\"\n}",
@@ -2964,6 +3159,7 @@
     "adjacent_bone": "absent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "{\n  \"body_side\": \"midline\",\n  \"craniocaudal_level\": \"lower_abdominal\",\n  \"anteroposterior_position\": \"central\",\n  \"relative_size\": \"large\",\n  \"elongation\": \"elongated\",\n  \"contour_lobulation\": \"markedly_irregular\",\n  \"hilar_notch\": \"absent\",\n  \"relative_attenuation\": \"much_brighter\",\n  \"interior_homogeneity\": \"homogeneous\",\n  \"bright_cortical_rim\": \"absent\",\n  \"boundary_definition\": \"indistinct\",\n  \"adjacent_bone\": \"absent\"\n}",
@@ -2988,6 +3184,19 @@
    "image": "img/archive/organsmnist_000.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "bladder": 0.01,
+    "femur-left": 0.01,
+    "femur-right": 0.01,
+    "heart": 0.01,
+    "kidney-left": 0.45,
+    "kidney-right": 0.45,
+    "liver": 0.02,
+    "lung-left": 0.01,
+    "lung-right": 0.01,
+    "pancreas": 0.02,
+    "spleen": 0.01
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"bladder\": 0.01,\n  \"femur-left\": 0.01,\n  \"femur-right\": 0.01,\n  \"heart\": 0.01,\n  \"kidney-left\": 0.45,\n  \"kidney-right\": 0.45,\n  \"liver\": 0.02,\n  \"lung-left\": 0.01,\n  \"lung-right\": 0.01,\n  \"pancreas\": 0.02,\n  \"spleen\": 0.01\n}",
@@ -3012,6 +3221,19 @@
    "image": "img/archive/organsmnist_050.png",
    "answers": null,
    "parsed": true,
+   "scores": {
+    "bladder": 0.01,
+    "femur-left": 0.01,
+    "femur-right": 0.01,
+    "heart": 0.01,
+    "kidney-left": 0.01,
+    "kidney-right": 0.01,
+    "liver": 0.01,
+    "lung-left": 0.92,
+    "lung-right": 0.01,
+    "pancreas": 0.01,
+    "spleen": 0.01
+   },
    "complete": true,
    "invalid": {},
    "text": "{\n  \"bladder\": 0.01,\n  \"femur-left\": 0.01,\n  \"femur-right\": 0.01,\n  \"heart\": 0.01,\n  \"kidney-left\": 0.01,\n  \"kidney-right\": 0.01,\n  \"liver\": 0.01,\n  \"lung-left\": 0.92,\n  \"lung-right\": 0.01,\n  \"pancreas\": 0.01,\n  \"spleen\": 0.01\n}",
@@ -3064,6 +3286,7 @@
     "supradiaphragmatic_gas_structure": "absent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "```json\n{\n  \"airspace_opacity\": \"absent\",\n  \"hazy_opacity\": \"absent\",\n  \"interstitial_markings\": \"normal\",\n  \"opacity_basal_predominance\": \"absent\",\n  \"costophrenic_angle_blunting\": \"absent\",\n  \"peripheral_pleural_density\": \"absent\",\n  \"cardiac_silhouette_width\": \"normal\",\n  \"discrete_rounded_opacity\": \"absent\",\n  \"pleural_line_with_avascular_zone\": \"absent\",\n  \"lung_inflation\": \"normal\",\n  \"mediastinal_shift_direction\": \"none\",\n  \"supradiaphragmatic_gas_structure\": \"absent\"\n}\n```",
@@ -3116,6 +3339,7 @@
     "supradiaphragmatic_gas_structure": "absent"
    },
    "parsed": true,
+   "scores": null,
    "complete": true,
    "invalid": {},
    "text": "{\n  \"airspace_opacity\": \"confluent\",\n  \"hazy_opacity\": \"marked\",\n  \"interstitial_markings\": \"normal\",\n  \"opacity_basal_predominance\": \"marked\",\n  \"costophrenic_angle_blunting\": \"marked\",\n  \"peripheral_pleural_density\": \"absent\",\n  \"cardiac_silhouette_width\": \"normal\",\n  \"discrete_rounded_opacity\": \"absent\",\n  \"pleural_line_with_avascular_zone\": \"absent\",\n  \"lung_inflation\": \"reduced\",\n  \"mediastinal_shift_direction\": \"none\",\n  \"supradiaphragmatic_gas_structure\": \"absent\"\n}",
@@ -3132,7 +3356,7 @@
  ],
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T04:55:03Z",
+  "exported": "2026-09-18T05:27:33Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
    "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",

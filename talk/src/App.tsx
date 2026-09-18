@@ -8,6 +8,7 @@ import { Workflow } from "./sections/Workflow";
 import { Premise } from "./sections/Premise";
 import { Question } from "./sections/Question";
 import { Design } from "./sections/Design";
+import { Models } from "./sections/Models";
 import { Machine } from "./sections/Machine";
 import { Results } from "./sections/Results";
 import { Thinking } from "./sections/Thinking";
@@ -23,7 +24,7 @@ function ExploreBand() {
   const { ref, seen } = useInView<HTMLDivElement>("400px");
   return (
     <Band id="explore">
-      <Header id="explore" eyebrow="10">{explore.header}</Header>
+      <Header id="explore" eyebrow="11">{explore.header}</Header>
       <div ref={ref} className="explore-slot">
         {seen && (
           <Suspense fallback={<p className="note">Loading the explorer…</p>}>
@@ -60,6 +61,7 @@ function Page() {
         <Title />
         <Question />
         <Design />
+        <Models />
         <Workflow />
         <Machine />
         <Results />

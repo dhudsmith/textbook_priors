@@ -163,9 +163,9 @@ export default function Explore() {
         ) : "Loading the bank…"}
       </Deep>
 
-      <h4>The archive</h4>
+      <h4>What the model said about this dataset's images</h4>
       {archive ? <ArchiveCall sample={archive} fixedDataset={dataset} />
-               : <p className="note">Loading the archive sample…</p>}
+               : <p className="note">Loading the archived answers…</p>}
 
       <LadderBlock />
 
@@ -240,5 +240,5 @@ export default function Explore() {
 }
 
 export function ExploreHeader() {
-  return <Header id="explore" eyebrow="10">Extra</Header>;
+  return <Header id="explore" eyebrow="11">Extra</Header>;
 }

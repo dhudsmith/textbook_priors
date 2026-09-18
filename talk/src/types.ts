@@ -81,6 +81,12 @@ export interface Study {
     bootstrap: number;
     models: Record<string, { family: string; params_b: number; splits: string[] }>;
     readers: Record<string, { model: string; effort: string; api: string; subsample: number }>;
+    /* One row per model the study called. `params_b` is null where the family publishes no
+       size, and `reasoning` lists the efforts the service accepts for it. */
+    model_table: { name: string; family: string; params_b: number | null;
+                   weights: "open" | "closed"; reasoning: string[]; calls: number;
+                   served: string[]; primary: boolean }[];
+    model_facts_source: string;
     zenodo_record: number; medmnist_version: string;
     literature: { citation: string; title: string; url: string; table: string };
   };
@@ -143,6 +149,7 @@ export interface ArchiveRecord {
   id: string; dataset: string; prompt: string; manifest_key: string; position: number;
   index: number; label: number | number[]; image: string;
   answers: Record<string, string> | null; parsed: boolean; complete: boolean;
+  scores: Record<string, number | null> | null;
   invalid: Record<string, unknown>; text: string | null; served_model: string | null;
   finish_reason: string | null; from_reasoning: boolean | null; elapsed_s: number | null;
   usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number } | null;

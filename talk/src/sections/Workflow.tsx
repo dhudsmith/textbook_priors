@@ -7,7 +7,7 @@ import { title as copy } from "../content";
 export function Workflow() {
   return (
     <Band id="workflow">
-      <Header id="workflow" eyebrow="3">{copy.workflow.header}</Header>
+      <Header id="workflow" eyebrow="4">{copy.workflow.header}</Header>
       <p className="lede">{copy.workflow.lede}</p>
       <WorkflowDiagram />
     </Band>

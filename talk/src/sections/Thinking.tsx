@@ -32,7 +32,7 @@ export function Thinking() {
 
   return (
     <Band id="thinking">
-      <Header id="thinking" eyebrow="6">{copy.header}</Header>
+      <Header id="thinking" eyebrow="7">{copy.header}</Header>
       <p className="lede">{copy.lede}</p>
 
       <ChartFrame
@@ -44,8 +44,8 @@ export function Thinking() {
         The thinking step wins on {h4.h4a.wins} of {h4.n_datasets}{" "}
         (p = {h4.h4a.sign_test_p.toFixed(4)}) and the frontier model on {h4.h4b.wins}{" "}
         (p = {h4.h4b.sign_test_p.toFixed(4)}), against the {h4.min_wins} the rule asks for:{" "}
-        {v4.verdict}. One classifier reads all {h4.readers.length} readers on the same{" "}
-        {h4.subsample} images, so every difference is paired.
+        {v4.verdict}. Each of the {h4.readers.length} readers gets its own head, fitted the
+        same way on the same {h4.subsample} images, so every difference is paired.
       </p>
       <Bullets items={copy.bullets} />
 
@@ -77,7 +77,8 @@ export function Thinking() {
           it is {h6clear.map((r) => r.dataset).join(", ")} — the one the prediction named.
         </p>
         <ChartFrame
-          caption="gpt-5.6-terra at low effort minus the same model at medium, by the same probe.">
+          caption={"gpt-5.6-terra at low effort minus the same model at medium, each read by " +
+                   "a head of its own, fitted the same way."}>
           <Forest rows={h6rows} colour={armHue("C")}
                   label="gpt-5.6-terra: low minus medium, probe AUC" />
         </ChartFrame>

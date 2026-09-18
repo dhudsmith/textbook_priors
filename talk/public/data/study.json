@@ -1,7 +1,7 @@
 {
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T04:55:03Z",
+  "exported": "2026-09-18T05:27:33Z",
   "source_files": [
    "config/config.yaml",
    "config/medmnist.yaml",
@@ -235,6 +235,116 @@
     "subsample": 200
    }
   },
+  "model_table": [
+   {
+    "name": "qwen3.5-9b",
+    "family": "qwen",
+    "params_b": 9,
+    "weights": "open",
+    "reasoning": [
+     "none",
+     "high"
+    ],
+    "calls": 5212,
+    "served": [
+     "Qwen/Qwen3.5-9B"
+    ],
+    "primary": false
+   },
+   {
+    "name": "gemma-4-12b",
+    "family": "gemma",
+    "params_b": 12,
+    "weights": "open",
+    "reasoning": [
+     "none",
+     "high"
+    ],
+    "calls": 5067,
+    "served": [
+     "google/gemma-4-12B-it"
+    ],
+    "primary": false
+   },
+   {
+    "name": "qwen3.8-27b-fp8",
+    "family": "qwen",
+    "params_b": 27,
+    "weights": "open",
+    "reasoning": [
+     "none",
+     "low",
+     "medium",
+     "xhigh"
+    ],
+    "calls": 34443,
+    "served": [
+     "Qwen/Qwen3.8-27B-FP8"
+    ],
+    "primary": true
+   },
+   {
+    "name": "gemma-4-31b",
+    "family": "gemma",
+    "params_b": 31,
+    "weights": "open",
+    "reasoning": [
+     "none",
+     "high"
+    ],
+    "calls": 5056,
+    "served": [
+     "nvidia/Gemma-4-31B-IT-NVFP4"
+    ],
+    "primary": false
+   },
+   {
+    "name": "gpt-5.6-luna",
+    "family": "gpt-5.6",
+    "params_b": null,
+    "weights": "closed",
+    "reasoning": [
+     "low",
+     "medium"
+    ],
+    "calls": 2156,
+    "served": [
+     "gpt-5.6-luna"
+    ],
+    "primary": false
+   },
+   {
+    "name": "gpt-5.6-terra",
+    "family": "gpt-5.6",
+    "params_b": null,
+    "weights": "closed",
+    "reasoning": [
+     "low",
+     "medium"
+    ],
+    "calls": 4312,
+    "served": [
+     "gpt-5.6-terra"
+    ],
+    "primary": false
+   },
+   {
+    "name": "gpt-5.6-sol",
+    "family": "gpt-5.6",
+    "params_b": null,
+    "weights": "closed",
+    "reasoning": [
+     "low",
+     "medium"
+    ],
+    "calls": 2163,
+    "served": [
+     "gpt-5.6-sol"
+    ],
+    "primary": false
+   }
+  ],
+  "model_facts_source": "docs/rcd_llm_service.md (read from /v1/models?full=true, 2026-09-12)",
   "zenodo_record": 10519652,
   "medmnist_version": "3.0.2",
   "literature": {

@@ -1328,3 +1328,73 @@ evidence rather than our prose, under a heading that now explains what the panel
 
 Delivery estimate, section by section, is about twenty-three minutes. Three sections run over two
 and a half, and each is over because of something the owner asked to keep.
+
+## 2026-09-18 13:25 — The classifiers are not identical, and the models get a section
+
+Three instructions, in the order they arrived. **"The classifiers are not identical. Surrounding
+copy needs to be fixed and the diagram."** He is right, and the error was substantive rather than
+cosmetic: the arm diagram drew one box labelled *one identical classifier* fed by both feature
+blocks and fanning out to C, P and C+P, which says the three arms share one object. They do not.
+They are three separate fits of the same specification — a linear classification head, the same
+regularisation search, the same seeds and the same nested subsets — each on the features its arm
+is defined on (`priors/stages.py` calls `fit_predict` once per arm per n per seed, and
+`priors/classify.py` says so in its own header). What is held identical is the procedure, not the
+classifier, and the study's fairness argument is the procedure, so the drawing was undermining the
+claim it was there to support.
+
+The diagram was redrawn in five columns — image, what reads it, features, *one procedure, three
+fits*, arm. Each arm that gets labels now has a head of its own, outlined in that arm's colour,
+and every line wears the colour of the arm it ends at, so provenance is readable without a legend:
+C's head is entered only by the concept vector, P's only by the pixel features, and C+P's by both.
+C+P's head sits between the other two on purpose, so the two blocks converge on it without a line
+crossing anything. The zero-label arms are unchanged, because they were right: A leaves the
+zero-shot prompt and never becomes features, B reads the concept vector with no head at all.
+Seven copy locations repeated the error and were corrected — the section header, a bullet, the
+probe note, two of the three question descriptions on the results figure, the H5 forest caption,
+the reader sentence in the thinking section, the model-ladder axis label in Extra — plus the
+diagram's aria-label, the file's header comment and `talk/PLAN.md`.
+
+**"Removed archived content as well. Everything is committed if we need it."** Acted on as a
+deletion, and then corrected mid-session by the owner: *"Reorganize this widget. I really like
+it... It just needs to be cleaned up substantially to be more visually intuitive."* The deletion
+was reversed from `HEAD` before anything else was built on it. The real defect was that the two
+prompts return different shapes of answer — the checklist returns a level per visual feature, the
+other prompt a number per class — and one display drew whichever was drawn at random. It now shows
+one image with **both** of its answers side by side, which is the contrast the panel exists to
+show: two tables, one captioned for each question, the class table sorted with the true class
+marked, and the record beside the picture cut to two facts, which model answered and whether it
+was thinking. No reply text and no field names anywhere in it. The class distribution was in the
+archive but not in the export, so `talk/scripts/export_talk_data.py` now carries the score stage's
+parsed `scores` for every zero-shot record; it is parsed against the release's own class names, so
+`"0": 0.7` never reaches a reader — except on retinamnist, where the release's class names really
+are the grades `0`–`4`.
+
+**"After the 'arms' section, add a brief section for the VLMs considered in this study."** A new
+section three, *The models we asked*: a lede, four bullets saying what each column is for, and one
+table of seven rows — family, size, the thinking settings the service accepts, open or closed
+weights, and calls in this study. Every column answers a question the talk asks later, and nothing
+else was added. Two of those facts are in neither the configuration nor the results: whether the
+weights are open, and which reasoning efforts a model takes. They are transcribed into the export
+from `docs/rcd_llm_service.md` with the source recorded beside them, rather than inferred from
+`api: local` against `api: gateway`, which is a transport and not a licence. The closed family's
+size reads *not published*, which is the honest cell and is why H7 had to order that family by
+price. The page is twelve bands; the sections below the new one were renumbered.
+
+**Checked rather than taken on trust.** The redrawn diagram was read as an image: each labelled arm
+now enters its own head, every line wears the colour of the arm it ends at, and the column that
+used to claim one shared classifier reads *one procedure, three fits* — which is what the code
+does, one call to `fit_predict` per arm per n per seed. The model table's call counts were checked
+against `archive.by_model` row by row and they sum to 58,409, the archive total, with the readers
+folded into their models. Re-running the export reproduces `study.json` and `archive_sample.json`
+with no difference but the timestamp, so nothing in either was hand-patched.
+
+One claim was walked back in review. The table said the closed models take low and medium effort
+"never off", which reads as transcribed capability — but `docs/rcd_llm_service.md` says in terms
+that its metadata covers locally hosted models only, so for the closed family there is no published
+listing at all. Those two cells are the settings this study was able to use, not what a vendor
+publishes, and the note under the table now says so. The open rows were checked line by line
+against the doc's table and are faithful.
+
+The only developer vocabulary left on the page is inside the two prompts Extra shows verbatim,
+which tell the model to reply with a JSON object. That is the instruction actually sent, in a
+panel that is closed until someone opens it, and it is the evidence rather than our prose.

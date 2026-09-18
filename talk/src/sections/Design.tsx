@@ -50,7 +50,8 @@ export function Design() {
       </table>
       </div>
       <p className="note">
-        A probe is one logistic regression on frozen features.
+        A probe is a linear classification head fitted on features that are left frozen.
+        Arms C, P and C+P each fit their own, by the same procedure, on the same labels.
       </p>
 
       <h3>Two limits</h3>

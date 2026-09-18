@@ -408,6 +408,20 @@
    "title": "MedMNIST first, then the textbook, then a duplication sweep",
    "kind": "build",
    "lead": "The user recast the section that had been called What we asked the model: name it \"Medical images and associated visual features\", make it MedMNIST-focused, describe the dataset in the bullets, and centre the second\u2026"
+  },
+  {
+   "date": "2026-09-18",
+   "time": "12:30",
+   "title": "The talk cut to twenty-five minutes",
+   "kind": "build",
+   "lead": "Overnight instructions, in the order they arrived: the talk is far too long; the learning curve should be the headline, with a control that picks which question you are asking and presets the arms that answer it; keep\u2026"
+  },
+  {
+   "date": "2026-09-18",
+   "time": "13:25",
+   "title": "The classifiers are not identical, and the models get a section",
+   "kind": "build",
+   "lead": "Three instructions, in the order they arrived. \"The classifiers are not identical."
   }
  ],
  "kinds": [
@@ -439,7 +453,7 @@
  "kind_note": "Only the kind of each entry was assigned by hand; the rest is the file's own heading and first paragraph.",
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T04:55:03Z",
+  "exported": "2026-09-18T05:27:33Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
    "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",

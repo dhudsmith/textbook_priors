@@ -12,7 +12,7 @@ export function Close() {
 
   return (
     <Band id="close">
-      <Header id="close" eyebrow="9">{copy.header}</Header>
+      <Header id="close" eyebrow="10">{copy.header}</Header>
 
       {/* The counts of prompts, calls and jobs are in the section above; what is only here is
           what went wrong and what found it. */}

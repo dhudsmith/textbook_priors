@@ -158,10 +158,10 @@ export const question = {
 };
 
 export const design = {
-  header: "Five arms, one classifier",
+  header: "Five arms, one procedure",
   lede: "What is the textbook worth in labelled images? Two arms use none. Three use n.",
   bullets: [
-    "One classifier, three arms — only the features differ",
+    "Three arms fit their own linear classification head — same procedure, different features",
     "Every comparison paired on one seeded test sample",
     "AUC throughout: 1.0 perfect, 0.5 chance",
   ],
@@ -186,6 +186,26 @@ export const design = {
       source: "CHANGELOG.md 2026-09-09",
     },
       ] as Callout[],
+};
+
+/* The models, between the arms and how the study is built. Short by design: the room needs to
+   know what was asked before the results start naming families, efforts and open weights. Every
+   column earns its place by answering a question asked later, and the bullets say which. */
+export const models = {
+  header: "The models we asked",
+  lede:
+    "Every number in this talk starts with a model looking at an image. These are the models " +
+    "that looked, and each column is here because something later depends on it.",
+  bullets: [
+    "Family and size — one question asks whether a bigger model in the same family reads better",
+    "Thinking — a later section is about what happens when the model is allowed to",
+    "Open or closed weights — an archive bought against a closed model cannot be re-derived",
+    "Calls — where the work actually went",
+  ],
+  sizeNote:
+    "The closed family publishes neither its size nor its thinking settings. Price is what it " +
+    "could be ordered by, and the settings shown are the ones this study was able to use — none " +
+    "of which turns thinking off.",
 };
 
 export const machine = {
@@ -249,8 +269,9 @@ export const results = {
       id: "h1",
       chip: "Can the textbook replace labels?",
       asks:
-        "The checklist read with no labels at all, against a classifier on pretrained image " +
-        "features, and against the same classifier on the checklist answers.",
+        "The checklist read with no labels at all, against a linear classification head on " +
+        "pretrained image features, and against a second head, fitted the same way, on the " +
+        "checklist answers.",
       hidden: ["CP", "A", "lit"],
     },
     {
@@ -265,8 +286,9 @@ export const results = {
       id: "h5",
       chip: "Does the textbook add to the pixels?",
       asks:
-        "One classifier on pretrained image features, then the same classifier on those " +
-        "features with the checklist answers alongside them. Nothing else changes.",
+        "A linear classification head on pretrained image features, then a second head, " +
+        "fitted the same way, on those features with the checklist answers alongside them. " +
+        "Nothing else changes.",
       hidden: ["A", "B", "C", "lit"],
     },
   ],
