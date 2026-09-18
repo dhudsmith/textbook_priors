@@ -1848,3 +1848,32 @@ thinking still, and the limits panel says what the probe measures instead of cav
 that is no longer shown. H4b remains in the export and in the report.
 
 *"Remove this callout"* — *The outputs are not the product*. Gone.
+
+## 2026-09-19 03:45 — Takeaways from the exercise; the code on the wall; the QR persists
+
+*"You know what. I don't like the carosel. Use a numbered list."* Right again, and the reason is
+worth keeping: a list is read at a glance, a deck has to be operated, and a speaker mid-sentence
+should not be clicking. Six numbered items now, each a short bold line for the room and a sentence
+or two underneath in lighter, smaller text for whoever is reading on their own device. `Deck` and
+its styles are gone; it lived for one day.
+
+Above the list, three quiet paragraphs he asked for: what the four days cost, the thing he got
+wrong, and the questions. *"{codeTotal} lines of code"* is not typed — the export now counts the
+lines itself, off the files, into a `code` block: 919 in the Snakefile, 3,559 of analysis, 2,159 of
+tests, 6,931 for this page, and the 88 recorded runs of the workflow, counted from
+`.snakemake/log/`. Counting rather than stating is the only way the number survives the next
+commit. Then, in his words: *"just this morning, reviewing this talk, I found I had a big
+misconception about which models were used for the primary hypothesis tests"* — and the three
+questions he does not answer: *Am I just self-conscious? Is this the new era? How much of the code
+should I read?*
+
+*"Can we move the qr code to the top of the sidebar… so it persists."* It is above **Talk outline**
+now, labelled *Link to talk*, on screen for the whole talk instead of only at the end. The phone
+layout already hides the rail's furniture and now hides this with it, since a reader on a phone
+arrived through that code.
+
+One repair on the way: an edit to `content/index.ts` spliced on a marker that had moved, which
+duplicated four exports rather than replacing one. `tsc` caught it immediately — four
+"cannot redeclare" errors — and the two copies were confirmed byte-identical before one was
+deleted. Worth noting because the failure mode is silent in a file this size if nothing typechecks
+it.

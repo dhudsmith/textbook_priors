@@ -502,6 +502,34 @@ def build_study(args) -> dict:
         "c_over_b": _wins(lambda g: _curve(g, "C") > g["auc"][f"B__{primary}"]),
     }
 
+    # --- how much code there is, and how many times the workflow has been run. Counted off the
+    # files themselves rather than stated anywhere, so the talk cannot quote a number that was
+    # true last week. Generated and vendored trees are excluded by name, not by guess.
+    def _lines(paths) -> int:
+        total = 0
+        for f in paths:
+            if f.is_file():
+                total += sum(1 for _ in f.open("rb"))
+        return total
+
+    def _under(rel: str, *suffixes: str):
+        skip = {"node_modules", "dist", "__pycache__", ".snakemake"}
+        for f in sorted((ROOT / rel).rglob("*")):
+            if any(part in skip for part in f.parts):
+                continue
+            if f.suffix in suffixes:
+                yield f
+
+    code = {
+        "workflow": _lines([ROOT / "Snakefile"]),
+        "analysis": _lines(_under("priors", ".py")),
+        "tests": _lines(_under("tests", ".py")),
+        "site": _lines(_under("talk/src", ".ts", ".tsx", ".css"))
+                + _lines(_under("talk/scripts", ".py")),
+        "runs": len(glob.glob(str(ROOT / ".snakemake/log/*.snakemake.log"))),
+    }
+    code["total"] = code["workflow"] + code["analysis"] + code["tests"] + code["site"]
+
     # --- the archive, counted from its own manifests.
     chunks = sorted(glob.glob(str(ROOT / "results/score/*.json")))
     by_model: dict[str, dict] = {}
@@ -571,6 +599,7 @@ def build_study(args) -> dict:
         "datasets": ds_meta,
         "verdicts": verdicts,
         "headline": headline,
+        "code": code,
         "across": h,
         "per_dataset": per_dataset,
         "ceiling": {

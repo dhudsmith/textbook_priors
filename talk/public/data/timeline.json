@@ -528,6 +528,13 @@
    "title": "Five corrections to the thinking section, and a tic named",
    "kind": "build",
    "lead": "\"You keep using this pattern: 'Two steps, one change each.' Stop!"
+  },
+  {
+   "date": "2026-09-19",
+   "time": "03:10",
+   "title": "The research half gets a conclusion, and two things come out",
+   "kind": "build",
+   "lead": "\"After 7 verdicts, let's give an overall takeaways\u2026 I want this to be the most digestable conclusion of the research section.\" Seven lines, in his words, checked line by line against the snapshot before any of them was\u2026"
   }
  ],
  "kinds": [
@@ -559,7 +566,7 @@
  "kind_note": "Only the kind of each entry was assigned by hand; the rest is the file's own heading and first paragraph.",
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T15:53:49Z",
+  "exported": "2026-09-18T16:01:10Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
    "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",

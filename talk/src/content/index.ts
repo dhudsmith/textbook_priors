@@ -313,31 +313,58 @@ export const verdicts = {
   } as Record<string, string>,
 };
 
-/* The last section of the talk, and the one the speaker speaks from. These are his words,
-   lightly edited for the page; they stay bullets rather than becoming paragraphs. The three
-   under `added` were written by the agent and are kept apart so he can see which are his. */
+/* The last section of the talk, and the one the speaker speaks from: his own words, lightly
+   edited. A numbered list, not a carousel - the carousel was tried on 2026-09-18 and cut the
+   next day, because a list is read at a glance and a deck has to be operated. */
 export const takeaways = {
-  header: "Takeaways",
-  /* Arrowed through one at a time rather than read as a list: these are the speaker's own
-     points, and a room that can read ahead has stopped listening. Ten as they were first
-     written, combined here where two were the same point twice. */
-  cards: [
-    "It feels like magic: whatever I can imagine adding to this study, I can speak into my " +
-      "phone and it goes. With great power comes great responsibility.",
-    "But this was too fast. My understanding has not caught up with the work that was done, and " +
-      "I had big surprises, while making this talk, about how the workflow actually worked. " +
-      "That is not a good situation.",
-    "There is a big gap between this and what I would need, as a scientist, before publishing " +
-      "it.",
-    "A workflow manager like Snakemake is useful twice: as context for the AI, and as a way for " +
-      "me to see what the AI built. It documents the design instead of leaving a pile of " +
-      "scripts.",
-    "Moving toward AI-generated work means being more prescriptive about your standards, " +
-      "because they will not be enforced implicitly. Keep the distance between what you want " +
-      "and what the AI produces as small as possible.",
-    "Generating this talk was the bottleneck: it took far more of my input than the scientific " +
-      "work did. Presentation is still hard for AI. I have a model of the audience, the AI's is " +
-      "very different, and closing that gap is not finished.",
+  header: "Takeaways from the exercise",
+  /* Three short, quiet paragraphs before the list: what the four days cost, the thing I got wrong
+     about my own study while making this talk, and the questions I do not have answers to. Every
+     number is a placeholder the section fills from the snapshot. */
+  contextShapes: [
+    "{codeTotal} lines of code — {analysis} of analysis, {tests} of tests, {workflow} in the " +
+      "workflow file and {site} for this page. {runs} runs of the workflow, {jobs} jobs, " +
+      "{calls} calls to the model, {machineHours} hours of machine time.",
+    "And just this morning, reviewing this talk, I found I had a big misconception about which " +
+      "models were used for the primary hypothesis tests.",
+    "Am I just self-conscious? Is this the new era? How much of the code should I read?",
+  ],
+  /* Ten as first written, combined where two were the same point twice: a short line the room
+     reads, and a sentence or two underneath for whoever is reading on their own device. */
+  items: [
+    {
+      summary: "It feels like magic",
+      detail: "Whatever I can imagine adding to this study, I can speak into my phone and it " +
+        "goes. With great power comes great responsibility.",
+    },
+    {
+      summary: "But this was too fast",
+      detail: "My understanding has not caught up with the work that was done. I had big " +
+        "surprises, while making this talk, about how the workflow actually worked. That is not " +
+        "a good situation.",
+    },
+    {
+      summary: "It is not ready to publish",
+      detail: "There is a big gap between this and what I would need, as a scientist, before " +
+        "publishing it.",
+    },
+    {
+      summary: "A workflow manager is useful twice",
+      detail: "It is context for the AI, and it is how I see what the AI built. It documents " +
+        "the design instead of leaving a pile of scripts.",
+    },
+    {
+      summary: "Be prescriptive about your standards",
+      detail: "They will not be enforced implicitly. Keep the distance between what you want " +
+        "and what the AI produces as small as possible, which means saying what you want very " +
+        "clearly.",
+    },
+    {
+      summary: "Making the talk was the bottleneck",
+      detail: "It took far more of my input than the scientific work did. Presentation is still " +
+        "hard for AI: I have a model of the audience, the AI's is very different, and closing " +
+        "that gap is not finished.",
+    },
   ],
 };
 

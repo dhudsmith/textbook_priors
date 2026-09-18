@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { SECTIONS, useTalk } from "../state";
 import { NOTE_LABEL, type Callout as CalloutSpec } from "../content";
 import { STATIC } from "../data";
+import { PageQR } from "../sections/Title";
 
 /* ---- section --------------------------------------------------------------------------- */
 
@@ -94,49 +95,6 @@ export function Callout({ spec }: { spec: CalloutSpec }) {
 export function Callouts({ items }: { items: CalloutSpec[] }) {
   if (!items.length) return null;
   return <div className="callouts">{items.map((c, i) => <Callout key={i} spec={c} />)}</div>;
-}
-
-/* ---- deck ------------------------------------------------------------------------------ */
-
-/** One card at a time, a counter, and an arrow either side that cycles. The takeaways are the
-    speaker's own points and arrive one at a time; a list lets the room read ahead and stop
-    listening. Every card is rendered and only the current one is visible, so the deck is as tall
-    as its longest card and nothing below it moves when the speaker steps through. */
-export function Deck({ items, label }: { items: readonly string[]; label: string }) {
-  const [at, setAt] = useState(0);
-  const n = items.length;
-  if (!n) return null;
-  const go = (d: number) => setAt((v) => (v + d + n) % n);
-  /* The arrow keys are bound on the deck, not on the window: the page deliberately leaves the
-     bare arrow keys to the browser so a presentation clicker still scrolls one screen a press. */
-  const onKeyDown = (e: { key: string; preventDefault: () => void }) => {
-    if (e.key === "ArrowRight") { go(1); e.preventDefault(); }
-    else if (e.key === "ArrowLeft") { go(-1); e.preventDefault(); }
-  };
-  return (
-    <div className="deck" role="group" aria-roledescription="carousel" aria-label={label}
-         tabIndex={0} onKeyDown={onKeyDown}>
-      <div className="deckcount">{at + 1}/{n}</div>
-      <div className="deckrow">
-        <button className="deckarrow" onClick={() => go(-1)} aria-label="Previous takeaway">
-          <span aria-hidden="true">‹</span>
-        </button>
-        <div className="deckcards">
-          {items.map((t, i) => (
-            <p key={i} className="deckcard" aria-hidden={i !== at}
-               style={i === at ? undefined : { visibility: "hidden" }}>
-              {t}
-            </p>
-          ))}
-        </div>
-        <button className="deckarrow" onClick={() => go(1)} aria-label="Next takeaway">
-          <span aria-hidden="true">›</span>
-        </button>
-      </div>
-      {/* Screen readers get the card that is showing, announced when it changes. */}
-      <div className="sr-only" role="status">{`${at + 1} of ${n}. ${items[at]}`}</div>
-    </div>
-  );
 }
 
 /* ---- tiles ----------------------------------------------------------------------------- */
@@ -249,6 +207,9 @@ export function Rail() {
   };
   return (
     <nav className={`rail${open ? " open" : ""}`} aria-label="Sections">
+      {/* The code for the page itself, at the top of the rail so it is on screen the whole talk
+          rather than only at the end. */}
+      <div className="railqr"><PageQR caption="Link to talk" size={124} /></div>
       <p className="railhead">Talk outline</p>
       <button className="railtoggle" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
         <span className="num">{number(here.id)}</span>

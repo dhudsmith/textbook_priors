@@ -70,6 +70,11 @@ export interface ArmStyle {
 }
 
 export interface Study {
+  /** How much code there is, and how many times the workflow has been run; counted by the
+      export off the files themselves. */
+  code: {
+    workflow: number; analysis: number; tests: number; site: number; runs: number; total: number;
+  };
   /** Counts the talk's closing summary reads, computed by the export (see `headline` there). */
   headline: {
     n_datasets: number; smallest_n: number; chance: number;

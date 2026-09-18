@@ -1,8 +1,8 @@
 {
  "span": {
   "from": "2026-09-09T14:20",
-  "to": "2026-09-19T02:30",
-  "minutes": 13689.53
+  "to": "2026-09-19T03:10",
+  "minutes": 13729.53
  },
  "days": [
   {
@@ -55,16 +55,16 @@
    "id": "prompts",
    "kind": "point",
    "label": "a prompt",
-   "count": 74,
+   "count": 75,
    "note": "one per entry in the session log; we know when it was, not how long it took"
   },
   {
    "id": "commits",
    "kind": "point",
    "label": "code written",
-   "count": 146,
-   "agent_count": 142,
-   "note": "142 of 146 name an agent as co-author, which is the only sign in the record that an agent wrote it"
+   "count": 147,
+   "agent_count": 143,
+   "note": "143 of 147 name an agent as co-author, which is the only sign in the record that an agent wrote it"
   },
   {
    "id": "calls",
@@ -473,6 +473,11 @@
     "minute": 13689.53,
     "at": "2026-09-19T02:30",
     "title": "Five corrections to the thinking section, and a tic named"
+   },
+   {
+    "minute": 13729.53,
+    "at": "2026-09-19T03:10",
+    "title": "The research half gets a conclusion, and two things come out"
    }
   ],
   "commits": [
@@ -1351,6 +1356,12 @@
     "at": "2026-09-18T11:45",
     "title": "The frontier half gets its figure; H6 moves to Extra",
     "agent": true
+   },
+   {
+    "minute": 12818.42,
+    "at": "2026-09-18T11:58",
+    "title": "So what did we find: the research half gets a conclusion",
+    "agent": true
    }
   ]
  },
@@ -1733,9 +1744,9 @@
  },
  "counts": {
   "calls_peak_per_hour": 38506,
-  "prompts": 74,
-  "commits": 146,
-  "agent_commits": 142,
+  "prompts": 75,
+  "commits": 147,
+  "agent_commits": 143,
   "jobs": 662,
   "calls": 58409,
   "machine_hours": 290.3,
@@ -1750,7 +1761,7 @@
   "first_job": "2026-09-11T22:08",
   "last_job": "2026-09-13T23:02"
  },
- "headline": "74 prompts set off 662 jobs, 58,409 calls to the RCD LLM service and 290 hours of machine time.",
+ "headline": "75 prompts set off 662 jobs, 58,409 calls to the RCD LLM service and 290 hours of machine time.",
  "method": [
   "A job is the interval its own manifest states: `written` less `wall_seconds`. Where jobs of the same lane overlap, the lane draws the period they occupied between them rather than one bar per job.",
   "A prompt is the timestamp on its SESSION_LOG.md heading, and a commit its commit date - instants, not durations.",
@@ -1765,7 +1776,7 @@
  ],
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T15:53:49Z",
+  "exported": "2026-09-18T16:01:10Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
    "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",
