@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useTalk } from "../state";
 import { Band, Bullets, ChartFrame, Deep, Dots, Header } from "../components/ui";
 import { Ladder } from "../charts/Ladder";
@@ -16,55 +15,27 @@ export function Thinking() {
   const { study } = useTalk();
   const h4 = study.across.h4;
   const v4 = study.verdicts.find((x) => x.id === "h4")!;
-  const [step, setStep] = useState<"h4a" | "h4b">("h4a");
 
   // The reader chain, in the order the study built it: the four thinking-off models, then the
   // thinking primary, then the gateway readers. Both lists come from the config in the snapshot.
   const chain = [...Object.keys(study.study.models), ...Object.keys(study.study.readers)]
     .filter((r) => h4.readers.includes(r));
 
-  // The frontier step H4b measured: the gateway reader the primary was compared against, at the
-  // effort they share. Read from the reader table rather than named in the copy.
-  const frontier = Object.entries(study.study.readers)
-    .find(([id, r]) => r.api === "gateway" && id.endsWith("-medium"))?.[1].model
-    ?? Object.values(study.study.readers).find((r) => r.api === "gateway")!.model;
-
 
   return (
     <Band id="thinking">
       <Header id="thinking">{copy.header}</Header>
-      <p className="lede">
-        {copy.ledeShape
-          .replace("{primary}", study.study.primary)
-          .replace("{frontier}", frontier)}
-      </p>
+      <p className="lede">{copy.ledeShape.replace("{primary}", study.study.primary)}</p>
 
-      {/* One chart, either step. The frontier half used to be a claim in a sentence with no
-          figure behind it. */}
-      <div className="controls" role="group" aria-label="Which step">
-        <span className="group-label">what changed</span>
-        <button className="chip" aria-pressed={step === "h4a"} onClick={() => setStep("h4a")}>
-          {copy.toggle.thinking}
-        </button>
-        <button className="chip" aria-pressed={step === "h4b"} onClick={() => setStep("h4b")}>
-          {copy.toggle.frontier}
-        </button>
-      </div>
-
-      <ChartFrame
-        caption={(step === "h4a" ? copy.captionShapes.thinking : copy.captionShapes.frontier)
-          .replace(/\{primary\}/g, study.study.primary)
-          .replace(/\{frontier\}/g, frontier)}>
-        <ThinkingScatter step={step} />
+      <ChartFrame caption={copy.caption.replace("{primary}", study.study.primary)}>
+        <ThinkingScatter />
       </ChartFrame>
 
       <p>
         The thinking step wins on {h4.h4a.wins} of {h4.n_datasets}{" "}
-        (p = {h4.h4a.sign_test_p.toFixed(4)}) and the frontier model on {h4.h4b.wins}{" "}
-        (p = {h4.h4b.sign_test_p.toFixed(4)}), against the {h4.min_wins} needed to count as
-        support:{" "}
-        {v4.verdict}. Each of the {h4.readers.length} readers gets its own classifier, fitted the
-        same way on the same {h4.subsample} images, so every difference is paired.
+        (p = {h4.h4a.sign_test_p.toFixed(4)}), against the {h4.min_wins} needed to count as
+        support: {v4.verdict}. Each reader gets its own classifier, fitted the same way on the
+        same {h4.subsample} images, so every difference is paired.
       </p>
       <Bullets items={copy.bullets} />
 

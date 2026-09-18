@@ -7,7 +7,8 @@
   "2026-09-14",
   "2026-09-16",
   "2026-09-17",
-  "2026-09-18"
+  "2026-09-18",
+  "2026-09-19"
  ],
  "entries": [
   {
@@ -464,6 +465,69 @@
    "title": "It is the scholarly record, not a textbook; and the talk ends on takeaways",
    "kind": "build",
    "lead": "Nine instructions in one batch, and the first is a factual correction rather than a style one: \"Calling it textbook features is not quite right. These features were scraped from over 100 scientific papers."
+  },
+  {
+   "date": "2026-09-18",
+   "time": "22:40",
+   "title": "The fourteen label collisions, and what a collision actually is",
+   "kind": "build",
+   "lead": "The sweep that ended the last entry was measuring the wrong thing."
+  },
+  {
+   "date": "2026-09-18",
+   "time": "23:20",
+   "title": "The takeaways are a deck, and the agent's three are gone",
+   "kind": "build",
+   "lead": "\"Remove this callout. And these points.\" The Understanding debt note and the three bullets the agent had proposed under its own heading are cut; what the section carries now is his ten, and only his."
+  },
+  {
+   "date": "2026-09-18",
+   "time": "23:50",
+   "title": "\"The compute workflow\", and why a workflow manager at all",
+   "kind": "build",
+   "lead": "Section five is The compute workflow now, in the heading and in the rail, and the two paragraphs explaining make are replaced by the argument he actually wants made there: what a workflow manager is worth when an agent\u2026"
+  },
+  {
+   "date": "2026-09-19",
+   "time": "00:20",
+   "title": "The archived call is its own section, and carries the questions",
+   "kind": "build",
+   "lead": "\"'One archived image, and both answers'. First of all, this language is too indirect. Secondly, this is orphaned.\" Both true."
+  },
+  {
+   "date": "2026-09-19",
+   "time": "01:10",
+   "title": "Four lines and a logo; the heading stands alone; what the bands are",
+   "kind": "build",
+   "lead": "Three corrections in quick succession, all in the same direction: less."
+  },
+  {
+   "date": "2026-09-19",
+   "time": "01:35",
+   "title": "Why four of the twelve lines carry a name",
+   "kind": "build",
+   "lead": "\"Why were path, pneumonia, organa, organs highlighted here? I'm fine with it."
+  },
+  {
+   "date": "2026-09-19",
+   "time": "01:50",
+   "title": "The logo goes",
+   "kind": "build",
+   "lead": "\"Looks bad.\" It did: the wordmark was set in a face and weight nothing else on the page uses, on a line with a sentence it was neither part of nor clearly separate from, and in dark mode it was an inverted grey that\u2026"
+  },
+  {
+   "date": "2026-09-19",
+   "time": "02:05",
+   "title": "\"in its place\" said nothing",
+   "kind": "build",
+   "lead": "\"What do you mean by 'and then gpt-5.6-terra in its place'?\" Fair question, and the answer is the thing the sentence failed to say."
+  },
+  {
+   "date": "2026-09-19",
+   "time": "02:30",
+   "title": "Five corrections to the thinking section, and a tic named",
+   "kind": "build",
+   "lead": "\"You keep using this pattern: 'Two steps, one change each.' Stop!"
   }
  ],
  "kinds": [
@@ -495,7 +559,7 @@
  "kind_note": "Only the kind of each entry was assigned by hand; the rest is the file's own heading and first paragraph.",
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T13:56:42Z",
+  "exported": "2026-09-18T15:53:49Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
    "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",

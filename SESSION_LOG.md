@@ -1812,3 +1812,39 @@ zero, with dermamnist far below.
 *"Move this dissiderata about derma to the extra."* H6 — the effort prediction written before the
 calls — is one prediction about one dataset, and it is in Extra now. The readers ladder still names
 dermamnist whatever its spread, and its note says where the prediction went.
+
+## 2026-09-19 03:10 — The research half gets a conclusion, and two things come out
+
+*"After 7 verdicts, let's give an overall takeaways… I want this to be the most digestable
+conclusion of the research section."* Seven lines, in his words, checked line by line against the
+snapshot before any of them was written:
+
+- the zero-shot arm beats chance on 10 of 11, and loses to 50 labelled images on pretrained
+  features on 9 of 11 — both counts are new, neither hypothesis produced them;
+- matching the feature scores to the literature beats the zero-shot arm on 3 of 11 (H2's own
+  count, read the other way round: it is worse, not better);
+- a classifier on those same scores at n=50 beats the matching on 10 of 11 — and the zero-shot
+  arm on **7** of 11, which is a majority and *not* a win by this study's rule. He wrote "BUT,
+  training on n=50 fingerprints beats zero shot"; the line says the 7 and says what it is short
+  of, because the summary is where a number gets read without its context;
+- H5's 11 of 12, and that it costs nothing;
+- thinking only helps where the reading was bad;
+- H3 as two family comparisons rather than one — 7 of 11 and 5 of 11, not one number, because
+  there is no single across-family count and inventing one would have printed "12 of 11", which
+  the first draft did;
+- H7 by its two ends, named from the ladder: gpt-5.6-sol over gpt-5.6-luna, 9 of 11.
+
+Four of those counts did not exist anywhere, so they are computed by the export in a `headline`
+block rather than in the page, which types no numbers of its own. The re-export added exactly those
+ten fields and moved nothing else, and its four self-checks against `report/tables/*.tex` still
+pass.
+
+*"Let's just remove this. It's not a clean comparison."* — the frontier model in the primary's
+place, which had gained a toggle an hour earlier. He is right and it is the better call than the
+one I made: the closed model's size is unpublished and its answers are not deterministic, so the
+swap moves several things at once. The toggle, the second view, the bullet that claimed it and the
+sentence reporting its count are gone; the section is now the one step that holds everything but
+thinking still, and the limits panel says what the probe measures instead of caveating a comparison
+that is no longer shown. H4b remains in the export and in the report.
+
+*"Remove this callout"* — *The outputs are not the product*. Gone.

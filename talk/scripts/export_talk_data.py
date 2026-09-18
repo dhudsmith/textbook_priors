@@ -476,6 +476,32 @@ def build_study(args) -> dict:
             gaps["zero"].append(top - row["zero"])
         ceiling_rows.append(row)
 
+    # --- the headline the talk closes its results on. Four of its seven lines are counts no
+    # hypothesis produced on its own - the zero-shot arm against chance and against 50 labelled
+    # images, and the classifier on the feature scores against both the matching and the zero-shot
+    # arm - so they are counted here rather than in the page, which types no numbers of its own.
+    # Over the arm-B datasets only, since chestmnist has neither arm.
+    smallest_n = min(config["curve"]["n"])
+
+    def _wins(f) -> int:
+        return sum(1 for d in arm_b if f(per[d]))
+
+    def _curve(got, arm: str) -> float:
+        return got["curve"][f"{arm}__n{smallest_n}"]["point"]
+
+    headline = {
+        "n_datasets": len(arm_b),
+        "smallest_n": smallest_n,
+        "chance": 0.5,
+        "a_over_chance": _wins(lambda g: g["auc"]["A"] > 0.5),
+        "a_over_pixel": _wins(lambda g: g["auc"]["A"] > _curve(g, "P")),
+        "pixel_over_a": _wins(lambda g: _curve(g, "P") > g["auc"]["A"]),
+        "b_over_a": h["h2"]["b_beats_a_wins"],
+        "a_over_b": _wins(lambda g: g["auc"]["A"] > g["auc"][f"B__{primary}"]),
+        "c_over_a": _wins(lambda g: _curve(g, "C") > g["auc"]["A"]),
+        "c_over_b": _wins(lambda g: _curve(g, "C") > g["auc"][f"B__{primary}"]),
+    }
+
     # --- the archive, counted from its own manifests.
     chunks = sorted(glob.glob(str(ROOT / "results/score/*.json")))
     by_model: dict[str, dict] = {}
@@ -544,6 +570,7 @@ def build_study(args) -> dict:
         "style": {"arms": ARM_STYLE, "literature": LIT_STYLE},
         "datasets": ds_meta,
         "verdicts": verdicts,
+        "headline": headline,
         "across": h,
         "per_dataset": per_dataset,
         "ceiling": {

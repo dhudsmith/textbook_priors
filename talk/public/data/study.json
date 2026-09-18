@@ -1,7 +1,7 @@
 {
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T13:56:42Z",
+  "exported": "2026-09-18T15:53:49Z",
   "source_files": [
    "config/config.yaml",
    "config/medmnist.yaml",
@@ -1731,6 +1731,18 @@
    "verdict": "supported"
   }
  ],
+ "headline": {
+  "n_datasets": 11,
+  "smallest_n": 50,
+  "chance": 0.5,
+  "a_over_chance": 10,
+  "a_over_pixel": 2,
+  "pixel_over_a": 9,
+  "b_over_a": 3,
+  "a_over_b": 8,
+  "c_over_a": 7,
+  "c_over_b": 10
+ },
  "across": {
   "h1": {
    "n_b": {

@@ -8,24 +8,20 @@ import { AxisBottom, AxisLeft, Marker, fmt3, leftGutter, plotBox, short, signed,
    The slope is the claim: a step helps on the tasks that were read badly and hurts on the ones
    that were read well. One point per dataset, in the dataset's own colour and marker.
 
-   Both steps are drawn by this one chart - they are the same comparison twice, a difference
-   against the baseline it is a difference from - and the section toggles between them. The
-   frontier step had no figure at all until 2026-09-19: its claim was made in a sentence while the
-   thinking step got a chart, which is not a fair way to show two halves of one result. */
+   H4b, the frontier model in the primary's place, was drawn here too for an afternoon and then
+   cut: swapping to a closed model of unpublished size whose answers are not deterministic changes
+   several things at once, so it is not a clean comparison to put beside this one. */
 
-/** Both axes name the readers they are about: a difference is meaningless without them. The
-    effort suffix is dropped because the axis says which step this is. */
+/** The axis names the reader it is about: a difference is meaningless without it. */
 const noEffort = (id: string) => id.replace(/-(minimal|low|medium|high)$/, "");
 
-export function ThinkingScatter({ step = "h4a", height = 360 }: {
-  step?: "h4a" | "h4b"; height?: number;
-}) {
+export function ThinkingScatter({ height = 360 }: { height?: number }) {
   const { study, hue, metaOf } = useTalk();
   const { ref, width: measured } = useWidth<HTMLDivElement>(700);
   const { width, margin: base } = plotBox(measured);
   const { show, hide, tip } = useHover();
 
-  const h4s = study.across.h4[step];
+  const h4s = study.across.h4.h4a;
   const baseline = h4s.from as string;
   const rows = Object.keys(h4s.differences).map((d) => ({
     dataset: d,
@@ -35,12 +31,8 @@ export function ThinkingScatter({ step = "h4a", height = 360 }: {
 
   // Signed ticks are the widest on the page, so the gutter is measured from them before the
   // scales are built rather than assumed.
-  const Y_LABEL = step === "h4a"
-    ? "thinking − no thinking (AUC)"
-    : `${noEffort(h4s.to as string)} − ${noEffort(baseline)} (AUC)`;
-  const X_LABEL = step === "h4a"
-    ? "probe AUC with thinking off"
-    : `probe AUC of ${noEffort(baseline)}, thinking`;
+  const Y_LABEL = "thinking − no thinking (AUC)";
+  const X_LABEL = `probe AUC of ${noEffort(baseline)}, thinking off`;
   const yDomain: [number, number] = [Math.min(...rows.map((r) => r.diff.lo)) - 0.02,
                                      Math.max(...rows.map((r) => r.diff.hi)) + 0.02];
   const yFormat = (v: number) => signed(v, 2);

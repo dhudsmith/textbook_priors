@@ -1,8 +1,8 @@
 {
  "span": {
   "from": "2026-09-09T14:20",
-  "to": "2026-09-18T21:30",
-  "minutes": 13389.53
+  "to": "2026-09-19T02:30",
+  "minutes": 13689.53
  },
  "days": [
   {
@@ -44,6 +44,10 @@
   {
    "date": "2026-09-18",
    "minute": 12099.53
+  },
+  {
+   "date": "2026-09-19",
+   "minute": 13539.53
   }
  ],
  "lanes": [
@@ -51,16 +55,16 @@
    "id": "prompts",
    "kind": "point",
    "label": "a prompt",
-   "count": 65,
+   "count": 74,
    "note": "one per entry in the session log; we know when it was, not how long it took"
   },
   {
    "id": "commits",
    "kind": "point",
    "label": "code written",
-   "count": 136,
-   "agent_count": 132,
-   "note": "132 of 136 name an agent as co-author, which is the only sign in the record that an agent wrote it"
+   "count": 146,
+   "agent_count": 142,
+   "note": "142 of 146 name an agent as co-author, which is the only sign in the record that an agent wrote it"
   },
   {
    "id": "calls",
@@ -424,6 +428,51 @@
     "minute": 13389.53,
     "at": "2026-09-18T21:30",
     "title": "It is the scholarly record, not a textbook; and the talk ends on takeaways"
+   },
+   {
+    "minute": 13459.53,
+    "at": "2026-09-18T22:40",
+    "title": "The fourteen label collisions, and what a collision actually is"
+   },
+   {
+    "minute": 13499.53,
+    "at": "2026-09-18T23:20",
+    "title": "The takeaways are a deck, and the agent's three are gone"
+   },
+   {
+    "minute": 13529.53,
+    "at": "2026-09-18T23:50",
+    "title": "\"The compute workflow\", and why a workflow manager at all"
+   },
+   {
+    "minute": 13559.53,
+    "at": "2026-09-19T00:20",
+    "title": "The archived call is its own section, and carries the questions"
+   },
+   {
+    "minute": 13609.53,
+    "at": "2026-09-19T01:10",
+    "title": "Four lines and a logo; the heading stands alone; what the bands are"
+   },
+   {
+    "minute": 13634.53,
+    "at": "2026-09-19T01:35",
+    "title": "Why four of the twelve lines carry a name"
+   },
+   {
+    "minute": 13649.53,
+    "at": "2026-09-19T01:50",
+    "title": "The logo goes"
+   },
+   {
+    "minute": 13664.53,
+    "at": "2026-09-19T02:05",
+    "title": "\"in its place\" said nothing"
+   },
+   {
+    "minute": 13689.53,
+    "at": "2026-09-19T02:30",
+    "title": "Five corrections to the thinking section, and a tic named"
    }
   ],
   "commits": [
@@ -1242,6 +1291,66 @@
     "at": "2026-09-18T08:49",
     "title": "Date the talk in the eyebrow",
     "agent": true
+   },
+   {
+    "minute": 12700.03,
+    "at": "2026-09-18T10:00",
+    "title": "The literature, not a textbook; one note; rules and DAG; takeaways",
+    "agent": true
+   },
+   {
+    "minute": 12713.35,
+    "at": "2026-09-18T10:13",
+    "title": "Figures: measure the room each label needs",
+    "agent": true
+   },
+   {
+    "minute": 12724.7,
+    "at": "2026-09-18T10:25",
+    "title": "Takeaways: six cards, arrowed through",
+    "agent": true
+   },
+   {
+    "minute": 12774.82,
+    "at": "2026-09-18T11:15",
+    "title": "Section 5 is the compute workflow, and says why one",
+    "agent": true
+   },
+   {
+    "minute": 12784.67,
+    "at": "2026-09-18T11:25",
+    "title": "Model input and output is its own section",
+    "agent": true
+   },
+   {
+    "minute": 12792.3,
+    "at": "2026-09-18T11:32",
+    "title": "Four lines and a logo; a bare heading; what the bands are",
+    "agent": true
+   },
+   {
+    "minute": 12793.7,
+    "at": "2026-09-18T11:34",
+    "title": "Say why only four lines are named on a ladder",
+    "agent": true
+   },
+   {
+    "minute": 12796.07,
+    "at": "2026-09-18T11:36",
+    "title": "Name the tool in the sentence, not in a logo",
+    "agent": true
+   },
+   {
+    "minute": 12797.2,
+    "at": "2026-09-18T11:37",
+    "title": "Say what replaced what in the thinking section",
+    "agent": true
+   },
+   {
+    "minute": 12805.18,
+    "at": "2026-09-18T11:45",
+    "title": "The frontier half gets its figure; H6 moves to Extra",
+    "agent": true
    }
   ]
  },
@@ -1624,13 +1733,13 @@
  },
  "counts": {
   "calls_peak_per_hour": 38506,
-  "prompts": 65,
-  "commits": 136,
-  "agent_commits": 132,
+  "prompts": 74,
+  "commits": 146,
+  "agent_commits": 142,
   "jobs": 662,
   "calls": 58409,
   "machine_hours": 290.3,
-  "days_with_prompts": 7
+  "days_with_prompts": 8
  },
  "machine": {
   "wall_hours": 290.263,
@@ -1641,7 +1750,7 @@
   "first_job": "2026-09-11T22:08",
   "last_job": "2026-09-13T23:02"
  },
- "headline": "65 prompts set off 662 jobs, 58,409 calls to the RCD LLM service and 290 hours of machine time.",
+ "headline": "74 prompts set off 662 jobs, 58,409 calls to the RCD LLM service and 290 hours of machine time.",
  "method": [
   "A job is the interval its own manifest states: `written` less `wall_seconds`. Where jobs of the same lane overlap, the lane draws the period they occupied between them rather than one bar per job.",
   "A prompt is the timestamp on its SESSION_LOG.md heading, and a commit its commit date - instants, not durations.",
@@ -1656,7 +1765,7 @@
  ],
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T13:56:42Z",
+  "exported": "2026-09-18T15:53:49Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
    "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",

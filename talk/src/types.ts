@@ -70,6 +70,12 @@ export interface ArmStyle {
 }
 
 export interface Study {
+  /** Counts the talk's closing summary reads, computed by the export (see `headline` there). */
+  headline: {
+    n_datasets: number; smallest_n: number; chance: number;
+    a_over_chance: number; a_over_pixel: number; pixel_over_a: number;
+    b_over_a: number; a_over_b: number; c_over_a: number; c_over_b: number;
+  };
   provenance: { run_git_commit: string; exported: string; source_files: string[];
                 redactions?: string[] };
   run: { git_commit: string; git_dirty: boolean; written: string; host: string;

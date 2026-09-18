@@ -92,16 +92,7 @@ export const premise = {
   ],
   effortCaptionShape:
     "Prompts, code, jobs and calls over {days} days.",
-  callouts: [
-    {
-      title: "The outputs are not the product",
-      body: [
-        "The model's outputs are not the product of science. The claims are.",
-        "So what evidence do we have, and how far can we trust it? Understanding debt accrues very fast if you are not careful.",
-      ],
-      source: "TALK.md §3; SESSION_LOG.md",
-    },
-  ] as Callout[],
+  callouts: [] as Callout[],
 };
 
 export const question = {
@@ -256,28 +247,21 @@ export const results = {
 
 export const thinking = {
   header: "Does 'thinking' help?",
-  /* Say what was compared and what was held still. No sentence that announces how many things
-     are about to be said - it is a count of the prose, not a fact about the study. */
+  /* H4b - the frontier model put in the primary's place - came out on 2026-09-19: the closed
+     model's size is unpublished and its answers are not deterministic, so the swap changes
+     several things at once and it is not a clean comparison. What is left is the one step that
+     holds everything but thinking still. The number is still in the export and in the report. */
   ledeShape:
-    "{primary} with no thinking step, then the same model told to think before it answers. Then " +
-    "{frontier} in its place, thinking just as hard, so the model is all that changed. Every " +
-    "reader is compared on the same images, by the same procedure.",
+    "{primary} with no thinking step, then the same model told to think before it answers. " +
+    "Nothing else changes: the same images, the same procedure.",
   bullets: [
     "Thinking helps where the model read badly and hurts where it read well",
-    "The frontier model reads no better than the open one it replaced",
     "More thinking is not what the model lacked",
   ],
-  /* Both halves of H4 draw the same chart, so the figure is one toggle rather than two figures
-     or - as it was until 2026-09-19 - one figure and a sentence. */
-  toggle: { thinking: "thinking, same model", frontier: "frontier model, same effort" },
-  captionShapes: {
-    thinking: "What thinking did to {primary}'s reading, against how well it read without it.",
-    frontier: "What {frontier} did in {primary}'s place, both thinking, against how well " +
-      "{primary} read while thinking.",
-  },
+  caption: "What thinking did to {primary}'s reading, against how well it read without it.",
   /* Kept for the collapsed panel of limits. */
   limits: [
-    "The frontier model is closed and its size is not published, so this step changes capability rather than parameter count. It also refuses to answer deterministically, so it is the one reader whose answers vary between calls, and some of any difference is noise the intervals cannot see.",
+    "This is one model's thinking step, read by a classifier fitted inside the scored images themselves — 200 of them — so it measures what those answers carry, not what a labelled pool would get out of them.",
   ],
 };
 
@@ -287,10 +271,29 @@ export const verdicts = {
   modelsNote:
     "Five of these rest on one model, {primary}. The other two compare models: one across the " +
     "open families, one across the closed models ranked by price.",
-  bullets: [
-    "The literature cannot replace labelled images",
-    "Added to them, it adds a small but consistent gain",
-  ],
+  /* The conclusion of the research half, and the one block a listener should leave with. Every
+     count is a placeholder filled from the snapshot: the four that no hypothesis produced on its
+     own are counted by the export's `headline` block, the rest are the hypotheses' own wins.
+     Arm names are avoided here - this is the summary, and it has to read without the board. */
+  soWhat: {
+    header: "So what did we find?",
+    bulletShapes: [
+      "Asked straight out for the diagnosis, the model beats chance on {aOverChance} of {n} — " +
+        "but loses to a classifier on pretrained image features, given {smallestN} labelled " +
+        "images, on {pixelOverA} of {n}",
+      "Scoring the visual features and matching them to the literature does worse still: it " +
+        "beats the straight diagnosis on {bOverA} of {n}",
+      "But fit a classifier on those same scores with {smallestN} labels and it beats the " +
+        "matching on {cOverB} of {n} — and the straight diagnosis on {cOverA} of {n}, a " +
+        "majority, short of the {minWins} this study counts as a win",
+      "Add the scores to pretrained image features and they add a little on {h5Wins} of " +
+        "{h5N} — and cost nothing, since both are already on disk",
+      "Thinking only helps where the model read badly without it",
+      "Among the open models, the bigger one does not read better: {h3Best} of {h3N} in one " +
+        "family and {h3Worst} in the other, against the {minWins} either would need",
+      "Among the closed models, {dearest} beats {cheapest} on {h7Wins} of {h7N}",
+    ],
+  },
   /* The plain-language reading of each question, for the one column a listener actually reads.
      H3 and H7 are presented nowhere else, so their sentences name the comparison outright. */
   asks: {
