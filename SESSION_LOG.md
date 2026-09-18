@@ -1751,3 +1751,13 @@ nothing about where it came from. The bullet now reads: the middle 95% over 10,0
 resamples of the test images, every arm recomputed on each resample. Both numbers come through the
 export from `evaluate.ci` and `evaluate.bootstrap` rather than being typed, so a change to the
 config moves the sentence.
+
+## 2026-09-19 01:35 — Why four of the twelve lines carry a name
+
+*"Why were path, pneumonia, organa, organs highlighted here? I'm fine with it. We just need a note
+in the fine text below."* Because the ladder names the four datasets with the widest spread between
+their highest and lowest point and greys the other eight — eleven near-neighbour hues with eleven
+displaced labels is not a chart a room can read — and the chart said so nowhere. The note under
+each ladder says it now: on both views of the model-size chart, and on the readers ladder, where it
+also says that dermamnist is named whatever its spread, because the prediction below that chart is
+about dermamnist.

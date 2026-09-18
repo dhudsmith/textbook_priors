@@ -354,8 +354,11 @@ export const modelSize = {
       "to isolate it.",
   },
   notes: {
-    open: "The divider separates the two families, and the comparison is within a family only.",
+    /* Why four lines out of twelve carry a colour and a name: the ladder names the widest
+       spreads and greys the rest, which the chart cannot say for itself. */
+    open: "The divider separates the two families, and the comparison is within a family only. " +
+      "Only the datasets with the widest spread between their highest and lowest point are named and coloured; the rest stay grey, and hovering any line isolates it.",
     closed: "One classifier per model, all fitted the same way. Price is the vendor's ranking, " +
-      "not a parameter count.",
+      "not a parameter count. Only the datasets with the widest spread between their highest and lowest point are named and coloured; the rest stay grey, and hovering any line isolates it.",
   },
 };

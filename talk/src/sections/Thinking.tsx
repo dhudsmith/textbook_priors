@@ -75,7 +75,9 @@ export function Thinking() {
                   label={`Probe AUC for each dataset across the ${chain.length} readers, ` +
                          "one line per dataset"} height={420}
                   named={widestSpread(h4.probe_auc, chain, 4, ["dermamnist"])}
-                  note="The first four readers are the models with thinking off. Each label is a model and the effort it was given." />
+                  note={"The first four readers are the models with thinking off. Each label " +
+                        "is a model and the effort it was given. " +
+                        "Only the datasets with the widest spread between their highest and lowest point are named and coloured, along with dermamnist, which the prediction below turns on; the rest stay grey, and hovering any line isolates it."} />
         </ChartFrame>
       </Deep>
 
