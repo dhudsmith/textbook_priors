@@ -1770,3 +1770,17 @@ inverted grey that read as a second heading. The lede names the tool in words in
 workflow manager (Snakemake in this case) to structure the compute:* — with the colon leading into
 the four bullets. The image, its two style rules and the file in `public/img/` are gone; nothing
 else on the page referenced them.
+
+## 2026-09-19 02:05 — "in its place" said nothing
+
+*"What do you mean by 'and then gpt-5.6-terra in its place'?"* Fair question, and the answer is the
+thing the sentence failed to say. H4 is two steps with one change each (WORKFLOW.md §2): the same
+open model with thinking off against itself thinking at medium, so the step is thinking alone; then
+the frontier model against that thinking model at the same effort, so the step is the model alone.
+"In its place" left it unclear what replaced what, and hid the fact that the effort is held fixed —
+which is the only reason the second comparison means anything. The lede states both steps and says
+why the effort is held: *Two steps, one change each. First qwen3.8-27b-fp8 with no thinking step,
+then the same model told to think before it answers. Then gpt-5.6-terra in place of it, thinking
+just as hard, so the second step changes the model and nothing else.* It has to be read in that
+order because the frontier model cannot be asked for no reasoning at all, which the limits panel
+below already says.

@@ -256,9 +256,13 @@ export const results = {
 
 export const thinking = {
   header: "What if the model thinks?",
+  /* "and then {frontier} in its place" was too compressed to read: it was not clear what took
+     whose place, or that the effort was held fixed so that the swap is the only change. */
   ledeShape:
-    "{primary}, told to think before it answers — and then {frontier} in its place. Every reader " +
-    "is compared on the same images, by the same procedure.",
+    "Two steps, one change each. First {primary} with no thinking step, then the same model " +
+    "told to think before it answers. Then {frontier} in place of it, thinking just as hard, so " +
+    "the second step changes the model and nothing else. Every reader is compared on the same " +
+    "images, by the same procedure.",
   bullets: [
     "Thinking helps where the model read badly and hurts where it read well",
     "The frontier model reads no better than the open one it replaced",
