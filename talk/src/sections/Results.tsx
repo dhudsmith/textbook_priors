@@ -72,11 +72,11 @@ export function Results() {
       {choice === "h1" && (
         <>
           <p>
-            The concept arm beats the pixel arm at n = {firstN} on {h1.c_beats_p_wins} of{" "}
-            {h1.n_datasets}, against the {h1.min_wins} the rule asks for
-            (p = {h1.c_beats_p_sign_test_p.toFixed(4)}). On{" "}
+            At n = {firstN} a head fitted on the checklist answers beats one fitted on pretrained
+            image features on {h1.c_beats_p_wins} of {h1.n_datasets}, against the {h1.min_wins} the
+            rule asks for (p = {h1.c_beats_p_sign_test_p.toFixed(4)}). On{" "}
             {h1.datasets_where_the_probe_starts_above_arm_b} of the {armB.length} datasets with a
-            checklist arm, pretrained image features are already ahead of it at n = {firstN}.
+            textbook-only arm, pretrained image features are already ahead of it at n = {firstN}.
           </p>
           {!crosses && elsewhere && (
             <p className="note">
@@ -129,7 +129,7 @@ export function Results() {
               <Dumbbell />
             </ChartFrame>
             <ChartFrame
-              caption="What each arm loses when the bank's structure is destroyed. Both lose everywhere.">
+              caption="What each arm loses when the bank is shuffled. Both lose everywhere.">
               <PermutationDrops />
             </ChartFrame>
           </Deep>

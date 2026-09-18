@@ -7,22 +7,21 @@ import { useAsync, useInView } from "../hooks";
 import { loadArchive } from "../data";
 
 const BLURBS: Record<string, string> = {
-  smoke: "The tests: the shape of the bank and its anchor text, the label maps against the fixed " +
-    "release, both prompts, the sampler, the estimators and the metric conventions. Every rule " +
-    "waits on them, so nothing is computed on code that fails its tests.",
-  sample: "Per dataset: the seeded test sample and the labelled pool, capped at the official " +
-    "split, streamed out of the compressed release without loading it.",
-  score: "Per dataset, the two prompts are rendered by their own rule from the bank and the label " +
-    "map. Then, per model, split, prompt and chunk of a hundred images, the calls go out and " +
-    "every raw reply is archived and cannot be overwritten.",
-  features: "Per dataset: the frozen ImageNet ResNet-18 penultimate features of the sampled " +
-    "images, with preprocessing that does not resize.",
-  classify: "Per dataset: every arm at every n and seed, the two permutation controls, and each " +
-    "reader's cross-validated probe on the shared prefix.",
+  smoke: "The tests: the bank and its wording, the class names against the fixed release, both " +
+    "prompts, the sampler, the classifiers and how AUC is computed. Every rule waits on them, so " +
+    "nothing runs on code that fails its tests.",
+  sample: "Per dataset: the test images this study scores, drawn once, and the pool of " +
+    "labelled images the arms draw from.",
+  score: "Per dataset, a rule writes the two prompts from the bank and the class names. Then, " +
+    "per model and per chunk of a hundred images, the calls go out and every reply is archived " +
+    "where it cannot be overwritten.",
+  features: "Per dataset: the ImageNet ResNet-18 features of the sampled images, with the " +
+    "network left frozen.",
+  classify: "Per dataset: every arm at every number of labels and every seed, the two shuffled " +
+    "controls, and one probe per reader on the same images.",
   evaluate: "Per dataset: an AUC for every arm, paired bootstrap intervals, and n_B. Then, " +
     "across datasets: the sign tests, the model ladder and the reader chain.",
-  report: "Every figure and table, the number macros, two generated appendices and the technical " +
-    "report PDF. No number in it is typed by hand.",
+  report: "Every figure and table, two generated appendices, and the technical report PDF.",
 };
 
 export function Machine() {

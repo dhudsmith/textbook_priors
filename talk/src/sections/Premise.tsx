@@ -34,7 +34,7 @@ export function Premise() {
       {error && <p className="note">Could not load the effort breakdown: {error}</p>}
       {effort && (
         <ChartFrame
-          caption={premise.effortCaption}>
+          caption={premise.effortCaptionShape.replace("{days}", String(effort.days.length))}>
           <EffortWaterfall data={effort} />
         </ChartFrame>
       )}

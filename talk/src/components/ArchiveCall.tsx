@@ -130,13 +130,13 @@ export function ArchiveCall({ sample, fixedDataset }: {
           <div>
             <h4>How likely each class</h4>
             <p className="note">
-              A second call, on a prompt of its own: how likely is each class? The checklist above
-              never sees this answer, and this answer never sees the checklist.
+              A second call, on a prompt of its own: how likely is each class? Neither call saw
+              the other's answer.
             </p>
             {scores.length ? (
               <table className="data">
                 <thead>
-                  <tr><th>class</th><th style={{ textAlign: "left" }}>how likely the model said</th></tr>
+                  <tr><th>class</th><th style={{ textAlign: "left" }}>how likely</th></tr>
                 </thead>
                 <tbody>
                   {scores.map(([name, v]) => (

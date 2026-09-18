@@ -42,7 +42,7 @@ export function Question() {
         <div>
           <h3>Sample images</h3>
           <p className="note">
-            {meta.modality} · {meta.n_classes} classes · {meta.medmnist_task} · official test
+            {meta.modality} · {meta.n_classes} classes, {meta.medmnist_task} · official test
             split{" "}
             {meta.split_sizes.test.toLocaleString("en-US")} images, of which this study scores{" "}
             {meta.test_n} · {meta.n_concepts} concepts in the bank
@@ -62,7 +62,7 @@ export function Question() {
               </figure>
             ))}
           </div>
-          <p className="note">The same seeded sample every arm was scored on.</p>
+          <p className="note">Every arm was scored on this same sample, drawn once.</p>
         </div>
 
         <div>
@@ -116,7 +116,7 @@ export function Question() {
                 </div>
               )}
 
-              <Deep summary="Class fingerprints — the level each class commits to, per concept">
+              <Deep summary="Class fingerprints — the level the textbook expects for each feature">
                 <div className="chart-scroll">
                   <table className="data">
                     <thead>

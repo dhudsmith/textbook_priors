@@ -38,7 +38,7 @@ export const REPO = "https://github.com/dhudsmith/textbook_priors";
 export const LINKS = [
   { label: "the code, and everything behind this page", href: REPO },
   { label: "WORKFLOW.md — the plan and the seven hypotheses", href: `${REPO}/blob/main/WORKFLOW.md` },
-  { label: "CHANGELOG.md — the owner's dated record of understanding", href: `${REPO}/blob/main/CHANGELOG.md` },
+  { label: "CHANGELOG.md — my dated record of what I understood, and when", href: `${REPO}/blob/main/CHANGELOG.md` },
   { label: "SESSION_LOG.md — how the agent was directed, to the minute", href: `${REPO}/blob/main/SESSION_LOG.md` },
   { label: "CONCEPT_BANK.md — how the bank was built", href: `${REPO}/blob/main/CONCEPT_BANK.md` },
   { label: "the Snakefile", href: `${REPO}/blob/main/Snakefile` },
@@ -90,8 +90,8 @@ export const premise = {
     "{machineHours} hours of machine time.",
     "Tested {hypotheses} distinct hypotheses on {datasets} medical image datasets.",
   ],
-  effortCaption:
-    "Prompts and code changes are moments. Jobs are the periods they ran. The calls are a rate.",
+  effortCaptionShape:
+    "{days} days of the project on one clock: prompts, code, jobs and calls.",
   callouts: [
     {
       kind: "agent",
@@ -135,12 +135,12 @@ export const question = {
   bank: {
     header: "What the textbook says to look for",
     lede:
-      "For each task, a short list of visual features a clinician would be taught to check — " +
-      "the kind of knowledge a vision-language model may already have read.",
+      "For each task, a short list of visual features a clinician is taught to check. The " +
+      "model may have read the same textbooks.",
     bulletShapes: [
       "{minConcepts} to {maxConcepts} features per task, each on an ordered scale",
-      "Every level carries the anchor text the model is shown, and a citation for it",
-      "Each class gets a fingerprint: the levels that class commits to",
+      "Every level carries the wording the model is shown, and a citation for it",
+      "Each class gets a fingerprint: the level the textbook expects for each feature",
       "Written down before any call went out",
     ],
   },
@@ -152,7 +152,7 @@ export const question = {
         "The bank was compiled by a model — Claude Opus 5 — from the literature, and every " +
           "feature and fingerprint carries a citation. No clinician has read them. The review is " +
           "simulated too, and each file says so.",
-        "Citations let a reader check the thing. Authority would only let them defer to it.",
+        "A citation lets a reader check the claim. A credential only lets them defer to it.",
       ],
       source: "CONCEPT_BANK.md; data/concepts/*.yaml",
     },
@@ -163,16 +163,16 @@ export const design = {
   headerShape: "{arms} classification arms",
   lede: "What is the textbook worth in labelled images? Two arms use none. Three use n.",
   bullets: [
-    "Three arms fit their own linear classification head — same procedure, different features",
-    "Every comparison paired on one seeded test sample",
+    "Three arms each fit their own linear classification head — same procedure, different features",
+    "Every comparison is paired: the same test images for every arm",
     "AUC throughout: 1.0 perfect, 0.5 chance",
   ],
   limits: [
     "The three organ datasets are one set of CT volumes in three planes, so twelve datasets are " +
-      "at most ten independent units. The per-dataset differences are shown so a reader can " +
-      "recount.",
-    "chestmnist is multi-label, so a nearest fingerprint and a class distribution are undefined " +
-      "for it. It runs in arms C, P and C+P only.",
+      "at most ten independent units. Every per-dataset difference is shown, so anyone can count " +
+      "them again.",
+    "chestmnist marks several findings at once rather than one class, so arms A and B cannot " +
+      "be defined for it. It runs in C, P and C+P only.",
   ],
   callouts: [
     {
@@ -197,17 +197,17 @@ export const models = {
   header: "Models tested",
   lede:
     "Every number in this talk starts with a model looking at an image. These are the models " +
-    "that looked, and each column is here because something later depends on it.",
+    "that did.",
   bullets: [
     "Family and size — one question asks whether a bigger model in the same family reads better",
-    "Thinking — a later section is about what happens when the model is allowed to",
-    "Open or closed weights — an archive bought against a closed model cannot be re-derived",
-    "Calls — where the work actually went",
+    "Thinking — a later section asks what happens when the model is allowed to think",
+    "Open or closed weights — nobody outside the vendor can rerun a closed model's answers",
+    "Calls — where the work went",
   ],
   sizeNote:
-    "The closed family publishes neither its size nor its thinking settings. Price is what it " +
-    "could be ordered by, and the settings shown are the ones this study was able to use — none " +
-    "of which turns thinking off.",
+    "The closed family publishes neither its size nor its thinking settings. Price is the only " +
+    "thing that ranks it, and the settings shown are the ones this study could use; none of them " +
+    "turns thinking off.",
 };
 
 export const machine = {
@@ -260,8 +260,8 @@ export const results = {
   header: "Test AUC for each arm",
   ledeShape:
     "Every arm on one pair of axes: how well it separates the classes, against how many " +
-    "labelled images it was given. One model read every image here — {primary} — and the pixel " +
-    "arm reads none. Pick a question and the figure draws the arms that answer it.",
+    "labelled images it was given. One model read every image here — {primary}. The pixel arm " +
+    "uses no model at all. Pick a question and the figure draws the arms that answer it.",
   bullets: [
     "Arms given no labels are flat lines; arms given labels climb",
     "Shaded bands are 95% intervals — hover a point to read one",
@@ -272,14 +272,13 @@ export const results = {
       id: "h1",
       chip: "Can the textbook replace labels?",
       asks:
-        "The checklist read with no labels at all, against a linear classification head on " +
-        "pretrained image features, and against a second head, fitted the same way, on the " +
-        "checklist answers.",
+        "Three arms: the checklist read with no labels, a head fitted on pretrained image " +
+        "features, and a second head fitted the same way on the checklist answers.",
       hidden: ["CP", "A", "lit"],
     },
     {
       id: "h2",
-      chip: "The checklist, or just ask?",
+      chip: "Checklist, or just ask for the diagnosis?",
       asks:
         "Two prompts on the same image, neither using a label: name the diagnosis, or answer " +
         "the checklist and match the answers to the textbook's description of each class.",
@@ -289,24 +288,23 @@ export const results = {
       id: "h5",
       chip: "Does the textbook add to the pixels?",
       asks:
-        "A linear classification head on pretrained image features, then a second head, " +
-        "fitted the same way, on those features with the checklist answers alongside them. " +
-        "Nothing else changes.",
+        "A head fitted on pretrained image features, then a second head, fitted the same way, " +
+        "on those features with the checklist answers alongside them. Nothing else changes.",
       hidden: ["A", "B", "C", "lit"],
     },
   ],
   /* Kept for the panel that answers the obvious objection to the second question. */
   circular: [
-    "The two arms are separate calls on separate prompts, so the comparison cannot be circular. The first design returned both from one call, which would have let the concept answers rationalise a class the model had already chosen.",
+    "The two arms are separate calls on separate prompts, so the comparison cannot be circular. The first design returned both from one call, which would have let the checklist answers rationalise a class the model had already chosen.",
   ],
   callouts: [
     {
       kind: "nearmiss",
-      title: "Two agents, one working copy",
+      title: "Two agents editing the same code",
       body: [
-        "A second agent session, unaware of the first, moved the shared working copy to its own " +
-          "version of the code while jobs were running. A job reads the code when it starts, so " +
-          "five of twelve results were computed by the wrong version.",
+        "Two agent sessions were working in the same folder, neither aware of the other. The " +
+          "second switched it to its own version of the code while jobs were running. A job " +
+          "reads the code when it starts, so five of twelve results came out of the wrong one.",
         "The record filed beside each result names the version that wrote it, and that is what " +
           "found it — before anybody had a theory. Read the record first.",
       ],
@@ -323,11 +321,11 @@ export const thinking = {
   bullets: [
     "Thinking helps where the model read badly and hurts where it read well",
     "The frontier model reads no better than the open one it replaced",
-    "A null is a result: more thinking is not what the model lacked",
+    "More thinking is not what the model lacked",
   ],
   /* Kept for the collapsed panel of limits. */
   limits: [
-    "The frontier model is closed and of unknown size, so the step is capability, not parameters. It also refuses temperature zero, so it is the one reader whose answers are sampled, and some of any difference is noise the bootstrap cannot see.",
+    "The frontier model is closed and its size is not published, so this step changes capability rather than parameter count. It also refuses to answer deterministically, so it is the one reader whose answers vary between calls, and some of any difference is noise the intervals cannot see.",
   ],
   callouts: [
     {
@@ -335,7 +333,7 @@ export const thinking = {
       title: "An arm that could decide nothing",
       body: [
         "A fifth arm was added after seeing the numbers. Asking for it took one prompt; it cost three thousand calls, and it measured something real.",
-        "It was removed the same day. Designed after the results, it could decide nothing. When a new arm is one sentence away, the discipline has to come from you rather than from the effort.",
+        "It was removed the same day. Designed after the results, it could decide nothing. When a new arm costs one sentence, nothing about the effort will stop you from adding it. You have to.",
       ],
       source: "CHANGELOG.md 2026-09-12; WORKFLOW.md §10",
     },
@@ -350,12 +348,12 @@ export const verdicts = {
     "open families, one across the closed price ladder.",
   bullets: [
     "The textbook cannot replace labelled images",
-    "Added to them, it adds a little",
+    "Added to them, it adds a small but consistent gain",
   ],
   /* The plain-language reading of each question, for the one column a listener actually reads.
      H3 and H7 are presented nowhere else, so their sentences name the comparison outright. */
   asks: {
-    h1: "Read with no labels at all, does the textbook checklist beat pretrained image features " +
+    h1: "With no labels at all, does the textbook checklist beat pretrained image features " +
       "given the smallest labelled set?",
     h2: "Does answering the textbook checklist beat simply asking the model for the diagnosis?",
     h3: "Within each open model family, does the bigger model read the images better than the " +
@@ -365,8 +363,8 @@ export const verdicts = {
     h5: "Added to pretrained image features, do the checklist answers carry anything those " +
       "features do not already have?",
     h6: "Was the frontier model asked to think too hard? Lower its effort and see.",
-    h7: "Among closed models ranked only by price, does the dearest read the checklist better " +
-      "than the cheapest?",
+    h7: "Among closed models ranked only by price, does the most expensive read the checklist " +
+      "better than the cheapest?",
   } as Record<string, string>,
   callouts: [] as Callout[],
 };
@@ -376,7 +374,7 @@ export const close = {
   bullets: [
     "The graph shows a stage exists, not that it computes the right thing",
     "The workflow gives you what was done, for free",
-    "The session log is the other half: why. You need both.",
+    "The session log is the other half: why it was done. You need both.",
   ],
   callouts: [
     {
@@ -384,7 +382,7 @@ export const close = {
       title: "Understanding debt",
       body: [
         "Every stage the agent wrote faster than I could read it is a loan.",
-        "Four things repaid it. Read every rule before it runs at scale. Run one cell first. Make the agent explain the stage, then judge the explanation. Keep the change log yourself.",
+        "Four things repaid it. Read every rule before it runs at scale. Run one chunk before the rest. Make the agent explain the stage, then judge the explanation. Keep the change log yourself.",
         "The agent produces the evidence. The claim stays yours.",
       ],
       source: "TALK.md §3; SESSION_LOG.md",
@@ -400,7 +398,7 @@ export const explore = {
    something twenty-five minutes has time to walk through. */
 export const notClaimed = [
   "The concept scores are not clinically validated.",
-  "Simulated expert review is not a clinician's.",
+  "A simulated expert review is not a clinician's review.",
   "No arm here is state of the art.",
   "Every source dataset is public and labelled, so “the model carries textbook knowledge” " +
     "and “the model has seen this benchmark” cannot be told apart with these data.",
@@ -415,8 +413,8 @@ export const ladderExtra = {
     "by price — gpt-5.6-luna, then terra, then sol.",
   bullets: [
     "Read within family only: the larger models are also the newer ones",
-    "Both size steps also change quantisation",
-    "Nothing public ranks the closed models, so price is the proxy",
+    "Both size steps also change the numerical precision the model runs at",
+    "Nothing public ranks the closed models, so price is the only order there is",
     "Whatever separates them, parameter count did not capture it",
   ],
 };

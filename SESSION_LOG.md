@@ -1438,3 +1438,46 @@ worth attributing: an input built by a model, reviewed by the same model, used a
 
 Sections that name no model and should not: the title, the dataset section, the arms, the workflow,
 and the effort timeline, none of which report a number that came out of a model.
+
+## 2026-09-18 17:10 — A plain-language pass over all the copy
+
+The user asked for the standard he has been applying by hand for two days to be carried through
+every line on the site: *"avoid vague terminology, unusual metaphors, virtue signaling. Keep it
+candid and simple but use plain direct language."* His own words stay untouched — the title, the
+byline, the standfirst, the project intro and its five bullets, "How the work unfolded." and its
+four counts, the callout about outputs not being the product, and the headers he set.
+
+The pass was driven by pulling every heading, bullet, callout, caption, note, table header and
+chart label off the rendered page rather than by reading the source, which is how the chart
+strings were found at all: half a dozen of the worst phrases were axis labels and legend entries
+in `charts/`, not prose in `content/index.ts`.
+
+Four faults, in the order they were worth fixing. **Unexplained vocabulary**, where the technicality
+was not the point: anchor text, penultimate features, the shared prefix, label maps, estimators,
+metric conventions, a dataset-model cell, quantisation, permuted, temperature zero, the bootstrap.
+Each now says the thing in words the room already has — "the wording the model is shown", "AUC
+lost when the bank is shuffled", "it refuses to answer deterministically". **Two names for one
+thing**: arm B was "the checklist arm" while arm C was "the concept arm", though both are built on
+the checklist; H1's sentence now names each by what was fitted on what, and B is the
+"textbook-only arm" as the legend already called it. **Sentences that announced themselves**: the
+models lede spent half its length saying that its own columns mattered; the effort chart's caption
+restated the legend beneath it word for word; the report stage ended on "no number in it is typed
+by hand", which the workflow diagram already says. **Aphorism in a bullet**: "A null is a result"
+lost its first clause and keeps the finding.
+
+Some things were left deliberately, and are worth recording as decisions rather than oversights.
+"Understanding debt" and the refrain are load-bearing and the user has said so. "Bought" for calls
+that cost money is candid, not a metaphor. "Wave" for a batch of jobs is defined by the sentence it
+appears in. The seven one-word hypothesis titles in the verdict board — Substitution, Scale,
+Complement — come from `WORKFLOW.md` through the export and sit beside a plain-English question
+column, so they were left to the owner.
+
+Verified: type check clean, twelve bands and no page errors in light and dark, and the rendered
+text diffed line by line against the pass before it.
+
+**One edit in that pass broke the rule it was working under.** The effort chart's new caption read
+"Nine days of the project on one clock" — a number typed into the file whose first line forbids
+it, and already wrong: the export had reached ten days that morning. It is a shape now, filled
+from `effort.days` in the section, which is the pattern the rest of the page uses. Worth recording
+because the failure is characteristic: a rewrite for plainness reached for a concrete number, and
+a concrete number is exactly the thing that goes stale while the prose around it stays true.

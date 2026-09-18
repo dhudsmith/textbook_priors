@@ -33,7 +33,7 @@ export default function Explore() {
 
       <h3>{dataset}</h3>
       <p className="note">
-        {meta.modality}. {meta.n_classes} classes ({meta.classes.join(", ")}).{" "}
+        {meta.modality}. {meta.n_classes} classes ({meta.classes.join(", ")}),{" "}
         {meta.medmnist_task}. Source: {meta.source_dataset ?? "—"}. Official splits: train{" "}
         {meta.split_sizes.train.toLocaleString("en-US")}, val{" "}
         {meta.split_sizes.val.toLocaleString("en-US")}, test{" "}
@@ -118,8 +118,8 @@ export default function Explore() {
           </tbody>
         </table>
         <p className="note">
-          A dataset-model cell more than 5% incomplete is flagged in the report and excluded from
-          the headline; none of these is.
+          Any model that left more than 5% of a dataset's checklists incomplete is flagged in the
+          report and kept out of the headline; none did.
         </p>
       </Deep>
 
@@ -136,7 +136,7 @@ export default function Explore() {
         ))}
       </div>
 
-      <Deep summary="Both rendered prompts, verbatim">
+      <Deep summary="Both prompts, exactly as sent">
         <pre className="file" style={{ maxHeight: "40rem" }}>{prompt ?? "Loading the prompts…"}</pre>
       </Deep>
 
@@ -189,10 +189,10 @@ export default function Explore() {
 
       <h4>The seven hypotheses, and the rules fixed before their numbers</h4>
       <p className="note">
-        Every rule was written down before the calls that decided it were bought, and the dated
-        record shows it. The rules were restated for twelve datasets once six verdicts were
-        known; the twelve-dataset threshold reproduces the six-dataset one exactly, so nothing
-        already decided moved.
+        Every rule was written down before the calls that decided it, and the dated record shows
+        it. The rules were restated for twelve datasets once six verdicts were known; the
+        twelve-dataset threshold matches the six-dataset one exactly, so nothing already decided
+        moved.
       </p>
       <div className="table-scroll">
         <table className="data">
@@ -228,7 +228,8 @@ export default function Explore() {
 
       <h4>Files</h4>
       <p style={{ fontSize: "0.9rem" }}>
-        Everything on this page is in <a href={REPO}>the code</a>, listed again at the close.
+        Everything on this page comes from <a href={REPO}>the code</a>, linked again at the
+        close.
       </p>
       <Deep summary="Every file this page's numbers were read from">
         <ul className="mono" style={{ fontSize: "0.72rem", color: "var(--ink-muted)" }}>

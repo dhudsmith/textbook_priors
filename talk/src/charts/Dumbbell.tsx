@@ -103,13 +103,13 @@ export function Dumbbell() {
           <svg width="12" height="12" aria-hidden="true">
             <circle cx="6" cy="6" r="4.5" fill={armHue("A")} />
           </svg>
-          arm A: zero-shot, the model's own guess
+          arm A: the model's own guess
         </span>
         <span className="chip legend" style={{ cursor: "default" }}>
           <svg width="12" height="12" aria-hidden="true">
             <rect x="1.8" y="1.8" width="8.4" height="8.4" rx="1" fill={armHue("B")} />
           </svg>
-          arm B: the textbook readout
+          arm B: the checklist, matched to the textbook
         </span>
       </div>
     </div>
@@ -160,7 +160,7 @@ export function PermutationDrops() {
           ))}
           <text x={left + innerW / 2} y={MARGIN.top + rows.length * rowH + 33}
                 textAnchor="middle" style={{ fontWeight: 600 }}>
-            AUC lost when the structure is permuted
+            AUC lost when the bank is shuffled
           </text>
         </g>
         {rows.map((r, i) => {
@@ -197,16 +197,16 @@ export function PermutationDrops() {
       <div className="controls" aria-label="Series">
         <span className="chip legend" style={{ cursor: "default" }}>
           <span className="swatch" style={{ background: armHue("B") }} /> arm B, fingerprints
-          permuted across classes
+          shuffled between classes
         </span>
         <span className="chip legend" style={{ cursor: "default" }}>
           <span className="swatch" style={{ background: armHue("C") }} /> arm C at n = 50,
-          concept columns permuted across images
+          checklist answers shuffled between images
         </span>
       </div>
       <p className="note">
-        A row with one bar is a dataset where the other arm is not defined: chestmnist is
-        multi-label, so it has no arm B.
+        A row with one bar is a dataset where the other arm is not defined: chestmnist marks
+        several findings at once, so it has no arm B.
       </p>
     </div>
   );

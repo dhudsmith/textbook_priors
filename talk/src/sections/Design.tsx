@@ -40,11 +40,11 @@ export function Design() {
               </td>
               <td>{a.id === "A" || a.id === "B" ? "0" : "n"}</td>
               <td style={{ textAlign: "left", fontSize: "0.8rem", color: "var(--ink-secondary)" }}>
-                {a.id === "A" ? "— (the class distribution, from its own prompt)"
+                {a.id === "A" ? "— (no features; the model names the class itself)"
                   : a.id === "B" ? "concept scores, matched to the bank's class fingerprints"
                   : a.id === "C" ? "concept scores"
-                  : a.id === "P" ? "ImageNet ResNet-18 penultimate features"
-                  : "both blocks concatenated, standardised together"}
+                  : a.id === "P" ? "ImageNet ResNet-18 features"
+                  : "both, joined and put on one scale"}
               </td>
             </tr>
           ))}

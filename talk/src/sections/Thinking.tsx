@@ -73,7 +73,7 @@ export function Thinking() {
           <Ladder order={chain} values={h4.probe_auc} yLabel="cross-validated probe AUC"
                   label="Probe AUC per dataset across the nine readers" height={420}
                   named={widestSpread(h4.probe_auc, chain, 4, ["dermamnist"])}
-                  note="The first four readers are those models with thinking off. Each label is a stem and an effort." />
+                  note="The first four readers are the models with thinking off. Each label is a model and the effort it was given." />
         </ChartFrame>
       </Deep>
 

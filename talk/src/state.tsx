@@ -18,7 +18,7 @@ export const SECTIONS = [
   { id: "thinking", short: "Thinking" },
   { id: "verdicts", short: "Verdicts" },
   { id: "premise", short: "How it unfolded" },
-  { id: "close", short: "Close" },
+  { id: "close", short: "What it cost" },
   { id: "explore", short: "Extra" },
 ] as const;
 
