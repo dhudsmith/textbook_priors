@@ -386,6 +386,39 @@ details.deep > summary {
 }
 .bullets li::marker { color: var(--ink-muted); }
 
+/* ---- deck ---------------------------------------------------------------------------------
+   The takeaways, one card at a time, with an arrow either side. Every card is in the same grid
+   cell and the ones not showing are hidden rather than removed, so the deck is as tall as its
+   longest card and the links below it do not jump when the speaker steps through. The arrows
+   flank the card, so the deck is wider than the prose by exactly what they take. */
+.deck { max-width: calc(var(--measure) + 6.4rem); margin: 0 0 1.4rem; }
+.deck:focus-visible { outline: 2px solid var(--focus); outline-offset: 6px; border-radius: 10px; }
+.deckcount {
+  font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.06em; color: var(--ink-muted);
+  margin-bottom: 0.45rem;
+}
+.deckrow {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.6rem;
+  align-items: stretch;
+}
+.deckarrow {
+  font: inherit; font-size: 1.6rem; line-height: 1; cursor: pointer; width: 2.6rem;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--rule-strong); border-radius: 8px; background: var(--surface-raised);
+  color: var(--ink-secondary);
+}
+.deckarrow:hover { border-color: var(--ink-muted); color: var(--ink); }
+.deckcards { display: grid; }
+.deckcard {
+  grid-area: 1 / 1; margin: 0; padding: 1.1rem 1.2rem;
+  border: 1px solid var(--rule); border-radius: 8px; background: var(--surface-raised);
+  font-size: 1.16rem; line-height: 1.34; font-weight: 600; color: var(--ink);
+}
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; white-space: nowrap;
+  clip-path: inset(50%);
+}
+
 /* ---- title ------------------------------------------------------------------------------- */
 .title-band { padding-top: clamp(2rem, 6vh, 4rem); }
 .title-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2rem; align-items: start; }

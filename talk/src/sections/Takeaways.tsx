@@ -1,23 +1,17 @@
-import { Band, Bullets, Callouts, Header } from "../components/ui";
+import { Band, Deck, Header } from "../components/ui";
 import { PageQR } from "./Title";
 import { takeaways as copy, LINKS } from "../content";
 import { asset } from "../data";
 
-/* The end of the talk, and the section the speaker speaks from: his own takeaways as bullets,
-   the three the agent proposed kept separate under their own heading, and the understanding-debt
-   note, which arrived here when "what four days cost" was cut. The links and the QR code close
-   the page, as they did at the end of the cut section. */
+/* The end of the talk, and the section the speaker speaks from: his own takeaways, arrowed
+   through one at a time. The links and the QR code close the page, as they did at the end of the
+   cut section. */
 
 export function Takeaways() {
   return (
     <Band id="takeaways">
       <Header id="takeaways" eyebrow="11">{copy.header}</Header>
-      <Bullets items={copy.bullets} />
-
-      <Callouts items={copy.callouts} />
-
-      <h3>{copy.added.header}</h3>
-      <Bullets items={copy.added.bullets} />
+      <Deck items={copy.cards} label="Takeaways" />
 
       <div style={{ marginTop: "2rem" }}>
         <div>

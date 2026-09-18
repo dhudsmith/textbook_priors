@@ -291,49 +291,27 @@ export const verdicts = {
    under `added` were written by the agent and are kept apart so he can see which are his. */
 export const takeaways = {
   header: "Takeaways",
-  bullets: [
+  /* Arrowed through one at a time rather than read as a list: these are the speaker's own
+     points, and a room that can read ahead has stopped listening. Ten as they were first
+     written, combined here where two were the same point twice. */
+  cards: [
     "It feels like magic: whatever I can imagine adding to this study, I can speak into my " +
-      "phone and it goes.",
-    "But this was too fast. My understanding has not caught up with the work that was done.",
+      "phone and it goes. With great power comes great responsibility.",
+    "But this was too fast. My understanding has not caught up with the work that was done, and " +
+      "I had big surprises, while making this talk, about how the workflow actually worked. " +
+      "That is not a good situation.",
     "There is a big gap between this and what I would need, as a scientist, before publishing " +
       "it.",
-    "I had big surprises, while making this talk, about how the workflow actually worked. That " +
-      "is not a good situation.",
-    "With great power comes great responsibility.",
     "A workflow manager like Snakemake is useful twice: as context for the AI, and as a way for " +
-      "me to see what the AI built. It documents the design instead of leaving a pile of scripts.",
+      "me to see what the AI built. It documents the design instead of leaving a pile of " +
+      "scripts.",
     "Moving toward AI-generated work means being more prescriptive about your standards, " +
-      "because they will not be enforced implicitly.",
-    "Keep the distance between what you want and what the AI produces as small as possible. " +
-      "That means specifying what you want very clearly.",
-    "Generating this talk was the bottleneck. It took far more of my input than the scientific " +
-      "work did.",
-    "Presentation is still hard for AI. I have a model of the audience; the AI's is very " +
-      "different, and closing that gap took a lot of work. It is still not perfect.",
+      "because they will not be enforced implicitly. Keep the distance between what you want " +
+      "and what the AI produces as small as possible.",
+    "Generating this talk was the bottleneck: it took far more of my input than the scientific " +
+      "work did. Presentation is still hard for AI. I have a model of the audience, the AI's is " +
+      "very different, and closing that gap is not finished.",
   ],
-  added: {
-    header: "Added by the agent — keep, revise or cut",
-    bullets: [
-      "Generating got faster; checking did not. Reading a stage, running it small and judging " +
-        "what came back take the time they always took.",
-      "One prompt now buys hours of machine time, so the cost of asking is no longer what " +
-        "limits what gets asked.",
-      "Every mistake here was caught by reading a record — the plan, one chunk run before the " +
-        "rest, a timed call, the note filed beside a result. None was caught by the workflow " +
-        "noticing.",
-    ],
-  },
-  callouts: [
-    {
-      title: "Understanding debt",
-      body: [
-        "Every stage the agent wrote faster than I could read it is a loan.",
-        "Four things repaid it. Read every rule before it runs at scale. Run one chunk before the rest. Make the agent explain the stage, then judge the explanation. Keep the change log yourself.",
-        "The agent produces the evidence. The claim stays yours.",
-      ],
-      source: "TALK.md §3; SESSION_LOG.md",
-    },
-  ] as Callout[],
 };
 
 export const explore = {

@@ -1661,3 +1661,26 @@ The real faults, all of them the same mistake — a distance guessed once and th
 
 Zero collisions at 390, 768 and 1500 px, with every collapsible section open; thirteen bands and no
 page errors in light or dark. Nothing about what the figures say changed.
+
+## 2026-09-18 23:20 — The takeaways are a deck, and the agent's three are gone
+
+*"Remove this callout. And these points."* The *Understanding debt* note and the three bullets the
+agent had proposed under its own heading are cut; what the section carries now is his ten, and only
+his. *"Combine the few that are largely about the same"* leaves six. Magic and *with great power
+comes great responsibility* were one point about power, so they are one card. *My understanding has
+not caught up* and *I had big surprises about how the workflow actually worked* were the same
+admission twice. *Be more prescriptive about your standards* and *keep the distance between what
+you want and what the AI produces small* are the same instruction from two sides. *Generating the
+talk was the bottleneck* and *presentation is still hard for AI* are the claim and its reason. The
+gap before publishing, and the workflow manager being useful twice, stand alone. Nothing was
+rewritten beyond the joins.
+
+They are a deck now rather than a list: one card, a counter reading 1/6, and an arrow either side
+that cycles past the ends. A list lets the room read ahead; a card arrives when he says it. Every
+card is rendered into the same grid cell with the ones not showing hidden rather than removed, so
+the deck stands as tall as its longest card and the links below it do not jump as he steps
+through. The arrow keys move the deck only while it holds focus: the page deliberately leaves the
+bare arrow keys to the browser so a presentation clicker still scrolls one screen a press, and a
+deck that stole them would break the clicker everywhere else. Checked by driving it: the counter
+runs 1 through 6 and wraps in both directions, exactly one card is ever visible, the deck's height
+does not change between cards, and it fits a 390 px screen without the page scrolling sideways.
