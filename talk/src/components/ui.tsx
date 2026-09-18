@@ -85,6 +85,25 @@ export function Bullets({ items }: { items: readonly string[] }) {
   return <ul className="bullets">{items.map((b, i) => <li key={i}>{b}</li>)}</ul>;
 }
 
+/** A numbered list of points: the bold line is what the room reads off the wall, the lighter one
+    under it is for whoever is reading on their own device. The takeaways and the closing summary
+    of the results are the same shape, so they are the same component and cannot drift apart. */
+export function Points({ items }: {
+  items: readonly { summary: string; detail: string }[];
+}) {
+  if (!items.length) return null;
+  return (
+    <ol className="points">
+      {items.map((it) => (
+        <li key={it.summary}>
+          <span className="sum">{it.summary}</span>
+          <span className="detail">{it.detail}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 /* ---- callouts -------------------------------------------------------------------------- */
 
 /** A callout card: a left rule, a small-caps label, a title that collapses the body, and a

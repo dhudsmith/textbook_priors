@@ -1898,3 +1898,15 @@ nearest-fingerprint rule, and `spec.fingerprint` in the bank — but until now i
 the talk's visible language, where arm B is "the feature scores matched to the literature". The
 closing summary still says the long form. Either the summary adopts *fingerprint* or these panels
 say something else; they should not be two names for one thing in one talk.
+
+## 2026-09-19 04:30 — The research conclusion takes the takeaways' shape
+
+*"I like the takeaways format. Can we put the research conclusion results in that format?"* Yes, and
+it suits it better than bullets did: the claim is the bold line the room reads off the wall, and the
+counts move into the lighter sentence under it, where a listener is not asked to hold "10 of 11"
+and "9 of 11" in the same breath as the point they support.
+
+They are one component now, `Points`, rather than two lists that happened to look alike, and the
+CSS class is `.points` instead of `.takelist` — two places on the page use this shape, and they
+should not drift apart because one of them was edited. Nothing about the wording or the numbers
+moved: the same seven claims, the same counts from the same snapshot fields, only the shape.

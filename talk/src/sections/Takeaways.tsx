@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Header } from "../components/ui";
+import { Band, Header, Points } from "../components/ui";
 import { takeaways as copy, LINKS } from "../content";
 import { asset, loadEffort } from "../data";
 import { useAsync } from "../hooks";
@@ -35,14 +35,7 @@ export function Takeaways() {
         {context.map((p, i) => <p key={i}>{p}</p>)}
       </div>
 
-      <ol className="takelist">
-        {copy.items.map((it) => (
-          <li key={it.summary}>
-            <span className="sum">{it.summary}</span>
-            <span className="detail">{it.detail}</span>
-          </li>
-        ))}
-      </ol>
+      <Points items={copy.items} />
 
       <div style={{ marginTop: "2rem" }}>
         <h3>Links</h3>

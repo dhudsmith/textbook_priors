@@ -273,27 +273,50 @@ export const verdicts = {
   modelsNote:
     "Five of these rest on one model, {primary}. The other two compare models: one across the " +
     "open families, one across the closed models ranked by price.",
-  /* The conclusion of the research half, and the one block a listener should leave with. Every
-     count is a placeholder filled from the snapshot: the four that no hypothesis produced on its
-     own are counted by the export's `headline` block, the rest are the hypotheses' own wins.
-     Arm names are avoided here - this is the summary, and it has to read without the board. */
+  /* The conclusion of the research half, and the one block a listener should leave with. Same
+     shape as the takeaways: a line the room reads, and a sentence under it that carries the
+     counts. Every count is a placeholder filled from the snapshot - the four no hypothesis
+     produced on its own come from the export's `headline` block, the rest are the hypotheses'
+     own wins. Arm names are avoided: this is the summary, and it has to read without the board. */
   soWhat: {
     header: "So what did we find?",
-    bulletShapes: [
-      "Asked straight out for the diagnosis, the model beats chance on {aOverChance} of {n} — " +
-        "but loses to a classifier on pretrained image features, given {smallestN} labelled " +
-        "images, on {pixelOverA} of {n}",
-      "Scoring the visual features and matching them to the literature does worse still: it " +
-        "beats the straight diagnosis on {bOverA} of {n}",
-      "But fit a classifier on those same scores with {smallestN} labels and it beats the " +
-        "matching on {cOverB} of {n} — and the straight diagnosis on {cOverA} of {n}, a " +
-        "majority, short of the {minWins} this study counts as a win",
-      "Add the scores to pretrained image features and they add a little on {h5Wins} of " +
-        "{h5N} — and cost nothing, since both are already on disk",
-      "Thinking only helps where the model read badly without it",
-      "Among the open models, the bigger one does not read better: {h3Best} of {h3N} in one " +
-        "family and {h3Worst} in the other, against the {minWins} either would need",
-      "Among the closed models, {dearest} beats {cheapest} on {h7Wins} of {h7N}",
+    items: [
+      {
+        summary: "Asking the model outright beats chance — and loses to 50 labelled images",
+        detail: "Asked straight out for the diagnosis, the model beats chance on {aOverChance} " +
+          "of {n}. A classifier on pretrained image features, given {smallestN} labelled " +
+          "images, beats the model on {pixelOverA} of {n}.",
+      },
+      {
+        summary: "Scoring the visual features and matching them to the literature does worse " +
+          "still",
+        detail: "It beats asking outright on {bOverA} of {n}.",
+      },
+      {
+        summary: "But train on those same scores and it beats both",
+        detail: "Fit a classifier on them with {smallestN} labels and it beats the matching on " +
+          "{cOverB} of {n}, and asking outright on {cOverA} of {n} — a majority, short of the " +
+          "{minWins} this study counts as a win.",
+      },
+      {
+        summary: "The scores add a little to image features, and cost nothing",
+        detail: "Added to pretrained image features they help on {h5Wins} of {h5N}, and buy no " +
+          "calls: both are already on disk.",
+      },
+      {
+        summary: "Thinking only helps a reader that was reading badly",
+        detail: "Where the model already scored the visual features well, being told to think " +
+          "first made it worse.",
+      },
+      {
+        summary: "Among the open models, the bigger one does not read better",
+        detail: "The larger model wins on {h3Best} of {h3N} in one family and {h3Worst} in the " +
+          "other, against the {minWins} either would need.",
+      },
+      {
+        summary: "Among the closed models, the dearest does beat the cheapest",
+        detail: "{dearest} beats {cheapest} on {h7Wins} of {h7N}.",
+      },
     ],
   },
   /* The plain-language reading of each question, for the one column a listener actually reads.
