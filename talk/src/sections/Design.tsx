@@ -1,22 +1,14 @@
-import { useState } from "react";
 import { useTalk } from "../state";
 import { Band, Bullets, Callouts, Header } from "../components/ui";
 import { ArmDiagram } from "../components/diagrams";
 import { design } from "../content";
 
-/* Seven hypothesis cards. A card flips to its decision rule, the threshold the rule asks for, and
-   the date and commit that carried the rule into WORKFLOW.md - which the export read out of git
-   and checked against the commit that carried the numbers. */
+/* The five arms and what feeds each one. The seven hypotheses and their pre-registered rules are
+   not presented - they wait in Extra - because the room has twenty-five minutes and the verdicts
+   mean the same whether or not the rule was read out beforehand. */
 
 export function Design() {
   const { study } = useTalk();
-  const [flipped, setFlipped] = useState<Set<string>>(new Set());
-  const flip = (id: string) => setFlipped((prev) => {
-    const next = new Set(prev);
-    next.has(id) ? next.delete(id) : next.add(id);
-    return next;
-  });
-
   const arms = study.style.arms;
 
   return (
@@ -62,42 +54,7 @@ export function Design() {
         probe on different feature blocks.
       </p>
 
-      <h3>Seven questions, each with a rule fixed before its numbers</h3>
-      <p className="note">Click a card to turn it over.</p>
-      <div className="cards">
-        {study.verdicts.map((v) => {
-          const back = flipped.has(v.id);
-          return (
-            <button key={v.id} className="card" onClick={() => flip(v.id)}
-                    aria-expanded={back}>
-              <div className="hid">{v.id.toUpperCase()} · {v.title}</div>
-              {back ? (
-                <>
-                  <div className="claim">The rule</div>
-                  <div className="rule">{v.rule}</div>
-                  <div className="flip">
-                    registered {v.registered.date} in{" "}
-                    <span className="mono">{v.registered.short}</span>
-                    {v.rule_precedes_numbers
-                      ? " — an ancestor of the commit that carried its numbers"
-                      : ""}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="claim">{v.question}</div>
-                  <div className="rule">
-                    Decided on {v.metric}. Supported at {v.threshold} of {v.n_datasets} datasets.
-                  </div>
-                  <div className="flip">turn over for the rule ›</div>
-                </>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      <h3>Three limits</h3>
+      <h3>Two limits</h3>
       <ul style={{ fontSize: "0.9rem", color: "var(--ink-secondary)" }}>
         {design.limits.map((l, i) => <li key={i}>{l}</li>)}
       </ul>

@@ -137,7 +137,7 @@ export const question = {
 };
 
 export const design = {
-  header: "Five arms, seven hypotheses, rules before numbers",
+  header: "Five arms, one classifier",
   lede:
     "Two arms use no labels. Three use n labels and the same classifier, and differ only in the " +
     "features that reach it.",
@@ -145,7 +145,7 @@ export const design = {
     "A pretrained model needs a pretrained baseline",
     "One classifier, three arms — only the features differ",
     "Every comparison paired on one seeded test sample",
-    "A sign test across datasets decides each rule",
+    "Across datasets, a sign test decides each comparison",
     "AUC throughout: 1.0 perfect, 0.5 chance",
   ],
   limits: [
@@ -154,9 +154,6 @@ export const design = {
       "recount.",
     "chestmnist is multi-label, so a nearest fingerprint and a class distribution are undefined " +
       "for it. It runs in arms C, P and C+P only.",
-    "The rules were restated for twelve datasets when six verdicts were already known. The " +
-      "twelve-dataset threshold reproduces the six-dataset rule exactly, so nothing already " +
-      "decided moved; only the six new datasets are pre-registered at it.",
   ],
   callouts: [
     {
@@ -437,7 +434,7 @@ export const close = {
 };
 
 export const explore = {
-  header: "Explore",
+  header: "Extra",
 };
 
 /* Two lists, because two of these are what a room asks about and two are not. The first is on

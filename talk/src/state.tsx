@@ -21,7 +21,7 @@ export const SECTIONS = [
   { id: "verdicts", short: "Verdicts" },
   { id: "premise", short: "How it unfolded" },
   { id: "close", short: "Close" },
-  { id: "explore", short: "Explore" },
+  { id: "explore", short: "Extra" },
 ] as const;
 
 interface Ctx {

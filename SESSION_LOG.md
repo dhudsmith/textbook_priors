@@ -1238,3 +1238,27 @@ reads without colour, and naming the file its numbers came from, now just says w
 what; the sample images lost their cache path and kept the fact that the sample is seeded; the
 close lost the host, the write time and the export time. Claiming a virtue the work either has or
 does not is not the same as having it.
+
+## 2026-09-18 10:45 — The hypotheses leave the talk
+
+The user cut the pre-registration walkthrough: "hypotheses as tiles doesn't really work. List them
+out. Also, for the sake of time, let's not pre-register the hypotheses at all. Let's describe the
+arms and then go discuss the results." The seven flip-cards are gone from the design section, which
+is now called *Five arms, one classifier* and does what its name says — the diagram, the arm table,
+two limits — before the results arrive.
+
+The hypotheses themselves are not lost, they are demoted. They sit in the section formerly called
+Explore, renamed *Extra* at the user's instruction, as a plain table: id, question, rule, the
+threshold it asks for, the date and commit that registered it, and the verdict. A table, not
+cards, because the complaint about the tiles was that a grid of flippable panels makes a reader
+work to compare seven things that want to be read down a column.
+
+Two loose ends followed from the cut, both found by re-reading the section rather than by the
+build. A bullet said "a sign test across datasets decides each rule" when no rule is shown any
+more, so it now decides each comparison. And the third of the section's three limits was
+pre-registration bookkeeping — the rules restated for twelve datasets once six verdicts were
+known — which now sits with the hypotheses in Extra, leaving two limits behind.
+
+Kept in the talk, deliberately: the callout saying a rule counts only if it precedes its numbers
+and that here you can check it. The seven rules are gone from the room, but the practice is a
+one-line observation and it is the reproducibility thread the talk is about.

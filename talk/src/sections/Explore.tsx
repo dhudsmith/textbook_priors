@@ -182,6 +182,45 @@ export default function Explore() {
         </figure>
       )}
 
+      <h4>The seven hypotheses, and the rules fixed before their numbers</h4>
+      <p className="note">
+        Each rule was committed before the calls that decided it were bought. The commit carrying
+        the rule is an ancestor of the commit carrying its numbers, which is what makes the claim
+        checkable rather than asserted. The rules were restated for twelve datasets when six
+        verdicts were already known; the twelve-dataset threshold reproduces the six-dataset rule
+        exactly, so nothing already decided moved, and only the six new datasets are
+        pre-registered at it.
+      </p>
+      <div className="table-scroll">
+        <table className="data">
+          <thead>
+            <tr>
+              <th>id</th>
+              <th style={{ textAlign: "left" }}>question</th>
+              <th style={{ textAlign: "left" }}>rule</th>
+              <th>needs</th>
+              <th>registered</th>
+              <th>verdict</th>
+            </tr>
+          </thead>
+          <tbody>
+            {study.verdicts.map((v) => (
+              <tr key={v.id}>
+                <td className="mono">{v.id.toUpperCase()}</td>
+                <td style={{ textAlign: "left", fontSize: "0.8rem" }}>{v.question}</td>
+                <td style={{ textAlign: "left", fontSize: "0.8rem" }}>{v.rule}</td>
+                <td>{v.threshold} of {v.n_datasets}</td>
+                <td className="mono" style={{ fontSize: "0.72rem" }}>
+                  {v.registered.date}{" "}
+                  <span style={{ color: "var(--ink-muted)" }}>{v.registered.short}</span>
+                </td>
+                <td>{v.verdict}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
       <h4>What this study does not claim, continued</h4>
       <ul style={{ maxWidth: "42rem", fontSize: "0.9rem", color: "var(--ink-secondary)" }}>
         {notClaimedMore.map((c, i) => <li key={i}>{c}</li>)}
