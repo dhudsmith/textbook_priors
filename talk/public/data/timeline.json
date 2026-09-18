@@ -326,10 +326,31 @@
   },
   {
    "date": "2026-09-17",
+   "time": "19:35",
+   "title": "The slides come back out",
+   "kind": "build",
+   "lead": "The user tried the deck and rejected the constraint: \"the slides idea appears to be too difficult a constraint on differently sized screens.\" Fixed 100vh panels assume a projector's aspect ratio and punish every other\u2026"
+  },
+  {
+   "date": "2026-09-17",
    "time": "20:10",
    "title": "Replace the four-day strip with a waterfall of who did the work",
    "kind": "build",
    "lead": "The user found TimelineStrip inscrutable and asked for a waterfall instead: two bands over the same axis, project-lifecycle activity in one and human against AI against supercomputer time in the other, to convey that\u2026"
+  },
+  {
+   "date": "2026-09-17",
+   "time": "21:55",
+   "title": "Not a waterfall: a project timeline, with points where there are no durations",
+   "kind": "build",
+   "lead": "The user's verdict on the two-band waterfall was that \"waterfall\" had been the wrong word, and that what he wanted was a project-timeline Gantt: named steps as lanes down the left, one clock across the top, a bar\u2026"
+  },
+  {
+   "date": "2026-09-17",
+   "time": "22:40",
+   "title": "Surface the RCD LLM service calls, at the resolution the archive supports",
+   "kind": "build",
+   "lead": "The user asked whether the calls to the RCD LLM service could be highlighted as events. They are the largest number the study produced and they were invisible, folded inside the bars for the jobs that made them."
   }
  ],
  "kinds": [
@@ -361,7 +382,7 @@
  "kind_note": "Only the kind of each entry was assigned by hand; the rest is the file's own heading and first paragraph.",
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T01:28:57Z",
+  "exported": "2026-09-18T01:59:04Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
    "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",

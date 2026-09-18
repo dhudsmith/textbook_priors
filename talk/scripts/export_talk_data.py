@@ -685,96 +685,50 @@ def export_timeline() -> dict:
 
 
 # ---------------------------------------------------------------------------------------------
-# The effort snapshot: where the recorded work went, split two ways over the same hours.
+# The project timeline: what happened, when, in lanes over one clock.
 #
-# Two decompositions of one total, so a listener can lay them on top of each other: by lifecycle
-# activity, and by who or what was doing it. Every hour in both bands comes from a timestamp in
-# a file. The two attribution rules are stated here because neither is a field anyone wrote down:
+# Four lanes, two of instants and two of intervals, and the difference between them is the point:
+# the record dates a prompt and a commit to the minute but says nothing about how long either
+# took, while a job manifest states its own duration. So prompts and commits are exported as
+# points and jobs as spans, and nothing is given a width it cannot support.
 #
-#   machine hours    a job's own manifest: `written` is when it finished and `wall_seconds` how
-#                    long it ran, so the pair is an interval. The activity is its Snakemake rule,
-#                    through RULE_ACTIVITY below.
-#   attended hours   the elapsed window a person and the agent were working: per day, first to
-#                    last timestamped mark in that day's record. SESSION_LOG.md's prompt headings
-#                    are the mark where they exist; for 2026-09-09, which predates the log, the
-#                    day's git commits are. The activity of each interval between two marks is
-#                    read off the commits that landed inside it, by the paths they touched
-#                    (PATH_ACTIVITY), taking the activity with the most lines changed. An interval
-#                    in which nothing was committed is direction and review.
+# What the repository can and cannot tell us about who did the work:
 #
-# What this cannot do, and what the caption therefore has to say: the attended window cannot be
-# split into human time and agent time. Nothing in the repository records which of the two was
-# working at a given minute, and the gaps between prompts (median 35 min, longest 5h40m) are
-# equally consistent with the person thinking, the agent building, and lunch. The window is an
-# upper bound on the person's involvement, not a measurement of it.
+#   prompts   SESSION_LOG.md's headings. One per prompt that materially directed the work. An
+#             instant. No duration is recorded anywhere and none is inferred here.
+#   commits   `git log`. Every commit in this project is authored by the owner, so authorship
+#             cannot separate agent work from hand work - but the Co-Authored-By trailer can, and
+#             it is on all but two of them. That trailer is the lane's honest claim: not "the AI
+#             did this" but "an agent co-authored this commit, and the commit says so".
+#   jobs      the manifests, which carry `written` and `wall_seconds`, so each is an interval.
+#   calls     the archive under results/score/. A chunk records how many calls it made and, in
+#             its manifest, the interval it ran in; an individual response carries the seconds it
+#             took (`replies[].elapsed_s`) but no wall-clock time of its own. So a call cannot be
+#             placed on the clock and 58,409 marks are not drawable. What is drawable is the rate:
+#             a chunk's calls spread evenly across the chunk's own span, summed over chunks. That
+#             is a rate, not a set of events, and the lane is drawn and captioned as one.
+#
+# The CPU/GPU split, and why this file does not make one: no rule in this workflow requests a GPU.
+# `res()` in the Snakefile passes mem_mb, runtime and cpus_per_task and nothing else, the Palmetto
+# profile names one partition for everything, and there is no gres or gpu key anywhere in the
+# Snakefile, config/ or profiles/. The split the jobs actually have is declared instead by the
+# `llm_*` throttle token the score rules hold: those jobs spent their wall time waiting on a
+# remote model service, and the GPU that answered them is not this project's to meter. The other
+# jobs computed here. That is the line the two job lanes draw, and `cpu_hours` on each says how
+# much of this cluster's CPU each side actually consumed.
 # ---------------------------------------------------------------------------------------------
 
-# A Snakemake rule's place in the project's lifecycle. Every rule that writes a manifest appears.
-RULE_ACTIVITY = {
-    "render_prompts": "setup", "fetch": "data", "sample": "data",
-    "features": "measuring", "score": "measuring",
-    "collect_scores": "analysis", "classify": "analysis", "evaluate": "analysis",
-    "evaluate_across": "analysis",
-    "figures": "reporting", "tables": "reporting",
-}
-
-# A changed path's place in the same lifecycle. Longest prefix wins; the fallback is setup,
-# which is where the loose configuration of a repository lives.
-PATH_ACTIVITY = [
-    ("talk/", "reporting"),
-    ("report/", "reporting"), ("docs/", "reporting"),
-    ("CHANGELOG.md", "reporting"), ("README.md", "reporting"),
-    ("TALK.md", "reporting"), ("SESSION_LOG.md", "reporting"),
-    ("WORKFLOW.md", "planning"), ("CONCEPT_BANK.md", "planning"),
-    ("CLAUDE.md", "planning"), ("data/concepts", "planning"),
-    ("priors/", "code"), ("Snakefile", "code"), ("tests/", "code"),
-    ("config/", "setup"), ("envs/", "setup"), ("profiles/", "setup"),
-    ("scripts/", "setup"), (".github/", "setup"), (".gitignore", "setup"),
-]
-
-# Each activity twice: the name a caption uses, and the name that fits on the bar.
-ACTIVITIES = [
-    ("planning", "planning the study", "planning"),
-    ("code", "writing the workflow and its tests", "writing code"),
-    ("review", "direction and review", "direction, review"),
-    ("reporting", "writing it down: changelog, report, talk", "writing it down"),
-    ("setup", "configuration and environments", "config"),
-    ("data", "preparing the data", "data prep"),
-    ("analysis", "fitting and analysing", "analysis"),
-    ("measuring", "the model answering, and the features", "the model answering"),
-]
-
-
-def _path_activity(path: str) -> str:
-    for prefix, activity in PATH_ACTIVITY:
-        if path.startswith(prefix):
-            return activity
-    return "setup"
-
-
-def _commits() -> list[dict]:
-    """Every commit, with when it landed and how many lines it changed per activity."""
-    out = subprocess.run(["git", "log", "--numstat", "--format=C|%ct"],
-                         cwd=ROOT, capture_output=True, text=True).stdout
-    commits: list[dict] = []
-    cur: dict | None = None
-    for line in out.splitlines():
-        if line.startswith("C|"):
-            cur = {"t": datetime.fromtimestamp(int(line[2:])), "lines": {}, "total": 0}
-            commits.append(cur)
-            continue
-        parts = line.split("\t")
-        if len(parts) == 3 and parts[0].isdigit() and cur is not None:
-            n = int(parts[0]) + int(parts[1])
-            activity = _path_activity(parts[2])
-            cur["lines"][activity] = cur["lines"].get(activity, 0) + n
-            cur["total"] += n
-    commits.sort(key=lambda c: c["t"])
-    return commits
+# The stage that talks to the model service. Its rules are the ones holding an `llm_*` resource in
+# the Snakefile; everything else runs its own arithmetic on the node it landed on.
+LLM_STAGES = {"score"}
 
 
 def _machine_jobs() -> list[dict]:
-    """Every job that left a manifest: its rule, when it ended and how long it ran."""
+    """Every job that left a manifest: its rule, when it started and when it finished.
+
+    `written` is the moment the job wrote its output and `wall_seconds` how long it had been
+    running, so the pair is an interval and no clock beyond the manifests is consulted.
+    """
     jobs = []
     for path in sorted((ROOT / "results").rglob("*.json")):
         try:
@@ -789,160 +743,223 @@ def _machine_jobs() -> list[dict]:
             continue
         end = datetime.fromisoformat(written)
         jobs.append({"stage": manifest.get("stage", "?"), "wall": float(wall),
-                     "start": end - timedelta(seconds=float(wall)), "end": end})
+                     "start": end - timedelta(seconds=float(wall)), "end": end,
+                     # a score chunk knows how many calls it made; no call knows its own clock
+                     "calls": int(payload.get("calls") or 0)})
     note("results/**/*.json (job manifests)")
-    return jobs
+    return sorted(jobs, key=lambda j: j["start"])
 
 
-def _cpu_hours() -> float:
-    """Total CPU time Snakemake's own benchmarks recorded, which is not the same as wall time."""
-    total = 0.0
+def _cpu_hours() -> dict[str, float]:
+    """CPU time from Snakemake's own benchmarks, split the same way the job lanes are."""
+    total = {"llm": 0.0, "local": 0.0}
     for path in sorted((ROOT / "benchmarks").rglob("*.tsv")):
-        rows = list(csv.DictReader(path.read_text().splitlines(), delimiter="\t"))
-        for row in rows:
+        side = "llm" if path.parent.name in LLM_STAGES else "local"
+        for row in csv.DictReader(path.read_text().splitlines(), delimiter="\t"):
             value = row.get("cpu_time")
             if value not in (None, "", "-"):
-                total += float(value)
+                total[side] += float(value) / 3600
     note("benchmarks/**/*.tsv")
-    return total / 3600
+    return total
+
+
+def _agent_commits() -> list[dict]:
+    """Every commit, when it landed, and whether an agent co-authored it.
+
+    The author of every commit here is the owner, so the Co-Authored-By trailer is the only thing
+    in the repository that distinguishes a commit an agent wrote from one it did not.
+    """
+    out = subprocess.run(
+        ["git", "log", "--format=%ct%x1f%s%x1f%(trailers:key=Co-Authored-By,valueonly)%x1e"],
+        cwd=ROOT, capture_output=True, text=True).stdout
+    commits = []
+    for record in out.split("\x1e"):
+        record = record.strip("\n")
+        if not record.strip():
+            continue
+        when, subject, trailers = (record.split("\x1f") + ["", ""])[:3]
+        commits.append({"t": datetime.fromtimestamp(int(when)), "subject": subject,
+                        "agent": "Claude" in trailers})
+    commits.sort(key=lambda c: c["t"])
+    return commits
+
+
+def _blocks(spans: list[tuple[datetime, datetime]]) -> list[tuple[datetime, datetime, int]]:
+    """Overlapping job intervals merged into the periods at least one of them was running, with
+    how many fell in each. A lane's bar is a period the work occupied, not a single job."""
+    merged: list[list] = []
+    for start, end in sorted(spans):
+        if merged and start <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], end)
+            merged[-1][2] += 1
+        else:
+            merged.append([start, end, 1])
+    return [(a, b, n) for a, b, n in merged]
 
 
 def export_effort(study: dict) -> dict:
-    """Where the recorded work went: the same hours split by activity and by who did them.
+    """The project's timeline in lanes: prompts and commits as instants, jobs as spans.
 
-    Reads only timestamps: job manifests for the machine, SESSION_LOG.md prompt headings and git
-    commit times for the window a person and the agent worked in. Nothing here is estimated - the
-    one thing the sources cannot do, separate the person from the agent, is left undone and said
-    so in `caveats` rather than filled in.
+    Reads timestamps and nothing else. Positions are exported as minutes from the start of the
+    span so the site does no date arithmetic and the lanes cannot drift apart.
     """
     jobs = _machine_jobs()
-    commits = _commits()
-
-    machine = {}
-    for job in jobs:
-        activity = RULE_ACTIVITY.get(job["stage"], "setup")
-        machine[activity] = machine.get(activity, 0.0) + job["wall"] / 3600
-
-    # How much wall clock the jobs actually occupied, which is far less than they consumed: the
-    # union of their intervals. The ratio of the two is the mean number of jobs in flight.
-    spans = sorted((j["start"], j["end"]) for j in jobs)
-    merged: list[list[datetime]] = []
-    for start, end in spans:
-        if merged and start <= merged[-1][1]:
-            merged[-1][1] = max(merged[-1][1], end)
-        else:
-            merged.append([start, end])
-    busy_h = sum((b - a).total_seconds() for a, b in merged) / 3600
-    machine_h = sum(machine.values())
-
-    # The attended window, day by day, from whichever record covers that day.
-    prompts: dict[str, list[datetime]] = {}
+    commits = _agent_commits()
+    prompts = []
     for line in read_text("SESSION_LOG.md").splitlines():
         m = HEADING.match(line)
         if m:
-            date, time, _ = m.groups()
-            prompts.setdefault(date, []).append(
-                datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M"))
-    commit_days: dict[str, list[datetime]] = {}
-    for c in commits:
-        commit_days.setdefault(c["t"].strftime("%Y-%m-%d"), []).append(c["t"])
+            date, time, title = m.groups()
+            prompts.append({"at": datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M"),
+                            "title": title})
+    prompts.sort(key=lambda p: p["at"])
 
-    attended: dict[str, float] = {}
-    days, uncommitted = [], 0
-    for date in sorted(set(prompts) | set(commit_days)):
-        marks = sorted(prompts.get(date) or commit_days.get(date, []))
-        source = "SESSION_LOG.md" if prompts.get(date) else "git commits"
-        hours = (marks[-1] - marks[0]).total_seconds() / 3600 if len(marks) > 1 else 0.0
-        days.append({"date": date, "marks": len(marks), "source": source,
-                     "first": marks[0].strftime("%H:%M"), "last": marks[-1].strftime("%H:%M"),
-                     "hours": round(hours, 3),
-                     "prompts": len(prompts.get(date, []))})
-        for a, b in zip(marks, marks[1:]):
-            gap = (b - a).total_seconds() / 3600
-            if gap <= 0:
-                continue
-            tally: dict[str, int] = {}
-            for c in commits:
-                if a <= c["t"] <= b:
-                    for k, v in c["lines"].items():
-                        tally[k] = tally.get(k, 0) + v
-            if tally:
-                activity = max(tally.items(), key=lambda kv: kv[1])[0]
-            else:
-                activity, uncommitted = "review", uncommitted + 1
-            attended[activity] = attended.get(activity, 0.0) + gap
-    attended_h = sum(attended.values())
+    start = min([j["start"] for j in jobs] + [p["at"] for p in prompts]
+                + [c["t"] for c in commits])
+    finish = max([j["end"] for j in jobs] + [p["at"] for p in prompts]
+                 + [c["t"] for c in commits])
+    minutes = lambda t: round((t - start).total_seconds() / 60, 2)  # noqa: E731
 
-    n_prompts = sum(len(v) for v in prompts.values())
-    lines = sum(c["total"] for c in commits)
+    llm = [j for j in jobs if j["stage"] in LLM_STAGES]
+    local = [j for j in jobs if j["stage"] not in LLM_STAGES]
+    cpu = _cpu_hours()
+    wall = {"llm": sum(j["wall"] for j in llm) / 3600,
+            "local": sum(j["wall"] for j in local) / 3600}
+    blocks = {side: _blocks([(j["start"], j["end"]) for j in group])
+              for side, group in (("llm", llm), ("local", local))}
+    busy = {side: sum((b - a).total_seconds() for a, b, _ in bs) / 3600
+            for side, bs in blocks.items()}
+
+    agent_commits = [c for c in commits if c["agent"]]
+    machine_h = wall["llm"] + wall["local"]
+
+    # The calls, binned. A chunk knows how many calls it made and when it ran, so its calls are
+    # spread evenly over its own span and summed into fixed fifteen-minute bins. The bin width is
+    # fixed here rather than left to the drawing so that the peak is one quotable number and not a
+    # function of how wide someone's browser happens to be.
+    CALL_BIN = 15
+    call_spans = [(j["start"], j["end"], j["calls"]) for j in llm if j["calls"]]
+    calls_total = sum(n for _, _, n in call_spans)
+    bins: dict[int, float] = {}
+    for a, b, n in call_spans:
+        span_min = max((b - a).total_seconds() / 60, 1e-9)
+        per_min = n / span_min
+        lo_m, hi_m = minutes(a), minutes(b)
+        i = int(lo_m // CALL_BIN)
+        while i * CALL_BIN < hi_m:
+            lo = max(lo_m, i * CALL_BIN)
+            hi = min(hi_m, (i + 1) * CALL_BIN)
+            if hi > lo:
+                bins[i] = bins.get(i, 0.0) + per_min * (hi - lo)
+            i += 1
+    peak_bin = max(bins.values()) if bins else 0.0
+    peak_rate = peak_bin * (60 / CALL_BIN)
+
+    lanes = [
+        {"id": "prompts", "kind": "point", "label": "a prompt lands",
+         "count": len(prompts),
+         "note": "one per SESSION_LOG.md heading; the record dates it but not how long it took"},
+        {"id": "commits", "kind": "point", "label": "a commit lands",
+         "count": len(commits), "agent_count": len(agent_commits),
+         "note": (f"{len(agent_commits)} of {len(commits)} carry a Co-Authored-By: Claude "
+                  "trailer, which is the only thing in the repository that marks a commit as an "
+                  "agent's work")},
+        {"id": "calls", "kind": "rate", "label": "calls to the RCD LLM service",
+         "count": calls_total, "chunks": len(call_spans),
+         "peak_per_hour": round(peak_rate), "peak_per_bin": round(peak_bin),
+         "bin_minutes": CALL_BIN,
+         "mean_per_hour": round(calls_total / busy["llm"]) if busy["llm"] else 0,
+         "unit": "calls per hour",
+         "note": ("a chunk records how many calls it made and when it ran, but no response "
+                  "carries a clock of its own, so each chunk's calls are spread evenly across "
+                  "its own span and summed into 15-minute bins - a rate, not 58,409 datable "
+                  "events")},
+        {"id": "llm_jobs", "kind": "span",
+         "label": "jobs waiting on the RCD LLM service",
+         "count": len(llm), "hours": round(wall["llm"], 2),
+         "cpu_hours": round(cpu["llm"], 2), "busy_hours": round(busy["llm"], 2),
+         "blocks": len(blocks["llm"]),
+         "note": ("the score rules, which hold an llm_* throttle token; their wall time is time "
+                  "spent waiting on llm.rcd.clemson.edu, whose GPUs this project never meters")},
+        {"id": "local_jobs", "kind": "span",
+         "label": "jobs computing on the cluster",
+         "count": len(local), "hours": round(wall["local"], 2),
+         "cpu_hours": round(cpu["local"], 2), "busy_hours": round(busy["local"], 2),
+         "blocks": len(blocks["local"]),
+         "note": "sampling, features, the fits, the tests, the figures and the tables"},
+    ]
+
+    days = []
+    cursor = start.replace(hour=0, minute=0, second=0, microsecond=0)
+    while cursor <= finish:
+        days.append({"date": cursor.strftime("%Y-%m-%d"), "minute": minutes(cursor)})
+        cursor += timedelta(days=1)
+
+    edges = sorted([(j["start"], 1) for j in jobs] + [(j["end"], -1) for j in jobs])
+    live = peak = 0
+    for _, delta in edges:
+        live += delta
+        peak = max(peak, live)
+
     calls = study["archive"]["calls"]
-
-    activities = [
-        {"id": key, "label": label, "short": short,
-         "hours": round(machine.get(key, 0.0) + attended.get(key, 0.0), 3),
-         "machine_hours": round(machine.get(key, 0.0), 3),
-         "attended_hours": round(attended.get(key, 0.0), 3)}
-        for key, label, short in ACTIVITIES
-    ]
-    activities = [a for a in activities if a["hours"] > 0]
-    for a in activities:
-        a["actor"] = "machine" if a["machine_hours"] > a["attended_hours"] else "attended"
-
-    actors = [
-        {"id": "attended", "label": "one person and the coding agent, at the keyboard",
-         "short": "person + agent",
-         "hours": round(attended_h, 3),
-         "detail": f"{n_prompts} prompts, {len(commits)} commits, "
-                   f"{lines:,} lines changed across {len(days)} days"},
-        {"id": "machine", "label": "the cluster and the model service",
-         "short": "the cluster and the model service",
-         "hours": round(machine_h, 3),
-         "detail": f"{len(jobs)} jobs, {calls:,} model calls, "
-                   f"{busy_h:.1f} h of wall clock at {machine_h / busy_h:.1f} jobs at once"},
-    ]
+    headline = (f"{len(prompts)} prompts set off {len(jobs)} jobs, {calls:,} calls to the RCD "
+                f"LLM service and {machine_h:.0f} hours of machine time.")
 
     return {
-        "total_hours": round(machine_h + attended_h, 3),
-        "activities": activities,
-        "actors": actors,
-        "counts": {"prompts": n_prompts, "commits": len(commits), "lines_changed": lines,
-                   "jobs": len(jobs), "calls": calls, "days": len(days),
-                   "uncommitted_intervals": uncommitted},
-        "machine": {"wall_hours": round(machine_h, 3), "cpu_hours": round(_cpu_hours(), 3),
-                    "busy_wall_hours": round(busy_h, 3),
-                    "mean_concurrency": round(machine_h / busy_h, 2),
-                    "first_job": min(j["start"] for j in jobs).isoformat(timespec="seconds"),
-                    "last_job": max(j["end"] for j in jobs).isoformat(timespec="seconds")},
-        "attended": {"hours": round(attended_h, 3), "days": days},
-        "per_prompt": {"machine_hours": round(machine_h / n_prompts, 2),
-                       "calls": round(calls / n_prompts),
-                       "jobs": round(len(jobs) / n_prompts, 1),
-                       "lines_changed": round(lines / n_prompts)},
+        "span": {"from": start.isoformat(timespec="minutes"),
+                 "to": finish.isoformat(timespec="minutes"),
+                 "minutes": minutes(finish)},
+        "days": days,
+        "lanes": lanes,
+        "points": {
+            "prompts": [{"minute": minutes(p["at"]), "at": p["at"].isoformat(timespec="minutes"),
+                         "title": p["title"]} for p in prompts],
+            "commits": [{"minute": minutes(c["t"]), "at": c["t"].isoformat(timespec="minutes"),
+                         "title": c["subject"], "agent": c["agent"]} for c in commits],
+        },
+        # [start minute, end minute, jobs in the block] - the periods each kind of job occupied.
+        "spans": {f"{side}_jobs": [[minutes(a), minutes(b), n] for a, b, n in bs]
+                  for side, bs in blocks.items()},
+        # [bin start minute, calls in the bin], fifteen minutes wide. The site draws these; it
+        # does not choose the bin, so the peak the lane names is the peak the lane draws.
+        "rates": {"calls": [[i * CALL_BIN, round(v, 1)] for i, v in sorted(bins.items())]},
+        "counts": {"calls_peak_per_hour": round(peak_rate),
+                   "prompts": len(prompts), "commits": len(commits),
+                   "agent_commits": len(agent_commits), "jobs": len(jobs), "calls": calls,
+                   "machine_hours": round(machine_h, 1),
+                   "days_with_prompts": len({p["at"].date() for p in prompts})},
+        "machine": {"wall_hours": round(machine_h, 3),
+                    "cpu_hours": round(cpu["llm"] + cpu["local"], 3),
+                    "busy_wall_hours": round(busy["llm"] + busy["local"], 3),
+                    "mean_concurrency": round(machine_h / (busy["llm"] + busy["local"]), 2),
+                    "peak_concurrency": peak,
+                    "first_job": min(j["start"] for j in jobs).isoformat(timespec="minutes"),
+                    "last_job": max(j["end"] for j in jobs).isoformat(timespec="minutes")},
+        "headline": headline,
         "method": [
-            "Machine hours are each job manifest's own wall_seconds, summed; the activity is the "
-            "Snakemake rule that wrote it.",
-            "Attended hours are, per day, the elapsed time from the first to the last timestamped "
-            "mark in that day's record: SESSION_LOG.md's prompt headings, or - for 2026-09-09, "
-            "which predates the log - that day's git commits.",
-            "An attended interval's activity is the one with the most lines changed by the "
-            "commits that landed inside it; an interval that committed nothing is direction and "
-            "review.",
+            "A job is the interval its own manifest states: `written` less `wall_seconds`. Where "
+            "jobs of the same lane overlap, the lane draws the period they occupied between them "
+            "rather than one bar per job.",
+            "A prompt is the timestamp on its SESSION_LOG.md heading, and a commit its commit "
+            "date - instants, not durations.",
+            "A commit counts as an agent's where it carries a Co-Authored-By: Claude trailer; "
+            "the author of every commit in this repository is the owner.",
+            f"The call rate is each score chunk's own call count spread evenly across the "
+            f"interval that chunk ran in, summed over chunks into {CALL_BIN}-minute bins.",
         ],
         "caveats": [
-            "The attended window cannot be split into human time and agent time. Nothing in the "
-            "repository records which of the two was working in a given minute, so the window is "
-            "an upper bound on one person's involvement, not a measurement of it.",
-            "It also contains breaks: the gaps between prompts run from 3 minutes to 5h40m.",
-            "Machine hours are job wall time. The score jobs spent nearly all of it waiting on a "
-            f"shared model service, so only {_cpu_hours():.1f} h of it was this project's own CPU "
-            "(benchmarks/**/*.tsv) and the service's GPU time is not metered here.",
+            "No archived response carries a wall-clock time of its own - only the seconds it "
+            "took - so the calls are dated to the chunk that recorded them and spread evenly "
+            f"across it in {CALL_BIN}-minute bins. The lane is a rate, not 58,409 placed events, "
+            "and a wave's shape within a chunk is smoother than the truth.",
+            "Prompts and commits are marked as moments because that is all the record holds. "
+            "Nothing here measures human time, and no duration is inferred from the gaps.",
+            "No rule in this workflow asks for a GPU - the Snakefile passes only memory, runtime "
+            "and CPUs - so the jobs are split by what they waited on instead. The model service "
+            f"answered {calls:,} calls on GPUs this project never meters; its jobs cost this "
+            f"cluster {cpu['llm']:.1f} h of CPU against {wall['llm']:.0f} h of wall time.",
             "Only surviving results are counted. Work that was rerun or rewound - arm D, the "
             "deleted archive - left no manifest behind and so appears nowhere.",
-            "An attended interval takes the activity of whichever commits landed in it, so an "
-            "hour that wrote a long changelog entry alongside a short rule counts as writing it "
-            "down. The prose-heavy activities are flattered by that rule.",
-            "2026-09-09, the planning day, predates SESSION_LOG.md, so its window is that day's "
-            "first-to-last commit rather than its first-to-last prompt.",
         ],
     }
 
@@ -1039,7 +1056,7 @@ def main() -> int:
     effort = export_effort(study)
     write_json("data/effort.json", {**effort, "provenance": {
         **prov, "source_files": ["results/**/*.json (job manifests)", "benchmarks/**/*.tsv",
-                                 "SESSION_LOG.md", "git log --numstat"]}})
+                                 "SESSION_LOG.md"]}})
     write_json("data/study.json", study)
 
     pdf = ROOT / "report" / "report.pdf"
@@ -1053,8 +1070,8 @@ def main() -> int:
     print(f"  archive_sample.json   {len(archive['records'])} records, "
           f"{len(archive['manifests'])} chunk manifests")
     print(f"  timeline.json         {len(timeline['entries'])} session-log entries")
-    print(f"  effort.json           {effort['machine']['wall_hours']:.0f} h machine + "
-          f"{effort['attended']['hours']:.0f} h attended, {len(effort['activities'])} activities")
+    print(f"  effort.json           {len(effort['lanes'])} lanes over "
+          f"{effort['span']['minutes'] / 1440:.1f} days; {effort['headline']}")
     print(f"  img/figs/             {len(figures)} report figures")
     print(f"  img/samples/          {sum(len(v) for v in samples.values())} images")
     total = sum(f.stat().st_size for f in PUBLIC.rglob("*") if f.is_file())

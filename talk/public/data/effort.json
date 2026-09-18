@@ -1,202 +1,1446 @@
 {
- "total_hours": 343.445,
- "activities": [
+ "span": {
+  "from": "2026-09-09T14:20",
+  "to": "2026-09-17T22:40",
+  "minutes": 12019.53
+ },
+ "days": [
   {
-   "id": "planning",
-   "label": "planning the study",
-   "short": "planning",
-   "hours": 6.846,
-   "machine_hours": 0.0,
-   "attended_hours": 6.846,
-   "actor": "attended"
+   "date": "2026-09-09",
+   "minute": -860.47
   },
   {
-   "id": "code",
-   "label": "writing the workflow and its tests",
-   "short": "writing code",
-   "hours": 15.186,
-   "machine_hours": 0.0,
-   "attended_hours": 15.186,
-   "actor": "attended"
+   "date": "2026-09-10",
+   "minute": 579.53
   },
   {
-   "id": "review",
-   "label": "direction and review",
-   "short": "direction, review",
-   "hours": 9.083,
-   "machine_hours": 0.0,
-   "attended_hours": 9.083,
-   "actor": "attended"
+   "date": "2026-09-11",
+   "minute": 2019.53
   },
   {
-   "id": "reporting",
-   "label": "writing it down: changelog, report, talk",
-   "short": "writing it down",
-   "hours": 21.191,
-   "machine_hours": 0.008,
-   "attended_hours": 21.183,
-   "actor": "attended"
+   "date": "2026-09-12",
+   "minute": 3459.53
   },
   {
-   "id": "setup",
-   "label": "configuration and environments",
-   "short": "config",
-   "hours": 0.938,
-   "machine_hours": 0.054,
-   "attended_hours": 0.884,
-   "actor": "attended"
+   "date": "2026-09-13",
+   "minute": 4899.53
   },
   {
-   "id": "data",
-   "label": "preparing the data",
-   "short": "data prep",
-   "hours": 0.109,
-   "machine_hours": 0.109,
-   "attended_hours": 0.0,
-   "actor": "machine"
+   "date": "2026-09-14",
+   "minute": 6339.53
   },
   {
-   "id": "analysis",
-   "label": "fitting and analysing",
-   "short": "analysis",
-   "hours": 1.752,
-   "machine_hours": 1.752,
-   "attended_hours": 0.0,
-   "actor": "machine"
+   "date": "2026-09-15",
+   "minute": 7779.53
   },
   {
-   "id": "measuring",
-   "label": "the model answering, and the features",
-   "short": "the model answering",
-   "hours": 288.339,
-   "machine_hours": 288.339,
-   "attended_hours": 0.0,
-   "actor": "machine"
+   "date": "2026-09-16",
+   "minute": 9219.53
+  },
+  {
+   "date": "2026-09-17",
+   "minute": 10659.53
   }
  ],
- "actors": [
+ "lanes": [
   {
-   "id": "attended",
-   "label": "one person and the coding agent, at the keyboard",
-   "short": "person + agent",
-   "hours": 53.183,
-   "detail": "46 prompts, 110 commits, 72,046 lines changed across 7 days"
+   "id": "prompts",
+   "kind": "point",
+   "label": "a prompt lands",
+   "count": 49,
+   "note": "one per SESSION_LOG.md heading; the record dates it but not how long it took"
   },
   {
-   "id": "machine",
-   "label": "the cluster and the model service",
-   "short": "the cluster and the model service",
-   "hours": 290.263,
-   "detail": "662 jobs, 58,409 model calls, 13.2 h of wall clock at 21.9 jobs at once"
+   "id": "commits",
+   "kind": "point",
+   "label": "a commit lands",
+   "count": 114,
+   "agent_count": 111,
+   "note": "111 of 114 carry a Co-Authored-By: Claude trailer, which is the only thing in the repository that marks a commit as an agent's work"
+  },
+  {
+   "id": "calls",
+   "kind": "rate",
+   "label": "calls to the RCD LLM service",
+   "count": 58409,
+   "chunks": 587,
+   "peak_per_hour": 38506,
+   "peak_per_bin": 9627,
+   "bin_minutes": 15,
+   "mean_per_hour": 4561,
+   "unit": "calls per hour",
+   "note": "a chunk records how many calls it made and when it ran, but no response carries a clock of its own, so each chunk's calls are spread evenly across its own span and summed into 15-minute bins - a rate, not 58,409 datable events"
+  },
+  {
+   "id": "llm_jobs",
+   "kind": "span",
+   "label": "jobs waiting on the RCD LLM service",
+   "count": 587,
+   "hours": 288.04,
+   "cpu_hours": 0.61,
+   "busy_hours": 12.81,
+   "blocks": 17,
+   "note": "the score rules, which hold an llm_* throttle token; their wall time is time spent waiting on llm.rcd.clemson.edu, whose GPUs this project never meters"
+  },
+  {
+   "id": "local_jobs",
+   "kind": "span",
+   "label": "jobs computing on the cluster",
+   "count": 75,
+   "hours": 2.23,
+   "cpu_hours": 4.11,
+   "busy_hours": 0.43,
+   "blocks": 10,
+   "note": "sampling, features, the fits, the tests, the figures and the tables"
   }
  ],
+ "points": {
+  "prompts": [
+   {
+    "minute": 2934.53,
+    "at": "2026-09-11T15:15",
+    "title": "Session log started, at the user's direction"
+   },
+   {
+    "minute": 2945.53,
+    "at": "2026-09-11T15:26",
+    "title": "Build the workflow one rule at a time, starting with the prompts"
+   },
+   {
+    "minute": 2984.53,
+    "at": "2026-09-11T16:05",
+    "title": "Fix the octmnist collision rather than exempt it"
+   },
+   {
+    "minute": 2999.53,
+    "at": "2026-09-11T16:20",
+    "title": "Smoke next, and show the artifacts in the chat"
+   },
+   {
+    "minute": 3069.53,
+    "at": "2026-09-11T17:30",
+    "title": "Stage 1, and the storage links as a script rather than a rule"
+   },
+   {
+    "minute": 3224.53,
+    "at": "2026-09-11T20:05",
+    "title": "The probe, and a workspace that disappeared underneath it"
+   },
+   {
+    "minute": 3299.53,
+    "at": "2026-09-11T21:20",
+    "title": "Runs move to the owner's checkout"
+   },
+   {
+    "minute": 3324.53,
+    "at": "2026-09-11T21:45",
+    "title": "Thin classes: keep the sample, document the limit"
+   },
+   {
+    "minute": 3339.53,
+    "at": "2026-09-11T22:00",
+    "title": "Go for the fan-out, and what the first chunk caught"
+   },
+   {
+    "minute": 4001.53,
+    "at": "2026-09-12T09:02",
+    "title": "Literature benchmarks, pulled and cited, not rerun"
+   },
+   {
+    "minute": 4004.53,
+    "at": "2026-09-12T09:05",
+    "title": "A fifth arm, asked for after the results: the bank in the prompt"
+   },
+   {
+    "minute": 4034.53,
+    "at": "2026-09-12T09:35",
+    "title": "Arm D landed, and two estimates that were wrong"
+   },
+   {
+    "minute": 4339.53,
+    "at": "2026-09-12T14:40",
+    "title": "Analysis stops here; attention turns to the talk"
+   },
+   {
+    "minute": 4364.53,
+    "at": "2026-09-12T15:05",
+    "title": "Stepping back: the question was about understanding, not substitution"
+   },
+   {
+    "minute": 4379.53,
+    "at": "2026-09-12T15:20",
+    "title": "Does thinking work, can we try an OpenAI model, and the service docs"
+   },
+   {
+    "minute": 4404.53,
+    "at": "2026-09-12T15:45",
+    "title": "Scrub arm D, and propose a thinking arm and an OpenAI arm"
+   },
+   {
+    "minute": 4424.53,
+    "at": "2026-09-12T16:05",
+    "title": "H4 joins the hypotheses, at medium effort, and the build goes out"
+   },
+   {
+    "minute": 4519.53,
+    "at": "2026-09-12T17:40",
+    "title": "\"What's left to run?\" \u2014 and what the answer turned up"
+   },
+   {
+    "minute": 4744.53,
+    "at": "2026-09-12T21:25",
+    "title": "The talk plan, fixed: workflow first, H4 as the follow-on"
+   },
+   {
+    "minute": 4764.53,
+    "at": "2026-09-12T21:45",
+    "title": "The H4 chain lands; the talk's scene 6 stands"
+   },
+   {
+    "minute": 4809.53,
+    "at": "2026-09-12T22:30",
+    "title": "Embeddings, and the redirect to the service's own embedding model"
+   },
+   {
+    "minute": 4844.53,
+    "at": "2026-09-12T23:05",
+    "title": "\"If the embed API can't take pixels my idea is a no go\""
+   },
+   {
+    "minute": 4854.53,
+    "at": "2026-09-12T23:15",
+    "title": "\"Remove all the nonsense not using pixels. Just rewind.\""
+   },
+   {
+    "minute": 5319.53,
+    "at": "2026-09-13T07:00",
+    "title": "Cleaning audit: everything the talk needs, and only that"
+   },
+   {
+    "minute": 5349.53,
+    "at": "2026-09-13T07:30",
+    "title": "\"Restore the txt rule. Update and recompile the tex. You can delete the D results\""
+   },
+   {
+    "minute": 5384.53,
+    "at": "2026-09-13T08:05",
+    "title": "\"Why don't I have a hypothesis that compares ... with zero shot?\""
+   },
+   {
+    "minute": 5399.53,
+    "at": "2026-09-13T08:20",
+    "title": "\"Expand the full analysis to all 12 MedMNIST. Follow it through from start to finish.\""
+   },
+   {
+    "minute": 5514.53,
+    "at": "2026-09-13T10:15",
+    "title": "Twelve datasets, start to finish, complete"
+   },
+   {
+    "minute": 5539.53,
+    "at": "2026-09-13T10:40",
+    "title": "\"Hypothesize that P + C beats P. Register the hypothesis, then run it and integrate it\""
+   },
+   {
+    "minute": 5644.53,
+    "at": "2026-09-13T12:25",
+    "title": "A second session on the same task, and the damage it did"
+   },
+   {
+    "minute": 5664.53,
+    "at": "2026-09-13T12:45",
+    "title": "H5 run and integrated, after a concurrent session disturbed the run"
+   },
+   {
+    "minute": 5764.53,
+    "at": "2026-09-13T14:25",
+    "title": "An accuracy pass over the report, and the prompts as an appendix"
+   },
+   {
+    "minute": 6104.53,
+    "at": "2026-09-13T20:05",
+    "title": "Arm C+P on the learning curve, and a sampled-image appendix"
+   },
+   {
+    "minute": 6139.53,
+    "at": "2026-09-13T20:40",
+    "title": "Four questions about the frontier reader, none of them bought"
+   },
+   {
+    "minute": 6159.53,
+    "at": "2026-09-13T21:00",
+    "title": "\"Test the reasoning level idea on terra. Test the model capabilities at low reasoning for Luna, terra, and Sol\""
+   },
+   {
+    "minute": 6234.53,
+    "at": "2026-09-13T22:15",
+    "title": "H6 and H7 decided"
+   },
+   {
+    "minute": 6244.53,
+    "at": "2026-09-13T22:25",
+    "title": "A hyperlinked contents page"
+   },
+   {
+    "minute": 6284.53,
+    "at": "2026-09-13T23:05",
+    "title": "Visuals for H6 and H7"
+   },
+   {
+    "minute": 6754.53,
+    "at": "2026-09-14T06:55",
+    "title": "\"Clean up hanging checkouts or branches that were never merged in\""
+   },
+   {
+    "minute": 10624.53,
+    "at": "2026-09-16T23:25",
+    "title": "\"The talk as a website: science as the spine, reproducibility as callouts\""
+   },
+   {
+    "minute": 11409.53,
+    "at": "2026-09-17T12:30",
+    "title": "Three reviews of the talk site, implemented"
+   },
+   {
+    "minute": 11664.53,
+    "at": "2026-09-17T16:45",
+    "title": "The opening re-cut: the method is the talk, the study is the demonstration"
+   },
+   {
+    "minute": 11684.53,
+    "at": "2026-09-17T17:05",
+    "title": "A byline under the title"
+   },
+   {
+    "minute": 11719.53,
+    "at": "2026-09-17T17:40",
+    "title": "Presenter mode bulletises the prose"
+   },
+   {
+    "minute": 11759.53,
+    "at": "2026-09-17T18:20",
+    "title": "Presenter mode becomes a deck"
+   },
+   {
+    "minute": 11834.53,
+    "at": "2026-09-17T19:35",
+    "title": "The slides come back out"
+   },
+   {
+    "minute": 11869.53,
+    "at": "2026-09-17T20:10",
+    "title": "Replace the four-day strip with a waterfall of who did the work"
+   },
+   {
+    "minute": 11974.53,
+    "at": "2026-09-17T21:55",
+    "title": "Not a waterfall: a project timeline, with points where there are no durations"
+   },
+   {
+    "minute": 12019.53,
+    "at": "2026-09-17T22:40",
+    "title": "Surface the RCD LLM service calls, at the resolution the archive supports"
+   }
+  ],
+  "commits": [
+   {
+    "minute": 0.0,
+    "at": "2026-09-09T14:20",
+    "title": "Add initial documentation for CLAUDE and CONCEPT_BANK workflows",
+    "agent": false
+   },
+   {
+    "minute": 60.38,
+    "at": "2026-09-09T15:20",
+    "title": "Add the concept bank: twelve cited files, README and references",
+    "agent": true
+   },
+   {
+    "minute": 91.5,
+    "at": "2026-09-09T15:51",
+    "title": "Anchor every scale level to a described, cited visual referent",
+    "agent": true
+   },
+   {
+    "minute": 256.3,
+    "at": "2026-09-09T18:36",
+    "title": "Carry the anchors schema through WORKFLOW.md",
+    "agent": true
+   },
+   {
+    "minute": 323.3,
+    "at": "2026-09-09T19:43",
+    "title": "Cut the plan to three stated hypotheses and fix two unfair comparisons",
+    "agent": true
+   },
+   {
+    "minute": 366.98,
+    "at": "2026-09-09T20:27",
+    "title": "Merge origin/main: reconcile the concept bank with the revised plan",
+    "agent": true
+   },
+   {
+    "minute": 390.87,
+    "at": "2026-09-09T20:51",
+    "title": "Audit the bank and the plan against each other; fix what did not survive",
+    "agent": true
+   },
+   {
+    "minute": 394.35,
+    "at": "2026-09-09T20:54",
+    "title": "Analyse H3 over all four models, and give it a figure",
+    "agent": true
+   },
+   {
+    "minute": 453.72,
+    "at": "2026-09-09T21:54",
+    "title": "Build the workflow skeleton: nine stages, the release pin, three environments, the package and the smoke tier",
+    "agent": true
+   },
+   {
+    "minute": 457.15,
+    "at": "2026-09-09T21:57",
+    "title": "Right-size the torch smoke job from its benchmark",
+    "agent": true
+   },
+   {
+    "minute": 457.15,
+    "at": "2026-09-09T21:57",
+    "title": "Retry the fetch with the compute nodes' curl and keep data/raw on scratch when Snakemake pre-creates it",
+    "agent": true
+   },
+   {
+    "minute": 463.97,
+    "at": "2026-09-09T22:04",
+    "title": "Keep the raw files and the caches on the project filesystem, as a config value",
+    "agent": true
+   },
+   {
+    "minute": 465.97,
+    "at": "2026-09-09T22:06",
+    "title": "Scope the completeness gate to the cells each hypothesis reads",
+    "agent": true
+   },
+   {
+    "minute": 469.85,
+    "at": "2026-09-09T22:10",
+    "title": "Download every release file in parallel: Zenodo throttles each stream to ~105 KB/s",
+    "agent": true
+   },
+   {
+    "minute": 477.12,
+    "at": "2026-09-09T22:17",
+    "title": "Fetch each release file as parallel byte ranges",
+    "agent": true
+   },
+   {
+    "minute": 489.07,
+    "at": "2026-09-09T22:29",
+    "title": "Write the cache sequentially; land each fetch attempt in its own file; ignore the storage links",
+    "agent": true
+   },
+   {
+    "minute": 490.47,
+    "at": "2026-09-09T22:30",
+    "title": "Cut the plan to the talk version: six datasets, four arms, no CNN ceiling",
+    "agent": true
+   },
+   {
+    "minute": 505.13,
+    "at": "2026-09-09T22:45",
+    "title": "Reset the talk branch to its inputs: the bank, the bibliography and the cut plan",
+    "agent": true
+   },
+   {
+    "minute": 507.95,
+    "at": "2026-09-09T22:48",
+    "title": "Record the downloaded release files as completed prior work",
+    "agent": true
+   },
+   {
+    "minute": 2917.42,
+    "at": "2026-09-11T14:57",
+    "title": "Drop the fetch rule; treat the raw MedMNIST releases as prior work",
+    "agent": true
+   },
+   {
+    "minute": 2935.77,
+    "at": "2026-09-11T15:16",
+    "title": "Add SESSION_LOG.md: a timestamped record of user direction, kept apart from CHANGELOG.md",
+    "agent": true
+   },
+   {
+    "minute": 2976.5,
+    "at": "2026-09-11T15:56",
+    "title": "Render both prompts as their own rule, the first of the workflow",
+    "agent": true
+   },
+   {
+    "minute": 2993.52,
+    "at": "2026-09-11T16:13",
+    "title": "Rename octmnist's two colliding level names so no class reaches the concept prompt",
+    "agent": true
+   },
+   {
+    "minute": 3020.12,
+    "at": "2026-09-11T16:40",
+    "title": "Add stage 0: the smoke tier, and make every rule depend on it",
+    "agent": true
+   },
+   {
+    "minute": 3091.65,
+    "at": "2026-09-11T17:52",
+    "title": "Add stage 1: the seeded test sample and labelled pool, streamed out of each release",
+    "agent": true
+   },
+   {
+    "minute": 3263.15,
+    "at": "2026-09-11T20:43",
+    "title": "Add the LLM boundary and the opt-in probe that exercises it",
+    "agent": true
+   },
+   {
+    "minute": 3303.82,
+    "at": "2026-09-11T21:24",
+    "title": "Ignore .scratch too, matching the owner's working checkout",
+    "agent": true
+   },
+   {
+    "minute": 3326.02,
+    "at": "2026-09-11T21:46",
+    "title": "Add the scoring fan-out: four throttled rules, the archive, and the gather",
+    "agent": true
+   },
+   {
+    "minute": 3340.08,
+    "at": "2026-09-11T22:00",
+    "title": "Write the four score rules out, after the generated ones ran the wrong model",
+    "agent": true
+   },
+   {
+    "minute": 3394.32,
+    "at": "2026-09-11T22:54",
+    "title": "Read the answer from whichever field the build uses, and archive the whole message",
+    "agent": true
+   },
+   {
+    "minute": 3464.7,
+    "at": "2026-09-12T00:05",
+    "title": "Add stage 3: frozen ImageNet features, arm P's half of the comparison",
+    "agent": true
+   },
+   {
+    "minute": 3468.57,
+    "at": "2026-09-12T00:09",
+    "title": "Add stage 4: the four arms and their permutation controls",
+    "agent": true
+   },
+   {
+    "minute": 3471.82,
+    "at": "2026-09-12T00:12",
+    "title": "Add stage 5: the metric, the paired bootstrap, n_B and the decision rules",
+    "agent": true
+   },
+   {
+    "minute": 3474.92,
+    "at": "2026-09-12T00:15",
+    "title": "Add stage 6: the three figures, the tables, and the technical report",
+    "agent": true
+   },
+   {
+    "minute": 3477.57,
+    "at": "2026-09-12T00:18",
+    "title": "Raise the score runtime to 240 minutes: the primary model is contention-bound",
+    "agent": true
+   },
+   {
+    "minute": 3484.57,
+    "at": "2026-09-12T00:25",
+    "title": "Add an end-to-end test of the analysis chain, and fix the n_B interval it caught",
+    "agent": true
+   },
+   {
+    "minute": 3485.42,
+    "at": "2026-09-12T00:25",
+    "title": "Record the decisions behind stages 3 to 6",
+    "agent": true
+   },
+   {
+    "minute": 3491.52,
+    "at": "2026-09-12T00:31",
+    "title": "Import each stage's modules inside the stage, not at the top of the driver",
+    "agent": true
+   },
+   {
+    "minute": 3517.53,
+    "at": "2026-09-12T00:58",
+    "title": "Read H1's median rule on the ordinal scale, where n_B actually lives",
+    "agent": true
+   },
+   {
+    "minute": 3529.78,
+    "at": "2026-09-12T01:10",
+    "title": "Record the fan-out's contention finding and the wave that wrote nothing",
+    "agent": true
+   },
+   {
+    "minute": 3637.25,
+    "at": "2026-09-12T02:57",
+    "title": "Halve the primary model's concurrency cap: a nearly saturated endpoint",
+    "agent": true
+   },
+   {
+    "minute": 3874.62,
+    "at": "2026-09-12T06:55",
+    "title": "Set T1 font encoding: the bibliography carries names OT1 cannot typeset",
+    "agent": true
+   },
+   {
+    "minute": 3875.08,
+    "at": "2026-09-12T06:55",
+    "title": "Record the first real results: three datasets, three hypotheses unsupported so far",
+    "agent": true
+   },
+   {
+    "minute": 3883.93,
+    "at": "2026-09-12T07:04",
+    "title": "Stop committing the report PDF and pdflatex's leavings",
+    "agent": true
+   },
+   {
+    "minute": 3906.12,
+    "at": "2026-09-12T07:26",
+    "title": "Record the full six-dataset result: the textbook prior is worth under fifty labelled images",
+    "agent": true
+   },
+   {
+    "minute": 3936.53,
+    "at": "2026-09-12T07:57",
+    "title": "Add arm D: the whole concept bank in the prompt, then the zero-shot question",
+    "agent": true
+   },
+   {
+    "minute": 4003.02,
+    "at": "2026-09-12T09:03",
+    "title": "Add published literature benchmarks as a cited, non-computed extension",
+    "agent": true
+   },
+   {
+    "minute": 4007.93,
+    "at": "2026-09-12T09:08",
+    "title": "Put the published benchmark on the learning-curve chart, not only the table",
+    "agent": true
+   },
+   {
+    "minute": 4036.0,
+    "at": "2026-09-12T09:36",
+    "title": "Record arm D's result and the measurement that concurrency buys no throughput",
+    "agent": true
+   },
+   {
+    "minute": 4037.63,
+    "at": "2026-09-12T09:38",
+    "title": "Merge the literature-benchmark extension into the talk branch",
+    "agent": true
+   },
+   {
+    "minute": 4085.5,
+    "at": "2026-09-12T10:25",
+    "title": "Finish the literature integration: every arm against the ceiling, and the gap in numbers",
+    "agent": true
+   },
+   {
+    "minute": 4095.47,
+    "at": "2026-09-12T10:35",
+    "title": "Fix two wrong numbers in the literature macros: the median, and a rounding artefact",
+    "agent": true
+   },
+   {
+    "minute": 4103.13,
+    "at": "2026-09-12T10:43",
+    "title": "Record the ceiling finding: 2,000 labels and ImageNet features are the published benchmark",
+    "agent": true
+   },
+   {
+    "minute": 4327.05,
+    "at": "2026-09-12T14:27",
+    "title": "Log the turn from analysis to the talk, and the agenda slot",
+    "agent": true
+   },
+   {
+    "minute": 4343.97,
+    "at": "2026-09-12T14:44",
+    "title": "Log the reframing question and the two throwaway checks behind its answer",
+    "agent": true
+   },
+   {
+    "minute": 4375.1,
+    "at": "2026-09-12T15:15",
+    "title": "Record what the LLM service offers, and correct the claim that thinking does not work",
+    "agent": true
+   },
+   {
+    "minute": 4383.85,
+    "at": "2026-09-12T15:24",
+    "title": "Measure what a gateway call costs: 89 percent of the prompt caches, and flex is accepted",
+    "agent": true
+   },
+   {
+    "minute": 4393.85,
+    "at": "2026-09-12T15:34",
+    "title": "Remove arm D from the workflow, the report and the tests",
+    "agent": true
+   },
+   {
+    "minute": 4402.52,
+    "at": "2026-09-12T15:42",
+    "title": "Add a human-readable txt render of each dataset's prompts",
+    "agent": true
+   },
+   {
+    "minute": 4409.87,
+    "at": "2026-09-12T15:50",
+    "title": "Add H4: a reader is a model plus a reasoning effort",
+    "agent": true
+   },
+   {
+    "minute": 4420.95,
+    "at": "2026-09-12T16:01",
+    "title": "Let a reader run at the served default temperature, and state H4 in the plan",
+    "agent": true
+   },
+   {
+    "minute": 4431.53,
+    "at": "2026-09-12T16:12",
+    "title": "Log the H4 decisions and what building it settled",
+    "agent": true
+   },
+   {
+    "minute": 4520.45,
+    "at": "2026-09-12T17:40",
+    "title": "Cap H4's thinking reader at four in flight, and give it a runtime that survives contention",
+    "agent": true
+   },
+   {
+    "minute": 4742.38,
+    "at": "2026-09-12T21:22",
+    "title": "Fix the talk plan: twenty-five minutes, workflow first, H4 as the day the workflow was seen working",
+    "agent": true
+   },
+   {
+    "minute": 4763.37,
+    "at": "2026-09-12T21:43",
+    "title": "Record H4: thinking is conditional and a frontier model reads no better; add the figure that shows it",
+    "agent": true
+   },
+   {
+    "minute": 4833.63,
+    "at": "2026-09-12T22:54",
+    "title": "Pre-register H5: the same answers and the same bank, read by a learned distance",
+    "agent": true
+   },
+   {
+    "minute": 4841.6,
+    "at": "2026-09-12T23:02",
+    "title": "Log the pixel check: nothing on the service embeds images; H5 paused for a decision",
+    "agent": true
+   },
+   {
+    "minute": 4846.27,
+    "at": "2026-09-12T23:06",
+    "title": "Rewind the text-embedding hypothesis; nothing on the service embeds pixels",
+    "agent": true
+   },
+   {
+    "minute": 5329.7,
+    "at": "2026-09-13T07:10",
+    "title": "Bring every document in line with the finished workflow: four hypotheses, five figures, nothing to come",
+    "agent": true
+   },
+   {
+    "minute": 5332.55,
+    "at": "2026-09-13T07:13",
+    "title": "Say in the session log that the PDF rebuild was left to the owner",
+    "agent": true
+   },
+   {
+    "minute": 5358.28,
+    "at": "2026-09-13T07:38",
+    "title": "Restore the txt render of the prompts, and record that arm D's archive is deleted",
+    "agent": true
+   },
+   {
+    "minute": 5375.53,
+    "at": "2026-09-13T07:56",
+    "title": "Name the concept-regression-against-zero-shot reading in the talk, and record why it is not a hypothesis",
+    "agent": true
+   },
+   {
+    "minute": 5401.97,
+    "at": "2026-09-13T08:22",
+    "title": "Extend the study to all twelve MedMNIST 2D datasets: fetch, caps, a multi-label path, one rule level",
+    "agent": true
+   },
+   {
+    "minute": 5408.7,
+    "at": "2026-09-13T08:29",
+    "title": "Restate the plan, the README and the report for twelve datasets",
+    "agent": true
+   },
+   {
+    "minute": 5509.27,
+    "at": "2026-09-13T10:09",
+    "title": "Record the twelve-dataset results: every verdict holds, H2 flips where the model cannot name the class",
+    "agent": true
+   },
+   {
+    "minute": 5606.35,
+    "at": "2026-09-13T11:46",
+    "title": "Pre-register H5: does the textbook add anything the pixels do not already carry?",
+    "agent": true
+   },
+   {
+    "minute": 5640.37,
+    "at": "2026-09-13T12:20",
+    "title": "Log the second session's interference on H5 and its repair",
+    "agent": true
+   },
+   {
+    "minute": 5665.0,
+    "at": "2026-09-13T12:45",
+    "title": "H5 is supported: the concept block adds a small consistent increment on top of the pixels",
+    "agent": true
+   },
+   {
+    "minute": 5665.35,
+    "at": "2026-09-13T12:45",
+    "title": "Put H5's supported verdict and its figure into the talk plan",
+    "agent": true
+   },
+   {
+    "minute": 5765.22,
+    "at": "2026-09-13T14:25",
+    "title": "Document the analysis as executed, and print every prompt in a generated appendix",
+    "agent": true
+   },
+   {
+    "minute": 6110.48,
+    "at": "2026-09-13T20:10",
+    "title": "Draw arm C+P on the learning curve, and add an appendix of sampled images by class",
+    "agent": true
+   },
+   {
+    "minute": 6134.37,
+    "at": "2026-09-13T20:34",
+    "title": "Record what the archive says about frontier-model overthinking, and correct the gateway costs",
+    "agent": true
+   },
+   {
+    "minute": 6151.13,
+    "at": "2026-09-13T20:51",
+    "title": "Pre-register H6 and H7: effort inside the frontier model, and its price ladder",
+    "agent": true
+   },
+   {
+    "minute": 6233.13,
+    "at": "2026-09-13T22:13",
+    "title": "H6 not supported, H7 supported: effort was not the problem, capability is",
+    "agent": true
+   },
+   {
+    "minute": 6241.58,
+    "at": "2026-09-13T22:22",
+    "title": "Give the report a hyperlinked contents page",
+    "agent": true
+   },
+   {
+    "minute": 6283.23,
+    "at": "2026-09-13T23:03",
+    "title": "Add figures for H6 and H7, and give every dataset one stable colour",
+    "agent": true
+   },
+   {
+    "minute": 6754.73,
+    "at": "2026-09-14T06:55",
+    "title": "Pin the workflow to the owner's checkout, and make main the trunk",
+    "agent": true
+   },
+   {
+    "minute": 6756.57,
+    "at": "2026-09-14T06:57",
+    "title": "Record the branch disposition as it was actually carried out",
+    "agent": true
+   },
+   {
+    "minute": 10550.48,
+    "at": "2026-09-16T22:10",
+    "title": "Plan the talk as a scrolling website: science as the spine, reproducibility as callouts",
+    "agent": true
+   },
+   {
+    "minute": 10565.87,
+    "at": "2026-09-16T22:26",
+    "title": "Export the run as the talk site's data snapshot, behind an opt-in rule",
+    "agent": true
+   },
+   {
+    "minute": 10625.97,
+    "at": "2026-09-16T23:26",
+    "title": "Name the sample images by class, and say what the snapshot does not carry",
+    "agent": true
+   },
+   {
+    "minute": 10626.32,
+    "at": "2026-09-16T23:26",
+    "title": "Build the talk as a scrolling website: twelve sections, every number from the export",
+    "agent": true
+   },
+   {
+    "minute": 10626.6,
+    "at": "2026-09-16T23:27",
+    "title": "Deploy the talk site to GitHub Pages from main, and build it on the working branches",
+    "agent": true
+   },
+   {
+    "minute": 10626.62,
+    "at": "2026-09-16T23:27",
+    "title": "Record the talk website in the session log, TALK.md and the README layout",
+    "agent": true
+   },
+   {
+    "minute": 10630.17,
+    "at": "2026-09-16T23:30",
+    "title": "Publish the manifests' argv without this checkout's own location",
+    "agent": true
+   },
+   {
+    "minute": 10631.43,
+    "at": "2026-09-16T23:31",
+    "title": "Say what the snapshot omits without counting the omissions in the sentence",
+    "agent": true
+   },
+   {
+    "minute": 10637.37,
+    "at": "2026-09-16T23:37",
+    "title": "Count the days worked from the change log, not from a file that is still growing",
+    "agent": true
+   },
+   {
+    "minute": 10640.77,
+    "at": "2026-09-16T23:41",
+    "title": "Open H4 with the clock its lede is about",
+    "agent": true
+   },
+   {
+    "minute": 10646.7,
+    "at": "2026-09-16T23:47",
+    "title": "Encode the page address alone in the QR code, without a query string",
+    "agent": true
+   },
+   {
+    "minute": 10655.98,
+    "at": "2026-09-16T23:56",
+    "title": "Route the arm diagram so no edge crosses a box, and give C, P and C+P their own edges",
+    "agent": true
+   },
+   {
+    "minute": 10665.95,
+    "at": "2026-09-17T00:06",
+    "title": "Rewrite the copy for clarity and concision: shorter sentences, fewer claims about itself",
+    "agent": true
+   },
+   {
+    "minute": 11138.9,
+    "at": "2026-09-17T07:59",
+    "title": "Fix the reviewed blockers and re-cut the talk's pacing, keyboard and presenter mode",
+    "agent": true
+   },
+   {
+    "minute": 11144.53,
+    "at": "2026-09-17T08:05",
+    "title": "Hold one name per arm, gloss the jargon at first use, and cut the copy that repeats or boasts",
+    "agent": true
+   },
+   {
+    "minute": 11157.22,
+    "at": "2026-09-17T08:17",
+    "title": "Give every chart a form its data supports, two content widths, and marks that survive a projector",
+    "agent": true
+   },
+   {
+    "minute": 11160.18,
+    "at": "2026-09-17T08:20",
+    "title": "Record the three reviews and their implementation, and re-export the timeline that names them",
+    "agent": true
+   },
+   {
+    "minute": 11162.17,
+    "at": "2026-09-17T08:22",
+    "title": "Give the close's sentence about the dependency graph its subject back",
+    "agent": true
+   },
+   {
+    "minute": 11665.48,
+    "at": "2026-09-17T16:45",
+    "title": "Re-cut the talk's opening around the method, and draw where the AI sits",
+    "agent": true
+   },
+   {
+    "minute": 11908.13,
+    "at": "2026-09-17T20:48",
+    "title": "Put the speaker's name and school under the talk's title",
+    "agent": true
+   },
+   {
+    "minute": 11913.98,
+    "at": "2026-09-17T20:54",
+    "title": "Bulletise the prose blocks in presenter mode",
+    "agent": true
+   },
+   {
+    "minute": 11929.88,
+    "at": "2026-09-17T21:10",
+    "title": "Make presenter mode a deck, and leave the scrolling site alone",
+    "agent": true
+   },
+   {
+    "minute": 11953.12,
+    "at": "2026-09-17T21:33",
+    "title": "Replace the timeline strip with an effort waterfall, and re-cut the premise copy",
+    "agent": true
+   },
+   {
+    "minute": 11958.4,
+    "at": "2026-09-17T21:38",
+    "title": "Cut the projector's corner flag, and give the page QR a size worth scanning",
+    "agent": false
+   },
+   {
+    "minute": 11964.05,
+    "at": "2026-09-17T21:44",
+    "title": "Drop the superseded title question, and name the rail for what it is",
+    "agent": false
+   },
+   {
+    "minute": 11973.35,
+    "at": "2026-09-17T21:53",
+    "title": "Take the slides back out, keep the bullets",
+    "agent": true
+   }
+  ]
+ },
+ "spans": {
+  "llm_jobs": [
+   [
+    3348.03,
+    3355.65,
+    1
+   ],
+   [
+    3358.26,
+    3389.08,
+    60
+   ],
+   [
+    3398.75,
+    3401.63,
+    1
+   ],
+   [
+    3405.4,
+    3415.02,
+    29
+   ],
+   [
+    3528.63,
+    3796.15,
+    90
+   ],
+   [
+    3797.54,
+    3843.28,
+    24
+   ],
+   [
+    3845.16,
+    3857.58,
+    24
+   ],
+   [
+    3860.87,
+    3871.1,
+    24
+   ],
+   [
+    3873.47,
+    3882.08,
+    17
+   ],
+   [
+    4425.98,
+    4431.45,
+    1
+   ],
+   [
+    4432.6,
+    4464.75,
+    12
+   ],
+   [
+    4523.56,
+    4719.37,
+    8
+   ],
+   [
+    4720.6,
+    4737.12,
+    3
+   ],
+   [
+    5412.31,
+    5414.95,
+    4
+   ],
+   [
+    5418.71,
+    5480.65,
+    223
+   ],
+   [
+    6153.74,
+    6158.03,
+    3
+   ],
+   [
+    6163.32,
+    6217.37,
+    63
+   ]
+  ],
+  "local_jobs": [
+   [
+    4765.93,
+    4767.92,
+    6
+   ],
+   [
+    5485.81,
+    5487.57,
+    6
+   ],
+   [
+    5607.37,
+    5607.73,
+    10
+   ],
+   [
+    6244.79,
+    6247.92,
+    8
+   ],
+   [
+    6247.94,
+    6248.28,
+    6
+   ],
+   [
+    6251.41,
+    6251.78,
+    12
+   ],
+   [
+    6255.52,
+    6272.57,
+    24
+   ],
+   [
+    6272.82,
+    6272.88,
+    1
+   ],
+   [
+    6281.5,
+    6281.93,
+    1
+   ],
+   [
+    6281.98,
+    6282.03,
+    1
+   ]
+  ]
+ },
+ "rates": {
+  "calls": [
+   [
+    3345,
+    724.1
+   ],
+   [
+    3360,
+    4094.4
+   ],
+   [
+    3375,
+    1292.4
+   ],
+   [
+    3390,
+    99.9
+   ],
+   [
+    3405,
+    2973.4
+   ],
+   [
+    3525,
+    422.1
+   ],
+   [
+    3540,
+    566.9
+   ],
+   [
+    3555,
+    566.9
+   ],
+   [
+    3570,
+    566.9
+   ],
+   [
+    3585,
+    566.9
+   ],
+   [
+    3600,
+    566.9
+   ],
+   [
+    3615,
+    566.9
+   ],
+   [
+    3630,
+    566.9
+   ],
+   [
+    3645,
+    475.2
+   ],
+   [
+    3660,
+    467.9
+   ],
+   [
+    3675,
+    467.9
+   ],
+   [
+    3690,
+    467.9
+   ],
+   [
+    3705,
+    467.9
+   ],
+   [
+    3720,
+    467.9
+   ],
+   [
+    3735,
+    467.9
+   ],
+   [
+    3750,
+    467.9
+   ],
+   [
+    3765,
+    467.9
+   ],
+   [
+    3780,
+    381.7
+   ],
+   [
+    3795,
+    665.7
+   ],
+   [
+    3810,
+    792.0
+   ],
+   [
+    3825,
+    792.0
+   ],
+   [
+    3840,
+    2122.2
+   ],
+   [
+    3855,
+    2673.0
+   ],
+   [
+    3870,
+    1885.1
+   ],
+   [
+    4425,
+    863.8
+   ],
+   [
+    4440,
+    405.7
+   ],
+   [
+    4455,
+    30.3
+   ],
+   [
+    4515,
+    23.2
+   ],
+   [
+    4530,
+    54.2
+   ],
+   [
+    4545,
+    54.2
+   ],
+   [
+    4560,
+    54.2
+   ],
+   [
+    4575,
+    54.2
+   ],
+   [
+    4590,
+    54.2
+   ],
+   [
+    4605,
+    54.2
+   ],
+   [
+    4620,
+    49.4
+   ],
+   [
+    4635,
+    65.3
+   ],
+   [
+    4650,
+    76.5
+   ],
+   [
+    4665,
+    76.5
+   ],
+   [
+    4680,
+    76.5
+   ],
+   [
+    4695,
+    76.5
+   ],
+   [
+    4710,
+    158.0
+   ],
+   [
+    4725,
+    185.0
+   ],
+   [
+    5400,
+    311.2
+   ],
+   [
+    5415,
+    9626.5
+   ],
+   [
+    5430,
+    5582.8
+   ],
+   [
+    5445,
+    1867.0
+   ],
+   [
+    5460,
+    4921.2
+   ],
+   [
+    5475,
+    104.6
+   ],
+   [
+    6150,
+    435.3
+   ],
+   [
+    6165,
+    2109.2
+   ],
+   [
+    6180,
+    1379.6
+   ],
+   [
+    6195,
+    1696.0
+   ],
+   [
+    6210,
+    854.7
+   ]
+  ]
+ },
  "counts": {
-  "prompts": 46,
-  "commits": 110,
-  "lines_changed": 72046,
+  "calls_peak_per_hour": 38506,
+  "prompts": 49,
+  "commits": 114,
+  "agent_commits": 111,
   "jobs": 662,
   "calls": 58409,
-  "days": 7,
-  "uncommitted_intervals": 8
+  "machine_hours": 290.3,
+  "days_with_prompts": 6
  },
  "machine": {
   "wall_hours": 290.263,
   "cpu_hours": 4.714,
   "busy_wall_hours": 13.231,
   "mean_concurrency": 21.94,
-  "first_job": "2026-09-11T22:08:29",
-  "last_job": "2026-09-13T23:02:30"
+  "peak_concurrency": 91,
+  "first_job": "2026-09-11T22:08",
+  "last_job": "2026-09-13T23:02"
  },
- "attended": {
-  "hours": 53.183,
-  "days": [
-   {
-    "date": "2026-09-09",
-    "marks": 19,
-    "source": "git commits",
-    "first": "14:20",
-    "last": "22:48",
-    "hours": 8.466,
-    "prompts": 0
-   },
-   {
-    "date": "2026-09-11",
-    "marks": 9,
-    "source": "SESSION_LOG.md",
-    "first": "15:15",
-    "last": "22:00",
-    "hours": 6.75,
-    "prompts": 9
-   },
-   {
-    "date": "2026-09-12",
-    "marks": 14,
-    "source": "SESSION_LOG.md",
-    "first": "09:02",
-    "last": "23:15",
-    "hours": 14.217,
-    "prompts": 14
-   },
-   {
-    "date": "2026-09-13",
-    "marks": 15,
-    "source": "SESSION_LOG.md",
-    "first": "07:00",
-    "last": "23:05",
-    "hours": 16.083,
-    "prompts": 15
-   },
-   {
-    "date": "2026-09-14",
-    "marks": 1,
-    "source": "SESSION_LOG.md",
-    "first": "06:55",
-    "last": "06:55",
-    "hours": 0.0,
-    "prompts": 1
-   },
-   {
-    "date": "2026-09-16",
-    "marks": 1,
-    "source": "SESSION_LOG.md",
-    "first": "23:25",
-    "last": "23:25",
-    "hours": 0.0,
-    "prompts": 1
-   },
-   {
-    "date": "2026-09-17",
-    "marks": 6,
-    "source": "SESSION_LOG.md",
-    "first": "12:30",
-    "last": "20:10",
-    "hours": 7.667,
-    "prompts": 6
-   }
-  ]
- },
- "per_prompt": {
-  "machine_hours": 6.31,
-  "calls": 1270,
-  "jobs": 14.4,
-  "lines_changed": 1566
- },
+ "headline": "49 prompts set off 662 jobs, 58,409 calls to the RCD LLM service and 290 hours of machine time.",
  "method": [
-  "Machine hours are each job manifest's own wall_seconds, summed; the activity is the Snakemake rule that wrote it.",
-  "Attended hours are, per day, the elapsed time from the first to the last timestamped mark in that day's record: SESSION_LOG.md's prompt headings, or - for 2026-09-09, which predates the log - that day's git commits.",
-  "An attended interval's activity is the one with the most lines changed by the commits that landed inside it; an interval that committed nothing is direction and review."
+  "A job is the interval its own manifest states: `written` less `wall_seconds`. Where jobs of the same lane overlap, the lane draws the period they occupied between them rather than one bar per job.",
+  "A prompt is the timestamp on its SESSION_LOG.md heading, and a commit its commit date - instants, not durations.",
+  "A commit counts as an agent's where it carries a Co-Authored-By: Claude trailer; the author of every commit in this repository is the owner.",
+  "The call rate is each score chunk's own call count spread evenly across the interval that chunk ran in, summed over chunks into 15-minute bins."
  ],
  "caveats": [
-  "The attended window cannot be split into human time and agent time. Nothing in the repository records which of the two was working in a given minute, so the window is an upper bound on one person's involvement, not a measurement of it.",
-  "It also contains breaks: the gaps between prompts run from 3 minutes to 5h40m.",
-  "Machine hours are job wall time. The score jobs spent nearly all of it waiting on a shared model service, so only 4.7 h of it was this project's own CPU (benchmarks/**/*.tsv) and the service's GPU time is not metered here.",
-  "Only surviving results are counted. Work that was rerun or rewound - arm D, the deleted archive - left no manifest behind and so appears nowhere.",
-  "An attended interval takes the activity of whichever commits landed in it, so an hour that wrote a long changelog entry alongside a short rule counts as writing it down. The prose-heavy activities are flattered by that rule.",
-  "2026-09-09, the planning day, predates SESSION_LOG.md, so its window is that day's first-to-last commit rather than its first-to-last prompt."
+  "No archived response carries a wall-clock time of its own - only the seconds it took - so the calls are dated to the chunk that recorded them and spread evenly across it in 15-minute bins. The lane is a rate, not 58,409 placed events, and a wave's shape within a chunk is smoother than the truth.",
+  "Prompts and commits are marked as moments because that is all the record holds. Nothing here measures human time, and no duration is inferred from the gaps.",
+  "No rule in this workflow asks for a GPU - the Snakefile passes only memory, runtime and CPUs - so the jobs are split by what they waited on instead. The model service answered 58,409 calls on GPUs this project never meters; its jobs cost this cluster 0.6 h of CPU against 288 h of wall time.",
+  "Only surviving results are counted. Work that was rerun or rewound - arm D, the deleted archive - left no manifest behind and so appears nowhere."
  ],
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T01:28:57Z",
+  "exported": "2026-09-18T01:59:04Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
    "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",
@@ -205,8 +1449,7 @@
   "source_files": [
    "results/**/*.json (job manifests)",
    "benchmarks/**/*.tsv",
-   "SESSION_LOG.md",
-   "git log --numstat"
+   "SESSION_LOG.md"
   ]
  }
 }

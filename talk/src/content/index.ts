@@ -41,12 +41,6 @@ export const KIND_LABEL: Record<CalloutKind, string> = {
   agent: "Agent note",
 };
 
-export const KIND_BLURB: Record<CalloutKind, string> = {
-  principle: "a principle the study relied on, and the failure it prevents",
-  nearmiss: "what nearly went wrong, and what caught it",
-  agent: "what the agent did, what the human did, and the understanding debt between them",
-};
-
 /* ------------------------------------------------------------------------------------------ */
 
 export const title = {
@@ -90,13 +84,14 @@ export const premise = {
     "The study was planned on one day and built, run, extended and reported over the next three. " +
     "An AI coding agent wrote most of the code. A workflow made its work inspectable.",
   body: [
-    "Two bands over one axis of hours. Above, the kind of work. Below, who or what did it: a " +
-      "person and a coding agent at a keyboard, against the cluster and the model service " +
-      "afterwards. The machine band is far the longer, and it went past in a small fraction of " +
-      "the wall clock, because the jobs ran at once.",
-    "That is the promise and the problem in one picture. Directing the work has become cheap. " +
-      "One person can set more computation running in an afternoon than they could read the " +
-      "output of in a month.",
+    "One time axis. A prompt lands; a commit lands; calls go out to the model service; jobs wait " +
+      "on it; jobs compute on our own cluster. A tick is a moment the record can date. A bar is a " +
+      "period a job actually ran, taken from its own manifest. The calls are an area rather than " +
+      "either, because the archive dates the chunk that holds them, not each one.",
+    "A handful of prompts set off waves of machine work, and the waves are wider than the ticks " +
+      "by orders of magnitude. That is the promise and the problem in one picture. Directing the " +
+      "work has become cheap. One person can set more computation running in an afternoon than " +
+      "they could read the output of in a month.",
     "Speed raises a question. If an agent wrote the stage, submitted the jobs and filled the " +
       "table, how do you come to trust the result? In science the code is not the product. The " +
       "claim is, and a claim rests on knowing what was done.",
@@ -106,16 +101,17 @@ export const premise = {
     REFRAIN,
   ],
   bullets: [
-    "One person directing, an agent writing, the cluster answering",
-    "The machine hours dwarf the keyboard hours — and ran past at once",
+    "A few dozen prompts set off waves of machine work",
+    "A tick is a moment; a bar is a period; an area is a rate",
     "Directing the work is cheap now. Understanding it is not.",
     "The code is not the product. The claim is.",
     "Understanding debt: built faster than its owner can read it",
     "The workflow makes the work inspectable — it does not inspect it",
   ],
   effortCaption:
-    "Every recorded hour of this study, by the kind of work and by who or what did it. The " +
-    "keyboard band holds the person and the agent together: nothing in the record separates them.",
+    "Everything this study can date, on one clock: prompts and commits as moments, jobs as the " +
+    "periods they ran, calls as a rate binned across the chunk that recorded them. The cluster " +
+    "lane is our own compute; the service lanes are a model whose GPUs this project never metered.",
   callouts: [
     {
       kind: "agent",

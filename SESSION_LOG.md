@@ -1069,3 +1069,44 @@ reading was that the revert had broken the page. It had not: this session and th
 share one checkout, so they share `talk/dist/`, and the preview server was serving the agent's
 half-finished build. Two sessions on one checkout, exactly as this file has recorded before, in a
 new costume. Verification now builds to a private output directory of its own.
+
+## 2026-09-17 22:40 — Surface the RCD LLM service calls, at the resolution the archive supports
+
+The user asked whether the calls to the RCD LLM service could be highlighted as events. They are
+the largest number the study produced and they were invisible, folded inside the bars for the jobs
+that made them.
+
+The archive does not support drawing them as events, and the answer is to say so rather than to
+fake it. A response in `results/score/*.json` carries how long it took — `replies[].elapsed_s` —
+but no wall-clock time of its own; the only clock is the chunk's, whose manifest dates it and
+states its `wall_seconds`. So 58,409 marks cannot be placed. What the record does support is a
+rate: a chunk knows how many calls it made and over what interval, so its calls are spread evenly
+across its own span and summed into fixed fifteen-minute bins.
+
+That is a third grammar in a figure whose whole argument is that its grammar means something, so
+it is labelled as one: a tick is a moment, a bar is a period, an area is a rate. The bin width is
+fixed in the export rather than left to the drawing, so the peak the lane names — 9,627 calls in
+one fifteen-minute bin, against a mean of 4,561 an hour while the service was busy — is the peak
+the lane draws, and stays the same number on a projector and on a phone. The caveat that the calls
+are dated to their chunk and not to themselves is in the export and reaches the caption from
+there.
+
+The lane is named for the service as `docs/rcd_llm_service.md` names it, and so are the job bars
+underneath it, which are the same service seen from this side of the wire.
+
+## 2026-09-17 19:55 — The callout legend comes out, and the calls go in
+
+Two edits in one pass. The user cut the premise's "Three kinds of callout" legend — "too on the
+nose. Just use the callouts." A legend that explains a rhetorical device before the device has
+done anything is a stage direction read aloud; the callouts introduce themselves. `KIND_BLURB`
+existed only to feed it and went with it, as did its five chip rules and the line in PLAN.md's
+section-1 screen that specified it.
+
+The user also asked to highlight the RCD LLM service calls as events, and the answer is the honest
+one: they cannot be placed. An archived response carries `elapsed_s` — how long the call took —
+and no wall-clock time at all. Only the chunk that holds it is dated. So the calls are not 58,409
+marks; they are a fifth lane drawn as a rate, each chunk's calls spread evenly across its own span
+and summed into fixed fifteen-minute bins, with the bin width fixed in the export rather than at
+draw time so the number the lane names is the number it draws on any screen. The figure's grammar
+is now declared in three parts — a tick is a moment, a bar is a period, an area is a rate — and
+the caption says a wave's shape inside a chunk is smoother than the truth.

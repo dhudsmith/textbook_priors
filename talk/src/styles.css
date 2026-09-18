@@ -269,11 +269,6 @@ figcaption .file { font-family: var(--mono); }
 }
 .chip.legend[aria-pressed="true"]:hover { border-color: var(--ink-muted); color: var(--ink); }
 .chip .swatch { width: 11px; height: 11px; border-radius: 2px; }
-.chip.kindchip { cursor: default; }
-.chip.kindchip .swatch { background: var(--kind); }
-.chip.kindchip.principle { --kind: var(--principle); }
-.chip.kindchip.nearmiss  { --kind: var(--nearmiss); }
-.chip.kindchip.agent     { --kind: var(--agent); }
 .chip.off { opacity: 0.5; }
 .controls .group-label {
   font-size: 0.72rem; color: var(--ink-muted); font-family: var(--mono);
