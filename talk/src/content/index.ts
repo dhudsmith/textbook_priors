@@ -109,9 +109,7 @@ export const premise = {
     "The workflow makes the work inspectable — it does not inspect it",
   ],
   effortCaption:
-    "Everything this study can date, on one clock: prompts and commits as moments, jobs as the " +
-    "periods they ran, calls as a rate binned across the chunk that recorded them. The cluster " +
-    "lane is our own compute; the service lanes are a model whose GPUs this project never metered.",
+    "Prompts and commits are moments. Jobs are the periods they ran. The calls are a rate.",
   callouts: [
     {
       kind: "agent",

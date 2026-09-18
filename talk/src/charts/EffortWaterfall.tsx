@@ -334,8 +334,3 @@ export function effortSummary(data: Effort) {
   );
 }
 
-/** The chart's own caveats, as the section's caption should carry them. Read from the data so the
-    caption cannot drift from the export that produced the lanes. */
-export function effortCaveats(data: Effort): string {
-  return data.caveats.join(" ");
-}

@@ -1110,3 +1110,24 @@ and summed into fixed fifteen-minute bins, with the bin width fixed in the expor
 draw time so the number the lane names is the number it draws on any screen. The figure's grammar
 is now declared in three parts — a tick is a moment, a bar is a period, an area is a rate — and
 the caption says a wave's shape inside a chunk is smoother than the truth.
+
+## 2026-09-17 20:20 — Inside baseball comes off the page
+
+The user quoted the effort figure's caveat paragraph back and said to remove it "and any such
+'inside baseball' comments from the website". It was method notes written for a reviewer and read
+by a room: the attended window's unmeasurability, arm D leaving no manifest, which commits an
+interval takes its activity from. All true, none of it the audience's problem.
+
+Rather than delete only the paragraph quoted, every long note and caption on the rendered page was
+pulled out through the browser and read. Four more of the same genre came off: the caption had
+started explaining its own binning; the archived call listed what the snapshot redacts to be
+publishable, which is plumbing rather than a finding, on two sections; H5 cited "the report's own
+convention" for drawing an interval at half strength; and the title band named the export script
+and the commit hash, where the claim — every number comes from the run's own files — was the part
+that mattered. `effortCaveats` had nothing left rendering it and went too.
+
+What stayed, deliberately: notes that help a viewer read a chart (which arm a single bar belongs
+to, why a divider separates two model families), dataset facts, and the file-provenance line under
+each figure, which is the traceability the talk argues for rather than a note about it. The
+caveats themselves remain in `effort.json` and in the chart's "read this chart as text" summary,
+where a reader who wants the method can still find it.

@@ -1,5 +1,5 @@
 import { Band, Body, Callouts, ChartFrame, Header } from "../components/ui";
-import { EffortWaterfall, effortCaveats, effortSummary } from "../charts/EffortWaterfall";
+import { EffortWaterfall, effortSummary } from "../charts/EffortWaterfall";
 import { premise } from "../content";
 import { useAsync } from "../hooks";
 import { loadEffort } from "../data";
@@ -21,7 +21,6 @@ export function Premise() {
           <EffortWaterfall data={effort} />
         </ChartFrame>
       )}
-      {effort && <p className="note">{effortCaveats(effort)}</p>}
 
       <Callouts items={premise.callouts} />
     </Band>

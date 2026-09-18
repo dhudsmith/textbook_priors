@@ -27,7 +27,6 @@ export function ArchiveCall({ sample, fixedDataset }: {
     setI(k);
   };
   const manifest = rec ? sample.manifests[rec.manifest_key] : null;
-  const redactions = sample.provenance?.redactions ?? [];
   const { data: prompt } = useAsync(
     () => (rec ? loadPrompt(rec.dataset) : Promise.resolve("")), [rec?.dataset]);
 
@@ -104,11 +103,6 @@ export function ArchiveCall({ sample, fixedDataset }: {
           {manifest.seconds_per_call.median} s per call
         </dd>
       </dl>
-      {redactions.length > 0 && (
-        <p className="note">
-          Removed from this snapshot: {redactions.join("; ")}.
-        </p>
-      )}
 
       <Deep summary={`The rendered ${rec.prompt === "concept" ? "concept" : "zero-shot"} prompt, verbatim`}>
         <pre className="file">{promptSection(prompt, rec.prompt)}</pre>

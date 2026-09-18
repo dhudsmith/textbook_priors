@@ -80,7 +80,7 @@ export function H5() {
       </ChartFrame>
       <p className="note">
         {clear.length} of {rows.length} gains are clear of zero at n = {n}. Rows whose interval
-        spans zero are drawn at half strength, the report's own convention.
+        spans zero are drawn at half strength.
       </p>
 
       <p className="tally">

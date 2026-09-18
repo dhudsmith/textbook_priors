@@ -50,9 +50,7 @@ export function Title() {
         <CountTile value={led.tests ?? 0} unit="tests that run before anything else is computed" />
       </div>
       <p className="note">
-        Every number on this page comes from the run's own files, exported once by{" "}
-        <code>talk/scripts/export_talk_data.py</code> from commit{" "}
-        <code>{study.provenance.run_git_commit.slice(0, 10)}</code>.
+        Every number on this page comes from the run's own files.
       </p>
 
       <h3>{copy.workflow.header}</h3>
