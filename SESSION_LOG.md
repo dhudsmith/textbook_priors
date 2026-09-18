@@ -1885,3 +1885,16 @@ is gone, and with it the two-column title grid, the `qrblock` rule and the capti
 it. `PageQR` moved out of `Title.tsx` and into the shared components, since the rail is its only
 caller now, and its caption lives in a one-line `rail` export rather than in the title's copy.
 Verified: one `.qr` on the whole page, and it is the rail's.
+
+## 2026-09-19 04:15 — The two prompts get the project's own names
+
+*"I don't like this language. Call it: Classification prompt / Fingerprint prompt."* Done: the two
+panels under the archived call are **Fingerprint prompt** and **Classification prompt**, in the
+order of the columns above them, so each panel sits under the answer it produced. Both still resolve
+by sha256 to the string that bought that answer.
+
+Worth flagging rather than fixing unasked: *fingerprint* is the project's word — WORKFLOW.md's
+nearest-fingerprint rule, and `spec.fingerprint` in the bank — but until now it appeared nowhere in
+the talk's visible language, where arm B is "the feature scores matched to the literature". The
+closing summary still says the long form. Either the summary adopts *fingerprint* or these panels
+say something else; they should not be two names for one thing in one talk.

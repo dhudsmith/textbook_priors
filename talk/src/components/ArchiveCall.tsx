@@ -15,8 +15,10 @@ import { useAsync } from "../hooks";
 
    Nothing here is live and nothing is re-read: results/score/ is write-protected and this is a
    copy of a few of its records, taken by the export. The reply text is deliberately not shown -
-   a reader should see the answer, not the shape it arrived in. The questions themselves are
-   underneath, closed: the room hears them, and anyone who wants the exact words can open them. */
+   a reader should see the answer, not the shape it arrived in. The two prompts themselves are
+   underneath, closed and named the way the project names them - the fingerprint prompt and the
+   classification prompt - so the room hears them and anyone who wants the exact words can open
+   them. They stay in the order of the columns above, so a panel is under the answer it made. */
 
 /* The prompt file the `render_prompts` rule wrote, one block per prompt, each headed with its own
    sha256. A block is matched to a record by that hash rather than by its position in the file, so
@@ -221,9 +223,9 @@ export function ArchiveCall({ sample, fixedDataset }: {
       </div>
 
       <div className="prompts">
-        <PromptText summary="The visual-feature question, exactly as sent" blocks={blocks}
+        <PromptText summary="Fingerprint prompt" blocks={blocks}
                     sha={sample.manifests[pair.concept?.manifest_key ?? ""]?.prompt_sha256} />
-        <PromptText summary="The class question, exactly as sent" blocks={blocks}
+        <PromptText summary="Classification prompt" blocks={blocks}
                     sha={sample.manifests[pair.zero?.manifest_key ?? ""]?.prompt_sha256} />
       </div>
     </div>
