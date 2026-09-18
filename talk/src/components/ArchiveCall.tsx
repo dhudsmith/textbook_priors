@@ -3,7 +3,7 @@ import type { ArchiveRecord, ArchiveSample } from "../types";
 import { useTalk } from "../state";
 import { LAZY, asset } from "../data";
 
-/* One archived image, and the two answers the study bought for it.
+/* One archived image, and what both prompts returned for it.
 
    The study asks the same picture two different questions, in two separate calls, and gets two
    different shapes of answer back: the checklist comes back as a level for each visual feature,
@@ -105,7 +105,7 @@ export function ArchiveCall({ sample, fixedDataset }: {
 
         <div className="answerpair">
           <div>
-            <h4>Checklist answers</h4>
+            <h4>Visual features, and the level picked</h4>
             <p className="note">
               One call: every visual feature the textbook lists for this kind of image, and the
               level the model picked for it.
@@ -128,7 +128,7 @@ export function ArchiveCall({ sample, fixedDataset }: {
           </div>
 
           <div>
-            <h4>Class answer</h4>
+            <h4>How likely each class</h4>
             <p className="note">
               A second call, on a prompt of its own: how likely is each class? The checklist above
               never sees this answer, and this answer never sees the checklist.

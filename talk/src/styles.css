@@ -344,7 +344,7 @@ pre.file {
   background: var(--surface-sunken);
 }
 .imgcard img { display: block; width: 100%; height: auto; }
-/* One archived image and the two answers it got: the picture on the left, the two questions
+/* One archived image and both prompts: the picture on the left, the two questions
    beside it, because the contrast between the two kinds of answer is the point. Both tables
    drop under the picture before either is squeezed into a column of wrapped lines. */
 .answergrid { display: grid; gap: 1.1rem 1.4rem; align-items: start;

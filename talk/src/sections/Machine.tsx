@@ -43,7 +43,7 @@ export function Machine() {
         {study.archive.calls.toLocaleString("en-US")} calls.
       </p>
 
-      <h3>One archived image, and the two answers it got</h3>
+      <h3>One archived image, two prompts</h3>
       <div ref={ref}>
         {error && <p className="note">Could not load the archive sample: {error}</p>}
         {archive ? <ArchiveCall sample={archive} />
