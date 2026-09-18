@@ -330,17 +330,6 @@ table.data tbody tr:hover { background: var(--surface-sunken); }
 .dots svg { display: block; }
 
 /* ---- prompt, and the archived answers -------------------------------------------------------------------- */
-/* A tool's wordmark beside the sentence about it. The mark is greyscale, so dark mode inverts
-   it rather than shipping a second file: a near-black wordmark on a near-black ground is not a
-   logo, it is a smudge. */
-.lede.withlogo {
-  display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap;
-  max-width: calc(var(--measure) + 12rem);
-}
-.lede.withlogo > span { max-width: var(--measure); }
-.toollogo { flex: none; width: 158px; height: 21px; }
-@media (prefers-color-scheme: dark) { .toollogo { filter: invert(1) brightness(1.35); } }
-
 /* The two questions under the answers they produced: closed, side by side where there is room. */
 .prompts { margin-top: 1.1rem; max-width: var(--figure); }
 .prompts details.deep { max-width: none; }

@@ -190,7 +190,7 @@ export const machine = {
      words the project uses for its own parts - was cut on 2026-09-19: too long and too much
      jargon for a slide the room reads in ten seconds. The table and the graph below say the
      rest, for anyone who wants it. */
-  lede: "Use a workflow tool to structure the compute.",
+  lede: "Use a workflow manager (Snakemake in this case) to structure the compute:",
   bullets: [
     "Tells the AI what context to pull",
     "Shows me what the AI built",

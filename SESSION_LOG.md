@@ -1761,3 +1761,12 @@ displaced labels is not a chart a room can read — and the chart said so nowher
 each ladder says it now: on both views of the model-size chart, and on the readers ladder, where it
 also says that dermamnist is named whatever its spread, because the prediction below that chart is
 about dermamnist.
+
+## 2026-09-19 01:50 — The logo goes
+
+*"Looks bad."* It did: the wordmark was set in a face and weight nothing else on the page uses, on
+a line with a sentence it was neither part of nor clearly separate from, and in dark mode it was an
+inverted grey that read as a second heading. The lede names the tool in words instead — *Use a
+workflow manager (Snakemake in this case) to structure the compute:* — with the colon leading into
+the four bullets. The image, its two style rules and the file in `public/img/` are gone; nothing
+else on the page referenced them.
