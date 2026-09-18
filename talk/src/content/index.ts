@@ -158,7 +158,7 @@ export const question = {
 };
 
 export const design = {
-  header: "Five arms, one procedure",
+  headerShape: "{arms} classification arms",
   lede: "What is the textbook worth in labelled images? Two arms use none. Three use n.",
   bullets: [
     "Three arms fit their own linear classification head — same procedure, different features",
