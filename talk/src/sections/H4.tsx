@@ -7,7 +7,7 @@ import { TimelineStrip } from "../charts/TimelineStrip";
 import { h4 as copy } from "../content";
 import { useAsync } from "../hooks";
 import { loadTimeline } from "../data";
-import { fmt3, signed, widestSpread } from "../charts/primitives";
+import { widestSpread } from "../charts/primitives";
 
 export function H4() {
   const { study, armHue } = useTalk();
@@ -33,15 +33,7 @@ export function H4() {
       <p className="lede">{copy.lede}</p>
       {timeline && (
         <ChartFrame
-          caption="The day H4 was designed, run and decided. Click a tick for the entry."
-          source="public/data/timeline.json ← SESSION_LOG.md"
-          summary={
-            <ul>
-              {timeline.entries.filter((e) => e.date === "2026-09-12").map((e) => (
-                <li key={e.time}>{e.time} — {e.title}</li>
-              ))}
-            </ul>
-          }>
+          caption="The day H4 was designed, run and decided. Click a tick for the entry.">
           <TimelineStrip timeline={timeline} days={["2026-09-12"]} height={110} />
         </ChartFrame>
       )}
@@ -59,25 +51,7 @@ export function H4() {
 
       <ChartFrame
         caption={`The reader chain: cross-validated probe AUC on the same ${h4.subsample}-image ` +
-                 "prefix, one line per dataset. Hover a line to isolate it."}
-        source="public/data/study.json ← results/evaluation.json"
-        summary={
-          <table className="data">
-            <thead>
-              <tr><th>dataset</th>{chain.map((m) => <th key={m}>{m}</th>)}</tr>
-            </thead>
-            <tbody>
-              {Object.keys(h4.probe_auc).map((d) => (
-                <tr key={d}>
-                  <td>{d}</td>
-                  {chain.map((m) => (
-                    <td key={m}>{h4.probe_auc[d][m] != null ? fmt3(h4.probe_auc[d][m]) : "—"}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        }>
+                 "prefix, one line per dataset. Hover a line to isolate it."}>
         <Ladder order={chain} values={h4.probe_auc} yLabel="cross-validated probe AUC"
                 label="Probe AUC per dataset across the nine readers" height={420}
                 named={widestSpread(h4.probe_auc, chain, 4, ["dermamnist"])}
@@ -85,16 +59,7 @@ export function H4() {
       </ChartFrame>
 
       <ChartFrame
-        caption="Thinking's effect against how well the same model read the concepts without it."
-        source="public/data/study.json ← results/evaluation.json (H4a)"
-        summary={
-          <p>
-            The step is negative on the datasets the model already read well and positive on the
-            ones it read badly: {h4.h4a.wins} of {h4.n_datasets} gains, and the losses are
-            concentrated where the baseline probe was highest. That is what “conditional” means
-            here, and why a single sign test says {v4.verdict}.
-          </p>
-        }>
+        caption="Thinking's effect against how well the same model read the concepts without it.">
         <ThinkingScatter />
       </ChartFrame>
 
@@ -107,23 +72,7 @@ export function H4() {
       </p>
       <Deep summary={`Show the ${h6rows.length} intervals`}>
         <ChartFrame
-          caption="gpt-5.6-terra at low minus the same model at medium, by the same probe."
-          source="public/data/study.json ← results/evaluation.json (H6)"
-          summary={
-            <table className="data" style={{ maxWidth: "34rem" }}>
-              <thead><tr><th>dataset</th><th style={{ textAlign: "left" }}>low − medium, 95%</th></tr></thead>
-              <tbody>
-                {h6rows.map((r) => (
-                  <tr key={r.dataset}>
-                    <td>{r.dataset}</td>
-                    <td style={{ textAlign: "left" }}>
-                      {signed(r.median)} [{fmt3(r.lo)}, {fmt3(r.hi)}]
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          }>
+          caption="gpt-5.6-terra at low minus the same model at medium, by the same probe.">
           <Forest rows={h6rows} colour={armHue("C")}
                   label="gpt-5.6-terra: low minus medium, probe AUC" />
         </ChartFrame>

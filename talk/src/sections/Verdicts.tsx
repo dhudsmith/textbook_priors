@@ -31,27 +31,7 @@ export function Verdicts() {
       <ChartFrame
         caption={`Each arm against the published ceiling. The pixel arm at n = ` +
                  `${study.ceiling.largest_n} sits a median ${fmt3(gap.pixel)} AUC below it; the ` +
-                 `best zero-label arm ${fmt3(gap.zero)} below.`}
-        source="public/data/study.json ← results/evaluate/*.json and data/literature/benchmarks.yaml"
-        summary={
-          <table className="data">
-            <thead>
-              <tr><th>dataset</th><th>best zero-label</th><th>arm C, largest n</th>
-                  <th>arm P, largest n</th><th>published ceiling</th></tr>
-            </thead>
-            <tbody>
-              {study.ceiling.rows.map((r) => (
-                <tr key={r.dataset}>
-                  <td>{r.dataset}</td>
-                  <td>{r.zero != null ? fmt3(r.zero) : "—"}</td>
-                  <td>{fmt3(r.concept)}</td>
-                  <td>{fmt3(r.pixel)}</td>
-                  <td>{fmt3(r.ceiling)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        }>
+                 `best zero-label arm ${fmt3(gap.zero)} below.`}>
         <CeilingDots />
       </ChartFrame>
       <p className="note">

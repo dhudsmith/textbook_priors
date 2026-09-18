@@ -5,7 +5,6 @@ import { Contention } from "../charts/Contention";
 import { h1 as copy } from "../content";
 import { useAsync } from "../hooks";
 import { loadContention } from "../data";
-import { fmt3, signed } from "../charts/primitives";
 
 export function H1() {
   const { study, dataset, setDataset } = useTalk();
@@ -13,7 +12,6 @@ export function H1() {
   const h1 = study.across.h1;
   const { data: contention } = useAsync(loadContention);
   const per = study.per_dataset[dataset];
-  const diff = per.differences["C_minus_P__n50"];
   const firstN = study.study.curve.n[0];
 
   // n_B is "<=50" wherever the pixel arm was already above arm B at the first grid point, so the
@@ -49,17 +47,7 @@ export function H1() {
       <DatasetPicker />
       <ChartFrame
         caption={`Arms on ${dataset}: test AUC against labelled images, with 95% bootstrap bands. ` +
-                 "Toggle a series in the legend; hover a point for its interval."}
-        source="public/data/study.json ← results/evaluate/*.json"
-        summary={
-          <p>
-            On {dataset} the concept arm minus the pixel arm at n = 50 is {signed(diff.median)},
-            95% interval [{fmt3(diff.lo)}, {fmt3(diff.hi)}]. n_B, the labels the pixel arm needs
-            to reach the zero-label textbook arm, is {per.n_b?.point ?? "not defined (no arm B)"}.
-            The published fully supervised ceiling for this task is {fmt3(per.ceiling.auc)} (
-            {per.ceiling.method}).
-          </p>
-        }>
+                 "Toggle a series in the legend; hover a point for its interval."}>
         {/* Two series by default - the flat textbook arm and the rising pixel arm - and the rest
             behind the legend, so the projected chart is one comparison the speaker builds on. */}
         <LearningCurve height={440} initialHidden={["C", "CP", "A", "lit"]} />
@@ -109,26 +97,7 @@ export function H1() {
       </div>
       {contention && (
         <ChartFrame
-          caption="What our own load did to a call: one job in flight against a wave of them, per prompt."
-          source="public/data/contention.json ← CHANGELOG.md 2026-09-12"
-          summary={
-            <>
-              <table className="data" style={{ maxWidth: "36rem" }}>
-                <thead>
-                  <tr><th>series</th><th>jobs</th><th>s/call</th><th>calls/s</th></tr>
-                </thead>
-                <tbody>
-                  {contention.series.flatMap((s) => s.points.map((p) => (
-                    <tr key={`${s.id}-${p.jobs}`}>
-                      <td>{s.label}</td><td>{p.jobs}</td><td>{p.s_per_call}</td>
-                      <td>{p.calls_per_s}</td>
-                    </tr>
-                  )))}
-                </tbody>
-              </table>
-              <p>{contention.note}</p>
-            </>
-          }>
+          caption="What our own load did to a call: one job in flight against a wave of them, per prompt.">
           <Contention data={contention} />
         </ChartFrame>
       )}

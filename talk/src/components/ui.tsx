@@ -144,21 +144,15 @@ export function DatasetPicker({ only }: { only?: (name: string) => boolean }) {
 
 /* ---- figure frame ---------------------------------------------------------------------- */
 
-/** Every chart on the page is wrapped in this: a caption naming the file its numbers come from,
-    and a text summary for a screen reader (talk/PLAN.md section 5). */
-export function ChartFrame({ caption, source, summary, children }: {
-  caption: string; source: string; summary: ReactNode; children: ReactNode;
+/** Every chart on the page is wrapped in this: one caption, and the chart. The SVG carries its
+    own aria-label, which is the text alternative a screen reader reads. */
+export function ChartFrame({ caption, children }: {
+  caption: string; children: ReactNode;
 }) {
   return (
     <figure className="chart">
       <div className="chart-scroll">{children}</div>
-      <figcaption>
-        {caption} <span className="file">{source}</span>
-        <details className="a11y-summary">
-          <summary>Read this chart as text</summary>
-          {summary}
-        </details>
-      </figcaption>
+      <figcaption>{caption}</figcaption>
     </figure>
   );
 }

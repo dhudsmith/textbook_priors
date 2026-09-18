@@ -3,7 +3,7 @@ import { useTalk } from "../state";
 import { Band, Bullets, Callouts, ChartFrame, Dots, Header } from "../components/ui";
 import { Forest } from "../charts/Forest";
 import { h5 as copy } from "../content";
-import { fmt3, signed } from "../charts/primitives";
+import { signed } from "../charts/primitives";
 
 export function H5() {
   const { study, armHue } = useTalk();
@@ -56,25 +56,7 @@ export function H5() {
 
       <ChartFrame
         caption={`Arm C+P minus arm P at n = ${n}: the same classifier, with the concept block ` +
-                 "concatenated to the pixel block and nothing else changed."}
-        source="public/data/study.json ← results/evaluation.json (H5)"
-        summary={
-          <table className="data" style={{ maxWidth: "34rem" }}>
-            <thead>
-              <tr><th>dataset</th><th style={{ textAlign: "left" }}>C+P − P, 95%</th></tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.dataset}>
-                  <td>{r.dataset}</td>
-                  <td style={{ textAlign: "left" }}>
-                    {signed(r.median)} [{fmt3(r.lo)}, {fmt3(r.hi)}]
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        }>
+                 "concatenated to the pixel block and nothing else changed."}>
         <Forest rows={rows} colour={armHue("CP")} label={`arm C+P minus arm P at n = ${n}`}
                 annotate={["no gain", "gain"]} />
       </ChartFrame>

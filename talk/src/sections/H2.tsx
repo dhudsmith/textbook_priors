@@ -2,7 +2,7 @@ import { useTalk } from "../state";
 import { Band, Bullets, Callouts, ChartFrame, Deep, Dots, Header } from "../components/ui";
 import { Dumbbell, PermutationDrops } from "../charts/Dumbbell";
 import { h2 as copy } from "../content";
-import { fmt3, signed } from "../charts/primitives";
+import { fmt3 } from "../charts/primitives";
 
 export function H2() {
   const { study } = useTalk();
@@ -34,44 +34,12 @@ export function H2() {
       </Deep>
 
       <ChartFrame
-        caption="Arm A against arm B on the same images. The letter at the right is which arm won."
-        source="public/data/study.json ← results/evaluate/*.json"
-        summary={
-          <table className="data" style={{ maxWidth: "40rem" }}>
-            <thead>
-              <tr><th>dataset</th><th>arm A</th><th>arm B</th>
-                  <th style={{ textAlign: "left" }}>B − A, 95%</th></tr>
-            </thead>
-            <tbody>
-              {armB.map((d) => {
-                const p = study.per_dataset[d];
-                const diff = p.differences["B_minus_A"];
-                return (
-                  <tr key={d}>
-                    <td>{d}</td><td>{fmt3(p.auc["A"])}</td>
-                    <td>{fmt3(p.auc[`B__${primary}`])}</td>
-                    <td style={{ textAlign: "left" }}>
-                      {signed(diff.median)} [{fmt3(diff.lo)}, {fmt3(diff.hi)}]
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        }>
+        caption="Arm A against arm B on the same images. The letter at the right is which arm won.">
         <Dumbbell />
       </ChartFrame>
 
       <ChartFrame
-        caption="What each arm loses when the bank's structure is destroyed. Both lose everywhere."
-        source="public/data/study.json ← results/evaluate/*.json (permutation controls)"
-        summary={
-          <p>
-            Arm B's fingerprints permuted across classes and arm C's concept columns permuted
-            across images. Both drops are positive on every dataset either arm runs on, which is
-            what says the concept answers carry real class information rather than a constant.
-          </p>
-        }>
+        caption="What each arm loses when the bank's structure is destroyed. Both lose everywhere.">
         <PermutationDrops />
       </ChartFrame>
 

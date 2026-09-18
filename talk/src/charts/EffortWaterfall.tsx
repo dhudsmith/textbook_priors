@@ -124,7 +124,6 @@ export function EffortWaterfall({ data, height }: { data: Effort; height?: numbe
 
   return (
     <div ref={ref}>
-      <p className="claim" style={{ marginBottom: "0.7rem" }}>{data.headline}</p>
       <svg className="plot" width={width} height={drawn} role="img"
            aria-label={`A project timeline in ${data.lanes.length} lanes from ` +
                        `${data.span.from.slice(0, 10)} to ${data.span.to.slice(0, 10)}: ` +
@@ -296,22 +295,6 @@ export function EffortWaterfall({ data, height }: { data: Effort; height?: numbe
         </span>
       </div>
     </div>
-  );
-}
-
-/** The chart read as text, for `<ChartFrame summary>`. Built from the same object the lanes are,
-    so the spoken reading cannot drift from the picture. */
-export function effortSummary(data: Effort) {
-  return (
-    <>
-      <p>{data.headline}</p>
-      <p>
-        Five lanes over one clock, {data.span.from.slice(0, 10)} to {data.span.to.slice(0, 10)}:{" "}
-        {data.lanes.map((l) => `${l.label} (${l.count.toLocaleString()})`).join(", ")}. The{" "}
-        {hrs(data.machine.wall_hours)} hours of job time occupied {hrs(data.machine.busy_wall_hours)}{" "}
-        hours of wall clock, peaking at {data.machine.peak_concurrency} jobs at once.
-      </p>
-    </>
   );
 }
 

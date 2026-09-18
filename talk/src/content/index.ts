@@ -77,11 +77,13 @@ export const premise = {
   lede:
     "Planned in a day, built and run and reported in three more. An agent wrote most of the " +
     "code. A workflow made its work inspectable.",
-  bullets: [
-    "49 prompts set of 662 Palmetto jobs.",
-    "58,409 calls to the RCD LLM service.",
-    "290 hours of machine time.",
-    "Tested 7 distinct hypotheses on 12 medical image datasets.",
+  /* The numbers are assembled in Premise.tsx from the export, per this file's own rule: the
+     prompt count alone moved twice in a day. The wording is the owner's. */
+  bulletShapes: [
+    "{prompts} prompts set off {jobs} Palmetto jobs.",
+    "{calls} calls to the RCD LLM service.",
+    "{machineHours} hours of machine time.",
+    "Tested {hypotheses} distinct hypotheses on {datasets} medical image datasets.",
   ],
   effortCaption:
     "Prompts and commits are moments. Jobs are the periods they ran. The calls are a rate.",

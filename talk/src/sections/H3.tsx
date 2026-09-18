@@ -3,7 +3,7 @@ import { useTalk } from "../state";
 import { Band, Bullets, Callouts, ChartFrame, Dots, Header } from "../components/ui";
 import { Ladder } from "../charts/Ladder";
 import { h3 as copy } from "../content";
-import { fmt3, signed, widestSpread } from "../charts/primitives";
+import { signed, widestSpread } from "../charts/primitives";
 
 export function H3() {
   const { study } = useTalk();
@@ -72,23 +72,7 @@ export function H3() {
       <ChartFrame
         caption={which === "open"
           ? "One line per dataset across the four open models, in size order within family. Hover a line to isolate it."
-          : "One line per dataset across the closed family at effort low, in price order. Hover a line to isolate it."}
-        source="public/data/study.json ← results/evaluation.json"
-        summary={
-          <table className="data" style={{ maxWidth: "44rem" }}>
-            <thead>
-              <tr><th>dataset</th>{order.map((m) => <th key={m}>{m}</th>)}</tr>
-            </thead>
-            <tbody>
-              {Object.keys(values).map((d) => (
-                <tr key={d}>
-                  <td>{d}</td>
-                  {order.map((m) => <td key={m}>{values[d][m] != null ? fmt3(values[d][m]) : "—"}</td>)}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        }>
+          : "One line per dataset across the closed family at effort low, in price order. Hover a line to isolate it."}>
         <Ladder
           order={order}
           values={values}
