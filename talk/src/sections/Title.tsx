@@ -1,39 +1,19 @@
-import { useEffect, useState } from "react";
-import { QRCodeSVG } from "qrcode.react";
 import { Band, Bullets, Header } from "../components/ui";
 import { title as copy } from "../content";
 
-/* The QR code is rendered client-side from the page's own URL, so it is right wherever the site
-   is deployed and needs no image file. */
-function PageQR({ caption, size = 196 }: { caption: string; size?: number }) {
-  const [href, setHref] = useState("");
-  useEffect(() => setHref(window.location.href.split("#")[0].split("?")[0]), []);
-  if (!href) return null;
-  return (
-    <div className="qr">
-      <QRCodeSVG value={href} size={size} level="M" marginSize={0} bgColor="#ffffff"
-                 fgColor="#17171a" title={`QR code for ${href}`} />
-      <div className="cap">{caption}</div>
-    </div>
-  );
-}
-
-export { PageQR };
+/* The opening. The page's QR code used to sit beside this heading; it is in the rail now, where
+   it stays on screen for the whole talk instead of scrolling away after the first minute. */
 
 export function Title() {
-
   return (
     <Band id="top">
-      <div className="title-band title-grid">
-        <div>
-          <Header id="top" eyebrow={copy.eyebrow}>{copy.header}</Header>
-          <p className="byline">
-            <span className="who">{copy.byline.who}</span>
-            <span className="where">{copy.byline.where}</span>
-          </p>
-          <p className="lede">{copy.standfirst}</p>
-        </div>
-        <PageQR caption={copy.qr} />
+      <div className="title-band">
+        <Header id="top" eyebrow={copy.eyebrow}>{copy.header}</Header>
+        <p className="byline">
+          <span className="who">{copy.byline.who}</span>
+          <span className="where">{copy.byline.where}</span>
+        </p>
+        <p className="lede">{copy.standfirst}</p>
       </div>
       <p>{copy.intro.lede}</p>
       <p className="pullquote">{copy.intro.question}</p>

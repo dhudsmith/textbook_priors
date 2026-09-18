@@ -412,10 +412,7 @@ details.deep > summary {
 
 /* ---- title ------------------------------------------------------------------------------- */
 .title-band { padding-top: clamp(2rem, 6vh, 4rem); }
-.title-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2rem; align-items: start; }
 .qr { text-align: center; }
-.qrblock { margin-top: 1.4rem; display: flex; }
-.qrblock .qr { text-align: left; }
 .qr svg { background: #fff; padding: 8px; border-radius: 6px; border: 1px solid var(--rule); }
 .qr .cap { font-size: 0.7rem; color: var(--ink-muted); margin-top: 0.4rem; font-family: var(--mono); }
 
@@ -436,6 +433,5 @@ details.deep > summary {
   .rail li.after::before { display: none; }
   /* The reader on a phone arrived through the QR code. */
   .qr, .railqr { display: none; }
-  .title-grid { grid-template-columns: 1fr; }
   :root { font-size: 16px; }
 }

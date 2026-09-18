@@ -1877,3 +1877,11 @@ duplicated four exports rather than replacing one. `tsc` caught it immediately �
 "cannot redeclare" errors — and the two copies were confirmed byte-identical before one was
 deleted. Worth noting because the failure mode is silent in a file this size if nothing typechecks
 it.
+
+## 2026-09-19 04:00 — One QR code, in the rail
+
+*"Remove the qr code from the previous place. Have it only in the sidebar."* The title band's copy
+is gone, and with it the two-column title grid, the `qrblock` rule and the caption that went with
+it. `PageQR` moved out of `Title.tsx` and into the shared components, since the rail is its only
+caller now, and its caption lives in a one-line `rail` export rather than in the title's copy.
+Verified: one `.qr` on the whole page, and it is the rail's.

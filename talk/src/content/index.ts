@@ -75,8 +75,10 @@ export const title = {
     lede:
       "Trying to get AI to do it the way I want.",
   },
-  qr: "Follow along on your own device",
 };
+
+/** The rail, which is the one place the page's own QR code appears. */
+export const rail = { qr: "Link to talk" };
 
 export const premise = {
   header: "How the work unfolded.",

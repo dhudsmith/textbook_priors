@@ -1,9 +1,28 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { SECTIONS, useTalk } from "../state";
-import { NOTE_LABEL, type Callout as CalloutSpec } from "../content";
+import { NOTE_LABEL, rail as railCopy, type Callout as CalloutSpec } from "../content";
 import { STATIC } from "../data";
-import { PageQR } from "../sections/Title";
+
+/* ---- page code ---------------------------------------------------------------------------- */
+
+/** The code for this page, rendered client-side from the page's own URL, so it is right wherever
+    the site is deployed and needs no image file. It appears once, at the top of the rail: it was
+    on the title band as well until 2026-09-19, which meant the room saw it for thirty seconds and
+    then not again. */
+export function PageQR({ caption, size = 196 }: { caption: string; size?: number }) {
+  const [href, setHref] = useState("");
+  useEffect(() => setHref(window.location.href.split("#")[0].split("?")[0]), []);
+  if (!href) return null;
+  return (
+    <div className="qr">
+      <QRCodeSVG value={href} size={size} level="M" marginSize={0} bgColor="#ffffff"
+                 fgColor="#17171a" title={`QR code for ${href}`} />
+      <div className="cap">{caption}</div>
+    </div>
+  );
+}
 
 /* ---- section --------------------------------------------------------------------------- */
 
@@ -209,7 +228,7 @@ export function Rail() {
     <nav className={`rail${open ? " open" : ""}`} aria-label="Sections">
       {/* The code for the page itself, at the top of the rail so it is on screen the whole talk
           rather than only at the end. */}
-      <div className="railqr"><PageQR caption="Link to talk" size={124} /></div>
+      <div className="railqr"><PageQR caption={railCopy.qr} size={124} /></div>
       <p className="railhead">Talk outline</p>
       <button className="railtoggle" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
         <span className="num">{number(here.id)}</span>
