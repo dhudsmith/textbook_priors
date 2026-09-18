@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Body, Callouts, ChartFrame, Deep, Dots, Header } from "../components/ui";
+import { Band, Body, Callouts, ChartFrame, Deep, Dots, Header, Slide } from "../components/ui";
 import { Dumbbell, PermutationDrops } from "../charts/Dumbbell";
 import { h2 as copy } from "../content";
 import { fmt3, signed } from "../charts/primitives";
@@ -14,7 +14,7 @@ export function H2() {
 
   return (
     <Band id="h2">
-      <Header id="h2" eyebrow="6">{copy.header}</Header>
+      <Slide title={<Header id="h2" eyebrow="6">{copy.header}</Header>}>
       <p className="lede">{copy.lede}</p>
       <p>
         Arm B beat arm A on {h2.b_beats_a_wins} of {armB.length}, against the {h2.min_wins} the
@@ -32,7 +32,9 @@ export function H2() {
       <Deep summary="Why the comparison cannot be circular">
         {copy.body.slice(1).map((p, i) => <p key={i}>{p}</p>)}
       </Deep>
+      </Slide>
 
+      <Slide cont title={<div className="conthead">{copy.header}</div>}>
       <ChartFrame
         caption="Arm A against arm B on the same images. The letter at the right is which arm won."
         source="public/data/study.json ← results/evaluate/*.json"
@@ -62,6 +64,9 @@ export function H2() {
         <Dumbbell />
       </ChartFrame>
 
+      </Slide>
+
+      <Slide cont title={<div className="conthead">{copy.header}</div>}>
       <ChartFrame
         caption="What each arm loses when the bank's structure is destroyed. Both lose everywhere."
         source="public/data/study.json ← results/evaluate/*.json (permutation controls)"
@@ -83,6 +88,7 @@ export function H2() {
       </p>
 
       <Callouts items={copy.callouts} />
+      </Slide>
     </Band>
   );
 }

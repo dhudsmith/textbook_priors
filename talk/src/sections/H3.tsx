@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTalk } from "../state";
-import { Band, Body, Callouts, ChartFrame, Dots, Header } from "../components/ui";
+import { Band, Body, Callouts, ChartFrame, Dots, Header, Slide } from "../components/ui";
 import { Ladder } from "../charts/Ladder";
 import { h3 as copy } from "../content";
 import { fmt3, signed, widestSpread } from "../charts/primitives";
@@ -42,7 +42,7 @@ export function H3() {
 
   return (
     <Band id="h3">
-      <Header id="h3" eyebrow="7">{copy.header}</Header>
+      <Slide title={<Header id="h3" eyebrow="7">{copy.header}</Header>}>
       <p className="lede">{copy.lede}</p>
       <p>
         Within the qwen family the larger model wins on {qwen.wins} of{" "}
@@ -58,57 +58,62 @@ export function H3() {
       </p>
       <Body paras={copy.body.slice(1)} bullets={copy.bullets} />
 
-      <div className="controls" role="group" aria-label="Ladder">
-        <span className="group-label">ladder</span>
-        <button className="chip" aria-pressed={which === "open"} onClick={() => setWhich("open")}>
-          open models, by size
-        </button>
-        <button className="chip" aria-pressed={which === "closed"}
-                onClick={() => setWhich("closed")}>
-          closed models, by price
-        </button>
-      </div>
+      </Slide>
 
-      <ChartFrame
-        caption={which === "open"
-          ? "One line per dataset across the four open models, in size order within family. Hover a line to isolate it."
-          : "One line per dataset across the closed family at effort low, in price order. Hover a line to isolate it."}
-        source="public/data/study.json ← results/evaluation.json"
-        summary={
-          <table className="data" style={{ maxWidth: "44rem" }}>
-            <thead>
-              <tr><th>dataset</th>{order.map((m) => <th key={m}>{m}</th>)}</tr>
-            </thead>
-            <tbody>
-              {Object.keys(values).map((d) => (
-                <tr key={d}>
-                  <td>{d}</td>
-                  {order.map((m) => <td key={m}>{values[d][m] != null ? fmt3(values[d][m]) : "—"}</td>)}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        }>
-        <Ladder
-          order={order}
-          values={values}
-          named={widestSpread(values, order)}
-          yLabel={which === "open"
-            ? "arm B test AUC"
-            : "probe AUC (one classifier reads every model's answers)"}
-          label={which === "open"
-            ? "Arm B AUC per dataset across the four open models"
-            : "Probe AUC per dataset across the closed price ladder"}
-          divideAfter={which === "open" && familyDivide >= 0 ? familyDivide : undefined}
-          note={(which === "open"
-            ? "The dashed divider separates the two families: size and training data are " +
-              "confounded across them, so the comparison is read within family only. "
-            : "Price is the vendor's own ranking, used as a proxy for capability, not a " +
-              "parameter count — nothing public orders these models by size. ") +
-            "The four datasets that move most across the ladder are drawn in their own colours " +
-            "and labelled; the rest are grey. Hover any line to isolate it."}
-        />
-      </ChartFrame>
+      <Slide cont title={<div className="conthead">{copy.header}</div>}
+        figure={<div>
+  <div className="controls" role="group" aria-label="Ladder">
+          <span className="group-label">ladder</span>
+          <button className="chip" aria-pressed={which === "open"} onClick={() => setWhich("open")}>
+            open models, by size
+          </button>
+          <button className="chip" aria-pressed={which === "closed"}
+                  onClick={() => setWhich("closed")}>
+            closed models, by price
+          </button>
+        </div>
+
+        <ChartFrame
+          caption={which === "open"
+            ? "One line per dataset across the four open models, in size order within family. Hover a line to isolate it."
+            : "One line per dataset across the closed family at effort low, in price order. Hover a line to isolate it."}
+          source="public/data/study.json ← results/evaluation.json"
+          summary={
+            <table className="data" style={{ maxWidth: "44rem" }}>
+              <thead>
+                <tr><th>dataset</th>{order.map((m) => <th key={m}>{m}</th>)}</tr>
+              </thead>
+              <tbody>
+                {Object.keys(values).map((d) => (
+                  <tr key={d}>
+                    <td>{d}</td>
+                    {order.map((m) => <td key={m}>{values[d][m] != null ? fmt3(values[d][m]) : "—"}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          }>
+          <Ladder
+            order={order}
+            values={values}
+            named={widestSpread(values, order)}
+            yLabel={which === "open"
+              ? "arm B test AUC"
+              : "probe AUC (one classifier reads every model's answers)"}
+            label={which === "open"
+              ? "Arm B AUC per dataset across the four open models"
+              : "Probe AUC per dataset across the closed price ladder"}
+            divideAfter={which === "open" && familyDivide >= 0 ? familyDivide : undefined}
+            note={(which === "open"
+              ? "The dashed divider separates the two families: size and training data are " +
+                "confounded across them, so the comparison is read within family only. "
+              : "Price is the vendor's own ranking, used as a proxy for capability, not a " +
+                "parameter count — nothing public orders these models by size. ") +
+              "The four datasets that move most across the ladder are drawn in their own colours " +
+              "and labelled; the rest are grey. Hover any line to isolate it."}
+          />
+        </ChartFrame>
+        </div>}>
       {/* The paragraph that explains the divider now sits under the divider. */}
       <p className="presenter-hide">{copy.body[0]}</p>
 
@@ -128,6 +133,7 @@ export function H3() {
       </p>
 
       <Callouts items={copy.callouts} />
+      </Slide>
     </Band>
   );
 }

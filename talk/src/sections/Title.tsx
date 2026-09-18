@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { useTalk } from "../state";
-import { Band, Body, CountTile, Header, Tile } from "../components/ui";
+import { Band, Body, CountTile, Header, Slide, Tile } from "../components/ui";
 import { WorkflowDiagram } from "../components/diagrams";
 import { title as copy } from "../content";
 
@@ -28,6 +28,7 @@ export function Title() {
 
   return (
     <Band id="top">
+      <Slide>
       <div className="title-band title-grid">
         <div>
           <Header id="top" eyebrow="Clemson HPC Day">{copy.header}</Header>
@@ -39,7 +40,7 @@ export function Title() {
         </div>
         <PageQR caption={copy.qr} />
       </div>
-      <p>{copy.intro.lede}</p>
+      <p className="presenter-hide">{copy.intro.lede}</p>
       <p className="pullquote">{copy.intro.question}</p>
       <Body paras={[copy.intro.body]} bullets={copy.intro.bullets} />
       <div className="tiles">
@@ -49,16 +50,21 @@ export function Title() {
         <Tile value={led.datasets} unit="MedMNIST 2D benchmarks, every one in the release" />
         <CountTile value={led.tests ?? 0} unit="tests that run before anything else is computed" />
       </div>
-      <p className="note">
+      <p className="note presenter-hide">
         Every number on this page comes from the run's own files, exported once by{" "}
         <code>talk/scripts/export_talk_data.py</code> from commit{" "}
         <code>{study.provenance.run_git_commit.slice(0, 10)}</code>.
       </p>
 
-      <h3>{copy.workflow.header}</h3>
-      <p>{copy.workflow.lede}</p>
-      <WorkflowDiagram />
-      <p className="note">{copy.workflow.caption}</p>
+      </Slide>
+
+      <Slide cont
+             title={<div className="conthead">{copy.workflow.header}</div>}
+             figure={<WorkflowDiagram />}>
+        <h3 className="presenter-hide">{copy.workflow.header}</h3>
+        <p>{copy.workflow.lede}</p>
+        <p className="note">{copy.workflow.caption}</p>
+      </Slide>
     </Band>
   );
 }

@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Body, Callouts, ChartFrame, Deep, Dots, Header } from "../components/ui";
+import { Band, Body, Callouts, ChartFrame, Deep, Dots, Header, Slide } from "../components/ui";
 import { Ladder } from "../charts/Ladder";
 import { ThinkingScatter } from "../charts/ThinkingScatter";
 import { Forest } from "../charts/Forest";
@@ -29,22 +29,24 @@ export function H4() {
 
   return (
     <Band id="h4">
-      <Header id="h4" eyebrow="8">{copy.header}</Header>
+      <Slide title={<Header id="h4" eyebrow="8">{copy.header}</Header>}
+        figure={<div>
+  {timeline && (
+          <ChartFrame
+            caption="The day H4 was designed, run and decided. Click a tick for the entry."
+            source="public/data/timeline.json ← SESSION_LOG.md"
+            summary={
+              <ul>
+                {timeline.entries.filter((e) => e.date === "2026-09-12").map((e) => (
+                  <li key={e.time}>{e.time} — {e.title}</li>
+                ))}
+              </ul>
+            }>
+            <TimelineStrip timeline={timeline} days={["2026-09-12"]} height={110} />
+          </ChartFrame>
+        )}
+        </div>}>
       <p className="lede">{copy.lede}</p>
-      {timeline && (
-        <ChartFrame
-          caption="The day H4 was designed, run and decided. Click a tick for the entry."
-          source="public/data/timeline.json ← SESSION_LOG.md"
-          summary={
-            <ul>
-              {timeline.entries.filter((e) => e.date === "2026-09-12").map((e) => (
-                <li key={e.time}>{e.time} — {e.title}</li>
-              ))}
-            </ul>
-          }>
-          <TimelineStrip timeline={timeline} days={["2026-09-12"]} height={110} />
-        </ChartFrame>
-      )}
       <p>
         The thinking step wins on {h4.h4a.wins} of {h4.n_datasets}{" "}
         (p = {h4.h4a.sign_test_p.toFixed(4)}) and the capability step on {h4.h4b.wins}{" "}
@@ -57,6 +59,9 @@ export function H4() {
         {copy.body.slice(2).map((p, i) => <p key={i}>{p}</p>)}
       </Deep>
 
+      </Slide>
+
+      <Slide cont title={<div className="conthead">{copy.header}</div>}>
       <ChartFrame
         caption={`The reader chain: cross-validated probe AUC on the same ${h4.subsample}-image ` +
                  "prefix, one line per dataset. Hover a line to isolate it."}
@@ -88,6 +93,9 @@ export function H4() {
                       "line to isolate it."} />
       </ChartFrame>
 
+      </Slide>
+
+      <Slide cont title={<div className="conthead">{copy.header}</div>}>
       <ChartFrame
         caption="Thinking's effect against how well the same model read the concepts without it."
         source="public/data/study.json ← results/evaluation.json (H4a)"
@@ -102,6 +110,9 @@ export function H4() {
         <ThinkingScatter />
       </ChartFrame>
 
+      </Slide>
+
+      <Slide cont title={<div className="conthead">{copy.header}</div>}>
       <h3>H6 — Was medium the wrong operating point?</h3>
       <p>
         Lowering the frontier model's effort wins on {h6.wins} of {h6.n_datasets} and the higher
@@ -147,6 +158,7 @@ export function H4() {
       </p>
 
       <Callouts items={copy.callouts} />
+      </Slide>
     </Band>
   );
 }

@@ -50,6 +50,25 @@ export function Header({ id, eyebrow, children }: {
   );
 }
 
+/** One projected screen. On the page it is nothing at all — `display: contents` drops its boxes
+    and the children flow in the scroll exactly as they would have — and in presenter mode it
+    becomes a full-viewport panel that scroll-snap holds still: the title across the top, the
+    prose to the left, the figure beside it, so a clicker's page-down lands on one whole idea.
+
+    `cont` marks a continuation of the section before it, whose title is repeated quietly rather
+    than announced again. */
+export function Slide({ title, figure, cont, children }: {
+  title?: ReactNode; figure?: ReactNode; cont?: boolean; children?: ReactNode;
+}) {
+  return (
+    <div className={`slide${cont ? " cont" : ""}${figure ? " has-figure" : ""}`}>
+      {title && <div className="slide-head">{title}</div>}
+      <div className="slide-text">{children}</div>
+      {figure && <div className="slide-figure">{figure}</div>}
+    </div>
+  );
+}
+
 /** A section's prose. On the page it is paragraphs; projected, it is the section's bullets. The
     room reads the points while the speaker says the sentences, which is the opposite of the
     failure mode where a presenter reads their own paragraphs aloud. A block with no bullets

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTalk } from "../state";
-import { Band, Body, Callouts, DatasetPicker, Deep, Header } from "../components/ui";
+import { Band, Body, Callouts, DatasetPicker, Deep, Header, Slide } from "../components/ui";
 import { question } from "../content";
 import { useAsync } from "../hooks";
 import { LAZY, asset, loadBank } from "../data";
@@ -24,14 +24,11 @@ export function Question() {
 
   return (
     <Band id="question">
-      <Header id="question" eyebrow="2">{question.header}</Header>
-      <p className="lede">{question.lede}</p>
-      <Body paras={question.body} bullets={question.bullets} />
-
-      <DatasetPicker />
-
-      <div style={{ display: "grid", gap: "1.6rem", gridTemplateColumns: "minmax(0, 1fr)" }}>
+      <Slide
+        title={<Header id="question" eyebrow="2">{question.header}</Header>}
+        figure={
         <div>
+          <DatasetPicker />
           <h3>The images, as the model sees them</h3>
           <p className="note">
             {meta.modality} · {meta.n_classes} classes · {meta.medmnist_task} · official test
@@ -59,7 +56,12 @@ export function Question() {
             — the same seeded sample every arm was scored on, by position.
           </p>
         </div>
+        }>
+        <p className="lede">{question.lede}</p>
+        <Body paras={question.body} bullets={question.bullets} />
+      </Slide>
 
+      <Slide cont title={<div className="conthead">{question.header}</div>}>
         <div>
           <h3>The checklist the model is asked to fill in</h3>
           {error && <p className="note">Could not load the bank: {error}</p>}
@@ -154,9 +156,9 @@ export function Question() {
             </>
           )}
         </div>
-      </div>
 
-      <Callouts items={question.callouts} />
+        <Callouts items={question.callouts} />
+      </Slide>
     </Band>
   );
 }

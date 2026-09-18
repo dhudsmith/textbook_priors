@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Body, Callout, ChartFrame, DatasetPicker, Deep, Dots, Header } from "../components/ui";
+import { Band, Body, Callout, ChartFrame, DatasetPicker, Deep, Dots, Header, Slide } from "../components/ui";
 import { LearningCurve } from "../charts/LearningCurve";
 import { Contention } from "../charts/Contention";
 import { h1 as copy } from "../content";
@@ -8,7 +8,7 @@ import { loadContention } from "../data";
 import { fmt3, signed } from "../charts/primitives";
 
 export function H1() {
-  const { study, dataset, setDataset } = useTalk();
+  const { study, dataset, setDataset, presenter } = useTalk();
   const v = study.verdicts.find((x) => x.id === "h1")!;
   const h1 = study.across.h1;
   const { data: contention } = useAsync(loadContention);
@@ -30,13 +30,41 @@ export function H1() {
 
   return (
     <Band id="h1">
-      <Header id="h1" eyebrow="5">{copy.header}</Header>
+      <Slide title={<Header id="h1" eyebrow="5">{copy.header}</Header>}
+        figure={<div>
+  <DatasetPicker />
+        <ChartFrame
+          caption={`Arms on ${dataset}: test AUC against labelled images, with 95% bootstrap bands. ` +
+                   "Toggle a series in the legend; hover a point for its interval."}
+          source="public/data/study.json ← results/evaluate/*.json"
+          summary={
+            <p>
+              On {dataset} the concept arm minus the pixel arm at n = 50 is {signed(diff.median)},
+              95% interval [{fmt3(diff.lo)}, {fmt3(diff.hi)}]. n_B, the labels the pixel arm needs
+              to reach the zero-label textbook arm, is {per.n_b?.point ?? "not defined (no arm B)"}.
+              The published fully supervised ceiling for this task is {fmt3(per.ceiling.auc)} (
+              {per.ceiling.method}).
+            </p>
+          }>
+          {/* Two series by default - the flat textbook arm and the rising pixel arm - and the rest
+              behind the legend, so the projected chart is one comparison the speaker builds on. */}
+          <LearningCurve height={presenter ? 330 : 440}
+                        initialHidden={["C", "CP", "A", "lit"]} />
+        </ChartFrame>
+        {!crosses && elsewhere && (
+          <p className="note">
+            No crossing here: the pixel arm starts above the textbook arm. See{" "}
+            <button className="inline" onClick={() => setDataset(elsewhere)}>{elsewhere}</button>,
+            where it crosses at {study.per_dataset[elsewhere].n_b!.point}.
+          </p>
+        )}
+        </div>}>
       <p className="lede">
         Concept answers lose to pixel features at every labelled-set size we tried: the textbook
         is worth fewer than {firstN} labels on {belowGrid} tasks of{" "}
         {study.study.arm_b_datasets.length}. {copy.lede}
       </p>
-      <p>
+      <p className="presenter-hide">
         The pixel arm is already above the textbook arm at the first grid point on{" "}
         {h1.datasets_where_the_probe_starts_above_arm_b} of the{" "}
         {study.study.arm_b_datasets.length} datasets that have one, and reaches it on every
@@ -46,32 +74,9 @@ export function H1() {
       </p>
       <Body paras={copy.body} bullets={copy.bullets} />
 
-      <DatasetPicker />
-      <ChartFrame
-        caption={`Arms on ${dataset}: test AUC against labelled images, with 95% bootstrap bands. ` +
-                 "Toggle a series in the legend; hover a point for its interval."}
-        source="public/data/study.json ← results/evaluate/*.json"
-        summary={
-          <p>
-            On {dataset} the concept arm minus the pixel arm at n = 50 is {signed(diff.median)},
-            95% interval [{fmt3(diff.lo)}, {fmt3(diff.hi)}]. n_B, the labels the pixel arm needs
-            to reach the zero-label textbook arm, is {per.n_b?.point ?? "not defined (no arm B)"}.
-            The published fully supervised ceiling for this task is {fmt3(per.ceiling.auc)} (
-            {per.ceiling.method}).
-          </p>
-        }>
-        {/* Two series by default - the flat textbook arm and the rising pixel arm - and the rest
-            behind the legend, so the projected chart is one comparison the speaker builds on. */}
-        <LearningCurve height={440} initialHidden={["C", "CP", "A", "lit"]} />
-      </ChartFrame>
-      {!crosses && elsewhere && (
-        <p className="note">
-          No crossing here: the pixel arm starts above the textbook arm. See{" "}
-          <button className="inline" onClick={() => setDataset(elsewhere)}>{elsewhere}</button>,
-          where it crosses at {study.per_dataset[elsewhere].n_b!.point}.
-        </p>
-      )}
+      </Slide>
 
+      <Slide cont title={<div className="conthead">{copy.header}</div>}>
       <h3>Where the concept arm beat the pixel arm at n = {study.study.curve.n[0]}</h3>
       <p className="tally">
         <Dots per={v.per_dataset} order={study.study.datasets} label="H1 per dataset" />{" "}
@@ -104,6 +109,9 @@ export function H1() {
         </p>
       </Deep>
 
+      </Slide>
+
+      <Slide cont title={<div className="conthead">{copy.header}</div>}>
       <div className="callouts">
         <Callout spec={copy.callouts[0]} />
       </div>
@@ -132,6 +140,7 @@ export function H1() {
           <Contention data={contention} />
         </ChartFrame>
       )}
+      </Slide>
     </Band>
   );
 }

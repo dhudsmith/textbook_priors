@@ -959,3 +959,33 @@ verbatim and bulletises only the reasoning around them.
 
 Verified by rendering the sections headlessly in both modes — three bullet lists and fourteen
 paragraphs projected, against twenty-one paragraphs and no lists on the page.
+
+## 2026-09-17 18:20 — Presenter mode becomes a deck
+
+The user raised the ask: in presenter mode the site should read almost as slides — one main section
+per screen, text collapsed to bullets, the visual and its text together, the title prominent,
+everything in chunks sized for delivery — while the ordinary scrolling website is untouched.
+
+The mechanism is one component and a block of CSS. `Slide` wraps a run of a section's content and
+is `display: contents` on the page, so its boxes vanish and the scroll flows exactly as it did
+before slides existed; in presenter mode it becomes a 100vh grid with `scroll-snap-align: start` —
+title across the top, prose left, figure right. Because the page already left `Space` and
+`PageDown` to the browser for the clicker, snapping is what turns one press into one slide; no key
+handling changed. Thirteen sections became thirty-one slides, continuations repeating their title
+quietly as a `conthead` div rather than a second `h2`, which would have stuttered in the page's
+heading outline.
+
+Two bugs were found by looking rather than by building. A global `scroll-padding-top: 4rem`, there
+so an anchored heading clears the phone's sticky rail, offset every snap by 68px, so each slide
+showed a strip of the one before it; presenter mode now zeroes it. And a centred text column
+clipped at *both* ends when its content overran, silently eating the lede at the top of the
+tallest slides — `justify-content: safe center` was written for exactly that and fixes it.
+
+The runner has no browser, so one was installed: headless Chromium under Playwright, driving the
+built site from `vite preview`. A script walks all thirty-one slides, screenshots each at
+1920×1080 and reports any whose text or figure column overflows the viewport. The first pass
+failed six slides, all of them sections whose chart was still stacked under the bullets rather
+than in the figure column; moving those charts into the figure slot, shortening H1's learning
+curve when projected, and hiding two footnotes left three, none of which loses content — a figure
+taller than its column scrolls rather than clipping. The one genuinely tall slide is the archived
+call, which is a thing to explore rather than a thing to read from the back of a room.

@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Body, Callouts, Deep, Header } from "../components/ui";
+import { Band, Body, Callouts, Deep, Header, Slide } from "../components/ui";
 import { StageStrip } from "../components/diagrams";
 import { ArchiveCall } from "../components/ArchiveCall";
 import { machine } from "../content";
@@ -33,24 +33,32 @@ export function Machine() {
 
   return (
     <Band id="machine">
-      <Header id="machine" eyebrow="4">{machine.header}</Header>
-      <p className="lede">{machine.lede}</p>
-      <Body paras={machine.body} bullets={machine.bullets} />
-
-      <StageStrip blurbs={BLURBS} />
-      <p className="note">
+      <Slide
+        title={<Header id="machine" eyebrow="4">{machine.header}</Header>}
+        figure={
+        <div>
+          <StageStrip blurbs={BLURBS} />
+          <p className="note">
         Job counts are this run's own: the archive holds {study.archive.chunks.toLocaleString("en-US")}{" "}
         chunks and {study.archive.calls.toLocaleString("en-US")} calls, written between{" "}
         {study.archive.first_written.replace("T", " ")} and{" "}
-        {study.archive.last_written.replace("T", " ")}.
-      </p>
+            {study.archive.last_written.replace("T", " ")}.
+          </p>
+        </div>
+        }>
+        <p className="lede">{machine.lede}</p>
+        <Body paras={machine.body} bullets={machine.bullets} />
+      </Slide>
 
-      <h3>One real archived call</h3>
-      <div ref={ref}>
-        {error && <p className="note">Could not load the archive sample: {error}</p>}
-        {archive ? <ArchiveCall sample={archive} />
-                 : <p className="note">Loading one archived call…</p>}
-      </div>
+      <Slide cont title={<div className="conthead">{machine.header}</div>}
+        figure={<div>
+  <h3>One real archived call</h3>
+        <div ref={ref}>
+          {error && <p className="note">Could not load the archive sample: {error}</p>}
+          {archive ? <ArchiveCall sample={archive} />
+                   : <p className="note">Loading one archived call…</p>}
+        </div>
+        </div>}>
 
       <Deep summary="What the archive holds, by model">
         <table className="data" style={{ maxWidth: "44rem" }}>
@@ -75,6 +83,7 @@ export function Machine() {
       </Deep>
 
       <Callouts items={machine.callouts} />
+      </Slide>
     </Band>
   );
 }

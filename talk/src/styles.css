@@ -394,6 +394,59 @@ body.presenter .a11y-summary,
 body.presenter .presenter-hide { display: none !important; }
 /* Presenter mode scales the root, so every rem on the page follows it, and raises the chart
    text tokens, because an axis tick is the thing that fails from the back of the room. */
+/* ---- slides ------------------------------------------------------------------------------ */
+/* A slide has no boxes at all on the page: `display: contents` drops them and the children flow
+   in the scroll exactly as they did before slides existed. Everything below is presenter mode. */
+.slide, .slide-head, .slide-text, .slide-figure { display: contents; }
+/* A continuation's repeated title exists only for the projector; the scroll already knows which
+   section it is in, and a second copy on the page would read as a stutter. */
+.slide.cont > .slide-head { display: none; }
+
+/* The page's 4rem scroll padding exists so an anchored heading clears the sticky phone rail.
+   A slide is the whole viewport and must start at its own top edge, or every snap lands showing
+   a strip of the slide before it. */
+html.presenter { scroll-snap-type: y mandatory; scroll-padding-top: 0; }
+body.presenter .main { padding-bottom: 0; }
+/* The bands stop being spaced, bordered, animated things: the slides own the vertical rhythm. */
+body.presenter section.band {
+  padding: 0; border-top: 0; max-width: none; opacity: 1; transform: none; transition: none;
+}
+body.presenter .slide {
+  display: grid; box-sizing: border-box;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 0.4rem 2.4rem; align-content: start;
+  height: 100vh; padding: 4vh 0 3vh;
+  scroll-snap-align: start; scroll-snap-stop: always;
+  border-top: 1px solid var(--rule);
+}
+/* Text and its figure side by side: the room reads the points while looking at the evidence. */
+body.presenter .slide.has-figure { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); }
+body.presenter .slide-head { display: block; grid-column: 1 / -1; }
+/* Title at the top, the body centred in what is left: the composition a deck expects, and it
+   keeps a three-bullet slide from stranding its bullets against the title. */
+/* `safe` centring is the whole point of the keyword: a column that fits is centred, and one that
+   does not falls back to the start edge instead of hiding its first lines off the top. */
+body.presenter .slide-text {
+  display: flex; flex-direction: column; justify-content: safe center;
+  min-width: 0; overflow-y: auto;
+}
+/* The rail stays — it is the progress bar — but it gives the slide back its width. */
+body.presenter .shell { --rail: 12rem; }
+body.presenter .slide-figure {
+  display: flex; min-width: 0; align-items: center; justify-content: center; overflow: hidden;
+}
+body.presenter .slide-figure > * { width: 100%; }
+body.presenter .slide-figure figure.chart { margin: 0; max-width: none; }
+
+/* The title carries the slide. A continuation repeats it quietly rather than announcing it. */
+body.presenter .slide-head h2 { font-size: clamp(1.9rem, 3vw, 2.8rem); margin-bottom: 0.2em; }
+body.presenter .slide.cont > .slide-head { display: block; }
+body.presenter .slide .conthead {
+  font-size: 1.3rem; font-weight: 700; color: var(--ink-muted); margin-bottom: 0.6rem;
+  letter-spacing: -0.01em;
+}
+
 /* Projected, a section's paragraphs become its bullets: bigger than body text, set tight, and
    short enough that a glance takes one in. They are the speaker's flow as much as the room's
    summary, so they keep the order the paragraphs had. */
@@ -442,3 +495,7 @@ html.presenter body { --chart-text: 14px; --chart-tick: 13px; --chart-row: 14px;
   .title-grid { grid-template-columns: 1fr; }
   :root { font-size: 16px; }
 }
+
+/* A figure taller than its column scrolls rather than losing its bottom: on the one or two dense
+   slides (the archived call, above all) nothing is silently cut off the projected page. */
+body.presenter .slide-figure { overflow-y: auto; align-items: flex-start; }

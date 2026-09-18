@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Body, Callouts, Header, Tile } from "../components/ui";
+import { Band, Body, Callouts, Header, Slide, Tile } from "../components/ui";
 import { PageQR } from "./Title";
 import { close as copy, LINKS, REFRAIN } from "../content";
 import { asset } from "../data";
@@ -15,8 +15,9 @@ export function Close() {
 
   return (
     <Band id="close">
-      <Header id="close" eyebrow="11">{copy.header}</Header>
-
+      <Slide
+        title={<Header id="close" eyebrow="11">{copy.header}</Header>}
+        figure={
       <div className="tiles">
         <Tile value={led.calls.toLocaleString("en-US")} unit="model responses bought and archived" />
         <Tile value={led.chunks} unit="chunk jobs, each one file with a manifest" />
@@ -27,9 +28,11 @@ export function Close() {
         <Tile value={led.catches.length} unit="mistakes caught" />
         <Tile value={byGraph} unit="caught by the dependency graph" />
       </div>
+        }>
+        <Body paras={copy.body} bullets={copy.bullets} />
+      </Slide>
 
-      <Body paras={copy.body} bullets={copy.bullets} />
-
+      <Slide cont title={<div className="conthead">{copy.header}</div>}>
       <h3>What caught each one</h3>
       <ul className="catches">
         {led.catches.map((c, i) => (
@@ -44,7 +47,9 @@ export function Close() {
       </p>
 
       <p className="pullquote">{REFRAIN}</p>
+      </Slide>
 
+      <Slide cont title={<div className="conthead">{copy.header}</div>}>
       <div style={{ marginTop: "2rem" }}>
         <div>
           <h3>Everything behind this page</h3>
@@ -68,6 +73,7 @@ export function Close() {
       </div>
 
       <Callouts items={copy.callouts} />
+      </Slide>
     </Band>
   );
 }

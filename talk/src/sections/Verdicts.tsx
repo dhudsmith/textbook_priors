@@ -1,33 +1,16 @@
 import { useTalk } from "../state";
-import { Band, Body, Callouts, ChartFrame, Header } from "../components/ui";
+import { Band, Body, Callouts, ChartFrame, Header, Slide } from "../components/ui";
 import { CeilingDots, VerdictBoard } from "../charts/Verdicts";
 import { verdicts as copy, notClaimed } from "../content";
 import { fmt3 } from "../charts/primitives";
 
-export function Verdicts() {
+/* The ceiling comparison, lifted out so it can be the second slide's figure while the sentence it
+   confirms stays in the text column beside it. */
+function CeilingChart() {
   const { study } = useTalk();
   const gap = study.ceiling.median_gap;
-  const supported = study.verdicts.filter((v) => v.supported);
-  const not = study.verdicts.filter((v) => !v.supported);
-
   return (
-    <Band id="verdicts">
-      <Header id="verdicts" eyebrow="10">{copy.header}</Header>
-      <p className="lede">
-        Computed, not chosen: {not.length} not supported, {supported.length} supported.{" "}
-        {supported.map((v) => v.id.toUpperCase()).join(" and ")} met their rules; the rest did
-        not.
-      </p>
-      <Body paras={copy.body} bullets={copy.bullets} />
-
-      <VerdictBoard />
-
-      <p className="takeaway">
-        The pixel arm is within two AUC points of the ceiling on{" "}
-        {study.ceiling.pixel_within_two_points} of {study.ceiling.rows.length} tasks and at or
-        above it on {study.ceiling.pixel_at_or_above}; the best zero-label arm is within five
-        points on {study.ceiling.zero_within_five_points}.
-      </p>
+    <div>
       <ChartFrame
         caption={`Each arm against the published ceiling. The pixel arm at n = ` +
                  `${study.ceiling.largest_n} sits a median ${fmt3(gap.pixel)} AUC below it; the ` +
@@ -57,13 +40,44 @@ export function Verdicts() {
       <p className="note">
         Ceiling source: {study.study.literature.title} ({study.study.literature.table}).
       </p>
+    </div>
+  );
+}
 
-      <h3>What this study does not claim</h3>
-      <ul style={{ fontSize: "0.9rem", color: "var(--ink-secondary)" }}>
-        {notClaimed.map((c, i) => <li key={i}>{c}</li>)}
-      </ul>
+export function Verdicts() {
+  const { study } = useTalk();
+  const supported = study.verdicts.filter((v) => v.supported);
+  const not = study.verdicts.filter((v) => !v.supported);
 
-      <Callouts items={copy.callouts} />
+  return (
+    <Band id="verdicts">
+      <Slide
+        title={<Header id="verdicts" eyebrow="10">{copy.header}</Header>}
+        figure={<VerdictBoard />}>
+        <p className="lede">
+          Computed, not chosen: {not.length} not supported, {supported.length} supported.{" "}
+          {supported.map((v) => v.id.toUpperCase()).join(" and ")} met their rules; the rest did
+          not.
+        </p>
+        <Body paras={copy.body} bullets={copy.bullets} />
+      </Slide>
+
+      <Slide cont title={<div className="conthead">{copy.header}</div>}
+             figure={<CeilingChart />}>
+        <p className="takeaway">
+          The pixel arm is within two AUC points of the ceiling on{" "}
+          {study.ceiling.pixel_within_two_points} of {study.ceiling.rows.length} tasks and at or
+          above it on {study.ceiling.pixel_at_or_above}; the best zero-label arm is within five
+          points on {study.ceiling.zero_within_five_points}.
+        </p>
+
+        <h3>What this study does not claim</h3>
+        <ul style={{ fontSize: "0.9rem", color: "var(--ink-secondary)" }}>
+          {notClaimed.map((c, i) => <li key={i}>{c}</li>)}
+        </ul>
+
+        <Callouts items={copy.callouts} />
+      </Slide>
     </Band>
   );
 }
