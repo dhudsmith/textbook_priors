@@ -256,9 +256,10 @@ export const machine = {
    in panels beside it, closed; model size and the price ladder moved out to Extra entirely. */
 export const results = {
   header: "Test AUC for each arm",
-  lede:
+  ledeShape:
     "Every arm on one pair of axes: how well it separates the classes, against how many " +
-    "labelled images it was given. Pick a question and the figure draws the arms that answer it.",
+    "labelled images it was given. One model read every image here — {primary} — and the pixel " +
+    "arm reads none. Pick a question and the figure draws the arms that answer it.",
   bullets: [
     "Arms given no labels are flat lines; arms given labels climb",
     "Shaded bands are 95% intervals — hover a point to read one",
