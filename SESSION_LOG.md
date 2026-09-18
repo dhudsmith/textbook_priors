@@ -1417,3 +1417,24 @@ files behind all of it* is *Files*.
 Left alone deliberately: *What if the model thinks?* which the user asked to keep; *How the study
 is put together* and *How the study runs*, which already answer the question a title has to answer;
 and the titles he wrote himself.
+
+## 2026-09-18 16:05 — Name the model behind every result
+
+Naming the model under the results figure turned out to be an instance of a rule: *"Everywhere we
+report a result that depends on model outputs, you should clarify what model is used."*
+
+Every section was pulled off the rendered page and tested for whether it names a model anywhere in
+its own text. Three failed while reporting model-dependent numbers. The thinking section said "the
+same model, told to think" and "a frontier model in place of an open one" — both now named from
+the snapshot, the open one from `study.primary` and the frontier resolved out of the reader table
+rather than typed, so the sentence follows the configuration if the comparison ever changes. The
+verdict board reported seven verdicts with no model in sight and now says which: five rest on the
+one model, and the other two are the comparisons across models.
+
+The third was not a result but belongs to the same rule. The concept bank is a model's output —
+compiled by Claude Opus 5 from the literature — and the callout that admits no clinician has read
+it did not say who wrote it either. It does now. Of everything on the page this is the claim most
+worth attributing: an input built by a model, reviewed by the same model, used as the study's prior.
+
+Sections that name no model and should not: the title, the dataset section, the arms, the workflow,
+and the effort timeline, none of which report a number that came out of a model.

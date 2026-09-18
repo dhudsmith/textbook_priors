@@ -16,6 +16,10 @@ export function Verdicts() {
         {not.length} did not.
       </p>
 
+      <p className="note">
+        {copy.modelsNote.replace("{primary}", study.study.primary)}
+      </p>
+
       <VerdictBoard />
 
       <Bullets items={copy.bullets} />

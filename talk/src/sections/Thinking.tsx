@@ -25,6 +25,12 @@ export function Thinking() {
   const chain = [...Object.keys(study.study.models), ...Object.keys(study.study.readers)]
     .filter((r) => h4.readers.includes(r));
 
+  // The frontier step H4b measured: the gateway reader the primary was compared against, at the
+  // effort they share. Read from the reader table rather than named in the copy.
+  const frontier = Object.entries(study.study.readers)
+    .find(([id, r]) => r.api === "gateway" && id.endsWith("-medium"))?.[1].model
+    ?? Object.values(study.study.readers).find((r) => r.api === "gateway")!.model;
+
   const h6rows = Object.entries(h6.differences).map(([dataset, d]) => ({
     dataset, ...(d as { median: number; lo: number; hi: number }),
   }));
@@ -33,7 +39,11 @@ export function Thinking() {
   return (
     <Band id="thinking">
       <Header id="thinking" eyebrow="7">{copy.header}</Header>
-      <p className="lede">{copy.lede}</p>
+      <p className="lede">
+        {copy.ledeShape
+          .replace("{primary}", study.study.primary)
+          .replace("{frontier}", frontier)}
+      </p>
 
       <ChartFrame
         caption="Thinking's effect against how well the same model read the checklist without it.">

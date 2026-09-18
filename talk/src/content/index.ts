@@ -149,7 +149,9 @@ export const question = {
       kind: "agent",
       title: "No clinician has read this bank",
       body: [
-        "Every feature and every fingerprint carries a citation. No clinician has read them. Expert review is simulated, and each file says so.",
+        "The bank was compiled by a model — Claude Opus 5 — from the literature, and every " +
+          "feature and fingerprint carries a citation. No clinician has read them. The review is " +
+          "simulated too, and each file says so.",
         "Citations let a reader check the thing. Authority would only let them defer to it.",
       ],
       source: "CONCEPT_BANK.md; data/concepts/*.yaml",
@@ -315,12 +317,12 @@ export const results = {
 
 export const thinking = {
   header: "What if the model thinks?",
-  lede:
-    "The same model, told to think before it answers — and then a frontier model in place of an " +
-    "open one.",
+  ledeShape:
+    "{primary}, told to think before it answers — and then {frontier} in its place. Every reader " +
+    "is compared on the same images, by the same procedure.",
   bullets: [
     "Thinking helps where the model read badly and hurts where it read well",
-    "A frontier model reads no better than a 27B open model",
+    "The frontier model reads no better than the open one it replaced",
     "A null is a result: more thinking is not what the model lacked",
   ],
   /* Kept for the collapsed panel of limits. */
@@ -342,6 +344,10 @@ export const thinking = {
 
 export const verdicts = {
   header: "Seven verdicts",
+  /* Filled in Verdicts.tsx: which model each row rests on. */
+  modelsNote:
+    "Five of these rest on one model, {primary}. The other two compare models: one across the " +
+    "open families, one across the closed price ladder.",
   bullets: [
     "The textbook cannot replace labelled images",
     "Added to them, it adds a little",
