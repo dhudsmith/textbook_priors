@@ -105,7 +105,7 @@ export function ArchiveCall({ sample, fixedDataset }: {
 
         <div className="answerpair">
           <div>
-            <h4>Asked the checklist</h4>
+            <h4>Checklist answers</h4>
             <p className="note">
               One call: every visual feature the textbook lists for this kind of image, and the
               level the model picked for it.
@@ -128,7 +128,7 @@ export function ArchiveCall({ sample, fixedDataset }: {
           </div>
 
           <div>
-            <h4>Asked what it is</h4>
+            <h4>Class answer</h4>
             <p className="note">
               A second call, on a prompt of its own: how likely is each class? The checklist above
               never sees this answer, and this answer never sees the checklist.

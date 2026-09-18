@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Bullets, Callouts, Deep, Header } from "../components/ui";
+import { Band, Bullets, Callouts, Header } from "../components/ui";
 import { StageStrip } from "../components/diagrams";
 import { ArchiveCall } from "../components/ArchiveCall";
 import { machine } from "../content";
@@ -49,28 +49,6 @@ export function Machine() {
         {archive ? <ArchiveCall sample={archive} />
                  : <p className="note">Loading the archived answers…</p>}
       </div>
-
-      <Deep summary="How many calls each model answered, and under what name">
-        <table className="data" style={{ maxWidth: "44rem" }}>
-          <thead>
-            <tr><th>model or reader</th><th>chunks</th><th>calls</th>
-                <th style={{ textAlign: "left" }}>name that answered</th></tr>
-          </thead>
-          <tbody>
-            {Object.entries(study.archive.by_model).map(([m, v]) => (
-              <tr key={m}>
-                <td className="mono">{m}</td>
-                <td>{v.chunks}</td>
-                <td>{v.calls.toLocaleString("en-US")}</td>
-                <td style={{ textAlign: "left" }} className="mono">{v.served.join(", ")}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <p className="note">
-          The served name is what the service said actually answered.
-        </p>
-      </Deep>
 
       <Callouts items={machine.callouts} />
     </Band>

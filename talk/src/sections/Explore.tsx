@@ -226,7 +226,7 @@ export default function Explore() {
         {notClaimed.map((c, i) => <li key={i}>{c}</li>)}
       </ul>
 
-      <h4>The files behind all of it</h4>
+      <h4>Files</h4>
       <p style={{ fontSize: "0.9rem" }}>
         Everything on this page is in <a href={REPO}>the code</a>, listed again at the close.
       </p>

@@ -192,7 +192,7 @@ export const design = {
    know what was asked before the results start naming families, efforts and open weights. Every
    column earns its place by answering a question asked later, and the bullets say which. */
 export const models = {
-  header: "The models we asked",
+  header: "Models tested",
   lede:
     "Every number in this talk starts with a model looking at an image. These are the models " +
     "that looked, and each column is here because something later depends on it.",
@@ -255,7 +255,7 @@ export const machine = {
 /* The headline results figure, and the three questions it answers. The per-question detail sits
    in panels beside it, closed; model size and the price ladder moved out to Extra entirely. */
 export const results = {
-  header: "One figure, three questions",
+  header: "Test AUC for each arm",
   lede:
     "Every arm on one pair of axes: how well it separates the classes, against how many " +
     "labelled images it was given. Pick a question and the figure draws the arms that answer it.",

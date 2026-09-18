@@ -37,7 +37,7 @@ export function Close() {
 
       <div style={{ marginTop: "2rem" }}>
         <div>
-          <h3>Everything behind this page</h3>
+          <h3>Links</h3>
           <ul style={{ fontSize: "0.9rem" }}>
             {LINKS.map((l) => (
               <li key={l.href}><a href={l.href}>{l.label}</a></li>

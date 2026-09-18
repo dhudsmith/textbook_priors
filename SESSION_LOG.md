@@ -1398,3 +1398,22 @@ against the doc's table and are faithful.
 The only developer vocabulary left on the page is inside the two prompts Extra shows verbatim,
 which tell the model to reply with a JSON object. That is the instruction actually sent, in a
 panel that is closed until someone opens it, and it is the evidence rather than our prose.
+
+## 2026-09-18 15:10 — Titles that name their contents
+
+The user cut a panel and named a habit. The panel — "How many calls each model answered, and under
+what name" — repeated the models table three sections above it, so it went. The habit is coyness in
+titles: *"I really don't like the style of many of the titles like 'the models we asked'. We asked
+what? What does ask mean? Something like models tested is more to the point."*
+
+A title should answer "what is this?" without the reader having to open it. Seven were rewritten
+against that. *The models we asked* is *Models tested*. *One figure, three questions* described the
+presentation rather than the subject and is now *Test AUC for each arm*, which is what the axes
+show. *The images, as the model sees them* is *Sample images*. Inside the archived-call panel,
+*Asked the checklist* and *Asked what it is* repeated the same verb the user objected to and are
+now *Checklist answers* and *Class answer*. *Everything behind this page* is *Links*, and *The
+files behind all of it* is *Files*.
+
+Left alone deliberately: *What if the model thinks?* which the user asked to keep; *How the study
+is put together* and *How the study runs*, which already answer the question a title has to answer;
+and the titles he wrote himself.
