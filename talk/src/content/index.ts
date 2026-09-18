@@ -47,20 +47,14 @@ export const title = {
   header: "Reproducible Scientific Computing with AI Coding Agents",
   byline: { who: "D. Hudson Smith", where: "School of Mathematical and Statistical Sciences" },
   standfirst:
-    "Here is a proposition much of this room will find reckless. Hand the machinery of a " +
-    "computational study to a generative AI agent — the code, the job submissions, the analysis, " +
-    "the figures, the report — and keep for yourself only the part that makes it science. The " +
-    "objection writes itself: how do you trust a result you did not compute yourself? This talk " +
-    "answers with a study rather than an opinion.",
+    "Hand a computational study to an AI agent — the code, the jobs, the figures, the report — " +
+    "and keep only the part that makes it science. How do you trust a result you did not " +
+    "compute?",
   intro: {
     lede:
       "To make that concrete, we start a new project — one that had been sitting at the back of " +
       "my mind for a while.",
-    question: "Can out-of-the-box vision-language models (VLMs) classify medical images?",
-    body:
-      "We largely automated the answering of it. Largely is the honest word, and what the human " +
-      "still had to do is most of what this talk is about. Here is what came out.",
-    bullets: [
+    question: "Can out-of-the-box vision-language models (VLMs) classify medical images?",    bullets: [
       "Largely automated — and largely is the honest word",
       "What the human still had to do is the talk",
     ],
@@ -68,9 +62,8 @@ export const title = {
   workflow: {
     header: "The shape of the thing",
     lede:
-      "Fixed inputs on the left, one workflow in the middle, generated outputs on the right. " +
-      "Two different machines wear the word AI here, and keeping them apart is the whole trick: " +
-      "the agent wrote the workflow, and the model under study is something the workflow calls.",
+      "Fixed inputs, one workflow, generated outputs. Two machines wear the word AI: the agent " +
+      "wrote the workflow; the model under study is something the workflow calls.",
     caption:
       "Solid arrows are data. Dashed arrows are authorship — what the agent wrote, rather than " +
       "what the workflow ran.",
@@ -81,25 +74,8 @@ export const title = {
 export const premise = {
   header: "This talk was built the way it is about",
   lede:
-    "The study was planned on one day and built, run, extended and reported over the next three. " +
-    "An AI coding agent wrote most of the code. A workflow made its work inspectable.",
-  body: [
-    "One time axis. A prompt lands; a commit lands; calls go out to the model service; jobs wait " +
-      "on it; jobs compute on our own cluster. A tick is a moment the record can date. A bar is a " +
-      "period a job actually ran, taken from its own manifest. The calls are an area rather than " +
-      "either, because the archive dates the chunk that holds them, not each one.",
-    "A handful of prompts set off waves of machine work, and the waves are wider than the ticks " +
-      "by orders of magnitude. That is the promise and the problem in one picture. Directing the " +
-      "work has become cheap. One person can set more computation running in an afternoon than " +
-      "they could read the output of in a month.",
-    "Speed raises a question. If an agent wrote the stage, submitted the jobs and filled the " +
-      "table, how do you come to trust the result? In science the code is not the product. The " +
-      "claim is, and a claim rests on knowing what was done.",
-    "Call it understanding debt: an agent can build a working stage faster than its owner can " +
-      "understand it. Technical debt slows the next change. Understanding debt undermines the " +
-      "claim.",
-    REFRAIN,
-  ],
+    "Planned in a day, built and run and reported in three more. An agent wrote most of the " +
+    "code. A workflow made its work inspectable.",
   bullets: [
     "A few dozen prompts set off waves of machine work",
     "A tick is a moment; a bar is a period; an area is a rate",
@@ -128,15 +104,6 @@ export const question = {
   lede:
     "A chest radiograph at 224 pixels, and the textbook's checklist of what to look for. The " +
     "model has read the textbook. How much of the checklist does it see?",
-  body: [
-    "The concept bank is the study's prior knowledge, committed before any call was bought. Each " +
-      "dataset gets a short list of visual features on ordered scales; each level carries the " +
-      "anchor text the model is shown, and its citation; each class gets a fingerprint over " +
-      "the same features.",
-    "The concept prompt never names a class. The zero-shot prompt never mentions a concept. We " +
-      "ask what the model's answers are worth in the currency a practitioner cares about: " +
-      "labelled images.",
-  ],
   bullets: [
     "The bank is the study's prior — committed before any call",
     "Visual features on ordered scales, every level cited",
@@ -174,15 +141,6 @@ export const design = {
   lede:
     "Two arms use no labels. Three use n labels and the same classifier, and differ only in the " +
     "features that reach it.",
-  body: [
-    "A vision-language model is a large pretrained model, so the pixel baseline is pretrained " +
-      "too: frozen ImageNet features under the same classifier, the same regularisation search " +
-      "and the same nested subsets as the concept arm.",
-    "Every arm predicts on the same seeded test sample, so every comparison is paired and " +
-      "carries a bootstrap interval — 95% of resampled test sets. Across datasets, a one-sided " +
-      "sign test — count the datasets the arm won — decides each rule. AUC is the metric " +
-      "throughout: 1.0 ranks every case correctly, 0.5 is chance.",
-  ],
   bullets: [
     "A pretrained model deserves a pretrained baseline",
     "One classifier, three arms — only the features differ",
@@ -230,16 +188,8 @@ export const design = {
 export const machine = {
   header: "The machine",
   lede:
-    "Seven stages, one file, every number with a rule. Every raw model response is archived with " +
-    "the served model name and the prompt hash, and everything downstream is a function of that " +
-    "archive.",
-  body: [
-    "A chunk is one job's hundred images. A reader is a model plus a reasoning effort, so the " +
-      "same model asked to think harder counts as a second reader.",
-    "The archive is write-protected once written, so re-querying the service is a decision, not " +
-      "something a stale timestamp can trigger. The call below is drawn at random, so no two " +
-      "people in the room see the same one.",
-  ],
+    "Seven stages, one file, every number with a rule. Every response archived; everything " +
+    "downstream a function of that archive.",
   bullets: [
     "A chunk is one job's hundred images",
     "A reader is a model plus a reasoning effort",
@@ -278,10 +228,6 @@ export const h1 = {
   lede:
     "Arm B, the textbook readout, is a horizontal line drawn with no labels. n_B is how many " +
     "labels the pixel arm needs to reach it: what the textbook was worth.",
-  body: [
-    "The rule was fixed before the numbers existed, and the numbers do not meet it. A negative " +
-      "result you can stand behind is what the recipe is for.",
-  ],
   bullets: [
     "The rule was fixed before the numbers existed",
     "The numbers do not meet it",
@@ -305,18 +251,14 @@ export const h1 = {
 };
 
 export const h2 = {
+  /* Kept for the collapsed panel that answers the obvious objection. */
+  circular: [
+    "The two arms are separate calls on separate prompts, so the comparison cannot be circular. The first design returned both from one call, which would have let the concept answers rationalise a class the model had already chosen.",
+  ],
   header: "H2 — The bank, or just the model?",
   lede:
-    "Asking the model for the diagnosis beats the textbook readout on most tasks. Yet permuting " +
-    "the fingerprints or the concept columns destroys both arms, so the concept answers carry " +
-    "real class information. The readout loses it.",
-  body: [
-    "Where the model can name the class, asking for the name wins; where it cannot, the " +
-      "checklist does.",
-    "The two arms are separate calls on separate prompts, so the comparison cannot be circular. " +
-      "The first design returned both from one call, which would have let the concept answers " +
-      "rationalise a class the model had already chosen.",
-  ],
+    "Asking for the diagnosis beats the textbook readout. But permuting either destroys both " +
+    "arms — so the concept answers do carry class information. The readout loses it.",
   bullets: [
     "Where the model can name the class, asking for the name wins",
     "Where it cannot, the checklist does",
@@ -345,12 +287,6 @@ export const h3 = {
   lede:
     "Two open families, 9B to 27B and 12B to 31B: no trend. One closed family ordered only by " +
     "price — gpt-5.6-luna, then terra, then sol: the top beats the bottom.",
-  body: [
-    "Read within family. Size and training data are confounded across families, both size steps " +
-      "also change quantisation, and the qwen step changes generation. Larger travels with newer.",
-    "Nothing public orders the closed models by size, so price stands in for capability. " +
-      "Whatever separates luna from sol is not what parameter count captured.",
-  ],
   bullets: [
     "Read within family only — larger travels with newer",
     "Both size steps also change quantisation",
@@ -384,23 +320,14 @@ export const h3 = {
 };
 
 export const h4 = {
+  /* Kept for the collapsed panel of limits. */
+  limits: [
+    "The frontier model is closed and of unknown size, so the step is capability, not parameters. It also refuses temperature zero, so it is the one reader whose answers are sampled, and some of any difference is noise the bootstrap cannot see.",
+  ],
   header: "H4 and H6 — What if the model thinks?",
   lede:
-    "One day, by the clock. A standing claim overturned at 15:20; a decision rule written at " +
-    "16:05, before a call was bought; one chunk run first at 16:12; a wave capped at 17:35 after " +
-    "a timed call said it would not finish.",
-  body: [
-    "Thinking is conditional. It rescues the tasks the model read badly and costs the ones it " +
-      "read well, and a frontier model reads no better than a 27B open model at matched effort. A " +
-      "null here is a result: if thinking does not move the answers, the model's reading is not " +
-      "attention-limited.",
-    "The coda. The archive showed the frontier model collapsing one dermoscopy concept to a " +
-      "single answer on most images. A hypothesis was registered that lowering its effort would " +
-      "fix that dataset. It did, and nothing else moved.",
-    "Two limits. The frontier model is closed and of unknown size, so the step is capability, " +
-      "not parameters. It also refuses temperature zero, so it is the one reader whose answers " +
-      "are sampled, and some of any difference is noise the bootstrap cannot see.",
-  ],
+    "One day, by the clock. A claim overturned at 15:20. A rule written at 16:05, before a call " +
+    "was bought. A wave capped at 17:35.",
   bullets: [
     "Thinking is conditional: it rescues bad reads and costs good ones",
     "A frontier model reads no better than a 27B open model",
@@ -454,14 +381,6 @@ export const h5 = {
     "The first supported hypothesis, and the one that changes what the others mean. Concept " +
     "answers concatenated to pixel features, under the same classifier, gain a little at fifty " +
     "labels on nearly every task.",
-  body: [
-    "H1 asked whether concept scores can replace pixel features and answered no. H5 asks whether " +
-      "they carry anything pixels lack. Two blocks can be unequal and still complementary.",
-    "The textbook cannot replace labels. It adds something the pixels do not carry.",
-    "One limit: a dozen concept columns join 512 pixel columns under one L2 penalty, so a small " +
-      "real contribution can be regularised away. A per-block penalty would be a different, " +
-      "unregistered model.",
-  ],
   bullets: [
     "H1 asked: can concepts replace pixels? No.",
     "H5 asks: do they carry anything pixels lack? Yes.",
@@ -487,13 +406,6 @@ export const h5 = {
 
 export const verdicts = {
   header: "Seven verdicts",
-  body: [
-    "Against the published fully supervised ceiling, the pixel arm at its largest labelled " +
-      "subset sits just below; the best zero-label arm sits far below. Labels close the gap. The " +
-      "textbook does not, though it adds a little on top of them.",
-    "The published numbers are a ceiling, not an arm: each was trained on a dataset's whole " +
-      "training split, not this study's pool.",
-  ],
   bullets: [
     "Five not supported, two supported, none chosen",
     "Pixels at the most labels sit just below the published ceiling",
@@ -516,13 +428,6 @@ export const verdicts = {
 
 export const close = {
   header: "What four days cost",
-  body: [
-    "None was caught by the dependency graph. A person reading the plan; one chunk run before " +
-      "the rest; a probe at the wire; a timed call; a manifest field. The graph shows that a stage " +
-      "exists and what it depends on, not whether it computes the right thing.",
-    "The workflow gives you half the record for free: what was done, in what order, from what, " +
-      "with which code. The session log is the other half: why. You need both.",
-  ],
   bullets: [
     "The dependency graph caught none of them",
     "A person reading the plan. One chunk run first. A probe. A manifest field.",

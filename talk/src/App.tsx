@@ -24,7 +24,7 @@ const Explore = lazy(() => import("./sections/Explore"));
 function ExploreBand() {
   const { ref, seen } = useInView<HTMLDivElement>("400px");
   return (
-    <Band id="explore" className="presenter-hide">
+    <Band id="explore">
       <Header id="explore" eyebrow="12">{explore.header}</Header>
       <div ref={ref} className="explore-slot">
         {seen && (

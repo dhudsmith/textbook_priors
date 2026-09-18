@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Body, Callouts, ChartFrame, Header } from "../components/ui";
+import { Band, Bullets, Callouts, ChartFrame, Header } from "../components/ui";
 import { CeilingDots, VerdictBoard } from "../charts/Verdicts";
 import { verdicts as copy, notClaimed } from "../content";
 import { fmt3 } from "../charts/primitives";
@@ -18,7 +18,7 @@ export function Verdicts() {
         {supported.map((v) => v.id.toUpperCase()).join(" and ")} met their rules; the rest did
         not.
       </p>
-      <Body paras={copy.body} bullets={copy.bullets} />
+      <Bullets items={copy.bullets} />
 
       <VerdictBoard />
 

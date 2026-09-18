@@ -1,4 +1,4 @@
-import { Band, Body, Callouts, ChartFrame, Header } from "../components/ui";
+import { Band, Bullets, Callouts, ChartFrame, Header } from "../components/ui";
 import { EffortWaterfall, effortSummary } from "../charts/EffortWaterfall";
 import { premise } from "../content";
 import { useAsync } from "../hooks";
@@ -10,7 +10,7 @@ export function Premise() {
     <Band id="premise">
       <Header id="premise" eyebrow="1">{premise.header}</Header>
       <p className="lede">{premise.lede}</p>
-      <Body paras={premise.body} bullets={premise.bullets} />
+      <Bullets items={premise.bullets} />
 
       {error && <p className="note">Could not load the effort breakdown: {error}</p>}
       {effort && (

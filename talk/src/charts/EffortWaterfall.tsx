@@ -306,30 +306,11 @@ export function effortSummary(data: Effort) {
     <>
       <p>{data.headline}</p>
       <p>
-        A project timeline in {data.lanes.length} lanes over one clock,{" "}
-        {data.span.from.slice(0, 10)} to {data.span.to.slice(0, 10)}.{" "}
-        {data.lanes.map((l) => {
-          if (l.kind === "point") return `${l.label}: ${l.count} moments — ${l.note}`;
-          if (l.kind === "rate") {
-            return `${l.label}: ${l.count.toLocaleString()} calls in ${l.chunks} chunks, drawn as `
-              + `${l.bin_minutes}-minute bins, peaking at `
-              + `${Math.round(l.peak_per_bin ?? 0).toLocaleString()} calls in one bin `
-              + `(${Math.round(l.peak_per_hour ?? 0).toLocaleString()} an hour) against a mean of `
-              + `${Math.round(l.mean_per_hour ?? 0).toLocaleString()} an hour while the service `
-              + `was busy — ${l.note}`;
-          }
-          return `${l.label}: ${l.count} jobs in ${l.blocks} periods, ${hrs(l.hours ?? 0)} hours `
-            + `of wall time and ${hrs(l.cpu_hours ?? 0)} hours of CPU — ${l.note}`;
-        }).join(". ")}.
+        Five lanes over one clock, {data.span.from.slice(0, 10)} to {data.span.to.slice(0, 10)}:{" "}
+        {data.lanes.map((l) => `${l.label} (${l.count.toLocaleString()})`).join(", ")}. The{" "}
+        {hrs(data.machine.wall_hours)} hours of job time occupied {hrs(data.machine.busy_wall_hours)}{" "}
+        hours of wall clock, peaking at {data.machine.peak_concurrency} jobs at once.
       </p>
-      <p>
-        Every job fell between {data.machine.first_job.replace("T", " ")} and{" "}
-        {data.machine.last_job.replace("T", " ")}, peaking at{" "}
-        {data.machine.peak_concurrency} at once; the {hrs(data.machine.wall_hours)} hours of job
-        time occupied only {hrs(data.machine.busy_wall_hours)} hours of wall clock, a mean of{" "}
-        {data.machine.mean_concurrency.toFixed(1)} in flight.
-      </p>
-      <p>{data.caveats.join(" ")}</p>
     </>
   );
 }

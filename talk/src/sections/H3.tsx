@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTalk } from "../state";
-import { Band, Body, Callouts, ChartFrame, Dots, Header } from "../components/ui";
+import { Band, Bullets, Callouts, ChartFrame, Dots, Header } from "../components/ui";
 import { Ladder } from "../charts/Ladder";
 import { h3 as copy } from "../content";
 import { fmt3, signed, widestSpread } from "../charts/primitives";
@@ -56,7 +56,7 @@ export function H3() {
         bottom on {h7.wins} of {h7.n_datasets} (p = {h7.sign_test_p.toFixed(4)}), which is{" "}
         {v7.verdict}.
       </p>
-      <Body paras={copy.body.slice(1)} bullets={copy.bullets} />
+      <Bullets items={copy.bullets} />
 
       <div className="controls" role="group" aria-label="Ladder">
         <span className="group-label">ladder</span>
@@ -100,17 +100,11 @@ export function H3() {
             ? "Arm B AUC per dataset across the four open models"
             : "Probe AUC per dataset across the closed price ladder"}
           divideAfter={which === "open" && familyDivide >= 0 ? familyDivide : undefined}
-          note={(which === "open"
-            ? "The dashed divider separates the two families: size and training data are " +
-              "confounded across them, so the comparison is read within family only. "
-            : "Price is the vendor's own ranking, used as a proxy for capability, not a " +
-              "parameter count — nothing public orders these models by size. ") +
-            "The four datasets that move most across the ladder are drawn in their own colours " +
-            "and labelled; the rest are grey. Hover any line to isolate it."}
+          note={which === "open"
+            ? "The divider separates the two families; read within family only."
+            : "Price is the vendor's ranking, not a parameter count."}
         />
       </ChartFrame>
-      {/* The paragraph that explains the divider now sits under the divider. */}
-      <p className="presenter-hide">{copy.body[0]}</p>
 
       <p className="tally">
         <Dots per={v3.per_dataset} order={study.study.arm_b_datasets} label="H3 per dataset" />{" "}

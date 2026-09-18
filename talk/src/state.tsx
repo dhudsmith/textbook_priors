@@ -5,8 +5,7 @@ import { useDark } from "./hooks";
 
 /* Shared state: the loaded snapshot, the dataset the audience picked (remembered across every
    section, so whoever chose dermamnist at the top sees dermamnist all the way down), and
-   presenter mode, which hides the deep panels and the callout bodies so the projected page is
-   clean while the QR audience on their own phones still sees everything. */
+   and the section on screen. The page has one form: the talk. */
 
 export const SECTIONS = [
   { id: "top", short: "Title" },
@@ -30,8 +29,6 @@ interface Ctx {
   setDataset: (d: string) => void;
   meta: DatasetMeta;
   metaOf: (name: string) => DatasetMeta;
-  presenter: boolean;
-  setPresenter: (v: boolean) => void;
   active: string;
   setActive: (id: string) => void;
   dark: boolean;
@@ -52,13 +49,6 @@ export function useTalk(): Ctx {
 
 export function TalkProvider({ study, children }: { study: Study; children: ReactNode }) {
   const [dataset, setDataset] = useState("pneumoniamnist");
-  // `?presenter=1` opens straight into presenter mode: useful for rehearsal, and the only way to
-  // capture the projected page in a screenshot.
-  const [presenter, setPresenter] = useState(() => {
-    if (typeof window === "undefined") return false;
-    const q = new URLSearchParams(window.location.search).get("presenter");
-    return q !== null && q !== "0";
-  });
   const [active, setActive] = useState<string>("top");
   const dark = useDark();
 
@@ -79,11 +69,6 @@ export function TalkProvider({ study, children }: { study: Study; children: Reac
     return arm?.dash ?? undefined;
   }, [arms, study.style.literature]);
 
-  useEffect(() => {
-    document.body.classList.toggle("presenter", presenter);
-    document.documentElement.classList.toggle("presenter", presenter);
-  }, [presenter]);
-
   /* The page has two gears. A presentation clicker sends PageDown, PageUp, Space or the arrow
      keys, and every one of those is left to the browser, so one press scrolls one screen - the
      beat. Section jumps wear keys no remote sends: `]` and `[`, or shift with an arrow. Space is
@@ -93,17 +78,15 @@ export function TalkProvider({ study, children }: { study: Study; children: Reac
       const el = e.target as HTMLElement | null;
       if (el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
-      // The explorer is not projected, so in presenter mode the last jump stops at the close.
-      const ids: string[] = SECTIONS.map((s) => s.id)
-        .filter((id) => !(presenter && id === "explore"));
+
+      const ids: string[] = SECTIONS.map((s) => s.id);
       const here = Math.max(0, ids.indexOf(active));
       const go = (i: number) => {
         const id = ids[Math.min(ids.length - 1, Math.max(0, i))];
         document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
         history.replaceState(null, "", `#${id}`);
       };
-      if (e.key === "p" || e.key === "P") { setPresenter((v) => !v); e.preventDefault(); }
-      else if (e.key === "]" || (e.shiftKey && e.key === "ArrowDown")) {
+      if (e.key === "]" || (e.shiftKey && e.key === "ArrowDown")) {
         go(here + 1); e.preventDefault();
       } else if (e.key === "[" || (e.shiftKey && e.key === "ArrowUp")) {
         go(here - 1); e.preventDefault();
@@ -111,10 +94,10 @@ export function TalkProvider({ study, children }: { study: Study; children: Reac
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [active, presenter]);
+  }, [active]);
 
   /* The URL names the section on screen however the reader got there, not only by keyboard, so a
-     speaker who wheels to a section can read its address aloud - and the presenter QR encodes it.
+     speaker who wheels to a section can read its address aloud.
      The first seconds are left alone, because the page is still re-jumping to the hash it arrived
      with while its images and data land. */
   const [tracking, setTracking] = useState(false);
@@ -131,7 +114,7 @@ export function TalkProvider({ study, children }: { study: Study; children: Reac
 
   const value: Ctx = {
     study, dataset, setDataset, meta: metaOf(dataset), metaOf,
-    presenter, setPresenter, active, setActive, dark, hue, armHue, armDash,
+    active, setActive, dark, hue, armHue, armDash,
   };
   return <TalkContext.Provider value={value}>{children}</TalkContext.Provider>;
 }

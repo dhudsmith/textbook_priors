@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Body, Callouts, Header, Tile } from "../components/ui";
+import { Band, Bullets, Callouts, Header, Tile } from "../components/ui";
 import { PageQR } from "./Title";
 import { close as copy, LINKS, REFRAIN } from "../content";
 import { asset } from "../data";
@@ -28,7 +28,7 @@ export function Close() {
         <Tile value={byGraph} unit="caught by the dependency graph" />
       </div>
 
-      <Body paras={copy.body} bullets={copy.bullets} />
+      <Bullets items={copy.bullets} />
 
       <h3>What caught each one</h3>
       <ul className="catches">

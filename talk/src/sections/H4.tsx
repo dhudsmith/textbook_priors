@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Body, Callouts, ChartFrame, Deep, Dots, Header } from "../components/ui";
+import { Band, Bullets, Callouts, ChartFrame, Deep, Dots, Header } from "../components/ui";
 import { Ladder } from "../charts/Ladder";
 import { ThinkingScatter } from "../charts/ThinkingScatter";
 import { Forest } from "../charts/Forest";
@@ -52,9 +52,9 @@ export function H4() {
         {v4.verdict}. One cross-validated probe reads all {h4.readers.length} readers on the same{" "}
         {h4.subsample}-image prefix, so every difference is paired.
       </p>
-      <Body paras={copy.body.slice(0, 2)} bullets={copy.bullets} />
+      <Bullets items={copy.bullets} />
       <Deep summary="Two limits on this reading">
-        {copy.body.slice(2).map((p, i) => <p key={i}>{p}</p>)}
+        {copy.limits.map((p, i) => <p key={i}>{p}</p>)}
       </Deep>
 
       <ChartFrame
@@ -81,11 +81,7 @@ export function H4() {
         <Ladder order={chain} values={h4.probe_auc} yLabel="cross-validated probe AUC"
                 label="Probe AUC per dataset across the nine readers" height={420}
                 named={widestSpread(h4.probe_auc, chain, 4, ["dermamnist"])}
-                note={"The first four readers are the same four models with thinking off; the " +
-                      "axis names each reader's stem and effort, and the table below carries the " +
-                      "exact model identifiers. The datasets that move most across the chain are " +
-                      "drawn in their own colours and labelled; the rest are grey. Hover any " +
-                      "line to isolate it."} />
+                note="The first four readers are those models with thinking off. Each label is a stem and an effort." />
       </ChartFrame>
 
       <ChartFrame

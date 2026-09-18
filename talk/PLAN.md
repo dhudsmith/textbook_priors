@@ -33,8 +33,9 @@ and what caught the mistakes. Everything between is science.
 **The refrain**, said at the open and the close and written in one callout in the middle: *the
 workflow turns hidden work into inspectable work; it does not inspect it for you.*
 
-**Style**: one idea per section, a figure or an interactive in every section, numbers only where a
-number changes what the audience believes, and every number on the page traceable to a file in
+**Style**: the page is the presentation, so a section speaks in bullets and the speaker says the
+sentences; prose belongs in the technical report, not here. One idea per section, a figure or an
+interactive in every section, numbers only where a number changes what the audience believes, and every number on the page traceable to a file in
 `results/` through the export described in §4. No number is typed by hand into the site source.
 
 ## 2. The sections
@@ -64,14 +65,13 @@ Each interactive element earns its place by letting a listener check a claim the
 
 - **Progress rail**: sections as dots with their headers and their numbers; the current section
   highlighted; click to jump. On a phone the rail is sticky and collapsed to the section on
-  screen. `p` toggles *presenter mode*, which hides the explorer, the deep-dive panels, the
-  callout bodies (titles stay) and anything marked `presenter-hide`, so the projected page is
-  clean, while the QR audience sees everything.
+  screen. There is no separate presenter mode: the page has one form, and that form is the talk.
+  Sections speak in bullets, the type is sized to be read from the back of a room, and a callout
+  or a deep-dive panel stays closed until someone opens it.
 - **Keyboard, two gears**: `Space`, `PageDown`/`PageUp` and the arrow keys are left to the
   browser, so a presentation clicker scrolls one screen — the beat — and `Space` still activates
   whatever has focus. Section jumps wear keys no remote sends: `]` and `[`, or shift with an
-  arrow. `?presenter=1` opens straight into presenter mode, for rehearsal and for a screenshot
-  of the projected page. The URL hash follows the section on screen however the reader got
+  arrow. The URL hash follows the section on screen however the reader got
   there, so a link copied from the address bar points at the section under discussion. The
   corner mode flag that used to carry a per-section QR was cut: it sat over the projected page
   for the whole talk to save the speaker one copied link.
@@ -84,8 +84,8 @@ Each interactive element earns its place by letting a listener check a claim the
   same one and the speaker can draw live without a queue or a sleeping model.
 - **Timelines** (sections 1 and 8): hover a tick for the session-log entry title; click to expand
   the first paragraph.
-- **Callouts** collapse to their title line in presenter mode and expand on click or on the
-  audience's phones.
+- **Callouts** show their title line and expand on click, on the projector or on the audience's
+  phones.
 - **QR code**: rendered client-side from the page's own URL, so it is right wherever the site is
   deployed and needs no image file.
 
@@ -162,8 +162,8 @@ public benchmark images, the study's own numbers and the project's own prose.
 3. Sections 2–4 (question, design, machine) with their interactives.
 4. The five result sections, one chart each first, then interactivity.
 5. Verdicts, close, explore.
-6. The Pages workflow; build locally; deploy; open the URL; walk the page top to bottom in
-   presenter mode at projector width and on a phone width.
+6. The Pages workflow; build locally; deploy; open the URL; walk the page top to bottom at
+   projector width and on a phone width.
 7. `SESSION_LOG.md` entry; `TALK.md` pointer; `README.md` layout line for `talk/`.
 
 ## 8. What is deliberately not here

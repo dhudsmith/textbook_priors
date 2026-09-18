@@ -50,23 +50,18 @@ export function Header({ id, eyebrow, children }: {
   );
 }
 
-/** A section's prose. On the page it is paragraphs; projected, it is the section's bullets. The
-    room reads the points while the speaker says the sentences, which is the opposite of the
-    failure mode where a presenter reads their own paragraphs aloud. A block with no bullets
-    projects its prose unchanged, so a section is never silently blanked. */
-export function Body({ paras, bullets }: { paras: string[]; bullets?: readonly string[] }) {
-  const { presenter } = useTalk();
-  if (presenter && bullets?.length) {
-    return <ul className="bullets">{bullets.map((b, i) => <li key={i}>{b}</li>)}</ul>;
-  }
-  return <>{paras.map((p, i) => <p key={i}>{p}</p>)}</>;
+/** A section's points. The page is the talk, so a section speaks in bullets and the speaker
+    says the sentences; there is no paragraph form to fall back to. */
+export function Bullets({ items }: { items: readonly string[] }) {
+  if (!items.length) return null;
+  return <ul className="bullets">{items.map((b, i) => <li key={i}>{b}</li>)}</ul>;
 }
 
 /* ---- callouts -------------------------------------------------------------------------- */
 
 /** A callout card: a left rule in its kind's colour, a small-caps label, a title that collapses
-    the body, and a footer naming the file the claim can be checked against. In presenter mode
-    the body and the source line are hidden by CSS and only the title is projected. */
+    the body, and a footer naming the file the claim can be checked against. The title is what
+    the room reads; the body is for whoever opens it on their own device. */
 export function Callout({ spec }: { spec: CalloutSpec }) {
   const [open, setOpen] = useState(true);
   const bodyId = useId();
@@ -158,7 +153,7 @@ export function ChartFrame({ caption, source, summary, children }: {
     <figure className="chart">
       <div className="chart-scroll">{children}</div>
       <figcaption>
-        {caption} <span className="file presenter-hide">{source}</span>
+        {caption} <span className="file">{source}</span>
         <details className="a11y-summary">
           <summary>Read this chart as text</summary>
           {summary}
@@ -197,7 +192,7 @@ export function Dots({ per, order, label }: {
 /* ---- rail ------------------------------------------------------------------------------ */
 
 export function Rail() {
-  const { active, presenter, setPresenter } = useTalk();
+  const { active } = useTalk();
   // On a phone the rail is one sticky line naming the section on screen; tapping it opens the
   // list. On a desktop the media query ignores `open` and the list is simply there.
   const [open, setOpen] = useState(false);
@@ -227,13 +222,8 @@ export function Rail() {
       </ol>
       <div className="railfoot">
         <p>
-          <kbd>space</kbd> <kbd>⇟</kbd> next screen · <kbd>[</kbd> <kbd>]</kbd> section ·{" "}
-          <kbd>p</kbd> presenter
+          <kbd>space</kbd> <kbd>⇟</kbd> next screen · <kbd>[</kbd> <kbd>]</kbd> section
         </p>
-        <button className="plain" onClick={() => setPresenter(!presenter)}
-                aria-pressed={presenter}>
-          {presenter ? "Leave presenter mode" : "Presenter mode"}
-        </button>
       </div>
     </nav>
   );

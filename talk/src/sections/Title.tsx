@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { useTalk } from "../state";
-import { Band, Body, CountTile, Header, Tile } from "../components/ui";
+import { Band, Bullets, CountTile, Header, Tile } from "../components/ui";
 import { WorkflowDiagram } from "../components/diagrams";
 import { title as copy } from "../content";
 
@@ -41,7 +41,7 @@ export function Title() {
       </div>
       <p>{copy.intro.lede}</p>
       <p className="pullquote">{copy.intro.question}</p>
-      <Body paras={[copy.intro.body]} bullets={copy.intro.bullets} />
+      <Bullets items={copy.intro.bullets} />
       <div className="tiles">
         <Tile value={led.work_dates.length}
               unit="days of work, from the plan to the report" />

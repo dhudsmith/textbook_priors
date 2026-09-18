@@ -1131,3 +1131,31 @@ to, why a divider separates two model families), dataset facts, and the file-pro
 each figure, which is the traceability the talk argues for rather than a note about it. The
 caveats themselves remain in `effort.json` and in the chart's "read this chart as text" summary,
 where a reader who wants the method can still find it.
+
+## 2026-09-17 20:50 — One mode, and it is the talk
+
+The user read the effort chart's text summary, found it a wall, and drew the general conclusion:
+"This is primarily a talk. Not a complete documentation of the project. That's what the technical
+report is for." Then the structural instruction: commit the current form, remove presenter mode
+and make it the only mode, keep the bulleted forms, and find edits for improved presentability.
+
+The current form is tagged `talk/dual-mode-form` so the prose-and-paragraphs version stays
+recoverable, and two forks were put to the user before cutting. The authored prose: delete it, the
+tag holds it. The callout bodies and deep panels, which presenter mode used to hide: keep them
+expandable, so the titles read from the projector and the room can open one on a phone.
+
+So the presenter machinery is gone — the state, the `p` key, the `?presenter=1` parameter, the
+rail's toggle, the `presenter-hide` class and the CSS that hid things behind it. `Body`, which
+chose between paragraphs and bullets, is now `Bullets`, which has no paragraph form to fall back
+to, and the twelve prose blocks it used to choose from are deleted: 6,292 characters of it. Two
+paragraphs were rescued first, because they live inside collapsed panels the user chose to keep —
+H2's answer to the circularity objection and H4's two limits — and now sit in fields of their own.
+What presenter mode did to the type is now simply how the page is set: 19px root, larger chart
+tokens, because an axis tick is the thing that fails from the back of a room.
+
+Then the presentability pass, driven by pulling every block over 190 characters off the rendered
+page rather than by reading the source. Five ledes were cut to a headline each, the opening
+proposition among them; the chart summary went from four paragraphs to two sentences; two
+chart-reading notes that explained their encoding twice were cut to one line. Thirty-six long
+blocks became thirty, and most of what remains is callout bodies, which are closed until asked
+for. PLAN.md now says the page is the presentation and that prose belongs in the report.
