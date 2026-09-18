@@ -64,7 +64,7 @@ export default function Explore() {
         </tbody>
       </table>
 
-      <h4>Every number the evaluate stage wrote for it</h4>
+      <Deep summary="Every number the evaluate stage wrote for it">
       <div className="chart-scroll">
         <table className="data" style={{ maxWidth: "46rem" }}>
           <thead>
@@ -88,6 +88,7 @@ export default function Explore() {
           </tbody>
         </table>
       </div>
+      </Deep>
 
       <Deep summary="Paired differences and their intervals">
         <table className="data" style={{ maxWidth: "40rem" }}>
