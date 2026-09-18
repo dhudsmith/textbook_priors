@@ -1,4 +1,4 @@
-import { Band, Callouts, ChartFrame, Header } from "../components/ui";
+import { Band, Body, Callouts, ChartFrame, Header } from "../components/ui";
 import { TimelineStrip } from "../charts/TimelineStrip";
 import { premise } from "../content";
 import { KIND_BLURB, KIND_LABEL } from "../content";
@@ -11,7 +11,7 @@ export function Premise() {
     <Band id="premise">
       <Header id="premise" eyebrow="1">{premise.header}</Header>
       <p className="lede">{premise.lede}</p>
-      {premise.body.map((p, i) => <p key={i}>{p}</p>)}
+      <Body paras={premise.body} bullets={premise.bullets} />
 
       {error && <p className="note">Could not load the timeline: {error}</p>}
       {timeline && (

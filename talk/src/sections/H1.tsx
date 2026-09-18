@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Callout, ChartFrame, DatasetPicker, Deep, Dots, Header } from "../components/ui";
+import { Band, Body, Callout, ChartFrame, DatasetPicker, Deep, Dots, Header } from "../components/ui";
 import { LearningCurve } from "../charts/LearningCurve";
 import { Contention } from "../charts/Contention";
 import { h1 as copy } from "../content";
@@ -44,7 +44,7 @@ export function H1() {
         {h1.c_beats_p_wins} of {h1.n_datasets}, against the {h1.min_wins} the rule asks for
         (p = {h1.c_beats_p_sign_test_p.toFixed(4)}).
       </p>
-      {copy.body.map((p, i) => <p key={i}>{p}</p>)}
+      <Body paras={copy.body} bullets={copy.bullets} />
 
       <DatasetPicker />
       <ChartFrame

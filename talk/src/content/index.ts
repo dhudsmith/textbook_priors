@@ -70,6 +70,10 @@ export const title = {
     body:
       "We largely automated the answering of it. Largely is the honest word, and what the human " +
       "still had to do is most of what this talk is about. Here is what came out.",
+    bullets: [
+      "Largely automated — and largely is the honest word",
+      "What the human still had to do is the talk",
+    ],
   },
   workflow: {
     header: "The shape of the thing",
@@ -98,6 +102,13 @@ export const premise = {
       "claim.",
     REFRAIN,
   ],
+  bullets: [
+    "An agent wrote the stage, ran the jobs, filled the table",
+    "So how do you trust a result you did not compute?",
+    "The code is not the product. The claim is.",
+    "Understanding debt: built faster than its owner can read it",
+    "The workflow makes the work inspectable — it does not inspect it",
+  ],
   stripCaption: "The last tick is this page.",
   callouts: [
     {
@@ -125,6 +136,13 @@ export const question = {
     "The concept prompt never names a class. The zero-shot prompt never mentions a concept. We " +
       "ask what the model's answers are worth in the currency a practitioner cares about: " +
       "labelled images.",
+  ],
+  bullets: [
+    "The bank is the study's prior — committed before any call",
+    "Visual features on ordered scales, every level cited",
+    "The concept prompt never names a class",
+    "The zero-shot prompt never mentions a concept",
+    "The currency is labelled images",
   ],
   callouts: [
     {
@@ -164,6 +182,13 @@ export const design = {
       "carries a bootstrap interval — 95% of resampled test sets. Across datasets, a one-sided " +
       "sign test — count the datasets the arm won — decides each rule. AUC is the metric " +
       "throughout: 1.0 ranks every case correctly, 0.5 is chance.",
+  ],
+  bullets: [
+    "A pretrained model deserves a pretrained baseline",
+    "One classifier, three arms — only the features differ",
+    "Every comparison paired on one seeded test sample",
+    "A sign test across datasets decides each rule",
+    "AUC throughout: 1.0 perfect, 0.5 chance",
   ],
   limits: [
     "The three organ datasets are one set of CT volumes in three planes, so twelve datasets are " +
@@ -215,6 +240,12 @@ export const machine = {
       "something a stale timestamp can trigger. The call below is drawn at random, so no two " +
       "people in the room see the same one.",
   ],
+  bullets: [
+    "A chunk is one job's hundred images",
+    "A reader is a model plus a reasoning effort",
+    "Write-protected: re-querying is a decision, not a timestamp",
+    "The call below is drawn at random — yours differs from mine",
+  ],
   callouts: [
     {
       kind: "nearmiss",
@@ -251,6 +282,11 @@ export const h1 = {
     "The rule was fixed before the numbers existed, and the numbers do not meet it. A negative " +
       "result you can stand behind is what the recipe is for.",
   ],
+  bullets: [
+    "The rule was fixed before the numbers existed",
+    "The numbers do not meet it",
+    "A negative result you can stand behind is what the recipe is for",
+  ],
   callouts: [
     {
       kind: "nearmiss",
@@ -281,6 +317,12 @@ export const h2 = {
       "The first design returned both from one call, which would have let the concept answers " +
       "rationalise a class the model had already chosen.",
   ],
+  bullets: [
+    "Where the model can name the class, asking for the name wins",
+    "Where it cannot, the checklist does",
+    "Permute either one and both arms collapse — the answers carry real information",
+    "Separate prompts, separate calls: the comparison cannot be circular",
+  ],
   callouts: [
     {
       kind: "nearmiss",
@@ -308,6 +350,12 @@ export const h3 = {
       "also change quantisation, and the qwen step changes generation. Larger travels with newer.",
     "Nothing public orders the closed models by size, so price stands in for capability. " +
       "Whatever separates luna from sol is not what parameter count captured.",
+  ],
+  bullets: [
+    "Read within family only — larger travels with newer",
+    "Both size steps also change quantisation",
+    "Nothing public orders the closed models, so price stands in",
+    "Whatever separates them, parameter count did not capture it",
   ],
   callouts: [
     {
@@ -352,6 +400,14 @@ export const h4 = {
     "Two limits. The frontier model is closed and of unknown size, so the step is capability, " +
       "not parameters. It also refuses temperature zero, so it is the one reader whose answers " +
       "are sampled, and some of any difference is noise the bootstrap cannot see.",
+  ],
+  bullets: [
+    "Thinking is conditional: it rescues bad reads and costs good ones",
+    "A frontier model reads no better than a 27B open model",
+    "A null is a result — the reading is not attention-limited",
+    "The coda: one concept collapsed; less effort fixed that dataset, and nothing else",
+    "A prediction named before the calls, confirmed only where it was aimed",
+    "Limits: closed model, unknown size, and it refuses temperature zero",
   ],
   callouts: [
     {
@@ -406,6 +462,13 @@ export const h5 = {
       "real contribution can be regularised away. A per-block penalty would be a different, " +
       "unregistered model.",
   ],
+  bullets: [
+    "H1 asked: can concepts replace pixels? No.",
+    "H5 asks: do they carry anything pixels lack? Yes.",
+    "Unequal and complementary are not the same thing",
+    "The textbook cannot replace labels. It adds.",
+    "Limit: a dozen concept columns join 512 under one penalty",
+  ],
   callouts: [
     {
       kind: "nearmiss",
@@ -431,6 +494,13 @@ export const verdicts = {
     "The published numbers are a ceiling, not an arm: each was trained on a dataset's whole " +
       "training split, not this study's pool.",
   ],
+  bullets: [
+    "Five not supported, two supported, none chosen",
+    "Pixels at the most labels sit just below the published ceiling",
+    "The best zero-label arm sits far below it",
+    "Labels close the gap; the textbook adds a little on top",
+    "The ceiling is not an arm — it trained on the whole split",
+  ],
   callouts: [
     {
       kind: "principle",
@@ -452,6 +522,13 @@ export const close = {
       "exists and what it depends on, not whether it computes the right thing.",
     "The workflow gives you half the record for free: what was done, in what order, from what, " +
       "with which code. The session log is the other half: why. You need both.",
+  ],
+  bullets: [
+    "The dependency graph caught none of them",
+    "A person reading the plan. One chunk run first. A probe. A manifest field.",
+    "The graph shows a stage exists, not that it computes the right thing",
+    "The workflow gives you what was done, for free",
+    "The session log is the other half: why. You need both.",
   ],
   callouts: [
     {

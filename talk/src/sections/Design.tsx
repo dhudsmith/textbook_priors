@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTalk } from "../state";
-import { Band, Callouts, Header } from "../components/ui";
+import { Band, Body, Callouts, Header } from "../components/ui";
 import { ArmDiagram } from "../components/diagrams";
 import { design } from "../content";
 
@@ -23,7 +23,7 @@ export function Design() {
     <Band id="design">
       <Header id="design" eyebrow="3">{design.header}</Header>
       <p className="lede">{design.lede}</p>
-      {design.body.map((p, i) => <p key={i}>{p}</p>)}
+      <Body paras={design.body} bullets={design.bullets} />
 
       <ArmDiagram />
 

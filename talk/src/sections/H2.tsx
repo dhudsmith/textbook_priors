@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Callouts, ChartFrame, Deep, Dots, Header } from "../components/ui";
+import { Band, Body, Callouts, ChartFrame, Deep, Dots, Header } from "../components/ui";
 import { Dumbbell, PermutationDrops } from "../charts/Dumbbell";
 import { h2 as copy } from "../content";
 import { fmt3, signed } from "../charts/primitives";
@@ -28,7 +28,7 @@ export function H2() {
         On tissuemnist the model's own guess is {fmt3(tissue.auc["A"])} — at chance — while the
         textbook readout reaches {fmt3(tissue.auc[`B__${primary}`])}.
       </p>
-      <p>{copy.body[0]}</p>
+      <Body paras={[copy.body[0]]} bullets={copy.bullets} />
       <Deep summary="Why the comparison cannot be circular">
         {copy.body.slice(1).map((p, i) => <p key={i}>{p}</p>)}
       </Deep>

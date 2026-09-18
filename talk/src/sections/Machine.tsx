@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Callouts, Deep, Header } from "../components/ui";
+import { Band, Body, Callouts, Deep, Header } from "../components/ui";
 import { StageStrip } from "../components/diagrams";
 import { ArchiveCall } from "../components/ArchiveCall";
 import { machine } from "../content";
@@ -35,7 +35,7 @@ export function Machine() {
     <Band id="machine">
       <Header id="machine" eyebrow="4">{machine.header}</Header>
       <p className="lede">{machine.lede}</p>
-      {machine.body.map((p, i) => <p key={i}>{p}</p>)}
+      <Body paras={machine.body} bullets={machine.bullets} />
 
       <StageStrip blurbs={BLURBS} />
       <p className="note">

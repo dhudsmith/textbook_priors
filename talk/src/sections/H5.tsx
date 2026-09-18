@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTalk } from "../state";
-import { Band, Callouts, ChartFrame, Dots, Header } from "../components/ui";
+import { Band, Body, Callouts, ChartFrame, Dots, Header } from "../components/ui";
 import { Forest } from "../charts/Forest";
 import { h5 as copy } from "../content";
 import { fmt3, signed } from "../charts/primitives";
@@ -37,7 +37,7 @@ export function H5() {
         {signed(median(Object.values(h5.differences).map((d: any) => d.median)))} AUC, and every
         winning interval clears zero.
       </p>
-      {copy.body.map((p, i) => <p key={i}>{p}</p>)}
+      <Body paras={copy.body} bullets={copy.bullets} />
 
       <div className="controls" role="group" aria-label="Labels (n)">
         <span className="group-label">labels (n)</span>

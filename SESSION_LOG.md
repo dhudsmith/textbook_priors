@@ -938,3 +938,24 @@ Mathematical and Statistical Sciences. Set as a `.byline` under the header and a
 the name in full ink and the school quieter beneath it — stacked rather than run together on one
 line, because the school's name wraps awkwardly beside a person's on a phone. The eyebrow above
 the title still names the venue.
+
+## 2026-09-17 17:40 — Presenter mode bulletises the prose
+
+The user asked presenter mode to crunch the longer prose blocks into a few skimmable bullets:
+points the room takes in at a glance, and a reminder of the speaker's own flow, with the sentences
+said out loud rather than read off the wall.
+
+Each of the twelve prose blocks in `content/index.ts` gained a `bullets` array beside its `body`,
+written from that body rather than derived from it — two to six lines, ordered as the paragraphs
+are, so the list doubles as the running order. A `Body` component renders the paragraphs on the
+page and the bullets when projected; a block with no bullets projects its prose unchanged, so a
+section can never be silently blanked by a missing list. Sections that split their prose across a
+figure (H2, H3, H4) carry the bullets at the first authored paragraph, and H3's stray paragraph,
+whose content is now its first bullet, is marked `presenter-hide` rather than projected twice.
+
+Computed sentences were deliberately left alone. The verdict paragraphs in H2, H3 and H4 assemble
+their numbers from the snapshot, and those numbers are the result: the projected page keeps them
+verbatim and bulletises only the reasoning around them.
+
+Verified by rendering the sections headlessly in both modes — three bullet lists and fourteen
+paragraphs projected, against twenty-one paragraphs and no lists on the page.

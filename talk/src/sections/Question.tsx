@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTalk } from "../state";
-import { Band, Callouts, DatasetPicker, Deep, Header } from "../components/ui";
+import { Band, Body, Callouts, DatasetPicker, Deep, Header } from "../components/ui";
 import { question } from "../content";
 import { useAsync } from "../hooks";
 import { LAZY, asset, loadBank } from "../data";
@@ -26,7 +26,7 @@ export function Question() {
     <Band id="question">
       <Header id="question" eyebrow="2">{question.header}</Header>
       <p className="lede">{question.lede}</p>
-      {question.body.map((p, i) => <p key={i}>{p}</p>)}
+      <Body paras={question.body} bullets={question.bullets} />
 
       <DatasetPicker />
 

@@ -394,6 +394,15 @@ body.presenter .a11y-summary,
 body.presenter .presenter-hide { display: none !important; }
 /* Presenter mode scales the root, so every rem on the page follows it, and raises the chart
    text tokens, because an axis tick is the thing that fails from the back of the room. */
+/* Projected, a section's paragraphs become its bullets: bigger than body text, set tight, and
+   short enough that a glance takes one in. They are the speaker's flow as much as the room's
+   summary, so they keep the order the paragraphs had. */
+.bullets { max-width: var(--measure); margin: 0 0 1.2em; padding-left: 1.15rem; }
+.bullets li {
+  font-size: 1.16rem; line-height: 1.32; font-weight: 600; color: var(--ink);
+  margin-bottom: 0.62rem;
+}
+.bullets li::marker { color: var(--ink-muted); }
 html.presenter { font-size: 19px; }
 html.presenter body { --chart-text: 14px; --chart-tick: 13px; --chart-row: 14px; }
 

@@ -1,5 +1,5 @@
 import { useTalk } from "../state";
-import { Band, Callouts, ChartFrame, Deep, Dots, Header } from "../components/ui";
+import { Band, Body, Callouts, ChartFrame, Deep, Dots, Header } from "../components/ui";
 import { Ladder } from "../charts/Ladder";
 import { ThinkingScatter } from "../charts/ThinkingScatter";
 import { Forest } from "../charts/Forest";
@@ -52,7 +52,7 @@ export function H4() {
         {v4.verdict}. One cross-validated probe reads all {h4.readers.length} readers on the same{" "}
         {h4.subsample}-image prefix, so every difference is paired.
       </p>
-      {copy.body.slice(0, 2).map((p, i) => <p key={i}>{p}</p>)}
+      <Body paras={copy.body.slice(0, 2)} bullets={copy.bullets} />
       <Deep summary="Two limits on this reading">
         {copy.body.slice(2).map((p, i) => <p key={i}>{p}</p>)}
       </Deep>

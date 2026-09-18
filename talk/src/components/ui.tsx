@@ -50,6 +50,18 @@ export function Header({ id, eyebrow, children }: {
   );
 }
 
+/** A section's prose. On the page it is paragraphs; projected, it is the section's bullets. The
+    room reads the points while the speaker says the sentences, which is the opposite of the
+    failure mode where a presenter reads their own paragraphs aloud. A block with no bullets
+    projects its prose unchanged, so a section is never silently blanked. */
+export function Body({ paras, bullets }: { paras: string[]; bullets?: readonly string[] }) {
+  const { presenter } = useTalk();
+  if (presenter && bullets?.length) {
+    return <ul className="bullets">{bullets.map((b, i) => <li key={i}>{b}</li>)}</ul>;
+  }
+  return <>{paras.map((p, i) => <p key={i}>{p}</p>)}</>;
+}
+
 /* ---- callouts -------------------------------------------------------------------------- */
 
 /** A callout card: a left rule in its kind's colour, a small-caps label, a title that collapses

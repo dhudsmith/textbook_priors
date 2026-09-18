@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTalk } from "../state";
-import { Band, Callouts, ChartFrame, Dots, Header } from "../components/ui";
+import { Band, Body, Callouts, ChartFrame, Dots, Header } from "../components/ui";
 import { Ladder } from "../charts/Ladder";
 import { h3 as copy } from "../content";
 import { fmt3, signed, widestSpread } from "../charts/primitives";
@@ -56,7 +56,7 @@ export function H3() {
         bottom on {h7.wins} of {h7.n_datasets} (p = {h7.sign_test_p.toFixed(4)}), which is{" "}
         {v7.verdict}.
       </p>
-      {copy.body.slice(1).map((p, i) => <p key={i}>{p}</p>)}
+      <Body paras={copy.body.slice(1)} bullets={copy.bullets} />
 
       <div className="controls" role="group" aria-label="Ladder">
         <span className="group-label">ladder</span>
@@ -110,7 +110,7 @@ export function H3() {
         />
       </ChartFrame>
       {/* The paragraph that explains the divider now sits under the divider. */}
-      <p>{copy.body[0]}</p>
+      <p className="presenter-hide">{copy.body[0]}</p>
 
       <p className="tally">
         <Dots per={v3.per_dataset} order={study.study.arm_b_datasets} label="H3 per dataset" />{" "}
