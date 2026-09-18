@@ -91,7 +91,7 @@ export const premise = {
     "Tested {hypotheses} distinct hypotheses on {datasets} medical image datasets.",
   ],
   effortCaptionShape:
-    "{days} days of the project on one clock: prompts, code, jobs and calls.",
+    "Prompts, code, jobs and calls over {days} days.",
   callouts: [
     {
       kind: "agent",
@@ -259,7 +259,7 @@ export const machine = {
 export const results = {
   header: "Test AUC for each arm",
   ledeShape:
-    "Every arm on one pair of axes: how well it separates the classes, against how many " +
+    "Every arm on the same chart: how well it separates the classes, against how many " +
     "labelled images it was given. One model read every image here — {primary}. The pixel arm " +
     "uses no model at all. Pick a question and the figure draws the arms that answer it.",
   bullets: [
