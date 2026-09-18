@@ -227,7 +227,7 @@ export function Rail() {
   };
   return (
     <nav className={`rail${open ? " open" : ""}`} aria-label="Sections">
-      <p className="railhead">Textbook priors</p>
+      <p className="railhead">Talk outline</p>
       <button className="railtoggle" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
         <span className="num">{number(here.id)}</span>
         <span>{here.short}</span>
