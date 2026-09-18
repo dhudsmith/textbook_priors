@@ -6,7 +6,8 @@
   "2026-09-13",
   "2026-09-14",
   "2026-09-16",
-  "2026-09-17"
+  "2026-09-17",
+  "2026-09-18"
  ],
  "entries": [
   {
@@ -333,10 +334,38 @@
   },
   {
    "date": "2026-09-17",
+   "time": "19:55",
+   "title": "The callout legend comes out, and the calls go in",
+   "kind": "build",
+   "lead": "Two edits in one pass. The user cut the premise's \"Three kinds of callout\" legend \u2014 \"too on the nose."
+  },
+  {
+   "date": "2026-09-17",
    "time": "20:10",
    "title": "Replace the four-day strip with a waterfall of who did the work",
    "kind": "build",
    "lead": "The user found TimelineStrip inscrutable and asked for a waterfall instead: two bands over the same axis, project-lifecycle activity in one and human against AI against supercomputer time in the other, to convey that\u2026"
+  },
+  {
+   "date": "2026-09-17",
+   "time": "20:20",
+   "title": "Inside baseball comes off the page",
+   "kind": "build",
+   "lead": "The user quoted the effort figure's caveat paragraph back and said to remove it \"and any such 'inside baseball' comments from the website\"."
+  },
+  {
+   "date": "2026-09-17",
+   "time": "20:50",
+   "title": "One mode, and it is the talk",
+   "kind": "build",
+   "lead": "The user read the effort chart's text summary, found it a wall, and drew the general conclusion: \"This is primarily a talk. Not a complete documentation of the project."
+  },
+  {
+   "date": "2026-09-17",
+   "time": "21:10",
+   "title": "Say the thing instead of gesturing at it",
+   "kind": "build",
+   "lead": "The user named the failure mode with an example: \"'The shape of the thing' is just so vague."
   },
   {
    "date": "2026-09-17",
@@ -351,6 +380,34 @@
    "title": "Surface the RCD LLM service calls, at the resolution the archive supports",
    "kind": "build",
    "lead": "The user asked whether the calls to the RCD LLM service could be highlighted as events. They are the largest number the study produced and they were invisible, folded inside the bars for the jobs that made them."
+  },
+  {
+   "date": "2026-09-18",
+   "time": "09:40",
+   "title": "The owner's edits, distilled and applied",
+   "kind": "build",
+   "lead": "The user edited the talk's text directly, then asked for the principles behind those edits to be carried through the rest of it. Reading the diff, four rules: 1. Bullets carry facts; callouts carry observations."
+  },
+  {
+   "date": "2026-09-18",
+   "time": "10:15",
+   "title": "Motivate the science first",
+   "kind": "build",
+   "lead": "The user found the opening out of order: \"what is the 4 days of work 58,409 number etc. Right after the title..."
+  },
+  {
+   "date": "2026-09-18",
+   "time": "10:45",
+   "title": "The hypotheses leave the talk",
+   "kind": "build",
+   "lead": "The user cut the pre-registration walkthrough: \"hypotheses as tiles doesn't really work. List them out. Also, for the sake of time, let's not pre-register the hypotheses at all."
+  },
+  {
+   "date": "2026-09-18",
+   "time": "11:20",
+   "title": "MedMNIST first, then the textbook, then a duplication sweep",
+   "kind": "build",
+   "lead": "The user recast the section that had been called What we asked the model: name it \"Medical images and associated visual features\", make it MedMNIST-focused, describe the dataset in the bullets, and centre the second\u2026"
   }
  ],
  "kinds": [
@@ -382,7 +439,7 @@
  "kind_note": "Only the kind of each entry was assigned by hand; the rest is the file's own heading and first paragraph.",
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T01:59:04Z",
+  "exported": "2026-09-18T04:55:03Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
    "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",

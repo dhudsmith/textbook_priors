@@ -7,14 +7,14 @@ import { useAsync, useInView } from "../hooks";
 import { loadArchive } from "../data";
 
 const BLURBS: Record<string, string> = {
-  smoke: "The tests: the bank schema and its anchors, the label maps against the pinned release, " +
-    "both prompts, the sampler, the estimators and the metric conventions. Every rule takes the " +
-    "smoke marker as an input, so nothing is computed on code that fails its tests.",
+  smoke: "The tests: the shape of the bank and its anchor text, the label maps against the fixed " +
+    "release, both prompts, the sampler, the estimators and the metric conventions. Every rule " +
+    "waits on them, so nothing is computed on code that fails its tests.",
   sample: "Per dataset: the seeded test sample and the labelled pool, capped at the official " +
     "split, streamed out of the compressed release without loading it.",
   score: "Per dataset, the two prompts are rendered by their own rule from the bank and the label " +
     "map. Then, per model, split, prompt and chunk of a hundred images, the calls go out and " +
-    "every raw response is archived and write-protected.",
+    "every raw reply is archived and cannot be overwritten.",
   features: "Per dataset: the frozen ImageNet ResNet-18 penultimate features of the sampled " +
     "images, with preprocessing that does not resize.",
   classify: "Per dataset: every arm at every n and seed, the two permutation controls, and each " +
@@ -39,10 +39,8 @@ export function Machine() {
 
       <StageStrip blurbs={BLURBS} />
       <p className="note">
-        The archive holds {study.archive.chunks.toLocaleString("en-US")}{" "}
-        chunks and {study.archive.calls.toLocaleString("en-US")} calls, written between{" "}
-        {study.archive.first_written.replace("T", " ")} and{" "}
-        {study.archive.last_written.replace("T", " ")}.
+        The archive holds {study.archive.chunks.toLocaleString("en-US")} chunks and{" "}
+        {study.archive.calls.toLocaleString("en-US")} calls.
       </p>
 
       <h3>One real archived call</h3>
@@ -52,11 +50,11 @@ export function Machine() {
                  : <p className="note">Loading one archived call…</p>}
       </div>
 
-      <Deep summary="What the archive holds, by model">
+      <Deep summary="How many calls each model answered, and under what name">
         <table className="data" style={{ maxWidth: "44rem" }}>
           <thead>
             <tr><th>model or reader</th><th>chunks</th><th>calls</th>
-                <th style={{ textAlign: "left" }}>served model name</th></tr>
+                <th style={{ textAlign: "left" }}>name that answered</th></tr>
           </thead>
           <tbody>
             {Object.entries(study.archive.by_model).map(([m, v]) => (
@@ -70,7 +68,7 @@ export function Machine() {
           </tbody>
         </table>
         <p className="note">
-          The served model name is what the service said answered.
+          The served name is what the service said actually answered.
         </p>
       </Deep>
 

@@ -103,14 +103,14 @@ CATCHES = [
      "caught_by": "a person reading the plan", "source": "CHANGELOG.md 2026-09-09"},
     {"what": "Four generated rules that all ran the last model's command",
      "caught_by": "one chunk run before 270", "source": "CHANGELOG.md 2026-09-11"},
-    {"what": "3,000 good answers filed under a third response field and recorded as missing",
-     "caught_by": "a probe at the wire", "source": "CHANGELOG.md 2026-09-11"},
+    {"what": "3,000 good answers filed in a part of the reply our code never read, and recorded as missing",
+     "caught_by": "one diagnostic call", "source": "CHANGELOG.md 2026-09-11"},
     {"what": "A 48-job wave that ran two hours and wrote nothing",
      "caught_by": "a timed call", "source": "CHANGELOG.md 2026-09-12"},
     {"what": "Thinking believed impossible, when the cause was our own 512-token budget",
      "caught_by": "a test at 15:20", "source": "CHANGELOG.md 2026-09-12"},
-    {"what": "A second session switching the shared checkout onto its own branch mid-run",
-     "caught_by": "a manifest field (git_commit)", "source": "SESSION_LOG.md 2026-09-13 12:25"},
+    {"what": "A second agent session moving the shared working copy to another version of the code mid-run",
+     "caught_by": "the record filed beside each result", "source": "SESSION_LOG.md 2026-09-13 12:25"},
     {"what": "An eleven-chunk thinking wave that would have died at its time limit",
      "caught_by": "one chunk run first, and a timed call", "source": "CHANGELOG.md 2026-09-12"},
 ]
@@ -856,14 +856,14 @@ def export_effort(study: dict) -> dict:
     peak_rate = peak_bin * (60 / CALL_BIN)
 
     lanes = [
-        {"id": "prompts", "kind": "point", "label": "a prompt lands",
+        {"id": "prompts", "kind": "point", "label": "a prompt",
          "count": len(prompts),
-         "note": "one per SESSION_LOG.md heading; the record dates it but not how long it took"},
-        {"id": "commits", "kind": "point", "label": "a commit lands",
+         "note": "one per entry in the session log; the record dates it but not how long it "
+                 "took"},
+        {"id": "commits", "kind": "point", "label": "code written",
          "count": len(commits), "agent_count": len(agent_commits),
-         "note": (f"{len(agent_commits)} of {len(commits)} carry a Co-Authored-By: Claude "
-                  "trailer, which is the only thing in the repository that marks a commit as an "
-                  "agent's work")},
+         "note": (f"{len(agent_commits)} of {len(commits)} name an agent as co-author, which is "
+                  "the only mark the record holds of the agent's work")},
         {"id": "calls", "kind": "rate", "label": "calls to the RCD LLM service",
          "count": calls_total, "chunks": len(call_spans),
          "peak_per_hour": round(peak_rate), "peak_per_bin": round(peak_bin),
@@ -879,8 +879,8 @@ def export_effort(study: dict) -> dict:
          "count": len(llm), "hours": round(wall["llm"], 2),
          "cpu_hours": round(cpu["llm"], 2), "busy_hours": round(busy["llm"], 2),
          "blocks": len(blocks["llm"]),
-         "note": ("the score rules, which hold an llm_* throttle token; their wall time is time "
-                  "spent waiting on llm.rcd.clemson.edu, whose GPUs this project never meters")},
+         "note": ("the scoring jobs; their time is spent waiting on the RCD LLM service, whose "
+                  "GPUs this project never meters")},
         {"id": "local_jobs", "kind": "span",
          "label": "jobs computing on the cluster",
          "count": len(local), "hours": round(wall["local"], 2),

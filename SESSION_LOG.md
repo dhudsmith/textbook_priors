@@ -1291,3 +1291,40 @@ as sentences. H5 had a bullet restating the two above it. Verdicts counted its v
 and again in a bullet, and two more bullets said what the takeaway says with numbers. The machine
 lede said what the callout beside it says. H3's chart note repeated its first bullet. And design's
 pre-registration callout said what H4's says, so the one where the rules actually mattered stayed.
+
+## 2026-09-18 12:30 — The talk cut to twenty-five minutes
+
+Overnight instructions, in the order they arrived: the talk is far too long; the learning curve
+should be the headline, with a control that picks which question you are asking and presets the
+arms that answer it; keep the thinking plot and the seven verdicts, but give the verdict table a
+human-readable description instead of "what it counted"; drop the ceiling figure outright ("just
+terrible"); remove "what this study does not claim"; use callouts only for a principle about what
+is genuinely different about doing science with AI, or a surprising observation, and otherwise
+have none; put H3/H7's detail in Extra and leave only its rows in the summary; keep developer
+vocabulary off the page except where the talk names it, as with Snakemake; simplify, simplify,
+simplify — and remember the website can support people digging deeper on their own time.
+
+A review agent did the work; this entry records what was verified rather than what was reported.
+Five hypothesis sections became one, *One figure, three questions*: the learning curve with a
+question picker, each choice presetting the visible arms. All three presets were checked in a
+browser against what they claim to show — H1 draws the checklist arm, the concept classifier and
+the pixel baseline; H2 draws the two zero-label arms; H5 draws the pixel baseline against the
+combined arm — and they are right. An earlier alarm about the combined arm being missing was a
+fault in the checking script, not the page.
+
+The page is eleven bands and 17,679 pixels tall, down from 28,643. Callouts went from fifteen to
+ten, two of them merged because they stated the same principle. The ceiling figure and its
+sentence are gone, and nothing on the spine says what the study does not claim; Extra carries all
+four of those. Detail was demoted rather than deleted: the model ladder to Extra, and the n_B
+table, the dumbbell, the permutation panel, the forest plot, the reader chain and the day timeline
+into closed panels beside the sections they belong to.
+
+The jargon sweep reached the export script, not just its output, which is the part that mattered.
+Re-running the export reproduces every renamed phrase — the timeline lane now reads "121 of 125
+name an agent as co-author" from generated text — and `study.json` came back identical but for its
+timestamp. The counts moved because this session kept adding to them: 49 prompts to 57. What
+remains of the old vocabulary is inside the archived record panel, where the field names are the
+evidence rather than our prose, under a heading that now explains what the panel is.
+
+Delivery estimate, section by section, is about twenty-three minutes. Three sections run over two
+and a half, and each is over because of something the owner asked to keep.

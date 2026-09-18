@@ -1,7 +1,7 @@
 {
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-18T01:59:04Z",
+  "exported": "2026-09-18T04:55:03Z",
   "source_files": [
    "config/config.yaml",
    "config/medmnist.yaml",
@@ -8976,8 +8976,8 @@
     "source": "CHANGELOG.md 2026-09-11"
    },
    {
-    "what": "3,000 good answers filed under a third response field and recorded as missing",
-    "caught_by": "a probe at the wire",
+    "what": "3,000 good answers filed in a part of the reply our code never read, and recorded as missing",
+    "caught_by": "one diagnostic call",
     "source": "CHANGELOG.md 2026-09-11"
    },
    {
@@ -8991,8 +8991,8 @@
     "source": "CHANGELOG.md 2026-09-12"
    },
    {
-    "what": "A second session switching the shared checkout onto its own branch mid-run",
-    "caught_by": "a manifest field (git_commit)",
+    "what": "A second agent session moving the shared working copy to another version of the code mid-run",
+    "caught_by": "the record filed beside each result",
     "source": "SESSION_LOG.md 2026-09-13 12:25"
    },
    {

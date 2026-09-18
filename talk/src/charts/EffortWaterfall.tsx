@@ -127,8 +127,8 @@ export function EffortWaterfall({ data, height }: { data: Effort; height?: numbe
       <svg className="plot" width={width} height={drawn} role="img"
            aria-label={`A project timeline in ${data.lanes.length} lanes from ` +
                        `${data.span.from.slice(0, 10)} to ${data.span.to.slice(0, 10)}: ` +
-                       `${data.counts.prompts} prompts and ${data.counts.commits} commits as ` +
-                       `moments, and ${data.counts.jobs} jobs as the periods they ran`}>
+                       `${data.counts.prompts} prompts and ${data.counts.commits} batches of ` +
+                       `code as moments, and ${data.counts.jobs} jobs as the periods they ran`}>
         {/* alternating lane bands, so a row is followed across a wide plot */}
         {data.lanes.map((lane, i) => (
           i % 2 === 1 ? (
@@ -279,7 +279,7 @@ export function EffortWaterfall({ data, height }: { data: Effort; height?: numbe
           <svg width="14" height="12" aria-hidden="true">
             <rect x="0" y="3" width="14" height="6" rx="2" fill={LANE_HUE.llm_jobs} />
           </svg>
-          a bar is a period jobs ran — from their own manifests
+          a bar is a period jobs ran — each job timed itself
         </span>
         <span className="chip" style={{ cursor: "default" }}>
           <svg width="16" height="12" aria-hidden="true">

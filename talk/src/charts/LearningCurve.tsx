@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { scaleLinear, scaleLog } from "d3-scale";
 import { line as d3line, area as d3area, curveMonotoneX } from "d3-shape";
 import { useTalk } from "../state";
@@ -22,6 +22,10 @@ export function LearningCurve({ height = 400, initialHidden = [] }: {
   const { show, hide, tip } = useHover();
   // The series the speaker adds live start hidden; the legend still lists every one of them.
   const [hidden, setHidden] = useState<Set<string>>(() => new Set(initialHidden));
+  // The question picker above the figure changes the preset, so the figure follows it rather
+  // than keeping whatever the first question left showing.
+  const preset = initialHidden.join(",");
+  useEffect(() => setHidden(new Set(preset ? preset.split(",") : [])), [preset]);
 
   const ns = per.curve_n;
   const primary = study.study.primary;

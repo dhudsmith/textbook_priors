@@ -37,7 +37,7 @@ export function ArchiveCall({ sample, fixedDataset }: {
       <div className="controls">
         <button className="plain" onClick={drawAnother}>Draw another archived call</button>
         <span className="note" style={{ margin: 0 }}>
-          {pool.length} exported records{fixedDataset ? ` for ${fixedDataset}` : ""}
+          {pool.length} calls to draw from{fixedDataset ? `, all ${fixedDataset}` : ""}
         </span>
       </div>
 
@@ -78,7 +78,7 @@ export function ArchiveCall({ sample, fixedDataset }: {
         </div>
       </div>
 
-      <h4 style={{ marginTop: "1rem" }}>What makes it checkable</h4>
+      <h4 style={{ marginTop: "1rem" }}>The record filed beside it</h4>
       <dl className="kv" style={{ maxWidth: "46rem" }}>
         <dt>served_model</dt><dd>{manifest.served_model}</dd>
         <dt>prompt_sha256</dt><dd>{manifest.prompt_sha256}</dd>
@@ -106,10 +106,6 @@ export function ArchiveCall({ sample, fixedDataset }: {
 
       <Deep summary={`The rendered ${rec.prompt === "concept" ? "concept" : "zero-shot"} prompt, verbatim`}>
         <pre className="file">{promptSection(prompt, rec.prompt)}</pre>
-        <p className="note">
-          From <span className="mono">results/prompts_txt/{rec.dataset}.txt</span> — a render of
-          the same file the archive was hashed against, not a second copy of the prompt logic.
-        </p>
       </Deep>
     </div>
   );

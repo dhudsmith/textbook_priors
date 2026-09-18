@@ -40,6 +40,26 @@ interactive in every section, numbers only where a number changes what the audie
 
 ## 2. The sections
 
+**Re-cut 2026-09-18 for time.** Twenty-five minutes is about ten sections at two and a half
+minutes each, so the talk now runs: title and project · medical images and visual features · five
+arms, one classifier · how the study is put together · how the study runs · **one figure, three
+questions** · what if the model thinks · seven verdicts · how the work unfolded · what four days
+cost · Extra. The five per-hypothesis sections became one headline figure — the learning curve
+with a picker that presets the arms for H1, H2 or H5 — and everything that supported them sits in
+a closed panel beside it. Model size and the price ladder (H3, H7) left the spine entirely; the
+room meets them in the verdict table, whose second column is now a plain sentence saying what each
+hypothesis asked, and the full comparison is in Extra. The published-ceiling figure and the
+"what this study does not claim" list came off the spine; the list is in Extra and the ceiling
+figure is gone. A callout now earns its place only if it is a principle about what is different
+about doing science with a coding agent, or a genuinely surprising observation — fifteen became
+ten. Version-control and developer vocabulary is out of the prose everywhere, in the talk and in
+Extra: no commits, branches, checkouts or schemas, only the words the page itself teaches
+(Snakemake, arm, probe, AUC, chunk, reader, concept bank).
+
+The table below is the earlier cut, kept because the presenter and screen columns still describe
+what each piece of the page is for.
+
+
 Bold headers on the page; the *presenter* column is what is said, the *screen* column is what is
 built. Minutes sum to twenty-five, re-cut in 2026-09-17's review against the measured page heights: the three sections that pay the talk off were being scrolled at twice the pace of the two that set it up. The refrain is said three times — at the premise, as a bare pull quote between §7 and §9, and at the close.
 

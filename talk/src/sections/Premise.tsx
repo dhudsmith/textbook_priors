@@ -1,13 +1,15 @@
 import { useTalk } from "../state";
-import { Band, Bullets, Callouts, ChartFrame, Header } from "../components/ui";
+import { Band, Bullets, Callouts, ChartFrame, Deep, Header } from "../components/ui";
 import { EffortWaterfall } from "../charts/EffortWaterfall";
+import { Contention } from "../charts/Contention";
 import { premise } from "../content";
 import { useAsync } from "../hooks";
-import { loadEffort } from "../data";
+import { loadContention, loadEffort } from "../data";
 
 export function Premise() {
   const { study } = useTalk();
   const { data: effort, error } = useAsync(loadEffort);
+  const { data: contention } = useAsync(loadContention);
 
   // The bullets are the owner's wording with this run's own numbers dropped in, so a re-export
   // moves them rather than leaving a stale count on the wall.
@@ -25,7 +27,7 @@ export function Premise() {
 
   return (
     <Band id="premise">
-      <Header id="premise" eyebrow="11">{premise.header}</Header>
+      <Header id="premise" eyebrow="8">{premise.header}</Header>
       <p className="lede">{premise.lede}</p>
       <Bullets items={bullets} />
 
@@ -38,6 +40,14 @@ export function Premise() {
       )}
 
       <Callouts items={premise.callouts} />
+      {contention && (
+        <Deep summary="What our own load did to a single call">
+          <ChartFrame
+            caption="One job in flight against a wave of them, per prompt.">
+            <Contention data={contention} />
+          </ChartFrame>
+        </Deep>
+      )}
     </Band>
   );
 }

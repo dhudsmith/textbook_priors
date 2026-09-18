@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { useTalk } from "../state";
-import { Callouts, DatasetPicker, Deep, Header } from "../components/ui";
+import { DatasetPicker, Deep, Header } from "../components/ui";
 import { ArchiveCall } from "../components/ArchiveCall";
 import { LAZY, asset, loadArchive, loadBank, loadPrompt } from "../data";
 import { useAsync } from "../hooks";
-import { REPO, notClaimedMore } from "../content";
+import { REPO, notClaimed } from "../content";
+import { LadderBlock } from "./ExtraResults";
 import { fmt3, signed } from "../charts/primitives";
 
-/* Section 12: not presented. Everything for the audience on their own devices and for questions.
-   This module is lazy-loaded, so the main scroll does not pay for it. */
+/* Not presented: everything for the audience on their own devices and for questions, including
+   the comparisons that left the talk. This module is lazy-loaded, so the scroll does not pay for
+   it until somebody reaches it. */
 
 export default function Explore() {
   const { study, dataset, meta } = useTalk();
@@ -43,7 +45,7 @@ export default function Explore() {
       <table className="data" style={{ maxWidth: "52rem" }}>
         <thead>
           <tr>
-            <th>hypothesis</th><th style={{ textAlign: "left" }}>what it counted</th>
+            <th>hypothesis</th><th style={{ textAlign: "left" }}>what it asked</th>
             <th style={{ textAlign: "left" }}>this dataset</th>
             <th style={{ textAlign: "left" }}>overall</th>
           </tr>
@@ -52,7 +54,7 @@ export default function Explore() {
           {rows.map(({ v, won, applies }) => (
             <tr key={v.id}>
               <td><strong>{v.id.toUpperCase()}</strong> {v.title}</td>
-              <td style={{ textAlign: "left", fontSize: "0.78rem" }}>{v.metric}</td>
+              <td style={{ textAlign: "left", fontSize: "0.78rem" }}>{v.question}</td>
               <td style={{ textAlign: "left" }}>
                 {applies ? (won ? "won" : "did not win") : "not defined here"}
               </td>
@@ -64,7 +66,7 @@ export default function Explore() {
         </tbody>
       </table>
 
-      <Deep summary="Every number the evaluate stage wrote for it">
+      <Deep summary="Every AUC the evaluate stage wrote for this dataset">
       <div className="chart-scroll">
         <table className="data" style={{ maxWidth: "46rem" }}>
           <thead>
@@ -106,7 +108,7 @@ export default function Explore() {
         </table>
       </Deep>
 
-      <Deep summary="Completeness — the fraction of images with every concept answered">
+      <Deep summary="How often the model answered every feature on the checklist">
         <table className="data" style={{ maxWidth: "32rem" }}>
           <thead><tr><th>model</th><th>complete</th></tr></thead>
           <tbody>
@@ -165,6 +167,8 @@ export default function Explore() {
       {archive ? <ArchiveCall sample={archive} fixedDataset={dataset} />
                : <p className="note">Loading the archive sample…</p>}
 
+      <LadderBlock />
+
       <h4>Every figure the report generates</h4>
       <div className="controls">
         {study.figures.map((f) => (
@@ -185,12 +189,10 @@ export default function Explore() {
 
       <h4>The seven hypotheses, and the rules fixed before their numbers</h4>
       <p className="note">
-        Each rule was committed before the calls that decided it were bought. The commit carrying
-        the rule is an ancestor of the commit carrying its numbers, which is what makes the claim
-        checkable rather than asserted. The rules were restated for twelve datasets when six
-        verdicts were already known; the twelve-dataset threshold reproduces the six-dataset rule
-        exactly, so nothing already decided moved, and only the six new datasets are
-        pre-registered at it.
+        Every rule was written down before the calls that decided it were bought, and the dated
+        record shows it. The rules were restated for twelve datasets once six verdicts were
+        known; the twelve-dataset threshold reproduces the six-dataset one exactly, so nothing
+        already decided moved.
       </p>
       <div className="table-scroll">
         <table className="data">
@@ -200,7 +202,7 @@ export default function Explore() {
               <th style={{ textAlign: "left" }}>question</th>
               <th style={{ textAlign: "left" }}>rule</th>
               <th>needs</th>
-              <th>registered</th>
+              <th>written down</th>
               <th>verdict</th>
             </tr>
           </thead>
@@ -211,10 +213,7 @@ export default function Explore() {
                 <td style={{ textAlign: "left", fontSize: "0.8rem" }}>{v.question}</td>
                 <td style={{ textAlign: "left", fontSize: "0.8rem" }}>{v.rule}</td>
                 <td>{v.threshold} of {v.n_datasets}</td>
-                <td className="mono" style={{ fontSize: "0.72rem" }}>
-                  {v.registered.date}{" "}
-                  <span style={{ color: "var(--ink-muted)" }}>{v.registered.short}</span>
-                </td>
+                <td className="mono" style={{ fontSize: "0.72rem" }}>{v.registered.date}</td>
                 <td>{v.verdict}</td>
               </tr>
             ))}
@@ -222,25 +221,24 @@ export default function Explore() {
         </table>
       </div>
 
-      <h4>What this study does not claim, continued</h4>
+      <h4>What this study does not claim</h4>
       <ul style={{ maxWidth: "42rem", fontSize: "0.9rem", color: "var(--ink-secondary)" }}>
-        {notClaimedMore.map((c, i) => <li key={i}>{c}</li>)}
+        {notClaimed.map((c, i) => <li key={i}>{c}</li>)}
       </ul>
 
       <h4>The files behind all of it</h4>
       <p style={{ fontSize: "0.9rem" }}>
-        Everything is in <a href={REPO}>the repository</a>; the close lists each file by name.
+        Everything on this page is in <a href={REPO}>the code</a>, listed again at the close.
       </p>
-      <Deep summary="What this snapshot was read from">
+      <Deep summary="Every file this page's numbers were read from">
         <ul className="mono" style={{ fontSize: "0.72rem", color: "var(--ink-muted)" }}>
           {study.provenance.source_files.map((f) => <li key={f}>{f}</li>)}
         </ul>
       </Deep>
-      <Callouts items={[]} />
     </>
   );
 }
 
 export function ExploreHeader() {
-  return <Header id="explore" eyebrow="12">Explore</Header>;
+  return <Header id="explore" eyebrow="10">Extra</Header>;
 }

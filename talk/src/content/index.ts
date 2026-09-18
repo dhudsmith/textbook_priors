@@ -4,13 +4,19 @@
    in `public/data/`. Where a sentence needs a number it is assembled in the section component
    from the snapshot.
 
-   Callouts carry the observations - the argument, the lesson, the thing worth saying out loud.
-   Never a record of who did what. A blue PRINCIPLE is a practice and the failure it avoids; an
-   amber NEAR MISS is what nearly went wrong and what caught it, never the DAG; a violet AGENT
-   NOTE is what working this way with an agent taught us.
+   Twenty-five minutes, ten sections: two and a half minutes each. The spine is short and the
+   depth is one level down - a collapsed panel beside the thing it belongs to, or Extra.
+
+   A callout earns its place only if it is a principle about what is genuinely different about
+   doing science with an AI coding agent, or an observation that is genuinely surprising. Ordinary
+   good practice does not qualify, and a section with nothing that clears the bar has no callout.
 
    The division of labour with the bullets matters: bullets carry the facts and the numbers, and
    the speaker supplies the meaning. A bullet that states a conclusion belongs in a callout.
+
+   Plain words. No version-control or developer vocabulary - no commits, branches, checkouts,
+   repositories or schemas - except the terms the page itself teaches and is about: Snakemake,
+   arm, probe, AUC, chunk, reader, concept bank.
 
    Style: short sentences, a doer as the subject and its action as the verb, one idea each. Say
    what happened; let the reader judge it. */
@@ -30,7 +36,7 @@ export const REFRAIN =
 export const REPO = "https://github.com/dhudsmith/textbook_priors";
 
 export const LINKS = [
-  { label: "the repository", href: REPO },
+  { label: "the code, and everything behind this page", href: REPO },
   { label: "WORKFLOW.md — the plan and the seven hypotheses", href: `${REPO}/blob/main/WORKFLOW.md` },
   { label: "CHANGELOG.md — the owner's dated record of understanding", href: `${REPO}/blob/main/CHANGELOG.md` },
   { label: "SESSION_LOG.md — how the agent was directed, to the minute", href: `${REPO}/blob/main/SESSION_LOG.md` },
@@ -55,7 +61,7 @@ export const title = {
     lede:
       "To make that concrete, we start a new project — one that had been sitting at the back of " +
       "my mind for a while:",
-    question: "Can out-of-the-box vision-language models (VLMs) classify medical images?",    
+    question: "Can out-of-the-box vision-language models (VLMs) classify medical images?",
     bullets: [
       "Lots of details but straightforward",
       "Could use a cluster",
@@ -68,9 +74,6 @@ export const title = {
     header: "How the study is put together",
     lede:
       "Trying to get AI to do it the way I want.",
-    caption:
-      "Solid arrows are data. Dashed arrows are authorship — what the agent wrote, rather than " +
-      "what the workflow ran.",
   },
   qr: "Follow along on your own device",
 };
@@ -88,7 +91,7 @@ export const premise = {
     "Tested {hypotheses} distinct hypotheses on {datasets} medical image datasets.",
   ],
   effortCaption:
-    "Prompts and commits are moments. Jobs are the periods they ran. The calls are a rate.",
+    "Prompts and code changes are moments. Jobs are the periods they ran. The calls are a rate.",
   callouts: [
     {
       kind: "agent",
@@ -99,24 +102,34 @@ export const premise = {
       ],
       source: "TALK.md §3; SESSION_LOG.md",
     },
+    {
+      kind: "nearmiss",
+      title: "The wave that wrote nothing",
+      body: [
+        "Forty-eight jobs ran for two hours and wrote nothing. Each hit its time limit, and a " +
+          "job that runs out of time loses every call it has paid for.",
+        "A call that takes a second and a half on its own took forty-three under our own load. " +
+          "Forty-eight jobs at once bought about two and a half times the work of one: on a " +
+          "service this close to saturation, asking for more of it at once buys almost nothing.",
+      ],
+      source: "CHANGELOG.md 2026-09-12",
+    },
   ] as Callout[],
 };
 
 export const question = {
   header: "Medical images and associated visual features",
   lede:
-    "MedMNIST v2 is a standard benchmark suite: every 2D task in the release, one preprocessing, " +
-    "one set of splits. Radiology, pathology, dermatology and ophthalmology in one place.",
+    "To answer that I need medical images with labels. MedMNIST v2 is a standard benchmark " +
+    "suite: every 2D task in the release, one preprocessing, one set of splits.",
   /* The counts are filled in from the snapshot in Question.tsx. */
   bulletShapes: [
     "{datasets} 2D tasks: chest X-ray, dermoscopy, OCT, ultrasound, blood and tissue cells, " +
       "pathology slides, retinal photographs, and abdominal CT in three planes",
     "Binary, multi-class, ordinal and one multi-label problem, from {minClasses} to " +
       "{maxClasses} classes",
-    "Served at 224 pixels, greyscale or colour as the source gives it",
-    "Official splits, untouched: a seeded test sample is scored, and the labelled subsets are " +
-      "drawn from the training pool",
-    "Small, standard, and published — so there is a fully supervised number to compare against",
+    "Official splits, untouched, at 224 pixels",
+    "Published, so there is a fully supervised number to compare against",
   ],
   /* The second half of the section: what a textbook says these images contain. */
   bank: {
@@ -128,7 +141,7 @@ export const question = {
       "{minConcepts} to {maxConcepts} features per task, each on an ordered scale",
       "Every level carries the anchor text the model is shown, and a citation for it",
       "Each class gets a fingerprint: the levels that class commits to",
-      "Written and committed before any call went out",
+      "Written down before any call went out",
     ],
   },
   callouts: [
@@ -146,12 +159,10 @@ export const question = {
 
 export const design = {
   header: "Five arms, one classifier",
-  lede: "Two arms use no labels. Three use n labels.",
+  lede: "What is the textbook worth in labelled images? Two arms use none. Three use n.",
   bullets: [
-    "A pretrained model needs a pretrained baseline",
     "One classifier, three arms — only the features differ",
     "Every comparison paired on one seeded test sample",
-    "Across datasets, a sign test decides each comparison",
     "AUC throughout: 1.0 perfect, 0.5 chance",
   ],
   limits: [
@@ -166,11 +177,11 @@ export const design = {
       kind: "nearmiss",
       title: "The unfair baseline",
       body: [
-        "The first plan set a ResNet trained from scratch on fifty images against a model with " +
+        "The first plan set a network trained from scratch on fifty images against a model with " +
           "billions of pretrained parameters. Every rule could have been correct and the headline " +
           "claim still true by construction.",
         "A person reading the plan caught it before any rule existed. The from-scratch network " +
-          "became the ceiling; the baseline became a linear probe on ImageNet features.",
+          "became the ceiling; the baseline became a probe on pretrained image features.",
       ],
       source: "CHANGELOG.md 2026-09-09",
     },
@@ -183,196 +194,125 @@ export const machine = {
   bullets: [
     "A chunk is one job's hundred images",
     "A reader is a model plus a reasoning effort",
-    "Write-protected, so re-running the calls has to be deliberate",
-    "The call below is drawn at random — yours differs from mine",
+    "Once a reply is written it stays written: buying the calls again has to be deliberate",
   ],
   callouts: [
     {
       kind: "nearmiss",
       title: "One chunk run before the other 270",
       body: [
-        "Four scoring rules were generated in a loop, and all four inherited the last iteration's " +
-          "command. The first chunk, run alone on purpose, came back with the primary model in its " +
-          "file name and another model in served_model.",
-        "Had the fan-out gone out, one model would have written every archive, and the scale " +
-          "hypothesis would have compared four copies of it. The rules are now written out by " +
-          "hand, and the stage refuses a mismatch before its first call.",
+        "Four scoring rules were written in one loop, and all four inherited the last one's " +
+          "command. The first chunk, run alone on purpose, came back with the primary model's " +
+          "name on the file and a different model's name in the record of what had answered.",
+        "Had the rest gone out, one model would have written every archive, and the question " +
+          "about model size would have compared four copies of it.",
       ],
       source: "CHANGELOG.md 2026-09-11",
     },
-    {
-      kind: "principle",
-      title: "Draw a line where the model is",
-      body: [
-        "Responses are archived raw, with the served model and the prompt hash, and the archive is write-protected. Everything downstream is a deterministic function of it.",
-        "Without that line a result cannot be recomputed once the model moves — and it will move.",
-      ],
-      source: "WORKFLOW.md §5, principle 7",
-    },
-  ] as Callout[],
-};
-
-export const h1 = {
-  header: "H1 — Is the textbook worth labelled images?",
-  lede:
-    "Arm B is a horizontal line drawn with no labels. n_B is how many labels the pixel arm " +
-    "needs to reach it.",
-  bullets: [
-    "The rule was fixed before the numbers existed",
-    "The numbers do not meet it",
-    "A negative result you can stand behind is worth having",
-  ],
-  callouts: [
-    {
-      kind: "nearmiss",
-      title: "The wave that wrote nothing",
-      body: [
-        "Forty-eight jobs ran for two hours and wrote no chunks. Each was killed at its time " +
-          "limit, and a chunk that times out loses every call it made.",
-        "A call that takes a second and a half alone took forty-three seconds under our own " +
-          "load. Latency grew almost in step with concurrency: forty-eight jobs bought about two " +
-          "and a half times the throughput of one. On an endpoint this close to saturation the " +
-          "cap is politeness, and the runtime request decides whether a chunk saves anything.",
-      ],
-      source: "CHANGELOG.md 2026-09-12",
-    },
-  ] as Callout[],
-};
-
-export const h2 = {
-  /* Kept for the collapsed panel that answers the obvious objection. */
-  circular: [
-    "The two arms are separate calls on separate prompts, so the comparison cannot be circular. The first design returned both from one call, which would have let the concept answers rationalise a class the model had already chosen.",
-  ],
-  header: "H2 — The bank, or just the model?",
-  lede: "Two separate prompts: ask for the diagnosis, or ask for the checklist.",
-  bullets: [
-    "Where the model can name the class, asking for the name wins",
-    "Where it cannot, the checklist does",
-    "Permute either one and both arms collapse — the answers carry real information",
-    "Separate prompts, separate calls: the comparison cannot be circular",
-  ],
-  callouts: [
     {
       kind: "nearmiss",
       title: "The field we did not read",
       body: [
         "One model returned nothing readable on three thousand calls. A single diagnostic call " +
-          "found its answers, as finished JSON, under a third message field the reader did not " +
-          "know.",
-        "The archive could not repair it. It held the text our code had extracted, not the " +
-          "message, and when the extraction was wrong the calls had to be bought again. The whole " +
-          "message object is archived now.",
+          "found its answers, already formatted, in a part of the reply our code never looked at.",
+        "The archive could not repair it: it held the text we had pulled out, not the reply, so " +
+          "the calls had to be bought again. The whole reply is kept now.",
       ],
       source: "CHANGELOG.md 2026-09-11",
     },
+    {
+      kind: "principle",
+      title: "Name the model, and keep what it said",
+      body: [
+        "The service's shortcut names point at whatever it considers best today. Buy an archive against one and it answers differently next month, with nothing on file to say so.",
+        "Every model here is named in full, every reply is kept exactly as it came back, and the name of the model that answered is kept with it. Everything after that is a fixed calculation on those files.",
+      ],
+      source: "WORKFLOW.md §5, principle 7; docs/rcd_llm_service.md",
+    },
   ] as Callout[],
 };
 
-export const h3 = {
-  header: "H3 and H7 — Does a bigger model read better?",
+/* The headline results figure, and the three questions it answers. The per-question detail sits
+   in panels beside it, closed; model size and the price ladder moved out to Extra entirely. */
+export const results = {
+  header: "One figure, three questions",
   lede:
-    "Two open families, 9B to 27B and 12B to 31B: no trend. One closed family ordered only by " +
-    "price — gpt-5.6-luna, then terra, then sol: the top beats the bottom.",
+    "Every arm on one pair of axes: how well it separates the classes, against how many " +
+    "labelled images it was given. Pick a question and the figure draws the arms that answer it.",
   bullets: [
-    "Read within family only: the larger models are also the newer ones",
-    "Both size steps also change quantisation",
-    "Nothing public ranks the closed models, so price is the proxy",
-    "Whatever separates them, parameter count did not capture it",
+    "Arms given no labels are flat lines; arms given labels climb",
+    "Shaded bands are 95% intervals — hover a point to read one",
+  ],
+  /* One chip each. `hidden` is the preset: the series the figure starts without. */
+  choices: [
+    {
+      id: "h1",
+      chip: "Can the textbook replace labels?",
+      asks:
+        "The checklist read with no labels at all, against a classifier on pretrained image " +
+        "features, and against the same classifier on the checklist answers.",
+      hidden: ["CP", "A", "lit"],
+    },
+    {
+      id: "h2",
+      chip: "The checklist, or just ask?",
+      asks:
+        "Two prompts on the same image, neither using a label: name the diagnosis, or answer " +
+        "the checklist and match the answers to the textbook's description of each class.",
+      hidden: ["C", "P", "CP", "lit"],
+    },
+    {
+      id: "h5",
+      chip: "Does the textbook add to the pixels?",
+      asks:
+        "One classifier on pretrained image features, then the same classifier on those " +
+        "features with the checklist answers alongside them. Nothing else changes.",
+      hidden: ["A", "B", "C", "lit"],
+    },
+  ],
+  /* Kept for the panel that answers the obvious objection to the second question. */
+  circular: [
+    "The two arms are separate calls on separate prompts, so the comparison cannot be circular. The first design returned both from one call, which would have let the concept answers rationalise a class the model had already chosen.",
   ],
   callouts: [
     {
-      kind: "principle",
-      title: "Name the model, never the alias",
+      kind: "nearmiss",
+      title: "Two agents, one working copy",
       body: [
-        "The service's aliases point at whatever it considers best today. An archive bought against an alias answers differently next month, and nothing on disk says so.",
-        "Every model here is named exactly, and the served name comes back in every manifest.",
+        "A second agent session, unaware of the first, moved the shared working copy to its own " +
+          "version of the code while jobs were running. A job reads the code when it starts, so " +
+          "five of twelve results were computed by the wrong version.",
+        "The record filed beside each result names the version that wrote it, and that is what " +
+          "found it — before anybody had a theory. Read the record first.",
       ],
-      source: "docs/rcd_llm_service.md",
-    },
-    {
-      kind: "agent",
-      title: "Read the docs before buying calls",
-      body: [
-        "Asked which models could see an image, the agent read the service's own metadata instead of spending calls to find out. It corrected what the study believed.",
-        "The cheapest experiment is usually the one someone already ran.",
-      ],
-      source: "SESSION_LOG.md 2026-09-12 15:20; docs/rcd_llm_service.md",
+      source: "SESSION_LOG.md 2026-09-13 12:25",
     },
   ] as Callout[],
 };
 
-export const h4 = {
-  /* Kept for the collapsed panel of limits. */
-  limits: [
-    "The frontier model is closed and of unknown size, so the step is capability, not parameters. It also refuses temperature zero, so it is the one reader whose answers are sampled, and some of any difference is noise the bootstrap cannot see.",
-  ],
-  header: "H4 and H6 — What if the model thinks?",
+export const thinking = {
+  header: "What if the model thinks?",
   lede:
-    "One day, by the clock. A claim overturned at 15:20. A rule written at 16:05, before a call " +
-    "was bought. A wave capped at 17:35.",
+    "The same model, told to think before it answers — and then a frontier model in place of an " +
+    "open one.",
   bullets: [
     "Thinking helps where the model read badly and hurts where it read well",
     "A frontier model reads no better than a 27B open model",
     "A null is a result: more thinking is not what the model lacked",
-    "Then a prediction, named before the calls: one concept had collapsed, and less effort " +
-      "fixed that dataset and nothing else",
-    "Limits: closed model, unknown size, and it refuses temperature zero",
+  ],
+  /* Kept for the collapsed panel of limits. */
+  limits: [
+    "The frontier model is closed and of unknown size, so the step is capability, not parameters. It also refuses temperature zero, so it is the one reader whose answers are sampled, and some of any difference is noise the bootstrap cannot see.",
   ],
   callouts: [
-    {
-      kind: "principle",
-      title: "Write the rule before you buy the calls",
-      body: [
-        "An arm worth adding is worth pre-registering. Anything that cannot be is a separate study.",
-        "The thinking step, the effort step and the price ladder each had a rule committed before a call was bought.",
-      ],
-      source: "WORKFLOW.md §10",
-    },
     {
       kind: "agent",
       title: "An arm that could decide nothing",
       body: [
-        "A fifth arm was added after seeing the numbers. It cost three thousand calls and it measured something real.",
-        "It was removed the same day. Designed after the results, it could decide nothing — and an arm that decides nothing needs a warning label in every table it touches.",
+        "A fifth arm was added after seeing the numbers. Asking for it took one prompt; it cost three thousand calls, and it measured something real.",
+        "It was removed the same day. Designed after the results, it could decide nothing. When a new arm is one sentence away, the discipline has to come from you rather than from the effort.",
       ],
       source: "CHANGELOG.md 2026-09-12; WORKFLOW.md §10",
-    },
-    {
-      kind: "nearmiss",
-      title: "A time limit that loses the whole chunk",
-      body: [
-        "Eleven thinking chunks went out at once, and a timed call came back at over two " +
-          "minutes. The wave was cancelled and capped at four in flight: not for throughput, which " +
-          "is flat for the thinking reader, but so that each chunk finishes inside its limit.",
-        "A chunk that overruns writes nothing, and the archive cannot say how far it got.",
-      ],
-      source: "CHANGELOG.md 2026-09-12",
-    },
-  ] as Callout[],
-};
-
-export const h5 = {
-  header: "H5 — Does the textbook add anything?",
-  lede: "The first supported hypothesis, and the one that changes what the others mean.",
-  bullets: [
-    "H1 asked: can concepts replace pixels? No.",
-    "H5 asks: do they carry anything pixels lack? Yes.",
-    "Unequal and complementary are not the same thing",
-    "Limit: a dozen concept columns share one penalty with 512 pixel columns",
-  ],
-  callouts: [
-    {
-      kind: "nearmiss",
-      title: "Two sessions, one checkout",
-      body: [
-        "A second agent session, unaware of the first, switched the shared checkout onto its own " +
-          "branch mid-run. Jobs read the working tree when they start, so five of twelve classify " +
-          "outputs were written by the wrong code.",
-        "Each manifest's git_commit named the culprit before any theory did. Read the manifest " +
-          "first.",
-      ],
-      source: "SESSION_LOG.md 2026-09-13 12:25",
     },
   ] as Callout[],
 };
@@ -380,27 +320,31 @@ export const h5 = {
 export const verdicts = {
   header: "Seven verdicts",
   bullets: [
-    "Labels close the gap; the textbook adds a little on top",
-    "The ceiling is not an arm — it trained on the whole split",
+    "The textbook cannot replace labelled images",
+    "Added to them, it adds a little",
   ],
-  callouts: [
-    {
-      kind: "principle",
-      title: "A manifest with every result",
-      body: [
-        "Parameters, seeds, commit, versions, host and wall time travel with every result file.",
-        "A number you cannot trace to the run that made it is not evidence.",
-      ],
-      source: "WORKFLOW.md §5, principle 5",
-    },
-  ] as Callout[],
+  /* The plain-language reading of each question, for the one column a listener actually reads.
+     H3 and H7 are presented nowhere else, so their sentences name the comparison outright. */
+  asks: {
+    h1: "Read with no labels at all, does the textbook checklist beat pretrained image features " +
+      "given the smallest labelled set?",
+    h2: "Does answering the textbook checklist beat simply asking the model for the diagnosis?",
+    h3: "Within each open model family, does the bigger model read the images better than the " +
+      "smaller one?",
+    h4: "Does a better reader — told to think, or a stronger model — get more out of the same " +
+      "images?",
+    h5: "Added to pretrained image features, do the checklist answers carry anything those " +
+      "features do not already have?",
+    h6: "Was the frontier model asked to think too hard? Lower its effort and see.",
+    h7: "Among closed models ranked only by price, does the dearest read the checklist better " +
+      "than the cheapest?",
+  } as Record<string, string>,
+  callouts: [] as Callout[],
 };
 
 export const close = {
   header: "What four days cost",
   bullets: [
-    "The dependency graph caught none of them",
-    "A person reading the plan. One chunk run first. A probe. A manifest field.",
     "The graph shows a stage exists, not that it computes the right thing",
     "The workflow gives you what was done, for free",
     "The session log is the other half: why. You need both.",
@@ -423,15 +367,27 @@ export const explore = {
   header: "Extra",
 };
 
-/* Two lists, because two of these are what a room asks about and two are not. The first is on
-   the main scroll at #verdicts; the second waits in the explorer. */
+/* What the study does not claim. Off the main scroll: it is what a room asks about rather than
+   something twenty-five minutes has time to walk through. */
 export const notClaimed = [
   "The concept scores are not clinically validated.",
+  "Simulated expert review is not a clinician's.",
+  "No arm here is state of the art.",
   "Every source dataset is public and labelled, so “the model carries textbook knowledge” " +
     "and “the model has seen this benchmark” cannot be told apart with these data.",
 ];
 
-export const notClaimedMore = [
-  "Simulated expert review is not a clinician's.",
-  "No arm here is state of the art.",
-];
+/* H3 and H7 left the talk: the detail is in Extra and the verdict table is where the room meets
+   them. This is the prose that went with the model ladder. */
+export const ladderExtra = {
+  header: "Does a bigger model read better?",
+  ledeShape:
+    "Two open families, {qLo}B to {qHi}B and {gLo}B to {gHi}B, then a closed family ranked only " +
+    "by price — gpt-5.6-luna, then terra, then sol.",
+  bullets: [
+    "Read within family only: the larger models are also the newer ones",
+    "Both size steps also change quantisation",
+    "Nothing public ranks the closed models, so price is the proxy",
+    "Whatever separates them, parameter count did not capture it",
+  ],
+};

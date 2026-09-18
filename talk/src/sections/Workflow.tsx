@@ -10,7 +10,6 @@ export function Workflow() {
       <Header id="workflow" eyebrow="3">{copy.workflow.header}</Header>
       <p className="lede">{copy.workflow.lede}</p>
       <WorkflowDiagram />
-      <p className="note">{copy.workflow.caption}</p>
     </Band>
   );
 }

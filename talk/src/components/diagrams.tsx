@@ -129,7 +129,8 @@ export function WorkflowDiagram() {
            "A human directs an AI coding agent. The agent wrote three things: the concept bank, " +
            "the Snakemake workflow, and the report and this page. The workflow takes two fixed " +
            "inputs - the concept bank and the twelve MedMNIST datasets - runs seven stages, and " +
-           "produces the write-protected response archive, the tables and figures, and the " +
+           "produces the response archive, which is never overwritten, the tables and figures, " +
+           "and the " +
            "report. The vision-language model under study is a service the score stage calls; it " +
            "writes none of the code."}>
       <defs>
@@ -208,7 +209,7 @@ export function WorkflowDiagram() {
         <text x={600} y={128} textAnchor="middle" fill="var(--ink-muted)"
               style={{ fontSize: 10.5 }}>{led.calls.toLocaleString("en-US")} raw replies</text>
         <text x={600} y={141} textAnchor="middle" fill="var(--ink-muted)"
-              style={{ fontSize: 10 }}>write-protected</text>
+              style={{ fontSize: 10 }}>never overwritten</text>
 
         {box(500, 164, 200, 48, "var(--surface-raised)")}
         <text x={600} y={186} textAnchor="middle" fill="var(--ink)">results</text>

@@ -5,10 +5,9 @@ import { question } from "../content";
 import { useAsync } from "../hooks";
 import { LAZY, asset, loadBank } from "../data";
 
-/* The dataset picker, sample images by class on the left and the concept bank as a checklist on
-   the right: hover or open a concept to see its ordered levels, the cited anchor text for each
-   level, and the sources. This is the study's prior knowledge, and it was committed before any
-   call was bought. */
+/* The dataset picker, sample images by class and the concept bank as a checklist: open a concept
+   to see its ordered levels, the cited anchor text for each level, and the sources. This is the
+   study's prior knowledge, written down before any call was bought. */
 
 export function Question() {
   const { study, meta, dataset } = useTalk();
@@ -63,9 +62,7 @@ export function Question() {
               </figure>
             ))}
           </div>
-          <p className="note">
-            The same seeded sample every arm was scored on, by position.
-          </p>
+          <p className="note">The same seeded sample every arm was scored on.</p>
         </div>
 
         <div>
@@ -149,9 +146,8 @@ export function Question() {
                   </table>
                 </div>
                 <p className="note">
-                  <span className="mono">any</span> means the sources exclude nothing on that
-                  concept for that class, and arm B's distance masks it. From{" "}
-                  <span className="mono">data/concepts/{dataset}.yaml</span>.
+                  <span className="mono">any</span> means the sources rule nothing out on that
+                  feature for that class.
                 </p>
               </Deep>
 

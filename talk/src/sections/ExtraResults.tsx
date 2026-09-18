@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useTalk } from "../state";
-import { Band, Bullets, Callouts, ChartFrame, Dots, Header } from "../components/ui";
+import { Bullets, ChartFrame, Dots } from "../components/ui";
 import { Ladder } from "../charts/Ladder";
-import { h3 as copy } from "../content";
+import { ladderExtra as copy } from "../content";
 import { signed, widestSpread } from "../charts/primitives";
 
-export function H3() {
+/* Model size and the price ladder left the talk: twenty-five minutes did not have room for them
+   and the verdict table is where the room meets them now. The whole comparison lives here. */
+
+export function LadderBlock() {
   const { study } = useTalk();
   const h3 = study.across.h3;
   const h7 = study.across.h7;
@@ -40,21 +43,27 @@ export function H3() {
   const qwen = h3.ladder.qwen;
   const gemma = h3.ladder.gemma;
 
+  // The family sizes come from the snapshot, never from the copy.
+  const sizes = (family: string) => openOrder.filter((m) => models[m].family === family)
+    .map((m) => models[m].params_b);
+  const lede = copy.ledeShape
+    .replace("{qLo}", String(Math.min(...sizes(families[0]))))
+    .replace("{qHi}", String(Math.max(...sizes(families[0]))))
+    .replace("{gLo}", String(Math.min(...sizes(families[1]))))
+    .replace("{gHi}", String(Math.max(...sizes(families[1]))));
+
   return (
-    <Band id="h3">
-      <Header id="h3" eyebrow="7">{copy.header}</Header>
-      <p className="lede">{copy.lede}</p>
+    <div>
+      <h4>{copy.header}</h4>
+      <p className="lede">{lede}</p>
       <p>
         Within the qwen family the larger model wins on {qwen.wins} of{" "}
         {study.study.arm_b_datasets.length} (p = {qwen.sign_test_p.toFixed(4)}); within gemma,{" "}
         {gemma.wins} (p = {gemma.sign_test_p.toFixed(4)}). The rule asks for {v3.threshold} in both
         families: {v3.verdict}. A Friedman test over the four models gives{" "}
-        p = {Number(h3.friedman.p).toFixed(2)}.
-      </p>
-      <p>
-        The closed family, ordered by price alone, is the contrast: the top of the ladder beats the
-        bottom on {h7.wins} of {h7.n_datasets} (p = {h7.sign_test_p.toFixed(4)}), which is{" "}
-        {v7.verdict}.
+        p = {Number(h3.friedman.p).toFixed(2)}. The closed family, ranked by price alone, is the
+        contrast: the top of the ladder beats the bottom on {h7.wins} of {h7.n_datasets}{" "}
+        (p = {h7.sign_test_p.toFixed(4)}), which is {v7.verdict}.
       </p>
       <Bullets items={copy.bullets} />
 
@@ -101,12 +110,11 @@ export function H3() {
         <span className="note" style={{ display: "inline" }}>
           H7, the top of the price ladder over the bottom: {v7.wins} of {v7.n_datasets},{" "}
           against {v7.threshold} needed — {v7.verdict}. Median step{" "}
-          {signed(median(Object.values(h7.differences).map((d: any) => d.median)))} AUC.
+          {signed(median(Object.values(h7.differences).map((d) => (d as { median: number }).median)))}{" "}
+          AUC.
         </span>
       </p>
-
-      <Callouts items={copy.callouts} />
-    </Band>
+    </div>
   );
 }
 

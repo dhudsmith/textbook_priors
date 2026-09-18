@@ -9,11 +9,8 @@ import { Premise } from "./sections/Premise";
 import { Question } from "./sections/Question";
 import { Design } from "./sections/Design";
 import { Machine } from "./sections/Machine";
-import { H1 } from "./sections/H1";
-import { H2 } from "./sections/H2";
-import { H3 } from "./sections/H3";
-import { H4 } from "./sections/H4";
-import { H5 } from "./sections/H5";
+import { Results } from "./sections/Results";
+import { Thinking } from "./sections/Thinking";
 import { Verdicts } from "./sections/Verdicts";
 import { Close } from "./sections/Close";
 import { REFRAIN, explore } from "./content";
@@ -26,7 +23,7 @@ function ExploreBand() {
   const { ref, seen } = useInView<HTMLDivElement>("400px");
   return (
     <Band id="explore">
-      <Header id="explore" eyebrow="12">{explore.header}</Header>
+      <Header id="explore" eyebrow="10">{explore.header}</Header>
       <div ref={ref} className="explore-slot">
         {seen && (
           <Suspense fallback={<p className="note">Loading the explorer…</p>}>
@@ -65,14 +62,11 @@ function Page() {
         <Design />
         <Workflow />
         <Machine />
-        <H1 />
-        <H2 />
-        <H3 />
-        <H4 />
-        {/* The refrain at the hinge of the talk: minute two, minute thirteen, minute twenty-four.
-            Projected, because it is the sentence the room should leave with. */}
+        <Results />
+        <Thinking />
+        {/* The refrain at the hinge of the talk, and again at the close: it is the sentence the
+            room should leave with. */}
         <div className="refrain-band"><p className="pullquote">{REFRAIN}</p></div>
-        <H5 />
         <Verdicts />
         <Premise />
         <Close />
