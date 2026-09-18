@@ -255,19 +255,26 @@ export const results = {
 };
 
 export const thinking = {
-  header: "What if the model thinks?",
-  /* "and then {frontier} in its place" was too compressed to read: it was not clear what took
-     whose place, or that the effort was held fixed so that the swap is the only change. */
+  header: "Does 'thinking' help?",
+  /* Say what was compared and what was held still. No sentence that announces how many things
+     are about to be said - it is a count of the prose, not a fact about the study. */
   ledeShape:
-    "Two steps, one change each. First {primary} with no thinking step, then the same model " +
-    "told to think before it answers. Then {frontier} in place of it, thinking just as hard, so " +
-    "the second step changes the model and nothing else. Every reader is compared on the same " +
-    "images, by the same procedure.",
+    "{primary} with no thinking step, then the same model told to think before it answers. Then " +
+    "{frontier} in its place, thinking just as hard, so the model is all that changed. Every " +
+    "reader is compared on the same images, by the same procedure.",
   bullets: [
     "Thinking helps where the model read badly and hurts where it read well",
     "The frontier model reads no better than the open one it replaced",
     "More thinking is not what the model lacked",
   ],
+  /* Both halves of H4 draw the same chart, so the figure is one toggle rather than two figures
+     or - as it was until 2026-09-19 - one figure and a sentence. */
+  toggle: { thinking: "thinking, same model", frontier: "frontier model, same effort" },
+  captionShapes: {
+    thinking: "What thinking did to {primary}'s reading, against how well it read without it.",
+    frontier: "What {frontier} did in {primary}'s place, both thinking, against how well " +
+      "{primary} read while thinking.",
+  },
   /* Kept for the collapsed panel of limits. */
   limits: [
     "The frontier model is closed and its size is not published, so this step changes capability rather than parameter count. It also refuses to answer deterministically, so it is the one reader whose answers vary between calls, and some of any difference is noise the intervals cannot see.",

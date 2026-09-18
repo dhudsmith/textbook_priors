@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useTalk } from "../state";
-import { DatasetPicker, Deep, Header } from "../components/ui";
+import { ChartFrame, DatasetPicker, Deep, Dots, Header } from "../components/ui";
 import { LAZY, asset, loadBank, loadPrompt } from "../data";
 import { useAsync } from "../hooks";
 import { REPO, notClaimed } from "../content";
+import { Forest } from "../charts/Forest";
 import { fmt3, signed } from "../charts/primitives";
 
 /* Not presented: everything for the audience on their own devices and for questions. This
@@ -11,11 +12,19 @@ import { fmt3, signed } from "../charts/primitives";
    model said about one image is in the talk itself and is not repeated here. */
 
 export default function Explore() {
-  const { study, dataset, meta } = useTalk();
+  const { study, dataset, meta, armHue } = useTalk();
   const per = study.per_dataset[dataset];
   const { data: bank } = useAsync(() => loadBank(dataset), [dataset]);
   const { data: prompt } = useAsync(() => loadPrompt(dataset), [dataset]);
   const [fig, setFig] = useState<string | null>(null);
+
+  // H6, moved here from the thinking section: across datasets, not about the one picked above.
+  const h6 = study.across.h6;
+  const v6 = study.verdicts.find((x) => x.id === "h6")!;
+  const h6rows = Object.entries(h6.differences).map(([ds, d]) => ({
+    dataset: ds, ...(d as { median: number; lo: number; hi: number }),
+  }));
+  const h6clear = h6rows.filter((r) => r.lo > 0 || r.hi < 0);
 
   const rows = study.verdicts.map((v) => ({
     v, won: v.per_dataset[dataset], applies: dataset in v.per_dataset,
@@ -222,6 +231,32 @@ export default function Explore() {
         Everything on this page comes from <a href={REPO}>the code</a>, linked again in the
         takeaways.
       </p>
+      {/* Not about the dataset picked above: H6 is one prediction about one dataset, and it
+          came out of the thinking section on 2026-09-19 because the room does not need it to
+          read H4. */}
+      <Deep summary="A prediction made before the calls: was the frontier model thinking too hard?">
+        <p>
+          The archive showed the frontier model giving one dermoscopy feature the same score on
+          every image, so a rule was written — before the calls — saying that less effort would
+          fix that dataset and no other. Lowering the effort wins on {h6.wins} of {h6.n_datasets} and
+          raising it on {h6.wins_for_more}, against the {h6.min_wins} either direction would need:{" "}
+          {v6.verdict}. Exactly {h6clear.length} interval of the {h6rows.length} clears zero, and
+          it is {h6clear.map((r) => r.dataset).join(", ")} — the one the prediction named.
+        </p>
+        <ChartFrame
+          caption={"gpt-5.6-terra at low effort minus the same model at medium, each read by " +
+                   "a classifier of its own, fitted the same way."}>
+          <Forest rows={h6rows} colour={armHue("C")}
+                  label="gpt-5.6-terra: low minus medium, probe AUC" />
+        </ChartFrame>
+        <p>
+          <Dots per={v6.per_dataset} order={study.study.arm_b_datasets} label="H6 per dataset" />{" "}
+          <span className="note" style={{ display: "inline" }}>
+            low over medium: {v6.wins} of {v6.n_datasets} — {v6.verdict}.
+          </span>
+        </p>
+      </Deep>
+
       <Deep summary="Every file this page's numbers were read from">
         <ul className="mono" style={{ fontSize: "0.72rem", color: "var(--ink-muted)" }}>
           {study.provenance.source_files.map((f) => <li key={f}>{f}</li>)}

@@ -4,28 +4,43 @@ import { useWidth } from "../hooks";
 import { AxisBottom, AxisLeft, Marker, fmt3, leftGutter, plotBox, short, signed, spreadLabels,
   useHover } from "./primitives";
 
-/* Thinking's effect against how well the model scored the visual features without it. The slope
-   is the claim: thinking helps on the tasks the model read badly and hurts on the ones it read
-   well. One point per dataset, in the dataset's own colour and marker. */
+/* What one step of H4 did, against how well the reader it started from scored the visual features.
+   The slope is the claim: a step helps on the tasks that were read badly and hurts on the ones
+   that were read well. One point per dataset, in the dataset's own colour and marker.
 
-const Y_LABEL = "thinking − no thinking (AUC)";
+   Both steps are drawn by this one chart - they are the same comparison twice, a difference
+   against the baseline it is a difference from - and the section toggles between them. The
+   frontier step had no figure at all until 2026-09-19: its claim was made in a sentence while the
+   thinking step got a chart, which is not a fair way to show two halves of one result. */
 
-export function ThinkingScatter({ height = 360 }: { height?: number }) {
+/** Both axes name the readers they are about: a difference is meaningless without them. The
+    effort suffix is dropped because the axis says which step this is. */
+const noEffort = (id: string) => id.replace(/-(minimal|low|medium|high)$/, "");
+
+export function ThinkingScatter({ step = "h4a", height = 360 }: {
+  step?: "h4a" | "h4b"; height?: number;
+}) {
   const { study, hue, metaOf } = useTalk();
   const { ref, width: measured } = useWidth<HTMLDivElement>(700);
   const { width, margin: base } = plotBox(measured);
   const { show, hide, tip } = useHover();
 
-  const h4a = study.across.h4.h4a;
-  const baseline = h4a.from as string;
-  const rows = Object.keys(h4a.differences).map((d) => ({
+  const h4s = study.across.h4[step];
+  const baseline = h4s.from as string;
+  const rows = Object.keys(h4s.differences).map((d) => ({
     dataset: d,
     base: study.per_dataset[d].h4!.probe_auc[baseline],
-    diff: h4a.differences[d] as { median: number; lo: number; hi: number },
+    diff: h4s.differences[d] as { median: number; lo: number; hi: number },
   }));
 
   // Signed ticks are the widest on the page, so the gutter is measured from them before the
   // scales are built rather than assumed.
+  const Y_LABEL = step === "h4a"
+    ? "thinking − no thinking (AUC)"
+    : `${noEffort(h4s.to as string)} − ${noEffort(baseline)} (AUC)`;
+  const X_LABEL = step === "h4a"
+    ? "probe AUC with thinking off"
+    : `probe AUC of ${noEffort(baseline)}, thinking`;
   const yDomain: [number, number] = [Math.min(...rows.map((r) => r.diff.lo)) - 0.02,
                                      Math.max(...rows.map((r) => r.diff.hi)) + 0.02];
   const yFormat = (v: number) => signed(v, 2);
@@ -51,13 +66,13 @@ export function ThinkingScatter({ height = 360 }: { height?: number }) {
   return (
     <div ref={ref}>
       <svg className="plot" width={width} height={height} role="img"
-           aria-label={"One point per dataset: how much the thinking step changed the probe's " +
-                       "AUC, against how well the same model scored the visual features with " +
-                       "thinking off. The points slope downwards."}>
+           aria-label={`One point per dataset: how much this step changed the probe's AUC ` +
+                       `(${Y_LABEL}), against how the reader it started from scored the visual ` +
+                       `features (${X_LABEL}). The points slope downwards.`}>
         <AxisLeft scale={y} x={MARGIN.left} ticks={yTicks} width={innerW}
                   label={Y_LABEL} format={yFormat} />
         <AxisBottom scale={x} y={MARGIN.top + innerH} ticks={x.ticks(5)}
-                    label="probe AUC with thinking off" format={(v) => v.toFixed(2)} />
+                    label={X_LABEL} format={(v) => v.toFixed(2)} />
         <line x1={MARGIN.left} x2={MARGIN.left + innerW} y1={y(0)} y2={y(0)}
               stroke="var(--ink-muted)" strokeWidth={1} strokeDasharray="1 3" />
         {rows.map((r) => {
@@ -70,7 +85,7 @@ export function ThinkingScatter({ height = 360 }: { height?: number }) {
                    <div className="k">{r.dataset}</div>
                    <strong>{signed(r.diff.median)}</strong>{" "}
                    <span className="k">95% [{fmt3(r.diff.lo)}, {fmt3(r.diff.hi)}]</span>
-                   <div className="k">probe with thinking off {fmt3(r.base)}</div>
+                   <div className="k">{noEffort(baseline)} on its own {fmt3(r.base)}</div>
                  </>
                ))} onMouseLeave={hide}>
               <circle cx={x(r.base)} cy={y(r.diff.median)} r={13} fill="transparent" />

@@ -1784,3 +1784,31 @@ then the same model told to think before it answers. Then gpt-5.6-terra in place
 just as hard, so the second step changes the model and nothing else.* It has to be read in that
 order because the frontier model cannot be asked for no reasoning at all, which the limits panel
 below already says.
+
+## 2026-09-19 02:30 — Five corrections to the thinking section, and a tic named
+
+*"You keep using this pattern: 'Two steps, one change each.' Stop! It's inane and tells nothing."*
+He is right, and it is worth naming because it will come back: a sentence that announces how many
+things are about to be said is a count of the prose, not a fact about the study, and it delays the
+first real word. The lede opens on the comparison now — *qwen3.8-27b-fp8 with no thinking step,
+then the same model told to think before it answers. Then gpt-5.6-terra in its place, thinking just
+as hard, so the model is all that changed.* A sweep for the same shape elsewhere found no other
+instance; the counts that remain ("One line per dataset", "One job is one chunk") are definitions,
+not announcements.
+
+*"Drop this"* — the strip of the day H4 was designed, run and decided. Gone, with `TimelineStrip`
+and `loadTimeline`, which nothing else used. The day it happened belongs to the section about how
+the work unfolded, not under a result.
+
+*"Where's the gpt terra picture?"* Nowhere, which was the fault: H4 has two halves and only one of
+them had a figure, while the other was asserted in a sentence and in a bullet. They are the same
+comparison twice — a difference plotted against the reading it is a difference from — so the
+scatter now takes a step and the section toggles between them, both axes naming the readers they
+are about. The second view shows what the sentence claimed: the frontier model's points sit around
+zero, with dermamnist far below.
+
+*"Change this to 'Does thinking help?'"* Done.
+
+*"Move this dissiderata about derma to the extra."* H6 — the effort prediction written before the
+calls — is one prediction about one dataset, and it is in Extra now. The readers ladder still names
+dermamnist whatever its spread, and its note says where the prediction went.

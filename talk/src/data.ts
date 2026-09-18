@@ -1,4 +1,4 @@
-import type { ArchiveSample, Bank, Contention, Study, Timeline } from "./types";
+import type { ArchiveSample, Bank, Contention, Study } from "./types";
 import type { Effort } from "./charts/EffortWaterfall";
 
 /* Everything the page shows comes from here: the snapshot the `talk_data` rule wrote into
@@ -69,7 +69,6 @@ const json = <T,>(rel: string) =>
 const text = (rel: string) => once(rel, async () => (await fetchOk(rel)).text(), (raw) => raw);
 
 export const loadStudy = () => json<Study>("data/study.json");
-export const loadTimeline = () => json<Timeline>("data/timeline.json");
 export const loadContention = () => json<Contention>("data/contention.json");
 export const loadEffort = () => json<Effort>("data/effort.json");
 export const loadArchive = () => json<ArchiveSample>("data/archive_sample.json");
