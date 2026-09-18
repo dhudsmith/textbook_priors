@@ -11,7 +11,7 @@ import { LAZY, asset, loadBank } from "../data";
    call was bought. */
 
 export function Question() {
-  const { meta, dataset } = useTalk();
+  const { study, meta, dataset } = useTalk();
   const { data: bank, error } = useAsync(() => loadBank(dataset), [dataset]);
   const [open, setOpen] = useState<string | null>(null);
 
@@ -22,11 +22,20 @@ export function Question() {
     return acc;
   }, []);
 
+  // The release's own shape, read off the snapshot rather than typed into the copy.
+  const all = study.datasets;
+  const fill = (shapes: readonly string[]) => shapes.map((t) => t
+    .replace("{datasets}", String(all.length))
+    .replace("{minClasses}", String(Math.min(...all.map((d) => d.n_classes))))
+    .replace("{maxClasses}", String(Math.max(...all.map((d) => d.n_classes))))
+    .replace("{minConcepts}", String(Math.min(...all.map((d) => d.n_concepts))))
+    .replace("{maxConcepts}", String(Math.max(...all.map((d) => d.n_concepts)))));
+
   return (
     <Band id="question">
       <Header id="question" eyebrow="1">{question.header}</Header>
       <p className="lede">{question.lede}</p>
-      <Bullets items={question.bullets} />
+      <Bullets items={fill(question.bulletShapes)} />
 
       <DatasetPicker />
 
@@ -60,7 +69,9 @@ export function Question() {
         </div>
 
         <div>
-          <h3>The checklist the model is asked to fill in</h3>
+          <h3>{question.bank.header}</h3>
+          <p className="lede">{question.bank.lede}</p>
+          <Bullets items={fill(question.bank.bulletShapes)} />
           {error && <p className="note">Could not load the bank: {error}</p>}
           {bank && (
             <>
@@ -144,12 +155,6 @@ export function Question() {
                 </p>
               </Deep>
 
-              <Deep summary="How this bank says it was built">
-                <p className="note" style={{ maxWidth: "44rem" }}>
-                  Method: {String(bank.provenance.method)}. Reviewed by:{" "}
-                  {String(bank.provenance.reviewed_by)}
-                </p>
-              </Deep>
             </>
           )}
         </div>

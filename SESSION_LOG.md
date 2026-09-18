@@ -1262,3 +1262,32 @@ known — which now sits with the hypotheses in Extra, leaving two limits behind
 Kept in the talk, deliberately: the callout saying a rule counts only if it precedes its numbers
 and that here you can check it. The seven rules are gone from the room, but the practice is a
 one-line observation and it is the reproducibility thread the talk is about.
+
+## 2026-09-18 11:20 — MedMNIST first, then the textbook, then a duplication sweep
+
+The user recast the section that had been called *What we asked the model*: name it "Medical images
+and associated visual features", make it MedMNIST-focused, describe the dataset in the bullets, and
+centre the second half on the textbook knowledge of what those images contain.
+
+So the section now opens on the release rather than on the prompt. Its bullets are the suite: the
+twelve 2D tasks and their modalities, the mix of binary, multi-class, ordinal and one multi-label
+problem and the span of class counts, the 224-pixel serving, the untouched official splits, and the
+fact that a published fully supervised number exists to compare against. Counts come from the
+snapshot through the same shape-filling the premise uses, because a release that gains a task
+should move the sentence. The second half gained a header and a lede of its own — *What the
+textbook says to look for* — and four bullets about the features themselves: how many per task,
+the cited anchor text behind each level, the per-class fingerprint, and that the whole bank was
+committed before any call went out.
+
+Then the user pointed at a panel and a callout: "remove both of these. the non-callout part is
+already in the 'Agent Note'... If there are other sources of duplication like these, go ahead and
+simplify simplify simplify!" The bank-provenance panel and the *Pin the inputs* principle both went.
+
+The sweep that followed pulled every lede, bullet, note and callout off the rendered page and read
+them side by side, which is the only way this kind of duplication shows itself. Nine more cuts. The
+design lede, a bullet and a note each said the arms share one classifier and differ in features;
+the lede now says two arms use no labels and three use n. H2's lede was its own bullets written out
+as sentences. H5 had a bullet restating the two above it. Verdicts counted its verdicts in the lede
+and again in a bullet, and two more bullets said what the takeaway says with numbers. The machine
+lede said what the callout beside it says. H3's chart note repeated its first bullet. And design's
+pre-registration callout said what H4's says, so the one where the rules actually mattered stayed.

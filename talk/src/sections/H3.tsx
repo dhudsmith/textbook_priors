@@ -85,7 +85,7 @@ export function H3() {
             : "Probe AUC per dataset across the closed price ladder"}
           divideAfter={which === "open" && familyDivide >= 0 ? familyDivide : undefined}
           note={which === "open"
-            ? "The divider separates the two families; read within family only."
+            ? "The divider separates the two families."
             : "Price is the vendor's ranking, not a parameter count."}
         />
       </ChartFrame>

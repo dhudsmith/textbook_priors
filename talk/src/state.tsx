@@ -9,7 +9,7 @@ import { useDark } from "./hooks";
 
 export const SECTIONS = [
   { id: "top", short: "Title" },
-  { id: "question", short: "The question" },
+  { id: "question", short: "Images and features" },
   { id: "design", short: "Hypotheses" },
   { id: "workflow", short: "How it is built" },
   { id: "machine", short: "How it runs" },

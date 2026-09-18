@@ -103,28 +103,36 @@ export const premise = {
 };
 
 export const question = {
-  header: "What we asked the model",
+  header: "Medical images and associated visual features",
   lede:
-    "A chest radiograph at 224 pixels, and the textbook's checklist of what to look for. How " +
-    "much of that checklist does the model see?",
-  bullets: [
-    "The concept bank is committed before any call goes out",
-    "Visual features on ordered scales, every level cited",
-    "The concept prompt never names a class",
-    "The zero-shot prompt never mentions a concept",
-    "Everything is measured in labelled images",
+    "MedMNIST v2 is a standard benchmark suite: every 2D task in the release, one preprocessing, " +
+    "one set of splits. Radiology, pathology, dermatology and ophthalmology in one place.",
+  /* The counts are filled in from the snapshot in Question.tsx. */
+  bulletShapes: [
+    "{datasets} 2D tasks: chest X-ray, dermoscopy, OCT, ultrasound, blood and tissue cells, " +
+      "pathology slides, retinal photographs, and abdominal CT in three planes",
+    "Binary, multi-class, ordinal and one multi-label problem, from {minClasses} to " +
+      "{maxClasses} classes",
+    "Served at 224 pixels, greyscale or colour as the source gives it",
+    "Official splits, untouched: a seeded test sample is scored, and the labelled subsets are " +
+      "drawn from the training pool",
+    "Small, standard, and published — so there is a fully supervised number to compare against",
   ],
+  /* The second half of the section: what a textbook says these images contain. */
+  bank: {
+    header: "What the textbook says to look for",
+    lede:
+      "For each task, a short list of visual features a clinician would be taught to check — " +
+      "the kind of knowledge a vision-language model may already have read.",
+    bulletShapes: [
+      "{minConcepts} to {maxConcepts} features per task, each on an ordered scale",
+      "Every level carries the anchor text the model is shown, and a citation for it",
+      "Each class gets a fingerprint: the levels that class commits to",
+      "Written and committed before any call went out",
+    ],
+  },
   callouts: [
-    {
-      kind: "principle",
-      title: "Pin the inputs",
-      body: [
-        "The bank, the MedMNIST release and the published benchmarks are fixed before the workflow runs, with checksums. No rule refetches or re-derives them.",
-        "Otherwise an input changes under a result and nothing in the record says so.",
-      ],
-      source: "WORKFLOW.md §5, principle 3",
-    },
-    {
+        {
       kind: "agent",
       title: "No clinician has read this bank",
       body: [
@@ -138,9 +146,7 @@ export const question = {
 
 export const design = {
   header: "Five arms, one classifier",
-  lede:
-    "Two arms use no labels. Three use n labels and the same classifier, and differ only in the " +
-    "features that reach it.",
+  lede: "Two arms use no labels. Three use n labels.",
   bullets: [
     "A pretrained model needs a pretrained baseline",
     "One classifier, three arms — only the features differ",
@@ -168,23 +174,12 @@ export const design = {
       ],
       source: "CHANGELOG.md 2026-09-09",
     },
-    {
-      kind: "principle",
-      title: "Pre-registration you can check",
-      body: [
-        "A rule counts only if it precedes its numbers, and here you can check that: the commit carrying each rule is an ancestor of the commit carrying its numbers.",
-        "An arm designed after the results decides nothing.",
-      ],
-      source: "WORKFLOW.md §2 and §10",
-    },
-  ] as Callout[],
+      ] as Callout[],
 };
 
 export const machine = {
   header: "How the study runs",
-  lede:
-    "Seven stages, one file, every number with a rule. Every response archived; everything " +
-    "downstream a function of that archive.",
+  lede: "Seven stages, one file, every number with a rule.",
   bullets: [
     "A chunk is one job's hundred images",
     "A reader is a model plus a reasoning effort",
@@ -220,8 +215,8 @@ export const machine = {
 export const h1 = {
   header: "H1 — Is the textbook worth labelled images?",
   lede:
-    "Arm B, the textbook readout, is a horizontal line drawn with no labels. n_B is how many " +
-    "labels the pixel arm needs to reach it: what the textbook was worth.",
+    "Arm B is a horizontal line drawn with no labels. n_B is how many labels the pixel arm " +
+    "needs to reach it.",
   bullets: [
     "The rule was fixed before the numbers existed",
     "The numbers do not meet it",
@@ -250,9 +245,7 @@ export const h2 = {
     "The two arms are separate calls on separate prompts, so the comparison cannot be circular. The first design returned both from one call, which would have let the concept answers rationalise a class the model had already chosen.",
   ],
   header: "H2 — The bank, or just the model?",
-  lede:
-    "Asking for the diagnosis beats the textbook readout. But permuting either destroys both " +
-    "arms — so the concept answers do carry class information. The readout loses it.",
+  lede: "Two separate prompts: ask for the diagnosis, or ask for the checklist.",
   bullets: [
     "Where the model can name the class, asking for the name wins",
     "Where it cannot, the checklist does",
@@ -361,15 +354,11 @@ export const h4 = {
 
 export const h5 = {
   header: "H5 — Does the textbook add anything?",
-  lede:
-    "The first supported hypothesis, and the one that changes what the others mean. Concept " +
-    "answers concatenated to pixel features, under the same classifier, gain a little at fifty " +
-    "labels on nearly every task.",
+  lede: "The first supported hypothesis, and the one that changes what the others mean.",
   bullets: [
     "H1 asked: can concepts replace pixels? No.",
     "H5 asks: do they carry anything pixels lack? Yes.",
     "Unequal and complementary are not the same thing",
-    "The textbook cannot replace labels. It adds.",
     "Limit: a dozen concept columns share one penalty with 512 pixel columns",
   ],
   callouts: [
@@ -391,9 +380,6 @@ export const h5 = {
 export const verdicts = {
   header: "Seven verdicts",
   bullets: [
-    "Five not supported, two supported, none chosen",
-    "Pixels at the most labels sit just below the published ceiling",
-    "The best zero-label arm sits far below it",
     "Labels close the gap; the textbook adds a little on top",
     "The ceiling is not an arm — it trained on the whole split",
   ],

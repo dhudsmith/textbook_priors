@@ -39,9 +39,6 @@ export function Close() {
           </li>
         ))}
       </ul>
-      <p className="note">
-        From <span className="file">public/data/study.json ← CHANGELOG.md and SESSION_LOG.md</span>.
-      </p>
 
       <p className="pullquote">{REFRAIN}</p>
 

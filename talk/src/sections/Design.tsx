@@ -50,8 +50,7 @@ export function Design() {
       </table>
       </div>
       <p className="note">
-        A probe is one logistic regression on frozen features. Arms C, P and C+P are the same
-        probe on different feature blocks.
+        A probe is one logistic regression on frozen features.
       </p>
 
       <h3>Two limits</h3>
