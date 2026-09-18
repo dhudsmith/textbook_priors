@@ -330,6 +330,10 @@ table.data tbody tr:hover { background: var(--surface-sunken); }
 .dots svg { display: block; }
 
 /* ---- prompt, and the archived answers -------------------------------------------------------------------- */
+/* The two questions under the answers they produced: closed, side by side where there is room. */
+.prompts { margin-top: 1.1rem; max-width: var(--figure); }
+.prompts details.deep { max-width: none; }
+
 pre.file {
   font-family: var(--mono); font-size: 0.74rem; line-height: 1.45; background: var(--surface-sunken);
   border: 1px solid var(--rule); border-radius: 6px; padding: 0.7rem 0.85rem; overflow-x: auto;

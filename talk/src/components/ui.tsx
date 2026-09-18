@@ -39,12 +39,20 @@ export function Band({ id, className, children }: {
   );
 }
 
+/** Where a section sits in the talk. The rail and the eyebrow read the same list, so inserting a
+    section renumbers both and neither can be left saying 5 while the other says 6. */
+export const sectionNumber = (id: string) => {
+  const i = SECTIONS.findIndex((s) => s.id === id);
+  return i > 0 ? String(i) : "";
+};
+
 export function Header({ id, eyebrow, children }: {
   id: string; eyebrow?: string; children: ReactNode;
 }) {
+  const label = eyebrow ?? sectionNumber(id);
   return (
     <>
-      {eyebrow && <div className="eyebrow">{eyebrow}</div>}
+      {label && <div className="eyebrow">{label}</div>}
       <h2 id={`${id}-h`}>{children}</h2>
     </>
   );

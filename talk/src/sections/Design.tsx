@@ -13,7 +13,7 @@ export function Design() {
 
   return (
     <Band id="design">
-      <Header id="design" eyebrow="2">
+      <Header id="design">
         {design.headerShape.replace("{arms}", String(arms.length))}
       </Header>
       <p className="lede">{design.lede}</p>

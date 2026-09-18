@@ -210,6 +210,19 @@ export const machine = {
   },
 };
 
+/* The one image every later number is made of. Short on purpose: it is the hinge between how
+   the project runs and what it found, and the widget is the content. */
+export const sample = {
+  header: "Model input and output",
+  lede: "One image, the two calls it was put through, and what came back. Every result after " +
+    "this is computed from answers of exactly this shape.",
+  bullets: [
+    "Two separate calls on the same image, neither shown the other's answer",
+    "One returns a level for each visual feature; the other, a number for each class",
+    "These are archived replies, read off the file the run wrote, not fresh calls",
+  ],
+};
+
 /* The headline results figure, and the three questions it answers. The per-question detail sits
    in panels beside it, closed; model size and the price comparison moved out to Extra. */
 export const results = {

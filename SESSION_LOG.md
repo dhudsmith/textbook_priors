@@ -1701,3 +1701,25 @@ it needs, and the command between them; a Makefile, with the cluster written in*
 it the room does not know what a rule is before meeting a table of nineteen of them. The prose also
 moved out of `Machine.tsx` and into `content/index.ts`, where the page's authored language belongs;
 it had been written inline when the rules table was built.
+
+## 2026-09-19 00:20 — The archived call is its own section, and carries the questions
+
+*"'One archived image, and both answers'. First of all, this language is too indirect. Secondly,
+this is orphaned."* Both true. It was the last thing under a heading about rules, where nobody
+could tell what it was for, and it is really where the results begin: the raw input and output
+every later number is computed from. It is section 6 now, **Model input and output**, between the
+workflow and the results — three bullets and the widget, nothing else, because it is a hinge and
+not a stop.
+
+Underneath the two answers, closed, are the two questions that produced them, full text. They are
+matched to the record by sha256 rather than by position in the prompt file: each block in
+`results/prompts_txt/` is headed with its own hash and each archived reply's manifest carries the
+hash of the string that was sent, so what opens beside an answer is the prompt that bought it or
+nothing at all. Checked against the data as well as on the page — all 23 manifests in the sample
+resolve to a block, and every one of them to the right kind of block.
+
+The section numbers are no longer typed. Each section carried its own number in its heading while
+the rail counted the same list independently, so inserting a section meant editing thirteen files
+and getting a heading that said 6 over a rail that said 7. The heading now reads its number off
+`SECTIONS`, which is also what the rail reads, and the two cannot disagree. Verified: fourteen
+bands, eyebrows 1 to 13 under a title that keeps its date, and a rail that agrees line for line.

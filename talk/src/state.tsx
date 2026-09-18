@@ -14,6 +14,7 @@ export const SECTIONS = [
   { id: "models", short: "Models tested" },
   { id: "workflow", short: "How it is structured" },
   { id: "machine", short: "The workflow" },
+  { id: "sample", short: "Input and output" },
   { id: "results", short: "Results" },
   { id: "size", short: "Model size and price" },
   { id: "thinking", short: "Thinking" },

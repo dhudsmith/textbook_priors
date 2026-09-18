@@ -232,5 +232,5 @@ export default function Explore() {
 }
 
 export function ExploreHeader() {
-  return <Header id="explore" eyebrow="12">Extra</Header>;
+  return <Header id="explore">Extra</Header>;
 }

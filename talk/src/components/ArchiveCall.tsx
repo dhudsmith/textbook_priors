@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import type { ArchiveRecord, ArchiveSample } from "../types";
 import { useTalk } from "../state";
-import { LAZY, asset } from "../data";
+import { Deep } from "./ui";
+import { LAZY, asset, loadPrompt } from "../data";
+import { useAsync } from "../hooks";
 
 /* One archived image, and what both prompts returned for it.
 
@@ -13,7 +15,48 @@ import { LAZY, asset } from "../data";
 
    Nothing here is live and nothing is re-read: results/score/ is write-protected and this is a
    copy of a few of its records, taken by the export. The reply text is deliberately not shown -
-   a reader should see the answer, not the shape it arrived in. */
+   a reader should see the answer, not the shape it arrived in. The questions themselves are
+   underneath, closed: the room hears them, and anyone who wants the exact words can open them. */
+
+/* The prompt file the `render_prompts` rule wrote, one block per prompt, each headed with its own
+   sha256. A block is matched to a record by that hash rather than by its position in the file, so
+   what is shown is the string that bought the answer beside it or nothing at all. */
+interface PromptBlock { title: string; sha: string; body: string }
+
+function splitPrompts(file: string): PromptBlock[] {
+  const out: PromptBlock[] = [];
+  const head = /^--- (.+?) \(sha256 ([0-9a-f]{64})\) ---$/;
+  let at: PromptBlock | null = null;
+  for (const line of file.split("\n")) {
+    const m = line.match(head);
+    if (m) {
+      at = { title: m[1], sha: m[2], body: "" };
+      out.push(at);
+    } else if (at) {
+      at.body += `${line}\n`;
+    }
+  }
+  return out.map((b) => ({ ...b, body: b.body.trim() }));
+}
+
+/** One prompt, closed. `sha` is the hash the record's own manifest carries. */
+function PromptText({ summary, blocks, sha }: {
+  summary: string; blocks: PromptBlock[] | null; sha?: string;
+}) {
+  if (!sha) return null;
+  const block = blocks?.find((b) => b.sha === sha);
+  return (
+    <Deep summary={summary}>
+      {block
+        ? <pre className="file">{block.body}</pre>
+        : <p className="note">Loading the question…</p>}
+      <p className="note" style={{ marginTop: "-0.5rem" }}>
+        <span className="mono">sha256 {sha.slice(0, 12)}…</span> — the same hash the archived
+        reply carries, which is how this is known to be the string that was sent.
+      </p>
+    </Deep>
+  );
+}
 
 /** The bank writes a feature and its levels in one word; a reader should not have to. */
 const plain = (s: string) => s.replace(/_/g, " ");
@@ -56,9 +99,12 @@ export function ArchiveCall({ sample, fixedDataset }: {
     setI(k);
   };
 
-  if (!pair) return <p className="note">No archived answers for this dataset.</p>;
+  const rec = pair?.concept ?? pair?.zero;
+  const { data: promptFile } = useAsync(
+    () => (pair ? loadPrompt(pair.dataset) : new Promise<never>(() => {})), [pair?.dataset]);
+  const blocks = useMemo(() => (promptFile ? splitPrompts(promptFile) : null), [promptFile]);
 
-  const rec = pair.concept ?? pair.zero!;
+  if (!pair || !rec) return <p className="note">No archived answers for this dataset.</p>;
   const meta = metaOf(pair.dataset);
   const manifest = sample.manifests[rec.manifest_key];
   const label = rec.label;
@@ -172,6 +218,13 @@ export function ArchiveCall({ sample, fixedDataset }: {
             )}
           </div>
         </div>
+      </div>
+
+      <div className="prompts">
+        <PromptText summary="The visual-feature question, exactly as sent" blocks={blocks}
+                    sha={sample.manifests[pair.concept?.manifest_key ?? ""]?.prompt_sha256} />
+        <PromptText summary="The class question, exactly as sent" blocks={blocks}
+                    sha={sample.manifests[pair.zero?.manifest_key ?? ""]?.prompt_sha256} />
       </div>
     </div>
   );

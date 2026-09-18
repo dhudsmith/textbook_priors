@@ -21,7 +21,7 @@ export function Models() {
 
   return (
     <Band id="models">
-      <Header id="models" eyebrow="3">{models.header}</Header>
+      <Header id="models">{models.header}</Header>
       <p className="lede">{models.lede}</p>
       <Bullets items={models.bullets} />
 

@@ -50,7 +50,7 @@ export function Question() {
 
   return (
     <Band id="question">
-      <Header id="question" eyebrow="1">{question.header}</Header>
+      <Header id="question">{question.header}</Header>
       <p className="lede">{question.lede}</p>
       <Bullets items={fill(question.bulletShapes)} />
 

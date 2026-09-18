@@ -38,7 +38,7 @@ export function Thinking() {
 
   return (
     <Band id="thinking">
-      <Header id="thinking" eyebrow="8">{copy.header}</Header>
+      <Header id="thinking">{copy.header}</Header>
       <p className="lede">
         {copy.ledeShape
           .replace("{primary}", study.study.primary)

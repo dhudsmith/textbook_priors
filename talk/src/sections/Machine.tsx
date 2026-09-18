@@ -2,10 +2,7 @@ import { useCallback, useState } from "react";
 import { useTalk } from "../state";
 import { Band, Bullets, ChartFrame, Header } from "../components/ui";
 import { RuleGraph, RuleTable, useWorkflow } from "../components/rules";
-import { ArchiveCall } from "../components/ArchiveCall";
 import { machine } from "../content";
-import { useAsync, useInView } from "../hooks";
-import { loadArchive } from "../data";
 
 /* How the project runs: the rules, one per row, and the shape they make.
 
@@ -98,9 +95,6 @@ const DETAILS: Record<string, string> = {
 export function Machine() {
   const { study } = useTalk();
   const workflow = useWorkflow();
-  const { ref, seen } = useInView<HTMLDivElement>();
-  const { data: archive, error } = useAsync(
-    () => (seen ? loadArchive() : new Promise<never>(() => {})), [seen]);
 
   const [open, setOpen] = useState<string | null>(null);
   /* The drawing and the table are one control: picking a rule in the drawing opens its row, and
@@ -116,7 +110,7 @@ export function Machine() {
 
   return (
     <Band id="machine">
-      <Header id="machine" eyebrow="5">{machine.header}</Header>
+      <Header id="machine">{machine.header}</Header>
       <p className="lede">{machine.lede}</p>
       <Bullets items={machine.bullets} />
 
@@ -144,13 +138,6 @@ export function Machine() {
         Nobody drew that shape. It is worked out from what each rule says it needs, which is the
         whole argument for writing it down that way.
       </p>
-
-      <h3>One archived image, and both answers</h3>
-      <div ref={ref}>
-        {error && <p className="note">Could not load the archive sample: {error}</p>}
-        {archive ? <ArchiveCall sample={archive} />
-                 : <p className="note">Loading the archived answers…</p>}
-      </div>
 
     </Band>
   );

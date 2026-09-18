@@ -10,7 +10,7 @@ import { asset } from "../data";
 export function Takeaways() {
   return (
     <Band id="takeaways">
-      <Header id="takeaways" eyebrow="11">{copy.header}</Header>
+      <Header id="takeaways">{copy.header}</Header>
       <Deck items={copy.cards} label="Takeaways" />
 
       <div style={{ marginTop: "2rem" }}>

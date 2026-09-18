@@ -51,7 +51,7 @@ export function ModelSize() {
 
   return (
     <Band id="size">
-      <Header id="size" eyebrow="7">{copy.header}</Header>
+      <Header id="size">{copy.header}</Header>
       <p className="lede">
         Across two open families, {span(families[0])} and {span(families[1])}, the bigger model
         wins on {qwen.wins} and {gemma.wins} of {study.study.arm_b_datasets.length} datasets —
