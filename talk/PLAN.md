@@ -24,7 +24,7 @@ in a separate section. They are read aloud as asides or left for the audience to
 |---|---|---|---|
 | **Principle** | blue | one reproducibility principle the study relied on, stated as the failure it prevents | `WORKFLOW.md` §5 |
 | **Near miss** | amber | something that nearly went wrong, and *what caught it* — a person, one chunk, a probe, a manifest; never the DAG | `CHANGELOG.md`, dated |
-| **Agent note** | violet | what the agent did, what the human had to do, and the understanding debt it left or repaid | `SESSION_LOG.md`, timestamped |
+| **Agent note** | violet | what working this way with an agent taught us | `SESSION_LOG.md`, timestamped |
 
 **Bookends**: the opening sets up the premise — this study was built in four days with an AI coding
 agent, and the talk is the result — and the close returns to it with the ledger of what that cost

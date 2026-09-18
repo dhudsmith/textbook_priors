@@ -1184,3 +1184,32 @@ Kept deliberately: "understanding debt", which the talk coins and then explains,
 argument rather than an ornament; the refrain; and "largely automated — and largely is the honest
 word", where the hedge is the point. PLAN.md's section table carries the new headers, and its row
 for section 1 now describes the timeline that replaced the strip.
+
+## 2026-09-18 09:40 — The owner's edits, distilled and applied
+
+The user edited the talk's text directly, then asked for the principles behind those edits to be
+carried through the rest of it. Reading the diff, four rules:
+
+1. **Bullets carry facts; callouts carry observations.** The user replaced the premise's aphorisms
+   — "the code is not the product", "understanding debt" — with four lines of plain counts, and
+   then, seeing a callout that merely recorded who did what, said the callouts should hold the
+   observations instead: "the model outputs are not the product of science. the claims are. what
+   evidence do we have and how can we trust it? understanding debt can accrue very fast if you're
+   not careful." So the conclusions moved rather than disappearing.
+2. **Plain, first person, short.** "Trying to get AI to do it the way I want" replaced two
+   sentences describing the diagram. "Interests me." "Could use a cluster."
+3. **Questions where the talk is genuinely asking.** The standfirst became three of them.
+4. **Do not narrate what the visual already shows.**
+
+Eleven callouts were rewritten against those rules. Three agent notes that recorded rather than
+observed became observations; six principles lost the "Prevents:" formula and say the failure as a
+sentence; the near misses were left as they were, because a concrete story that ends on its lesson
+already obeys the rule. Six ledes and bullets went plainer — "deserves" to "needs", one duplicated
+H4 bullet merged into the other.
+
+Two other things the user cut, both of which had been flagged and kept twice before: the effort
+chart's headline, which repeated the premise bullets once those carried the numbers, and — under
+every figure on the page — the file-provenance line and the "Read this chart as text" toggle,
+6,894 characters of them. The SVGs keep their own aria-labels, so a screen reader still has a text
+alternative. The premise's four counts are now filled from the export rather than typed, because
+the prompt count moved twice in one day and this file's first rule is that no number lives in it.

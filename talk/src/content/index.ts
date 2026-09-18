@@ -4,10 +4,13 @@
    in `public/data/`. Where a sentence needs a number it is assembled in the section component
    from the snapshot.
 
-   Callout kinds are talk/PLAN.md section 1: a blue PRINCIPLE states a reproducibility principle as
-   the failure it prevents; an amber NEAR MISS says what nearly went wrong and what caught it -
-   never the DAG; a violet AGENT NOTE says what the agent did, what the human had to do, and the
-   understanding debt it left or repaid.
+   Callouts carry the observations - the argument, the lesson, the thing worth saying out loud.
+   Never a record of who did what. A blue PRINCIPLE is a practice and the failure it avoids; an
+   amber NEAR MISS is what nearly went wrong and what caught it, never the DAG; a violet AGENT
+   NOTE is what working this way with an agent taught us.
+
+   The division of labour with the bullets matters: bullets carry the facts and the numbers, and
+   the speaker supplies the meaning. A bullet that states a conclusion belongs in a callout.
 
    Style: short sentences, a doer as the subject and its action as the verb, one idea each. Say
    what happened; let the reader judge it. */
@@ -75,8 +78,7 @@ export const title = {
 export const premise = {
   header: "How the work unfolded.",
   lede:
-    "Planned in a day, built and run and reported in three more. An agent wrote most of the " +
-    "code. A workflow made its work inspectable.",
+    "Planned in a day. Built, run and reported in three more. An agent wrote most of the code.",
   /* The numbers are assembled in Premise.tsx from the export, per this file's own rule: the
      prompt count alone moved twice in a day. The wording is the owner's. */
   bulletShapes: [
@@ -90,10 +92,10 @@ export const premise = {
   callouts: [
     {
       kind: "agent",
-      title: "Who did what",
+      title: "The outputs are not the product",
       body: [
-        "The agent wrote the rules, ran the jobs, measured the resources and recorded the " +
-          "manifests. The human asked, read, decided and caught.",
+        "The model's outputs are not the product of science. The claims are.",
+        "So what evidence do we have, and how far can we trust it? Understanding debt accrues very fast if you are not careful.",
       ],
       source: "TALK.md §3; SESSION_LOG.md",
     },
@@ -103,10 +105,10 @@ export const premise = {
 export const question = {
   header: "What we asked the model",
   lede:
-    "A chest radiograph at 224 pixels, and the textbook's checklist of what to look for. The " +
-    "model has read the textbook. How much of the checklist does it see?",
+    "A chest radiograph at 224 pixels, and the textbook's checklist of what to look for. How " +
+    "much of that checklist does the model see?",
   bullets: [
-    "The bank is the study's prior knowledge, committed before any call",
+    "The concept bank is committed before any call goes out",
     "Visual features on ordered scales, every level cited",
     "The concept prompt never names a class",
     "The zero-shot prompt never mentions a concept",
@@ -115,22 +117,19 @@ export const question = {
   callouts: [
     {
       kind: "principle",
-      title: "Pinned inputs",
+      title: "Pin the inputs",
       body: [
-        "The bank, the MedMNIST release and the published benchmarks are fixed before the " +
-          "workflow runs, with recorded checksums. No rule refetches or re-derives them.",
-        "Prevents: an input that changes under a result while nothing in the record says so.",
+        "The bank, the MedMNIST release and the published benchmarks are fixed before the workflow runs, with checksums. No rule refetches or re-derives them.",
+        "Otherwise an input changes under a result and nothing in the record says so.",
       ],
       source: "WORKFLOW.md §5, principle 3",
     },
     {
       kind: "agent",
-      title: "A bank no clinician has read",
+      title: "No clinician has read this bank",
       body: [
-        "Every feature and fingerprint carries a citation, and the smoke tests hold each file to " +
-          "a schema. Expert review is simulated, and each file says so.",
-        "The debt is repaid by citations, not authority: a reader can check any anchor text " +
-          "against its source.",
+        "Every feature and every fingerprint carries a citation. No clinician has read them. Expert review is simulated, and each file says so.",
+        "Citations let a reader check the thing. Authority would only let them defer to it.",
       ],
       source: "CONCEPT_BANK.md; data/concepts/*.yaml",
     },
@@ -143,7 +142,7 @@ export const design = {
     "Two arms use no labels. Three use n labels and the same classifier, and differ only in the " +
     "features that reach it.",
   bullets: [
-    "A pretrained model deserves a pretrained baseline",
+    "A pretrained model needs a pretrained baseline",
     "One classifier, three arms — only the features differ",
     "Every comparison paired on one seeded test sample",
     "A sign test across datasets decides each rule",
@@ -174,12 +173,10 @@ export const design = {
     },
     {
       kind: "principle",
-      title: "Pre-registration in git",
+      title: "Pre-registration you can check",
       body: [
-        "A rule counts only if it precedes its numbers. Here that is checkable: the commit " +
-          "carrying each rule is an ancestor of the commit carrying its numbers. Turn a card " +
-          "over and it names both.",
-        "Prevents: an arm designed after the results, which decides nothing.",
+        "A rule counts only if it precedes its numbers, and here you can check that: the commit carrying each rule is an ancestor of the commit carrying its numbers.",
+        "An arm designed after the results decides nothing.",
       ],
       source: "WORKFLOW.md §2 and §10",
     },
@@ -213,11 +210,10 @@ export const machine = {
     },
     {
       kind: "principle",
-      title: "An explicit model boundary",
+      title: "Draw a line where the model is",
       body: [
-        "Responses are archived raw, with the served model and the prompt hash. The archive is " +
-          "write-protected. Everything downstream is deterministic given it.",
-        "Prevents: a result that cannot be recomputed because the model behind it moved.",
+        "Responses are archived raw, with the served model and the prompt hash, and the archive is write-protected. Everything downstream is a deterministic function of it.",
+        "Without that line a result cannot be recomputed once the model moves — and it will move.",
       ],
       source: "WORKFLOW.md §5, principle 7",
     },
@@ -232,7 +228,7 @@ export const h1 = {
   bullets: [
     "The rule was fixed before the numbers existed",
     "The numbers do not meet it",
-    "A negative result you can stand behind is the point of working this way",
+    "A negative result you can stand behind is worth having",
   ],
   callouts: [
     {
@@ -297,23 +293,19 @@ export const h3 = {
   callouts: [
     {
       kind: "principle",
-      title: "The exact model name, never an alias",
+      title: "Name the model, never the alias",
       body: [
-        "The service's aliases point at whatever it considers best today. An archive bought " +
-          "against an alias will answer differently next month, and nothing on disk will say so. " +
-          "Every model here is named exactly, and the served name comes back in every manifest.",
-        "Prevents: an archive whose model quietly changed underneath it.",
+        "The service's aliases point at whatever it considers best today. An archive bought against an alias answers differently next month, and nothing on disk says so.",
+        "Every model here is named exactly, and the served name comes back in every manifest.",
       ],
       source: "docs/rcd_llm_service.md",
     },
     {
       kind: "agent",
-      title: "The service's metadata, not a probe call",
+      title: "Read the docs before buying calls",
       body: [
-        "Asked which models could see images and how hard each could think, the agent read the " +
-          "service's model metadata rather than buying probe calls. That corrected the study's " +
-          "belief about which models take an image, and it is why the frontier reader is compared " +
-          "at matched effort: the gateway rejects the lowest setting.",
+        "Asked which models could see an image, the agent read the service's own metadata instead of spending calls to find out. It corrected what the study believed.",
+        "The cheapest experiment is usually the one someone already ran.",
       ],
       source: "SESSION_LOG.md 2026-09-12 15:20; docs/rcd_llm_service.md",
     },
@@ -333,32 +325,26 @@ export const h4 = {
     "Thinking helps where the model read badly and hurts where it read well",
     "A frontier model reads no better than a 27B open model",
     "A null is a result: more thinking is not what the model lacked",
-    "Then a prediction: one concept collapsed, and less effort fixed that dataset alone",
-    "A prediction named before the calls, confirmed only where it was aimed",
+    "Then a prediction, named before the calls: one concept had collapsed, and less effort " +
+      "fixed that dataset and nothing else",
     "Limits: closed model, unknown size, and it refuses temperature zero",
   ],
   callouts: [
     {
       kind: "principle",
-      title: "A decision rule before the calls",
+      title: "Write the rule before you buy the calls",
       body: [
-        "An arm worth adding is worth pre-registering; anything that cannot be is a separate " +
-          "study. The thinking step, the effort step and the price ladder each had a rule " +
-          "committed before their calls were bought.",
-        "Prevents: an arm that can only be reported, never decided.",
+        "An arm worth adding is worth pre-registering. Anything that cannot be is a separate study.",
+        "The thinking step, the effort step and the price ladder each had a rule committed before a call was bought.",
       ],
       source: "WORKFLOW.md §10",
     },
     {
       kind: "agent",
-      title: "An arm added after the numbers, removed the same day",
+      title: "An arm that could decide nothing",
       body: [
-        "At the owner's request a fifth arm handed the model the whole bank and asked the " +
-          "zero-shot question. It cost three thousand calls and measured something real: the " +
-          "fingerprint readout is lossy, and the bank is not news to the model.",
-        "It was removed because it was designed after the results and so could decide nothing, " +
-          "and an arm that decides nothing needs a warning label in every table it touches. The " +
-          "change log keeps what it measured.",
+        "A fifth arm was added after seeing the numbers. It cost three thousand calls and it measured something real.",
+        "It was removed the same day. Designed after the results, it could decide nothing — and an arm that decides nothing needs a warning label in every table it touches.",
       ],
       source: "CHANGELOG.md 2026-09-12; WORKFLOW.md §10",
     },
@@ -420,7 +406,7 @@ export const verdicts = {
       title: "A manifest with every result",
       body: [
         "Parameters, seeds, commit, versions, host and wall time travel with every result file.",
-        "Prevents: a number nobody can trace to the run that made it.",
+        "A number you cannot trace to the run that made it is not evidence.",
       ],
       source: "WORKFLOW.md §5, principle 5",
     },
@@ -439,14 +425,11 @@ export const close = {
   callouts: [
     {
       kind: "agent",
-      title: "Understanding debt, and what repaid it",
+      title: "Understanding debt",
       body: [
-        "Every stage the agent wrote faster than its owner could read it is a loan. Four " +
-          "practices repaid it. Read every rule before it runs at scale. Run one cell first. " +
-          "Make the agent explain the stage, then judge the explanation — a wrong explanation " +
-          "shows where a wrong line does not. Keep the change log as the owner's record, not " +
-          "the agent's.",
-        "The agent produces the evidence. The claim remains the author's.",
+        "Every stage the agent wrote faster than I could read it is a loan.",
+        "Four things repaid it. Read every rule before it runs at scale. Run one cell first. Make the agent explain the stage, then judge the explanation. Keep the change log yourself.",
+        "The agent produces the evidence. The claim stays yours.",
       ],
       source: "TALK.md §3; SESSION_LOG.md",
     },
