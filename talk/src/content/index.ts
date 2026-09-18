@@ -51,6 +51,7 @@ export const KIND_BLURB: Record<CalloutKind, string> = {
 
 export const title = {
   header: "Reproducible Scientific Computing with AI Coding Agents",
+  byline: { who: "D. Hudson Smith", where: "School of Mathematical and Statistical Sciences" },
   /* The study's own question. Held out of the title band while the opening is re-cut: the intro
      below poses the project in the room's words, and two questions under one header read as a
      non-sequitur. Still the question the science answers. */

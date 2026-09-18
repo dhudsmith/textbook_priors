@@ -31,6 +31,10 @@ export function Title() {
       <div className="title-band title-grid">
         <div>
           <Header id="top" eyebrow="Clemson HPC Day">{copy.header}</Header>
+          <p className="byline">
+            <span className="who">{copy.byline.who}</span>
+            <span className="where">{copy.byline.where}</span>
+          </p>
           <p className="lede">{copy.standfirst}</p>
         </div>
         <PageQR caption={copy.qr} />

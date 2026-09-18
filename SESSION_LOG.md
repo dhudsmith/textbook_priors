@@ -930,3 +930,11 @@ and a twelve-pixel gap for a double-headed arrow. All three were fixed before th
 
 The premise section now opens on ground the title band has already covered. Grafting the two
 together is the user's next batch.
+
+## 2026-09-17 17:05 — A byline under the title
+
+The user asked for their name and department under the talk's title: D. Hudson Smith, School of
+Mathematical and Statistical Sciences. Set as a `.byline` under the header and above the tagline,
+the name in full ink and the school quieter beneath it — stacked rather than run together on one
+line, because the school's name wraps awkwardly beside a person's on a phone. The eyebrow above
+the title still names the venue.
