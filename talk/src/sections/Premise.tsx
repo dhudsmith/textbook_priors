@@ -1,38 +1,28 @@
 import { Band, Body, Callouts, ChartFrame, Header, Slide } from "../components/ui";
-import { TimelineStrip } from "../charts/TimelineStrip";
+import { EffortWaterfall, effortCaveats, effortSummary } from "../charts/EffortWaterfall";
 import { premise } from "../content";
 import { KIND_BLURB, KIND_LABEL } from "../content";
 import { useAsync } from "../hooks";
-import { loadTimeline } from "../data";
+import { loadEffort } from "../data";
 
 export function Premise() {
-  const { data: timeline, error } = useAsync(loadTimeline);
+  const { data: effort, error } = useAsync(loadEffort);
   return (
     <Band id="premise">
       <Slide
         title={<Header id="premise" eyebrow="1">{premise.header}</Header>}
         figure={
           <>
-            {error && <p className="note">Could not load the timeline: {error}</p>}
-            {timeline && (
+            {error && <p className="note">Could not load the effort breakdown: {error}</p>}
+            {effort && (
               <ChartFrame
-                caption="One tick per prompt that materially directed the work."
-                source="public/data/timeline.json ← SESSION_LOG.md"
-                summary={
-                  <p>
-                    {timeline.entries.length} timestamped entries across{" "}
-                    {timeline.days.length} days, from {timeline.days[0]} to{" "}
-                    {timeline.days[timeline.days.length - 1]}. Counted by kind:{" "}
-                    {timeline.kinds
-                      .map((k) =>
-                        `${k.id} ${timeline.entries.filter((e) => e.kind === k.id).length}`)
-                      .join(", ")}. {timeline.kind_note}
-                  </p>
-                }>
-                <TimelineStrip timeline={timeline} />
+                caption={premise.effortCaption}
+                source="public/data/effort.json ← results/**/*.json manifests, benchmarks/, SESSION_LOG.md and git"
+                summary={effortSummary(effort)}>
+                <EffortWaterfall data={effort} />
               </ChartFrame>
             )}
-            <p className="note">{premise.stripCaption}</p>
+            {effort && <p className="note">{effortCaveats(effort)}</p>}
           </>
         }>
         <p className="lede">{premise.lede}</p>

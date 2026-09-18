@@ -21,6 +21,7 @@ transcribed from CHANGELOG.md 2026-09-12 (CONTENTION). Everything else comes fro
 from __future__ import annotations
 
 import argparse
+import csv
 import glob
 import hashlib
 import json
@@ -29,7 +30,7 @@ import re
 import shutil
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import numpy as np
@@ -683,6 +684,269 @@ def export_timeline() -> dict:
                           "file's own heading and first paragraph.")}
 
 
+# ---------------------------------------------------------------------------------------------
+# The effort snapshot: where the recorded work went, split two ways over the same hours.
+#
+# Two decompositions of one total, so a listener can lay them on top of each other: by lifecycle
+# activity, and by who or what was doing it. Every hour in both bands comes from a timestamp in
+# a file. The two attribution rules are stated here because neither is a field anyone wrote down:
+#
+#   machine hours    a job's own manifest: `written` is when it finished and `wall_seconds` how
+#                    long it ran, so the pair is an interval. The activity is its Snakemake rule,
+#                    through RULE_ACTIVITY below.
+#   attended hours   the elapsed window a person and the agent were working: per day, first to
+#                    last timestamped mark in that day's record. SESSION_LOG.md's prompt headings
+#                    are the mark where they exist; for 2026-09-09, which predates the log, the
+#                    day's git commits are. The activity of each interval between two marks is
+#                    read off the commits that landed inside it, by the paths they touched
+#                    (PATH_ACTIVITY), taking the activity with the most lines changed. An interval
+#                    in which nothing was committed is direction and review.
+#
+# What this cannot do, and what the caption therefore has to say: the attended window cannot be
+# split into human time and agent time. Nothing in the repository records which of the two was
+# working at a given minute, and the gaps between prompts (median 35 min, longest 5h40m) are
+# equally consistent with the person thinking, the agent building, and lunch. The window is an
+# upper bound on the person's involvement, not a measurement of it.
+# ---------------------------------------------------------------------------------------------
+
+# A Snakemake rule's place in the project's lifecycle. Every rule that writes a manifest appears.
+RULE_ACTIVITY = {
+    "render_prompts": "setup", "fetch": "data", "sample": "data",
+    "features": "measuring", "score": "measuring",
+    "collect_scores": "analysis", "classify": "analysis", "evaluate": "analysis",
+    "evaluate_across": "analysis",
+    "figures": "reporting", "tables": "reporting",
+}
+
+# A changed path's place in the same lifecycle. Longest prefix wins; the fallback is setup,
+# which is where the loose configuration of a repository lives.
+PATH_ACTIVITY = [
+    ("talk/", "reporting"),
+    ("report/", "reporting"), ("docs/", "reporting"),
+    ("CHANGELOG.md", "reporting"), ("README.md", "reporting"),
+    ("TALK.md", "reporting"), ("SESSION_LOG.md", "reporting"),
+    ("WORKFLOW.md", "planning"), ("CONCEPT_BANK.md", "planning"),
+    ("CLAUDE.md", "planning"), ("data/concepts", "planning"),
+    ("priors/", "code"), ("Snakefile", "code"), ("tests/", "code"),
+    ("config/", "setup"), ("envs/", "setup"), ("profiles/", "setup"),
+    ("scripts/", "setup"), (".github/", "setup"), (".gitignore", "setup"),
+]
+
+# Each activity twice: the name a caption uses, and the name that fits on the bar.
+ACTIVITIES = [
+    ("planning", "planning the study", "planning"),
+    ("code", "writing the workflow and its tests", "writing code"),
+    ("review", "direction and review", "direction, review"),
+    ("reporting", "writing it down: changelog, report, talk", "writing it down"),
+    ("setup", "configuration and environments", "config"),
+    ("data", "preparing the data", "data prep"),
+    ("analysis", "fitting and analysing", "analysis"),
+    ("measuring", "the model answering, and the features", "the model answering"),
+]
+
+
+def _path_activity(path: str) -> str:
+    for prefix, activity in PATH_ACTIVITY:
+        if path.startswith(prefix):
+            return activity
+    return "setup"
+
+
+def _commits() -> list[dict]:
+    """Every commit, with when it landed and how many lines it changed per activity."""
+    out = subprocess.run(["git", "log", "--numstat", "--format=C|%ct"],
+                         cwd=ROOT, capture_output=True, text=True).stdout
+    commits: list[dict] = []
+    cur: dict | None = None
+    for line in out.splitlines():
+        if line.startswith("C|"):
+            cur = {"t": datetime.fromtimestamp(int(line[2:])), "lines": {}, "total": 0}
+            commits.append(cur)
+            continue
+        parts = line.split("\t")
+        if len(parts) == 3 and parts[0].isdigit() and cur is not None:
+            n = int(parts[0]) + int(parts[1])
+            activity = _path_activity(parts[2])
+            cur["lines"][activity] = cur["lines"].get(activity, 0) + n
+            cur["total"] += n
+    commits.sort(key=lambda c: c["t"])
+    return commits
+
+
+def _machine_jobs() -> list[dict]:
+    """Every job that left a manifest: its rule, when it ended and how long it ran."""
+    jobs = []
+    for path in sorted((ROOT / "results").rglob("*.json")):
+        try:
+            payload = json.loads(path.read_text())
+        except (ValueError, OSError):
+            continue
+        manifest = payload.get("manifest") if isinstance(payload, dict) else None
+        if not isinstance(manifest, dict):
+            continue
+        written, wall = manifest.get("written"), manifest.get("wall_seconds")
+        if not written or wall is None:
+            continue
+        end = datetime.fromisoformat(written)
+        jobs.append({"stage": manifest.get("stage", "?"), "wall": float(wall),
+                     "start": end - timedelta(seconds=float(wall)), "end": end})
+    note("results/**/*.json (job manifests)")
+    return jobs
+
+
+def _cpu_hours() -> float:
+    """Total CPU time Snakemake's own benchmarks recorded, which is not the same as wall time."""
+    total = 0.0
+    for path in sorted((ROOT / "benchmarks").rglob("*.tsv")):
+        rows = list(csv.DictReader(path.read_text().splitlines(), delimiter="\t"))
+        for row in rows:
+            value = row.get("cpu_time")
+            if value not in (None, "", "-"):
+                total += float(value)
+    note("benchmarks/**/*.tsv")
+    return total / 3600
+
+
+def export_effort(study: dict) -> dict:
+    """Where the recorded work went: the same hours split by activity and by who did them.
+
+    Reads only timestamps: job manifests for the machine, SESSION_LOG.md prompt headings and git
+    commit times for the window a person and the agent worked in. Nothing here is estimated - the
+    one thing the sources cannot do, separate the person from the agent, is left undone and said
+    so in `caveats` rather than filled in.
+    """
+    jobs = _machine_jobs()
+    commits = _commits()
+
+    machine = {}
+    for job in jobs:
+        activity = RULE_ACTIVITY.get(job["stage"], "setup")
+        machine[activity] = machine.get(activity, 0.0) + job["wall"] / 3600
+
+    # How much wall clock the jobs actually occupied, which is far less than they consumed: the
+    # union of their intervals. The ratio of the two is the mean number of jobs in flight.
+    spans = sorted((j["start"], j["end"]) for j in jobs)
+    merged: list[list[datetime]] = []
+    for start, end in spans:
+        if merged and start <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], end)
+        else:
+            merged.append([start, end])
+    busy_h = sum((b - a).total_seconds() for a, b in merged) / 3600
+    machine_h = sum(machine.values())
+
+    # The attended window, day by day, from whichever record covers that day.
+    prompts: dict[str, list[datetime]] = {}
+    for line in read_text("SESSION_LOG.md").splitlines():
+        m = HEADING.match(line)
+        if m:
+            date, time, _ = m.groups()
+            prompts.setdefault(date, []).append(
+                datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M"))
+    commit_days: dict[str, list[datetime]] = {}
+    for c in commits:
+        commit_days.setdefault(c["t"].strftime("%Y-%m-%d"), []).append(c["t"])
+
+    attended: dict[str, float] = {}
+    days, uncommitted = [], 0
+    for date in sorted(set(prompts) | set(commit_days)):
+        marks = sorted(prompts.get(date) or commit_days.get(date, []))
+        source = "SESSION_LOG.md" if prompts.get(date) else "git commits"
+        hours = (marks[-1] - marks[0]).total_seconds() / 3600 if len(marks) > 1 else 0.0
+        days.append({"date": date, "marks": len(marks), "source": source,
+                     "first": marks[0].strftime("%H:%M"), "last": marks[-1].strftime("%H:%M"),
+                     "hours": round(hours, 3),
+                     "prompts": len(prompts.get(date, []))})
+        for a, b in zip(marks, marks[1:]):
+            gap = (b - a).total_seconds() / 3600
+            if gap <= 0:
+                continue
+            tally: dict[str, int] = {}
+            for c in commits:
+                if a <= c["t"] <= b:
+                    for k, v in c["lines"].items():
+                        tally[k] = tally.get(k, 0) + v
+            if tally:
+                activity = max(tally.items(), key=lambda kv: kv[1])[0]
+            else:
+                activity, uncommitted = "review", uncommitted + 1
+            attended[activity] = attended.get(activity, 0.0) + gap
+    attended_h = sum(attended.values())
+
+    n_prompts = sum(len(v) for v in prompts.values())
+    lines = sum(c["total"] for c in commits)
+    calls = study["archive"]["calls"]
+
+    activities = [
+        {"id": key, "label": label, "short": short,
+         "hours": round(machine.get(key, 0.0) + attended.get(key, 0.0), 3),
+         "machine_hours": round(machine.get(key, 0.0), 3),
+         "attended_hours": round(attended.get(key, 0.0), 3)}
+        for key, label, short in ACTIVITIES
+    ]
+    activities = [a for a in activities if a["hours"] > 0]
+    for a in activities:
+        a["actor"] = "machine" if a["machine_hours"] > a["attended_hours"] else "attended"
+
+    actors = [
+        {"id": "attended", "label": "one person and the coding agent, at the keyboard",
+         "short": "person + agent",
+         "hours": round(attended_h, 3),
+         "detail": f"{n_prompts} prompts, {len(commits)} commits, "
+                   f"{lines:,} lines changed across {len(days)} days"},
+        {"id": "machine", "label": "the cluster and the model service",
+         "short": "the cluster and the model service",
+         "hours": round(machine_h, 3),
+         "detail": f"{len(jobs)} jobs, {calls:,} model calls, "
+                   f"{busy_h:.1f} h of wall clock at {machine_h / busy_h:.1f} jobs at once"},
+    ]
+
+    return {
+        "total_hours": round(machine_h + attended_h, 3),
+        "activities": activities,
+        "actors": actors,
+        "counts": {"prompts": n_prompts, "commits": len(commits), "lines_changed": lines,
+                   "jobs": len(jobs), "calls": calls, "days": len(days),
+                   "uncommitted_intervals": uncommitted},
+        "machine": {"wall_hours": round(machine_h, 3), "cpu_hours": round(_cpu_hours(), 3),
+                    "busy_wall_hours": round(busy_h, 3),
+                    "mean_concurrency": round(machine_h / busy_h, 2),
+                    "first_job": min(j["start"] for j in jobs).isoformat(timespec="seconds"),
+                    "last_job": max(j["end"] for j in jobs).isoformat(timespec="seconds")},
+        "attended": {"hours": round(attended_h, 3), "days": days},
+        "per_prompt": {"machine_hours": round(machine_h / n_prompts, 2),
+                       "calls": round(calls / n_prompts),
+                       "jobs": round(len(jobs) / n_prompts, 1),
+                       "lines_changed": round(lines / n_prompts)},
+        "method": [
+            "Machine hours are each job manifest's own wall_seconds, summed; the activity is the "
+            "Snakemake rule that wrote it.",
+            "Attended hours are, per day, the elapsed time from the first to the last timestamped "
+            "mark in that day's record: SESSION_LOG.md's prompt headings, or - for 2026-09-09, "
+            "which predates the log - that day's git commits.",
+            "An attended interval's activity is the one with the most lines changed by the "
+            "commits that landed inside it; an interval that committed nothing is direction and "
+            "review.",
+        ],
+        "caveats": [
+            "The attended window cannot be split into human time and agent time. Nothing in the "
+            "repository records which of the two was working in a given minute, so the window is "
+            "an upper bound on one person's involvement, not a measurement of it.",
+            "It also contains breaks: the gaps between prompts run from 3 minutes to 5h40m.",
+            "Machine hours are job wall time. The score jobs spent nearly all of it waiting on a "
+            f"shared model service, so only {_cpu_hours():.1f} h of it was this project's own CPU "
+            "(benchmarks/**/*.tsv) and the service's GPU time is not metered here.",
+            "Only surviving results are counted. Work that was rerun or rewound - arm D, the "
+            "deleted archive - left no manifest behind and so appears nowhere.",
+            "An attended interval takes the activity of whichever commits landed in it, so an "
+            "hour that wrote a long changelog entry alongside a short rule counts as writing it "
+            "down. The prose-heavy activities are flattered by that rule.",
+            "2026-09-09, the planning day, predates SESSION_LOG.md, so its window is that day's "
+            "first-to-last commit rather than its first-to-last prompt.",
+        ],
+    }
+
+
 def work_dates() -> list[str]:
     """The days the study was worked on, from CHANGELOG.md's own dated entries.
 
@@ -772,6 +1036,10 @@ def main() -> int:
                                       "provenance": {**prov, "source_files": ["SESSION_LOG.md"]}})
     write_json("data/contention.json", {**CONTENTION,
                                         "provenance": {**prov, "source_files": ["CHANGELOG.md"]}})
+    effort = export_effort(study)
+    write_json("data/effort.json", {**effort, "provenance": {
+        **prov, "source_files": ["results/**/*.json (job manifests)", "benchmarks/**/*.tsv",
+                                 "SESSION_LOG.md", "git log --numstat"]}})
     write_json("data/study.json", study)
 
     pdf = ROOT / "report" / "report.pdf"
@@ -785,6 +1053,8 @@ def main() -> int:
     print(f"  archive_sample.json   {len(archive['records'])} records, "
           f"{len(archive['manifests'])} chunk manifests")
     print(f"  timeline.json         {len(timeline['entries'])} session-log entries")
+    print(f"  effort.json           {effort['machine']['wall_hours']:.0f} h machine + "
+          f"{effort['attended']['hours']:.0f} h attended, {len(effort['activities'])} activities")
     print(f"  img/figs/             {len(figures)} report figures")
     print(f"  img/samples/          {sum(len(v) for v in samples.values())} images")
     total = sum(f.stat().st_size for f in PUBLIC.rglob("*") if f.is_file())

@@ -295,6 +295,41 @@
    "title": "Three reviews of the talk site, implemented",
    "kind": "build",
    "lead": "The user had the talk website read by three reviewers \u2014 one for the visuals, one for the text, one for the presentation flow \u2014 and handed the agent their merged, prioritised change list to implement, with the editorial\u2026"
+  },
+  {
+   "date": "2026-09-17",
+   "time": "16:45",
+   "title": "The opening re-cut: the method is the talk, the study is the demonstration",
+   "kind": "build",
+   "lead": "The user began a batch of copy edits on the talk site, delivered in conversation rather than as review comments on a branch, and the first batch moved the talk's centre of gravity."
+  },
+  {
+   "date": "2026-09-17",
+   "time": "17:05",
+   "title": "A byline under the title",
+   "kind": "build",
+   "lead": "The user asked for their name and department under the talk's title: D. Hudson Smith, School of Mathematical and Statistical Sciences."
+  },
+  {
+   "date": "2026-09-17",
+   "time": "17:40",
+   "title": "Presenter mode bulletises the prose",
+   "kind": "build",
+   "lead": "The user asked presenter mode to crunch the longer prose blocks into a few skimmable bullets: points the room takes in at a glance, and a reminder of the speaker's own flow, with the sentences said out loud rather than\u2026"
+  },
+  {
+   "date": "2026-09-17",
+   "time": "18:20",
+   "title": "Presenter mode becomes a deck",
+   "kind": "build",
+   "lead": "The user raised the ask: in presenter mode the site should read almost as slides \u2014 one main section per screen, text collapsed to bullets, the visual and its text together, the title prominent, everything in chunks\u2026"
+  },
+  {
+   "date": "2026-09-17",
+   "time": "20:10",
+   "title": "Replace the four-day strip with a waterfall of who did the work",
+   "kind": "build",
+   "lead": "The user found TimelineStrip inscrutable and asked for a waterfall instead: two bands over the same axis, project-lifecycle activity in one and human against AI against supercomputer time in the other, to convey that\u2026"
   }
  ],
  "kinds": [
@@ -326,7 +361,7 @@
  "kind_note": "Only the kind of each entry was assigned by hand; the rest is the file's own heading and first paragraph.",
  "provenance": {
   "run_git_commit": "3c9311807ebd181a30bcb26109a51965eb2c6845",
-  "exported": "2026-09-17T12:19:47Z",
+  "exported": "2026-09-18T01:28:57Z",
   "redactions": [
    "the owner-only LLM key path (params.key_file) is dropped from every manifest",
    "the compute node's hostname is replaced by the cluster (a Palmetto2 compute node)",

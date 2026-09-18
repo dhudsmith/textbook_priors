@@ -989,3 +989,32 @@ than in the figure column; moving those charts into the figure slot, shortening 
 curve when projected, and hiding two footnotes left three, none of which loses content — a figure
 taller than its column scrolls rather than clipping. The one genuinely tall slide is the archived
 call, which is a thing to explore rather than a thing to read from the back of a room.
+
+## 2026-09-17 20:10 — Replace the four-day strip with a waterfall of who did the work
+
+The user found `TimelineStrip` inscrutable and asked for a waterfall instead: two bands over the
+same axis, project-lifecycle activity in one and human against AI against supercomputer time in
+the other, to convey that one person can direct an enormous amount of machine work and that the
+hard part is understanding and validating what comes back.
+
+The first job was whether the repository can support that picture without inventing anything, and
+the answer is half yes. The machine band is solid: every stage writes a manifest carrying
+`written` and `wall_seconds`, so 662 jobs are 662 intervals — 290.3 h of job time, run inside
+13.2 h of wall clock at a mean of 21.9 jobs in flight, against 4.7 h of CPU in
+`benchmarks/**/*.tsv`, because the score jobs spent their wall time waiting on a shared model
+service whose GPU time this project never meters.
+
+The human band is not solid and the chart says so. Nothing in the repository separates the person
+from the agent: `SESSION_LOG.md` timestamps a prompt, not a worker, and the gaps between prompts
+(median 35 min, longest 5h40m) are equally consistent with thinking, with the agent building and
+with lunch. Capping those gaps to recover "attended" time moves the answer from 18 h to 60 h
+depending on a number nobody measured, so no cap was used: the band is the per-day first-to-last
+prompt window, 51.3 h, stated as an upper bound on one person's involvement and drawn as one
+inseparable "person + agent" segment. The asymmetry the user expected — minutes against
+core-hours — is not in the data at 5.7:1; the one that is, and that the chart labels, is per
+prompt: 45 prompts bought 6.45 machine-hours and 1,298 model calls each.
+
+`export_effort` in `talk/scripts/export_talk_data.py` writes `talk/public/data/effort.json` from
+those files plus `git log --numstat`, and `talk/src/charts/EffortWaterfall.tsx` draws it. Both
+attribution rules are in the export's own `method` and both hold their objections in `caveats`,
+so a caption cannot drift from the bars it describes.
