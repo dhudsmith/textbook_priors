@@ -58,9 +58,7 @@ export function VerdictBoard() {
       </table>
       </div>
       <p className="note">
-        A filled dot is a dataset the comparison won on; a cross is one it did not. Shape as well
-        as fill, so the row reads without colour. Counts, p-values and verdicts come from
-        results/evaluation.json.
+        A filled dot is a dataset the comparison won on; a cross is one it did not.
       </p>
     </div>
   );

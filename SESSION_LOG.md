@@ -1213,3 +1213,28 @@ every figure on the page — the file-provenance line and the "Read this chart a
 6,894 characters of them. The SVGs keep their own aria-labels, so a screen reader still has a text
 alternative. The premise's four counts are now filled from the export rather than typed, because
 the prompt count moved twice in one day and this file's first rule is that no number lives in it.
+
+## 2026-09-18 10:15 — Motivate the science first
+
+The user found the opening out of order: "what is the 4 days of work 58,409 number etc. Right after
+the title... I'd rather jump into the science question." Then the general rule behind it: motivate
+the science, which the audience can relate to, and only then talk about how AI was integrated.
+
+So the running order changed. The title band keeps the title, the byline, the proposition and the
+project, and loses the four stat tiles — the premise section carries those counts as the owner's
+own bullets, and stating them twice was what made the opening feel like a boast. Then the question,
+the concept bank and the images; then the hypotheses; then how the study is put together, which
+became its own section rather than a subheading hanging off the title, because the workflow diagram
+is the first thing the audience is asked to accept on trust and it should arrive after they know
+what it is for. The process material — the effort timeline, the prompts and jobs and hours — moved
+from first to eleventh, next to the close, where the ledger already lives. Section numbers were
+renumbered to match.
+
+A second instruction, applied as a sweep: "avoid bs like this throughout: 'Every number on this
+page comes from the run's own files.' this is assumed. Keep it more professional." That sentence
+had already gone with the tiles. Four more of the same kind followed: "job counts are this run's
+own" became the counts; a figure explaining that its own dots use shape as well as fill so the row
+reads without colour, and naming the file its numbers came from, now just says which dot means
+what; the sample images lost their cache path and kept the fact that the sample is seeded; the
+close lost the host, the write time and the export time. Claiming a virtue the work either has or
+does not is not the same as having it.

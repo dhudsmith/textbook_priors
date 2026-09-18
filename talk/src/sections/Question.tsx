@@ -24,7 +24,7 @@ export function Question() {
 
   return (
     <Band id="question">
-      <Header id="question" eyebrow="2">{question.header}</Header>
+      <Header id="question" eyebrow="1">{question.header}</Header>
       <p className="lede">{question.lede}</p>
       <Bullets items={question.bullets} />
 
@@ -55,8 +55,7 @@ export function Question() {
             ))}
           </div>
           <p className="note">
-            Sampled test images, from <span className="mono">data/cache/sample/{dataset}.npz</span>{" "}
-            — the same seeded sample every arm was scored on, by position.
+            The same seeded sample every arm was scored on, by position.
           </p>
         </div>
 

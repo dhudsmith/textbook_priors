@@ -25,7 +25,7 @@ export function Premise() {
 
   return (
     <Band id="premise">
-      <Header id="premise" eyebrow="1">{premise.header}</Header>
+      <Header id="premise" eyebrow="11">{premise.header}</Header>
       <p className="lede">{premise.lede}</p>
       <Bullets items={bullets} />
 

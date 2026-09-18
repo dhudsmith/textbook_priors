@@ -21,7 +21,7 @@ export function Design() {
 
   return (
     <Band id="design">
-      <Header id="design" eyebrow="3">{design.header}</Header>
+      <Header id="design" eyebrow="2">{design.header}</Header>
       <p className="lede">{design.lede}</p>
       <Bullets items={design.bullets} />
 

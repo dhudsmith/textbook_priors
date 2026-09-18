@@ -39,7 +39,7 @@ export function Machine() {
 
       <StageStrip blurbs={BLURBS} />
       <p className="note">
-        Job counts are this run's own: the archive holds {study.archive.chunks.toLocaleString("en-US")}{" "}
+        The archive holds {study.archive.chunks.toLocaleString("en-US")}{" "}
         chunks and {study.archive.calls.toLocaleString("en-US")} calls, written between{" "}
         {study.archive.first_written.replace("T", " ")} and{" "}
         {study.archive.last_written.replace("T", " ")}.

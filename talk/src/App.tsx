@@ -4,6 +4,7 @@ import { STATIC, loadStudy } from "./data";
 import { useAsync, useInView } from "./hooks";
 import { Band, Header, Rail } from "./components/ui";
 import { Title } from "./sections/Title";
+import { Workflow } from "./sections/Workflow";
 import { Premise } from "./sections/Premise";
 import { Question } from "./sections/Question";
 import { Design } from "./sections/Design";
@@ -60,9 +61,9 @@ function Page() {
       <Rail />
       <main className="main" id="main">
         <Title />
-        <Premise />
         <Question />
         <Design />
+        <Workflow />
         <Machine />
         <H1 />
         <H2 />
@@ -73,6 +74,7 @@ function Page() {
         <div className="refrain-band"><p className="pullquote">{REFRAIN}</p></div>
         <H5 />
         <Verdicts />
+        <Premise />
         <Close />
         <ExploreBand />
       </main>

@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { useTalk } from "../state";
-import { Band, Bullets, CountTile, Header, Tile } from "../components/ui";
-import { WorkflowDiagram } from "../components/diagrams";
+import { Band, Bullets, Header } from "../components/ui";
 import { title as copy } from "../content";
 
 /* The QR code is rendered client-side from the page's own URL, so it is right wherever the site
@@ -23,8 +21,6 @@ function PageQR({ caption, size = 196 }: { caption: string; size?: number }) {
 export { PageQR };
 
 export function Title() {
-  const { study } = useTalk();
-  const led = study.ledger;
 
   return (
     <Band id="top">
@@ -42,21 +38,6 @@ export function Title() {
       <p>{copy.intro.lede}</p>
       <p className="pullquote">{copy.intro.question}</p>
       <Bullets items={copy.intro.bullets} />
-      <div className="tiles">
-        <Tile value={led.work_dates.length}
-              unit="days of work, from the plan to the report" />
-        <CountTile value={led.calls} unit="raw model responses, archived and write-protected" />
-        <Tile value={led.datasets} unit="MedMNIST 2D benchmarks, every one in the release" />
-        <CountTile value={led.tests ?? 0} unit="tests that run before anything else is computed" />
-      </div>
-      <p className="note">
-        Every number on this page comes from the run's own files.
-      </p>
-
-      <h3>{copy.workflow.header}</h3>
-      <p>{copy.workflow.lede}</p>
-      <WorkflowDiagram />
-      <p className="note">{copy.workflow.caption}</p>
     </Band>
   );
 }
